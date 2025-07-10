@@ -141,7 +141,7 @@ export default function ViewHiringRequests() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Cities</SelectItem>
-                {cities?.map((city: any) => (
+                {cities?.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
                   <SelectItem key={city.id} value={city.id.toString()}>
                     {city.name}
                   </SelectItem>
@@ -158,7 +158,7 @@ export default function ViewHiringRequests() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Clusters</SelectItem>
-                {clusters?.map((cluster: any) => (
+                {clusters?.filter((cluster: any) => cluster.id && cluster.id.toString()).map((cluster: any) => (
                   <SelectItem key={cluster.id} value={cluster.id.toString()}>
                     {cluster.name}
                   </SelectItem>
@@ -175,7 +175,7 @@ export default function ViewHiringRequests() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Roles</SelectItem>
-                {roles?.map((role: any) => (
+                {roles?.filter((role: any) => role.id && role.id.toString()).map((role: any) => (
                   <SelectItem key={role.id} value={role.id.toString()}>
                     {role.name}
                   </SelectItem>

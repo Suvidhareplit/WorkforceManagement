@@ -244,7 +244,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {roles?.map((role: any) => (
+                            {roles?.filter((role: any) => role.id && role.id.toString()).map((role: any) => (
                               <SelectItem key={role.id} value={role.id.toString()}>
                                 {role.name}
                               </SelectItem>
@@ -275,7 +275,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {cities?.map((city: any) => (
+                            {cities?.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
                               <SelectItem key={city.id} value={city.id.toString()}>
                                 {city.name}
                               </SelectItem>
@@ -300,7 +300,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {clusters?.map((cluster: any) => (
+                            {clusters?.filter((cluster: any) => cluster.id && cluster.id.toString()).map((cluster: any) => (
                               <SelectItem key={cluster.id} value={cluster.id.toString()}>
                                 {cluster.name}
                               </SelectItem>
@@ -371,7 +371,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {vendors?.map((vendor: any) => (
+                            {vendors?.filter((vendor: any) => vendor.id && vendor.id.toString()).map((vendor: any) => (
                               <SelectItem key={vendor.id} value={vendor.id.toString()}>
                                 {vendor.name}
                               </SelectItem>
@@ -398,7 +398,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {recruiters?.map((recruiter: any) => (
+                            {recruiters?.filter((recruiter: any) => recruiter.id && recruiter.id.toString()).map((recruiter: any) => (
                               <SelectItem key={recruiter.id} value={recruiter.id.toString()}>
                                 {recruiter.name}
                               </SelectItem>

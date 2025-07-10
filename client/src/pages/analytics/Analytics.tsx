@@ -120,7 +120,7 @@ export default function Analytics() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All Cities</SelectItem>
-                  {cities?.map((city: any) => (
+                  {cities?.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
                     <SelectItem key={city.id} value={city.id.toString()}>
                       {city.name}
                     </SelectItem>
@@ -137,7 +137,7 @@ export default function Analytics() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All Roles</SelectItem>
-                  {roles?.map((role: any) => (
+                  {roles?.filter((role: any) => role.id && role.id.toString()).map((role: any) => (
                     <SelectItem key={role.id} value={role.id.toString()}>
                       {role.name}
                     </SelectItem>
