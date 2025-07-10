@@ -14,6 +14,7 @@ import { eq, and, desc, asc, like, gte, lte, count, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User management
+  getUsers(): Promise<User[]>;
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -73,6 +74,44 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   // User management
+  async getUsers(): Promise<User[]> {
+    return await db.select({
+      id: users.id,
+      username: users.username,
+      email: users.email,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      phone: users.phone,
+      role: users.role,
+      managerId: users.managerId,
+      cityId: users.cityId,
+      clusterId: users.clusterId,
+      isActive: users.isActive,
+      createdAt: users.createdAt,
+      manager: {
+        id: sql`manager.id`,
+        firstName: sql`manager.first_name`,
+        lastName: sql`manager.last_name`,
+        role: sql`manager.role`
+      },
+      city: {
+        id: sql`city.id`,
+        name: sql`city.name`,
+        code: sql`city.code`
+      },
+      cluster: {
+        id: sql`cluster.id`,
+        name: sql`cluster.name`,
+        code: sql`cluster.code`
+      }
+    })
+    .from(users)
+    .leftJoin(sql`users as manager`, sql`manager.id = users.manager_id`)
+    .leftJoin(cities, sql`city.id = users.city_id`)
+    .leftJoin(clusters, sql`cluster.id = users.cluster_id`)
+    .orderBy(desc(users.createdAt));
+  }
+
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;

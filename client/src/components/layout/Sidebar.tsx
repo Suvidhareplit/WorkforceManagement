@@ -84,7 +84,7 @@ const menuItems = [
     ],
   },
   {
-    title: "MANAGEMENT",
+    title: "EMPLOYEE",
     items: [
       {
         icon: Users,
@@ -95,6 +95,16 @@ const menuItems = [
         icon: LogOut,
         label: "Exit Management",
         href: "/employees/exit",
+      },
+    ],
+  },
+  {
+    title: "MANAGEMENT",
+    items: [
+      {
+        icon: UserCheck,
+        label: "User Management",
+        href: "/management/users",
       },
       {
         icon: Database,

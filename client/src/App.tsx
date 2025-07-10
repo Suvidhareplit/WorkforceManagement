@@ -18,6 +18,7 @@ import FieldTraining from "./pages/training/FieldTraining";
 import EmployeeLifecycle from "./pages/employee/EmployeeLifecycle";
 import ExitManagement from "./pages/employee/ExitManagement";
 import MasterData from "./pages/master/MasterData";
+import UserManagement from "./pages/management/UserManagement";
 import Analytics from "./pages/analytics/Analytics";
 import NotFound from "@/pages/not-found";
 
@@ -38,6 +39,7 @@ function Router() {
         <Route path="/employees/lifecycle" component={EmployeeLifecycle} />
         <Route path="/employees/exit" component={ExitManagement} />
         <Route path="/master-data" component={MasterData} />
+        <Route path="/management/users" component={UserManagement} />
         <Route path="/analytics" component={Analytics} />
         <Route component={NotFound} />
       </Switch>

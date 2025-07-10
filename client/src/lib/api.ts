@@ -1,43 +1,44 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { authService } from "./auth";
 
 export class ApiClient {
-  private axiosInstance: AxiosInstance;
+  private baseUrl: string;
 
   constructor(baseUrl: string = '/api') {
-    this.axiosInstance = axios.create({
-      baseURL: baseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // Request interceptor to add auth headers
-    this.axiosInstance.interceptors.request.use(
-      (config) => {
-        const authHeaders = authService.getAuthHeaders();
-        config.headers = { ...config.headers, ...authHeaders };
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Response interceptor for error handling
-    this.axiosInstance.interceptors.response.use(
-      (response: AxiosResponse) => response,
-      (error) => {
-        const message = error.response?.data?.message || error.message || 'Network error';
-        throw new Error(message);
-      }
-    );
+    this.baseUrl = baseUrl;
   }
 
-  private async request<T>(endpoint: string, config: AxiosRequestConfig = {}): Promise<T> {
-    const response = await this.axiosInstance.request<T>({
-      url: endpoint,
-      ...config,
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      ...options,
+      headers: {
+        ...headers,
+        ...options.headers,
+      },
+      credentials: 'include',
     });
-    return response.data;
+
+    if (!response.ok) {
+      const text = await response.text();
+      let errorMessage;
+      try {
+        const errorData = JSON.parse(text);
+        errorMessage = errorData.message || response.statusText;
+      } catch {
+        errorMessage = text || response.statusText;
+      }
+      throw new Error(`${response.status}: ${errorMessage}`);
+    }
+
+    return await response.json();
   }
 
   async get<T>(endpoint: string): Promise<T> {
