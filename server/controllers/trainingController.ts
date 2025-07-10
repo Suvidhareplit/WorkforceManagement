@@ -1,17 +1,8 @@
-import { Router } from "express";
+import { Request, Response } from "express";
 import { storage } from "../storage";
-import { insertTrainingSessionSchema } from "@shared/schema";
-import { validateRequest } from "../middlewares/validation";
-import { authenticate } from "../middlewares/auth";
 import { sendEmail } from "../services/emailService";
 
-const router = Router();
-
-// All routes require authentication
-router.use(authenticate);
-
-// Create training session
-router.post('/', validateRequest(insertTrainingSessionSchema), async (req, res) => {
+const createTrainingSession = async (req: Request, res: Response) => {
   try {
     const sessionData = req.body;
     
@@ -21,10 +12,9 @@ router.post('/', validateRequest(insertTrainingSessionSchema), async (req, res) 
     console.error('Create training session error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Get training sessions
-router.get('/', async (req, res) => {
+const getTrainingSessions = async (req: Request, res: Response) => {
   try {
     const filters = req.query;
     const sessions = await storage.getTrainingSessions(filters);
@@ -33,10 +23,9 @@ router.get('/', async (req, res) => {
     console.error('Get training sessions error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Update training session
-router.patch('/:id', async (req, res) => {
+const updateTrainingSession = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const updateData = req.body;
@@ -52,10 +41,9 @@ router.patch('/:id', async (req, res) => {
     console.error('Update training session error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Mark attendance
-router.post('/:id/attendance', async (req, res) => {
+const markAttendance = async (req: Request, res: Response) => {
   try {
     const sessionId = parseInt(req.params.id);
     const { date, present, notes } = req.body;
@@ -76,10 +64,9 @@ router.post('/:id/attendance', async (req, res) => {
     console.error('Mark attendance error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Mark candidate fit/not fit
-router.patch('/:id/fitness', async (req, res) => {
+const updateFitness = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const { fitStatus, comments } = req.body;
@@ -119,10 +106,9 @@ router.patch('/:id/fitness', async (req, res) => {
     console.error('Update fitness error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Confirm FTE
-router.patch('/:id/fte', async (req, res) => {
+const confirmFTE = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const { confirmed } = req.body;
@@ -148,6 +134,13 @@ router.patch('/:id/fte', async (req, res) => {
     console.error('Update FTE error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-export { router as trainingRoutes };
+export const trainingController = {
+  createTrainingSession,
+  getTrainingSessions,
+  updateTrainingSession,
+  markAttendance,
+  updateFitness,
+  confirmFTE
+};

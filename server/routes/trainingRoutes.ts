@@ -10,19 +10,19 @@ const router = Router();
 router.use(authenticate);
 
 // Create training session
-router.post('/', validateRequest(insertTrainingSessionSchema), trainingController.createSession);
+router.post('/', validateRequest(insertTrainingSessionSchema), trainingController.createTrainingSession);
 
 // Get training sessions
-router.get('/', trainingController.getSessions);
+router.get('/', trainingController.getTrainingSessions);
 
 // Update training session
-router.patch('/:id', trainingController.updateSession);
+router.patch('/:id', trainingController.updateTrainingSession);
 
 // Mark attendance
 router.post('/:id/attendance', trainingController.markAttendance);
 
 // Mark candidate fit/not fit
-router.patch('/:id/fitness', trainingController.markFitness);
+router.patch('/:id/fitness', trainingController.updateFitness);
 
 // Confirm FTE
 router.patch('/:id/fte', trainingController.confirmFTE);

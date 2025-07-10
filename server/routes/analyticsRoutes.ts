@@ -11,7 +11,7 @@ router.use(authenticate);
 router.get('/hiring', analyticsController.getHiringAnalytics);
 
 // Get candidate pipeline analytics
-router.get('/pipeline', analyticsController.getPipelineAnalytics);
+router.get('/pipeline', analyticsController.getCandidatePipeline);
 
 // Get vendor performance
 router.get('/vendors', analyticsController.getVendorPerformance);

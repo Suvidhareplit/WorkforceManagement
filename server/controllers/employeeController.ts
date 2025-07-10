@@ -1,16 +1,7 @@
-import { Router } from "express";
+import { Request, Response } from "express";
 import { storage } from "../storage";
-import { insertEmployeeSchema, insertEmployeeActionSchema } from "@shared/schema";
-import { validateRequest } from "../middlewares/validation";
-import { authenticate } from "../middlewares/auth";
 
-const router = Router();
-
-// All routes require authentication
-router.use(authenticate);
-
-// Create employee
-router.post('/', validateRequest(insertEmployeeSchema), async (req, res) => {
+const createEmployee = async (req: Request, res: Response) => {
   try {
     const employeeData = req.body;
     
@@ -20,10 +11,9 @@ router.post('/', validateRequest(insertEmployeeSchema), async (req, res) => {
     console.error('Create employee error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Get all employees
-router.get('/', async (req, res) => {
+const getEmployees = async (req: Request, res: Response) => {
   try {
     const filters = req.query;
     const employees = await storage.getEmployees(filters);
@@ -32,10 +22,9 @@ router.get('/', async (req, res) => {
     console.error('Get employees error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Get employee by ID
-router.get('/:id', async (req, res) => {
+const getEmployeeById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const employee = await storage.getEmployee(id);
@@ -49,10 +38,9 @@ router.get('/:id', async (req, res) => {
     console.error('Get employee error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Update employee
-router.patch('/:id', async (req, res) => {
+const updateEmployee = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const updateData = req.body;
@@ -68,10 +56,9 @@ router.patch('/:id', async (req, res) => {
     console.error('Update employee error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Create employee action (PIP, warning, termination)
-router.post('/:id/actions', validateRequest(insertEmployeeActionSchema), async (req, res) => {
+const createEmployeeAction = async (req: Request, res: Response) => {
   try {
     const employeeId = parseInt(req.params.id);
     const actionData = req.body;
@@ -88,10 +75,9 @@ router.post('/:id/actions', validateRequest(insertEmployeeActionSchema), async (
     console.error('Create employee action error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Get employee actions
-router.get('/:id/actions', async (req, res) => {
+const getEmployeeActions = async (req: Request, res: Response) => {
   try {
     const employeeId = parseInt(req.params.id);
     const actions = await storage.getEmployeeActions(employeeId);
@@ -100,10 +86,9 @@ router.get('/:id/actions', async (req, res) => {
     console.error('Get employee actions error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Approve/reject employee action
-router.patch('/actions/:actionId', async (req, res) => {
+const updateEmployeeAction = async (req: Request, res: Response) => {
   try {
     const actionId = parseInt(req.params.actionId);
     const { status } = req.body;
@@ -127,6 +112,14 @@ router.patch('/actions/:actionId', async (req, res) => {
     console.error('Update employee action error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-export { router as employeeRoutes };
+export const employeeController = {
+  createEmployee,
+  getEmployees,
+  getEmployeeById,
+  updateEmployee,
+  createEmployeeAction,
+  getEmployeeActions,
+  updateEmployeeAction
+};

@@ -1,16 +1,7 @@
-import { Router } from "express";
+import { Request, Response } from "express";
 import { storage } from "../storage";
-import { 
-  insertCitySchema, insertClusterSchema, insertRoleSchema, 
-  insertVendorSchema, insertRecruiterSchema 
-} from "@shared/schema";
-import { validateRequest } from "../middlewares/validation";
-import { authenticate } from "../middlewares/auth";
 
-const router = Router();
-
-// Public endpoints for dropdowns
-router.get('/cities', async (req, res) => {
+const getCities = async (req: Request, res: Response) => {
   try {
     const cities = await storage.getCities();
     res.json(cities);
@@ -18,9 +9,9 @@ router.get('/cities', async (req, res) => {
     console.error('Get cities error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-router.get('/cities/:cityId/clusters', async (req, res) => {
+const getClustersByCity = async (req: Request, res: Response) => {
   try {
     const cityId = parseInt(req.params.cityId);
     const clusters = await storage.getClustersByCity(cityId);
@@ -29,9 +20,9 @@ router.get('/cities/:cityId/clusters', async (req, res) => {
     console.error('Get clusters error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-router.get('/roles', async (req, res) => {
+const getRoles = async (req: Request, res: Response) => {
   try {
     const roles = await storage.getRoles();
     res.json(roles);
@@ -39,9 +30,9 @@ router.get('/roles', async (req, res) => {
     console.error('Get roles error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-router.get('/vendors', async (req, res) => {
+const getVendors = async (req: Request, res: Response) => {
   try {
     const vendors = await storage.getVendors();
     res.json(vendors);
@@ -49,9 +40,9 @@ router.get('/vendors', async (req, res) => {
     console.error('Get vendors error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-router.get('/recruiters', async (req, res) => {
+const getRecruiters = async (req: Request, res: Response) => {
   try {
     const recruiters = await storage.getRecruiters();
     res.json(recruiters);
@@ -59,13 +50,9 @@ router.get('/recruiters', async (req, res) => {
     console.error('Get recruiters error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Admin routes require authentication
-router.use(authenticate);
-
-// Create master data
-router.post('/cities', validateRequest(insertCitySchema), async (req, res) => {
+const createCity = async (req: Request, res: Response) => {
   try {
     const city = await storage.createCity(req.body);
     res.status(201).json(city);
@@ -73,9 +60,9 @@ router.post('/cities', validateRequest(insertCitySchema), async (req, res) => {
     console.error('Create city error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-router.post('/clusters', validateRequest(insertClusterSchema), async (req, res) => {
+const createCluster = async (req: Request, res: Response) => {
   try {
     const cluster = await storage.createCluster(req.body);
     res.status(201).json(cluster);
@@ -83,9 +70,9 @@ router.post('/clusters', validateRequest(insertClusterSchema), async (req, res) 
     console.error('Create cluster error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-router.post('/roles', validateRequest(insertRoleSchema), async (req, res) => {
+const createRole = async (req: Request, res: Response) => {
   try {
     const role = await storage.createRole(req.body);
     res.status(201).json(role);
@@ -93,9 +80,9 @@ router.post('/roles', validateRequest(insertRoleSchema), async (req, res) => {
     console.error('Create role error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-router.post('/vendors', validateRequest(insertVendorSchema), async (req, res) => {
+const createVendor = async (req: Request, res: Response) => {
   try {
     const vendor = await storage.createVendor(req.body);
     res.status(201).json(vendor);
@@ -103,9 +90,9 @@ router.post('/vendors', validateRequest(insertVendorSchema), async (req, res) =>
     console.error('Create vendor error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-router.post('/recruiters', validateRequest(insertRecruiterSchema), async (req, res) => {
+const createRecruiter = async (req: Request, res: Response) => {
   try {
     const recruiter = await storage.createRecruiter(req.body);
     res.status(201).json(recruiter);
@@ -113,6 +100,17 @@ router.post('/recruiters', validateRequest(insertRecruiterSchema), async (req, r
     console.error('Create recruiter error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-export { router as masterDataRoutes };
+export const masterDataController = {
+  getCities,
+  getClustersByCity,
+  getRoles,
+  getVendors,
+  getRecruiters,
+  createCity,
+  createCluster,
+  createRole,
+  createVendor,
+  createRecruiter
+};

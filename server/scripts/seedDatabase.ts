@@ -37,32 +37,24 @@ async function seedDatabase() {
     // Create sample roles
     const roles = await Promise.all([
       storage.createRole({ 
-        title: 'Delivery Executive', 
+        name: 'Delivery Executive', 
         code: 'DE', 
-        description: 'Food and package delivery',
-        salaryMin: 15000,
-        salaryMax: 25000
+        description: 'Food and package delivery'
       }),
       storage.createRole({ 
-        title: 'Warehouse Worker', 
+        name: 'Warehouse Worker', 
         code: 'WW', 
-        description: 'Warehouse operations and inventory management',
-        salaryMin: 18000,
-        salaryMax: 28000
+        description: 'Warehouse operations and inventory management'
       }),
       storage.createRole({ 
-        title: 'Security Guard', 
+        name: 'Security Guard', 
         code: 'SG', 
-        description: 'Security and surveillance',
-        salaryMin: 16000,
-        salaryMax: 22000
+        description: 'Security and surveillance'
       }),
       storage.createRole({ 
-        title: 'Cleaner', 
+        name: 'Cleaner', 
         code: 'CL', 
-        description: 'Cleaning and maintenance',
-        salaryMin: 12000,
-        salaryMax: 18000
+        description: 'Cleaning and maintenance'
       })
     ]);
 
@@ -74,15 +66,13 @@ async function seedDatabase() {
         name: 'ManpowerCorp',
         contactPerson: 'Rajesh Kumar',
         email: 'rajesh@manpowercorp.com',
-        phone: '+91-9876543210',
-        address: 'Mumbai Office Complex'
+        phone: '+91-9876543210'
       }),
       storage.createVendor({
         name: 'StaffingSolutions',
         contactPerson: 'Priya Sharma',
         email: 'priya@staffingsol.com',
-        phone: '+91-9876543211',
-        address: 'Delhi Business Park'
+        phone: '+91-9876543211'
       })
     ]);
 
@@ -93,14 +83,12 @@ async function seedDatabase() {
       storage.createRecruiter({
         name: 'Amit Patel',
         email: 'amit.patel@company.com',
-        phone: '+91-9876543212',
-        vendorId: vendors[0].id
+        phone: '+91-9876543212'
       }),
       storage.createRecruiter({
         name: 'Sneha Gupta',
         email: 'sneha.gupta@company.com',
-        phone: '+91-9876543213',
-        vendorId: vendors[1].id
+        phone: '+91-9876543213'
       })
     ]);
 
@@ -140,7 +128,7 @@ async function seedDatabase() {
 }
 
 // Run if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   seedDatabase()
     .then(() => process.exit(0))
     .catch(() => process.exit(1));

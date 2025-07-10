@@ -1,14 +1,8 @@
-import { Router } from "express";
+import { Request, Response } from "express";
 import { storage } from "../storage";
-import { insertCandidateSchema } from "@shared/schema";
-import { validateRequest } from "../middlewares/validation";
-import { authenticate } from "../middlewares/auth";
 import { sendEmail } from "../services/emailService";
 
-const router = Router();
-
-// Candidate application (public endpoint)
-router.post('/candidates', validateRequest(insertCandidateSchema), async (req, res) => {
+const createCandidate = async (req: Request, res: Response) => {
   try {
     const candidateData = req.body;
     
@@ -22,13 +16,9 @@ router.post('/candidates', validateRequest(insertCandidateSchema), async (req, r
     console.error('Create candidate error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// All other routes require authentication
-router.use(authenticate);
-
-// Get all candidates
-router.get('/candidates', async (req, res) => {
+const getCandidates = async (req: Request, res: Response) => {
   try {
     const filters = req.query;
     const candidates = await storage.getCandidates(filters);
@@ -37,10 +27,9 @@ router.get('/candidates', async (req, res) => {
     console.error('Get candidates error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Get candidate by ID
-router.get('/candidates/:id', async (req, res) => {
+const getCandidateById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const candidate = await storage.getCandidate(id);
@@ -54,10 +43,9 @@ router.get('/candidates/:id', async (req, res) => {
     console.error('Get candidate error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Update prescreening status
-router.patch('/candidates/:id/prescreening', async (req, res) => {
+const updatePrescreening = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const { approved, notes } = req.body;
@@ -79,10 +67,9 @@ router.patch('/candidates/:id/prescreening', async (req, res) => {
     console.error('Update prescreening error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Update screening scores
-router.patch('/candidates/:id/screening', async (req, res) => {
+const updateScreening = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const { score, benchmarkMet } = req.body;
@@ -104,10 +91,9 @@ router.patch('/candidates/:id/screening', async (req, res) => {
     console.error('Update screening error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Update technical round status
-router.patch('/candidates/:id/technical', async (req, res) => {
+const updateTechnical = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const { status, notes } = req.body;
@@ -133,10 +119,9 @@ router.patch('/candidates/:id/technical', async (req, res) => {
     console.error('Update technical round error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-// Assign DOJ and send offer
-router.patch('/candidates/:id/offer', async (req, res) => {
+const updateOffer = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const { dateOfJoining, grossSalary } = req.body;
@@ -179,6 +164,14 @@ router.patch('/candidates/:id/offer', async (req, res) => {
     console.error('Update offer error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-export { router as interviewRoutes };
+export const interviewController = {
+  createCandidate,
+  getCandidates,
+  getCandidateById,
+  updatePrescreening,
+  updateScreening,
+  updateTechnical,
+  updateOffer
+};
