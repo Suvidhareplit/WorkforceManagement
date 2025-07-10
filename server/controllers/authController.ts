@@ -1,14 +1,11 @@
-import { Router } from "express";
+import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { storage } from "../storage";
-import { insertUserSchema } from "@shared/schema";
-import { validateRequest } from "../middlewares/validation";
-
-const router = Router();
+import { auditService } from "../services/auditService";
 
 // Login
-router.post('/login', async (req, res) => {
+const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     
@@ -32,6 +29,16 @@ router.post('/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    // Log successful login
+    await auditService.logActivity({
+      userId: user.id,
+      action: 'LOGIN',
+      entity: 'user',
+      entityId: user.id.toString(),
+      details: `User ${user.username} logged in successfully`,
+      ipAddress: req.ip
+    });
+
     res.json({
       token,
       user: {
@@ -47,10 +54,10 @@ router.post('/login', async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
 // Register (for initial setup)
-router.post('/register', validateRequest(insertUserSchema), async (req, res) => {
+const register = async (req: Request, res: Response) => {
   try {
     const userData = req.body;
     
@@ -73,6 +80,16 @@ router.post('/register', validateRequest(insertUserSchema), async (req, res) => 
       password: hashedPassword
     });
 
+    // Log user registration
+    await auditService.logActivity({
+      userId: user.id,
+      action: 'CREATE',
+      entity: 'user',
+      entityId: user.id.toString(),
+      details: `New user registered: ${user.username}`,
+      ipAddress: req.ip
+    });
+
     res.status(201).json({
       id: user.id,
       username: user.username,
@@ -85,10 +102,10 @@ router.post('/register', validateRequest(insertUserSchema), async (req, res) => 
     console.error('Registration error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
 // Get current user
-router.get('/me', async (req, res) => {
+const getCurrentUser = async (req: Request, res: Response) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) {
@@ -114,6 +131,10 @@ router.get('/me', async (req, res) => {
     console.error('Get user error:', error);
     res.status(401).json({ message: "Invalid token" });
   }
-});
+};
 
-export { router as authRoutes };
+export const authController = {
+  login,
+  register,
+  getCurrentUser
+};

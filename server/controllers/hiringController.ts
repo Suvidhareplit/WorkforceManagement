@@ -1,17 +1,10 @@
-import { Router } from "express";
+import { Request, Response } from "express";
 import { storage } from "../storage";
-import { insertHiringRequestSchema } from "@shared/schema";
-import { validateRequest } from "../middlewares/validation";
-import { authenticate } from "../middlewares/auth";
 import { generateRequestId } from "../utils/helpers";
-
-const router = Router();
-
-// All routes require authentication
-router.use(authenticate);
+import { auditService } from "../services/auditService";
 
 // Create hiring request
-router.post('/', validateRequest(insertHiringRequestSchema), async (req, res) => {
+const createRequest = async (req: Request, res: Response) => {
   try {
     const requestData = req.body;
     const userId = (req as any).user.userId;
@@ -40,15 +33,25 @@ router.post('/', validateRequest(insertHiringRequestSchema), async (req, res) =>
       requests.push(request);
     }
 
+    // Log hiring request creation
+    await auditService.logActivity({
+      userId,
+      action: 'CREATE',
+      entity: 'hiring_request',
+      entityId: requests.map(r => r.id).join(','),
+      details: `Created ${requests.length} hiring request(s)`,
+      ipAddress: req.ip
+    });
+
     res.status(201).json(requests);
   } catch (error) {
     console.error('Create hiring request error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
 // Get all hiring requests
-router.get('/', async (req, res) => {
+const getRequests = async (req: Request, res: Response) => {
   try {
     const filters = req.query;
     const requests = await storage.getHiringRequests(filters);
@@ -57,10 +60,10 @@ router.get('/', async (req, res) => {
     console.error('Get hiring requests error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
 // Get hiring request by ID
-router.get('/:id', async (req, res) => {
+const getRequestById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const request = await storage.getHiringRequest(id);
@@ -74,10 +77,10 @@ router.get('/:id', async (req, res) => {
     console.error('Get hiring request error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
 // Update hiring request status
-router.patch('/:id/status', async (req, res) => {
+const updateRequestStatus = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const { status } = req.body;
@@ -97,6 +100,11 @@ router.patch('/:id/status', async (req, res) => {
     console.error('Update hiring request status error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
-});
+};
 
-export { router as hiringRoutes };
+export const hiringController = {
+  createRequest,
+  getRequests,
+  getRequestById,
+  updateRequestStatus
+};

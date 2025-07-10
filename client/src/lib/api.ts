@@ -1,35 +1,43 @@
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { authService } from "./auth";
 
 export class ApiClient {
-  private baseUrl: string;
+  private axiosInstance: AxiosInstance;
 
   constructor(baseUrl: string = '/api') {
-    this.baseUrl = baseUrl;
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    
-    const config: RequestInit = {
+    this.axiosInstance = axios.create({
+      baseURL: baseUrl,
       headers: {
         'Content-Type': 'application/json',
-        ...authService.getAuthHeaders(),
-        ...options.headers,
       },
-      ...options,
-    };
+    });
 
-    const response = await fetch(url, config);
+    // Request interceptor to add auth headers
+    this.axiosInstance.interceptors.request.use(
+      (config) => {
+        const authHeaders = authService.getAuthHeaders();
+        config.headers = { ...config.headers, ...authHeaders };
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
+    // Response interceptor for error handling
+    this.axiosInstance.interceptors.response.use(
+      (response: AxiosResponse) => response,
+      (error) => {
+        const message = error.response?.data?.message || error.message || 'Network error';
+        throw new Error(message);
+      }
+    );
+  }
 
-    return response.json();
+  private async request<T>(endpoint: string, config: AxiosRequestConfig = {}): Promise<T> {
+    const response = await this.axiosInstance.request<T>({
+      url: endpoint,
+      ...config,
+    });
+    return response.data;
   }
 
   async get<T>(endpoint: string): Promise<T> {
