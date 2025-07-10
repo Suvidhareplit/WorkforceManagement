@@ -1,16 +1,15 @@
 import axios, { AxiosError } from 'axios';
 
 export interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface RegisterData {
-  username: string;
+  userId: string;
   email: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   role: 'admin' | 'hr' | 'recruiter' | 'manager' | 'trainer';
 }
 
@@ -18,7 +17,7 @@ export interface AuthResponse {
   token: string;
   user: {
     id: number;
-    username: string;
+    userId: string;
     email: string;
     name: string;
     role: string;

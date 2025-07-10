@@ -29,10 +29,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initAuth();
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await authService.login({ username, password });
+      const response = await authService.login({ email, password });
       setUser(response.user);
     } catch (error) {
       throw error;

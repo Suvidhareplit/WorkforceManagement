@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Building2, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +23,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(username, password);
+      await login(email, password);
       toast({
         title: "Login Successful",
         description: "Welcome to Blue Collar HRMS",
@@ -61,13 +61,13 @@ export default function LoginPage() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
               />
@@ -104,7 +104,7 @@ export default function LoginPage() {
           
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>Demo credentials:</p>
-            <p><strong>Username:</strong> admin</p>
+            <p><strong>Email:</strong> admin@company.com</p>
             <p><strong>Password:</strong> admin123</p>
           </div>
         </CardContent>

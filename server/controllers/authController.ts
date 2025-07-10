@@ -8,13 +8,13 @@ import { auditService } from "../services/auditService";
 // Login
 const login = async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
     
-    if (!username || !password) {
-      return res.status(400).json({ message: "Username and password are required" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const user = await storage.getUserByUserId(username);
+    const user = await storage.getUserByEmail(email);
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -25,7 +25,7 @@ const login = async (req: Request, res: Response) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id, username: user.userId, role: user.role },
+      { userId: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: '24h' }
     );
@@ -36,7 +36,7 @@ const login = async (req: Request, res: Response) => {
       action: 'LOGIN',
       entity: 'user',
       entityId: user.id.toString(),
-      details: `User ${user.userId} logged in successfully`,
+      details: `User ${user.email} logged in successfully`,
       ipAddress: req.ip
     });
 
@@ -44,7 +44,7 @@ const login = async (req: Request, res: Response) => {
       token,
       user: {
         id: user.id,
-        username: user.userId,
+        userId: user.userId,
         email: user.email,
         name: user.name,
         role: user.role
@@ -92,7 +92,7 @@ const register = async (req: Request, res: Response) => {
 
     res.status(201).json({
       id: user.id,
-      username: user.userId,
+      userId: user.userId,
       email: user.email,
       name: user.name,
       role: user.role
@@ -120,7 +120,7 @@ const getCurrentUser = async (req: Request, res: Response) => {
 
     res.json({
       id: user.id,
-      username: user.userId,
+      userId: user.userId,
       email: user.email,
       name: user.name,
       role: user.role
