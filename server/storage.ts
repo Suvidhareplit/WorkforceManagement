@@ -9,7 +9,7 @@ import {
   type InsertCandidate, type InsertTrainingSession, type InsertEmployee,
   type InsertEmployeeAction, type InsertExitRecord
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./config/database";
 import { eq, and, desc, asc, like, gte, lte, count, sql } from "drizzle-orm";
 
 export interface IStorage {

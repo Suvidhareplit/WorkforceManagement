@@ -23,6 +23,8 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: JWT-based authentication with bcrypt for password hashing
 - **File Uploads**: Multer for handling file uploads
 - **Email Service**: Nodemailer for email notifications
+- **HTTP Client**: Axios for all API requests (frontend and backend)
+- **Project Structure**: Organized following MVC pattern with proper separation
 
 ### Database Architecture
 - **Database**: PostgreSQL (configured for Neon serverless)
@@ -101,14 +103,23 @@ Preferred communication style: Simple, everyday language.
 - **Forms**: React Hook Form with Hookform resolvers
 - **Validation**: Zod for schema validation
 - **Icons**: Lucide React for consistent iconography
+- **HTTP Client**: Axios for all API communications with interceptors
 
 ### Backend Dependencies
-- **Server**: Express.js with TypeScript
+- **Server**: Express.js with TypeScript following MVC architecture
 - **Database**: Drizzle ORM with PostgreSQL driver
 - **Authentication**: JWT and bcrypt
 - **File Handling**: Multer for uploads
 - **Email**: Nodemailer for notifications
 - **Validation**: Zod for request validation
+- **Project Structure**: 
+  - `routes/`: Express route definitions only
+  - `controllers/`: Request/response logic and business operations
+  - `models/`: Database schema and query functions
+  - `middlewares/`: Reusable middleware (auth, validation, error handling)
+  - `config/`: Environment and database configurations
+  - `services/`: Business logic and reusable operations
+  - `utils/`: Helper utilities, validators, formatters, constants
 
 ### Development Tools
 - **Build**: Vite for frontend, esbuild for backend

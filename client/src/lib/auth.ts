@@ -1,4 +1,4 @@
-import { apiRequest } from "./queryClient";
+import axios, { AxiosError } from 'axios';
 
 export interface LoginCredentials {
   username: string;
@@ -27,6 +27,24 @@ export interface AuthResponse {
 
 const TOKEN_KEY = 'hrms_auth_token';
 
+// Create axios instance for auth
+const authApiClient = axios.create({
+  baseURL: '/api',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Response interceptor for auth
+authApiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    const message = error.response?.data?.message || error.message;
+    throw new Error(`${error.response?.status || 500}: ${message}`);
+  }
+);
+
 export class AuthService {
   private static instance: AuthService;
 
@@ -38,30 +56,27 @@ export class AuthService {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiRequest("/api/auth/login", {
-      method: "POST",
-      body: credentials,
-    });
+    const response = await authApiClient.post("/auth/login", credentials);
     
-    if (response.token) {
-      this.setToken(response.token);
+    if (response.data.token) {
+      this.setToken(response.data.token);
     }
     
-    return response;
+    return response.data;
   }
 
   async register(userData: RegisterData): Promise<AuthResponse> {
-    return await apiRequest("/api/auth/register", {
-      method: "POST",
-      body: userData,
-    });
+    const response = await authApiClient.post("/auth/register", userData);
+    return response.data;
   }
 
   async getCurrentUser() {
     try {
-      return await apiRequest("/api/auth/me", {
-        method: "GET",
+      const token = this.getToken();
+      const response = await authApiClient.get("/auth/me", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      return response.data;
     } catch (error) {
       this.removeToken();
       throw error;

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { storage } from "../storage";
+import { UserModel } from "../models";
 import { insertUserSchema } from "@shared/schema";
 import { ZodError } from "zod";
 

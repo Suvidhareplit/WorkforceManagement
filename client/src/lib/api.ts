@@ -1,75 +1,59 @@
-import { authService } from "./auth";
+import axios, { AxiosError } from 'axios';
 
 export class ApiClient {
-  private baseUrl: string;
+  private apiClient;
 
   constructor(baseUrl: string = '/api') {
-    this.baseUrl = baseUrl;
-  }
-
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = localStorage.getItem('hrms_auth_token');
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...options,
+    this.apiClient = axios.create({
+      baseURL: baseUrl,
+      withCredentials: true,
       headers: {
-        ...headers,
-        ...options.headers,
+        'Content-Type': 'application/json',
       },
-      credentials: 'include',
     });
 
-    if (!response.ok) {
-      const text = await response.text();
-      let errorMessage;
-      try {
-        const errorData = JSON.parse(text);
-        errorMessage = errorData.message || response.statusText;
-      } catch {
-        errorMessage = text || response.statusText;
+    // Request interceptor to add auth token
+    this.apiClient.interceptors.request.use((config) => {
+      const token = localStorage.getItem('hrms_auth_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
       }
-      throw new Error(`${response.status}: ${errorMessage}`);
-    }
+      return config;
+    });
 
-    return await response.json();
+    // Response interceptor to handle errors
+    this.apiClient.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        const message = error.response?.data?.message || error.message;
+        throw new Error(`${error.response?.status || 500}: ${message}`);
+      }
+    );
   }
 
   async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint);
+    const response = await this.apiClient.get(endpoint);
+    return response.data;
   }
 
   async post<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const response = await this.apiClient.post(endpoint, data);
+    return response.data;
   }
 
   async patch<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const response = await this.apiClient.patch(endpoint, data);
+    return response.data;
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'DELETE',
-    });
+    const response = await this.apiClient.delete(endpoint);
+    return response.data;
   }
 
   async put<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const response = await this.apiClient.put(endpoint, data);
+    return response.data;
   }
 }
 

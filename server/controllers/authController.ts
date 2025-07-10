@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { storage } from "../storage";
+import { UserModel } from "../models";
 import { auditService } from "../services/auditService";
 
 // Login
@@ -25,7 +26,7 @@ const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { userId: user.id, username: user.userId, role: user.role },
-      process.env.JWT_SECRET || "default_secret",
+      process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: '24h' }
     );
 
@@ -110,7 +111,7 @@ const getCurrentUser = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "No token provided" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret") as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key") as any;
     const user = await storage.getUser(decoded.userId);
     
     if (!user) {

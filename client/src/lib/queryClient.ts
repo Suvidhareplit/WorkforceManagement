@@ -1,11 +1,32 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import axios, { AxiosError } from 'axios';
 
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+// Create axios instance with default configuration
+const apiClient = axios.create({
+  baseURL: '',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor to add auth token
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('hrms_auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-}
+  return config;
+});
+
+// Response interceptor to handle errors
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    const message = error.response?.data?.message || error.message;
+    throw new Error(`${error.response?.status || 500}: ${message}`);
+  }
+);
 
 export async function apiRequest(
   url: string,
@@ -14,24 +35,12 @@ export async function apiRequest(
     body?: unknown;
   },
 ): Promise<any> {
-  const token = localStorage.getItem('hrms_auth_token');
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(url, {
+  const response = await apiClient.request({
+    url,
     method: options.method,
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-    credentials: "include",
+    data: options.body,
   });
-
-  await throwIfResNotOk(res);
-  return await res.json();
+  return response.data;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -40,24 +49,15 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const token = localStorage.getItem('hrms_auth_token');
-    const headers: Record<string, string> = {};
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    try {
+      const response = await apiClient.get(queryKey.join("/") as string);
+      return response.data;
+    } catch (error: any) {
+      if (unauthorizedBehavior === "returnNull" && error.response?.status === 401) {
+        return null;
+      }
+      throw error;
     }
-
-    const res = await fetch(queryKey.join("/") as string, {
-      headers,
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
