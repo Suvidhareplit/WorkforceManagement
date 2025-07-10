@@ -8,7 +8,7 @@ export class ApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('hrms_auth_token');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };

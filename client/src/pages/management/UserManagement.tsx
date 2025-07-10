@@ -1,113 +1,86 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Upload, Users, UserPlus, Eye, Edit, Trash2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { User, InsertUser } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { Users, Plus, Upload, Search, FileText } from "lucide-react";
 
-const userSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Valid email is required"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  phone: z.string().optional(),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.string().min(1, "Role is required"),
-  managerId: z.string().optional(),
-  cityId: z.string().optional(),
-  clusterId: z.string().optional(),
-});
+interface UserFormData {
+  name: string;
+  phone: string;
+  email: string;
+  userId: string;
+  role: string;
+  managerId?: number | null;
+  cityId?: number | null;
+  clusterId?: number | null;
+  password: string;
+}
 
-const bulkUserSchema = z.object({
-  csvData: z.string().min(1, "CSV data is required"),
-});
+interface BulkUserData {
+  users: UserFormData[];
+}
 
 export default function UserManagement() {
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'list'>('single');
-  const [selectedCityId, setSelectedCityId] = useState<string>("");
-  const { toast } = useToast();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [bulkUserText, setBulkUserText] = useState("");
+  const [formData, setFormData] = useState<UserFormData>({
+    name: "",
+    phone: "",
+    email: "",
+    userId: "",
+    role: "hr",
+    managerId: null,
+    cityId: null,
+    clusterId: null,
+    password: "",
+  });
 
-  // Fetch master data
-  const { data: cities } = useQuery({
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch users
+  const { data: users = [], isLoading } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+  });
+
+  // Fetch cities and other master data
+  const { data: cities = [] } = useQuery<any[]>({
     queryKey: ["/api/master-data/cities"],
   });
 
-  const { data: clusters } = useQuery({
-    queryKey: ["/api/master-data/cities", selectedCityId, "clusters"],
-    enabled: !!selectedCityId,
+  const { data: clusters = [] } = useQuery<any[]>({
+    queryKey: ["/api/master-data/clusters"],
   });
 
-  const { data: managers } = useQuery({
-    queryKey: ["/api/users"],
-    select: (data: any[]) => data?.filter(user => ['admin', 'hr', 'manager'].includes(user.role)),
-  });
-
-  const { data: users, isLoading: usersLoading } = useQuery({
-    queryKey: ["/api/users"],
-    enabled: activeTab === 'list',
-  });
-
-  // Single user form
-  const singleUserForm = useForm<z.infer<typeof userSchema>>({
-    resolver: zodResolver(userSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      firstName: "",
-      lastName: "",
-      phone: "",
-      password: "",
-      role: "",
-      managerId: "",
-      cityId: "",
-      clusterId: "",
-    },
-  });
-
-  // Bulk user form
-  const bulkUserForm = useForm<z.infer<typeof bulkUserSchema>>({
-    resolver: zodResolver(bulkUserSchema),
-    defaultValues: {
-      csvData: "",
-    },
-  });
-
+  // Create user mutation
   const createUserMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const payload: any = {
-        username: data.username,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        password: data.password,
-        role: data.role,
-      };
-
-      if (data.managerId) payload.managerId = parseInt(data.managerId);
-      if (data.cityId) payload.cityId = parseInt(data.cityId);
-      if (data.clusterId) payload.clusterId = parseInt(data.clusterId);
-
-      return await apiRequest("POST", "/api/users", payload);
-    },
+    mutationFn: (data: UserFormData) =>
+      apiRequest("/api/users", {
+        method: "POST",
+        body: data,
+      }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setCreateDialogOpen(false);
+      resetForm();
       toast({
         title: "Success",
         description: "User created successfully",
       });
-      singleUserForm.reset();
-      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
     },
     onError: (error: any) => {
       toast({
@@ -118,452 +91,416 @@ export default function UserManagement() {
     },
   });
 
-  const bulkCreateUsersMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/users/bulk", { csvData: data.csvData });
-    },
+  // Bulk create users mutation
+  const bulkCreateMutation = useMutation({
+    mutationFn: (data: BulkUserData) =>
+      apiRequest("/api/users/bulk", {
+        method: "POST",
+        body: data,
+      }),
     onSuccess: (response: any) => {
-      toast({
-        title: "Success",
-        description: `${response.created} users created successfully`,
-      });
-      bulkUserForm.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setBulkDialogOpen(false);
+      setBulkUserText("");
+      toast({
+        title: "Bulk Import Complete",
+        description: `Created ${response.created} users. ${response.errors.length} errors.`,
+      });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create users",
+        description: error.message || "Failed to import users",
         variant: "destructive",
       });
     },
   });
 
-  const handleCityChange = (cityId: string) => {
-    setSelectedCityId(cityId);
-    singleUserForm.setValue("clusterId", "");
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<UserFormData> }) =>
+      apiRequest(`/api/users/${id}`, {
+        method: "PUT",
+        body: data,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setSelectedUser(null);
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      phone: "",
+      email: "",
+      userId: "",
+      role: "hr",
+      managerId: null,
+      cityId: null,
+      clusterId: null,
+      password: "",
+    });
   };
 
-  const handleSingleUserSubmit = (data: z.infer<typeof userSchema>) => {
-    createUserMutation.mutate(data);
+  const handleCreateUser = () => {
+    createUserMutation.mutate(formData);
   };
 
-  const handleBulkUserSubmit = (data: z.infer<typeof bulkUserSchema>) => {
-    bulkCreateUsersMutation.mutate(data);
-  };
+  const handleBulkImport = () => {
+    try {
+      const lines = bulkUserText.trim().split('\n');
+      const users = lines.map(line => {
+        const [name, phone, email, userId, role, password] = line.split(',').map(s => s.trim());
+        return {
+          name,
+          phone,
+          email,
+          userId,
+          role: role || 'hr',
+          password,
+          managerId: null,
+          cityId: null,
+          clusterId: null,
+        };
+      });
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'destructive';
-      case 'hr':
-        return 'default';
-      case 'manager':
-        return 'secondary';
-      default:
-        return 'outline';
+      bulkCreateMutation.mutate({ users });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Invalid format. Please check your input.",
+        variant: "destructive",
+      });
     }
   };
 
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.userId.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'hr': return 'bg-blue-100 text-blue-800';
+      case 'recruiter': return 'bg-green-100 text-green-800';
+      case 'manager': return 'bg-purple-100 text-purple-800';
+      case 'trainer': return 'bg-orange-100 text-orange-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2">Loading users...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">User Management</h2>
-          <p className="text-slate-600 mt-1">Manage system users and access controls</p>
+          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <p className="text-gray-600">Manage system users and their roles</p>
+        </div>
+        <div className="flex space-x-2">
+          <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Bulk Import
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Bulk Import Users</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>CSV Format</Label>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Format: Name, Phone, Email, User ID, Role, Password (one per line)
+                  </p>
+                  <Textarea
+                    placeholder="John Doe, +1234567890, john@company.com, john.doe, hr, password123"
+                    value={bulkUserText}
+                    onChange={(e) => setBulkUserText(e.target.value)}
+                    rows={10}
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setBulkDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleBulkImport}
+                    disabled={bulkCreateMutation.isPending}
+                  >
+                    {bulkCreateMutation.isPending ? "Importing..." : "Import Users"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add User
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Create New User</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+1234567890"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="user@company.com"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="userId">User ID</Label>
+                  <Input
+                    id="userId"
+                    value={formData.userId}
+                    onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
+                    placeholder="unique.user.id"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="role">Role</Label>
+                  <Select
+                    value={formData.role}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="hr">HR</SelectItem>
+                      <SelectItem value="recruiter">Recruiter</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="trainer">Trainer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Enter password"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleCreateUser}
+                    disabled={createUserMutation.isPending}
+                  >
+                    {createUserMutation.isPending ? "Creating..." : "Create User"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="single" className="flex items-center space-x-2">
-            <UserPlus className="h-4 w-4" />
-            <span>Single User</span>
-          </TabsTrigger>
-          <TabsTrigger value="bulk" className="flex items-center space-x-2">
-            <Upload className="h-4 w-4" />
-            <span>Bulk Upload</span>
-          </TabsTrigger>
-          <TabsTrigger value="list" className="flex items-center space-x-2">
-            <Users className="h-4 w-4" />
-            <span>All Users</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="single">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create New User</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Form {...singleUserForm}>
-                <form onSubmit={singleUserForm.handleSubmit(handleSingleUserSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={singleUserForm.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={singleUserForm.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={singleUserForm.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Username</FormLabel>
-                          <FormControl>
-                            <Input placeholder="johndoe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={singleUserForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="john@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={singleUserForm.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="+91 9876543210" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={singleUserForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="Enter password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={singleUserForm.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Role</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select Role" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="hr">HR</SelectItem>
-                              <SelectItem value="recruiter">Recruiter</SelectItem>
-                              <SelectItem value="manager">Manager</SelectItem>
-                              <SelectItem value="trainer">Trainer</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={singleUserForm.control}
-                      name="managerId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Manager (Optional)</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select Manager" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="">No Manager</SelectItem>
-                              {managers?.filter((manager: any) => manager.id && manager.id.toString()).map((manager: any) => (
-                                <SelectItem key={manager.id} value={manager.id.toString()}>
-                                  {manager.firstName} {manager.lastName} ({manager.role})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={singleUserForm.control}
-                      name="cityId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City (Optional)</FormLabel>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              handleCityChange(value);
-                            }}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select City" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="">No City</SelectItem>
-                              {cities?.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
-                                <SelectItem key={city.id} value={city.id.toString()}>
-                                  {city.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={singleUserForm.control}
-                      name="clusterId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cluster (Optional)</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select Cluster" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="">No Cluster</SelectItem>
-                              {clusters?.filter((cluster: any) => cluster.id && cluster.id.toString()).map((cluster: any) => (
-                                <SelectItem key={cluster.id} value={cluster.id.toString()}>
-                                  {cluster.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="flex justify-end space-x-4 pt-4">
-                    <Button type="button" variant="outline" onClick={() => singleUserForm.reset()}>
-                      Reset
-                    </Button>
-                    <Button 
-                      type="submit"
-                      disabled={createUserMutation.isPending}
-                      className="bg-blue-600 hover:bg-blue-700"
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center">
+              <Users className="h-5 w-5 mr-2" />
+              Users ({filteredUsers.length})
+            </CardTitle>
+            <div className="flex items-center space-x-2">
+              <Search className="h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-xs"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>User ID</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell>{user.userId}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.phone}</TableCell>
+                  <TableCell>
+                    <Badge className={getRoleBadgeColor(user.role)}>
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedUser(user)}
                     >
-                      {createUserMutation.isPending ? "Creating..." : "Create User"}
+                      <FileText className="h-4 w-4" />
                     </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* User Details Dialog */}
+      <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <Tabs defaultValue="details" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+              </TabsList>
+              <TabsContent value="details" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Name</Label>
+                    <p className="font-medium">{selectedUser.name}</p>
                   </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="bulk">
-          <Card>
-            <CardHeader>
-              <CardTitle>Bulk User Upload</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-slate-50 p-4 rounded-lg">
-                <h4 className="font-medium text-slate-800 mb-2">CSV Format Instructions</h4>
-                <p className="text-sm text-slate-600 mb-3">
-                  Upload users in CSV format with the following columns:
-                </p>
-                <code className="text-xs bg-white p-2 rounded border block">
-                  username,email,firstName,lastName,phone,password,role,managerId,cityId,clusterId
-                </code>
-                <p className="text-xs text-slate-500 mt-2">
-                  Note: managerId, cityId, and clusterId are optional (use empty values for optional fields)
-                </p>
-              </div>
-
-              <Form {...bulkUserForm}>
-                <form onSubmit={bulkUserForm.handleSubmit(handleBulkUserSubmit)} className="space-y-6">
-                  <FormField
-                    control={bulkUserForm.control}
-                    name="csvData"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CSV Data</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Paste your CSV data here..."
-                            className="min-h-[200px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex justify-end space-x-4">
-                    <Button type="button" variant="outline" onClick={() => bulkUserForm.reset()}>
-                      Clear
-                    </Button>
-                    <Button 
-                      type="submit"
-                      disabled={bulkCreateUsersMutation.isPending}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {bulkCreateUsersMutation.isPending ? "Uploading..." : "Upload Users"}
-                    </Button>
+                  <div>
+                    <Label>User ID</Label>
+                    <p className="font-medium">{selectedUser.userId}</p>
                   </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  <div>
+                    <Label>Email</Label>
+                    <p className="font-medium">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <Label>Phone</Label>
+                    <p className="font-medium">{selectedUser.phone}</p>
+                  </div>
+                  <div>
+                    <Label>Role</Label>
+                    <Badge className={getRoleBadgeColor(selectedUser.role)}>
+                      {selectedUser.role}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label>Created</Label>
+                    <p className="font-medium">
+                      {new Date(selectedUser.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="audit">
+                <UserAuditTrail userId={selectedUser.id} />
+              </TabsContent>
+            </Tabs>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
 
-        <TabsContent value="list">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Users</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Username</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Manager</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {usersLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8">
-                        Loading...
-                      </TableCell>
-                    </TableRow>
-                  ) : users?.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8">
-                        No users found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    users?.map((user: any) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">
-                          {user.firstName} {user.lastName}
-                        </TableCell>
-                        <TableCell>{user.username}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.phone}</TableCell>
-                        <TableCell>
-                          <Badge variant={getRoleBadgeVariant(user.role)}>
-                            {user.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {user.manager ? `${user.manager.firstName} ${user.manager.lastName}` : '-'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            <div>{user.city?.name || '-'}</div>
-                            <div className="text-slate-500">{user.cluster?.name || ''}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={user.isActive ? 'default' : 'secondary'}>
-                            {user.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+function UserAuditTrail({ userId }: { userId: number }) {
+  const { data: auditTrail = [], isLoading } = useQuery({
+    queryKey: ["/api/users", userId, "audit"],
+  });
+
+  if (isLoading) {
+    return <div className="text-center py-4">Loading audit trail...</div>;
+  }
+
+  return (
+    <div className="space-y-2">
+      {auditTrail.length === 0 ? (
+        <p className="text-gray-500 text-center py-4">No audit trail available</p>
+      ) : (
+        auditTrail.map((entry: any, index: number) => (
+          <div key={index} className="border rounded p-3 space-y-1">
+            <div className="flex justify-between items-start">
+              <span className="font-medium">{entry.action}</span>
+              <span className="text-sm text-gray-500">
+                {new Date(entry.timestamp).toLocaleString()}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600">{entry.details}</p>
+            {entry.changedBy && (
+              <p className="text-xs text-gray-500">Changed by: User {entry.changedBy}</p>
+            )}
+          </div>
+        ))
+      )}
     </div>
   );
 }

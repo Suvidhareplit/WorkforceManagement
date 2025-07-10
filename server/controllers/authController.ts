@@ -13,8 +13,8 @@ const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Username and password are required" });
     }
 
-    const user = await storage.getUserByUsername(username);
-    if (!user || !user.isActive) {
+    const user = await storage.getUserByUserId(username);
+    if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
@@ -24,7 +24,7 @@ const login = async (req: Request, res: Response) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id, username: user.username, role: user.role },
+      { userId: user.id, username: user.userId, role: user.role },
       process.env.JWT_SECRET || "default_secret",
       { expiresIn: '24h' }
     );
@@ -35,7 +35,7 @@ const login = async (req: Request, res: Response) => {
       action: 'LOGIN',
       entity: 'user',
       entityId: user.id.toString(),
-      details: `User ${user.username} logged in successfully`,
+      details: `User ${user.userId} logged in successfully`,
       ipAddress: req.ip
     });
 
@@ -43,10 +43,9 @@ const login = async (req: Request, res: Response) => {
       token,
       user: {
         id: user.id,
-        username: user.username,
+        username: user.userId,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        name: user.name,
         role: user.role
       }
     });
@@ -62,9 +61,9 @@ const register = async (req: Request, res: Response) => {
     const userData = req.body;
     
     // Check if user already exists
-    const existingUser = await storage.getUserByUsername(userData.username);
+    const existingUser = await storage.getUserByUserId(userData.userId);
     if (existingUser) {
-      return res.status(400).json({ message: "Username already exists" });
+      return res.status(400).json({ message: "User ID already exists" });
     }
 
     const existingEmail = await storage.getUserByEmail(userData.email);
@@ -86,16 +85,15 @@ const register = async (req: Request, res: Response) => {
       action: 'CREATE',
       entity: 'user',
       entityId: user.id.toString(),
-      details: `New user registered: ${user.username}`,
+      details: `New user registered: ${user.userId}`,
       ipAddress: req.ip
     });
 
     res.status(201).json({
       id: user.id,
-      username: user.username,
+      username: user.userId,
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      name: user.name,
       role: user.role
     });
   } catch (error) {
@@ -115,16 +113,15 @@ const getCurrentUser = async (req: Request, res: Response) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret") as any;
     const user = await storage.getUser(decoded.userId);
     
-    if (!user || !user.isActive) {
+    if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
 
     res.json({
       id: user.id,
-      username: user.username,
+      username: user.userId,
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      name: user.name,
       role: user.role
     });
   } catch (error) {

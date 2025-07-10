@@ -20,8 +20,7 @@ export interface AuthResponse {
     id: number;
     username: string;
     email: string;
-    firstName?: string;
-    lastName?: string;
+    name: string;
     role: string;
   };
 }
@@ -39,25 +38,30 @@ export class AuthService {
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiRequest('POST', '/api/auth/login', credentials);
-    const data = await response.json();
+    const response = await apiRequest("/api/auth/login", {
+      method: "POST",
+      body: credentials,
+    });
     
-    if (data.token) {
-      this.setToken(data.token);
+    if (response.token) {
+      this.setToken(response.token);
     }
     
-    return data;
+    return response;
   }
 
   async register(userData: RegisterData): Promise<AuthResponse> {
-    const response = await apiRequest('POST', '/api/auth/register', userData);
-    return await response.json();
+    return await apiRequest("/api/auth/register", {
+      method: "POST",
+      body: userData,
+    });
   }
 
   async getCurrentUser() {
     try {
-      const response = await apiRequest('GET', '/api/auth/me');
-      return await response.json();
+      return await apiRequest("/api/auth/me", {
+        method: "GET",
+      });
     } catch (error) {
       this.removeToken();
       throw error;

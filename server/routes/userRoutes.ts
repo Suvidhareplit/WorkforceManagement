@@ -4,25 +4,25 @@ import { authenticate, authorize } from "../middlewares/auth";
 
 const router = Router();
 
-// All user routes require authentication
+// Apply authentication to all routes
 router.use(authenticate);
 
-// Get all users - admin only
-router.get('/', authorize(['admin']), userController.getUsers);
+// Get all users - admin and hr can view
+router.get("/", authorize(["admin", "hr"]), userController.getUsers);
 
-// Get user by ID - admin only
-router.get('/:id', authorize(['admin']), userController.getUserById);
+// Get user by ID - admin and hr can view
+router.get("/:id", authorize(["admin", "hr"]), userController.getUserById);
 
-// Create single user - admin only
-router.post('/', authorize(['admin']), userController.createUser);
+// Create user - only admin can create
+router.post("/", authorize(["admin"]), userController.createUser);
 
-// Bulk create users - admin only
-router.post('/bulk', authorize(['admin']), userController.bulkCreateUsers);
+// Update user - only admin can update
+router.put("/:id", authorize(["admin"]), userController.updateUser);
 
-// Update user - admin only
-router.put('/:id', authorize(['admin']), userController.updateUser);
+// Bulk create users - only admin can bulk create
+router.post("/bulk", authorize(["admin"]), userController.bulkCreateUsers);
 
-// Delete user (soft delete) - admin only
-router.delete('/:id', authorize(['admin']), userController.deleteUser);
+// Get user audit trail - admin and hr can view
+router.get("/:id/audit", authorize(["admin", "hr"]), userController.getUserAuditTrail);
 
 export { router as userRoutes };

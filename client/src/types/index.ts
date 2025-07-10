@@ -1,11 +1,15 @@
 export interface User {
   id: number;
-  username: string;
+  name: string;
+  phone: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  userId: string;
   role: 'admin' | 'hr' | 'recruiter' | 'manager' | 'trainer';
-  isActive: boolean;
+  managerId?: number | null;
+  cityId?: number | null;
+  clusterId?: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface City {

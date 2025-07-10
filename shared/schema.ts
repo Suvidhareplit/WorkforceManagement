@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, pgEnum, json } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -66,18 +66,28 @@ export const recruiters = pgTable("recruiters", {
 // User Management
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
+  name: text("name").notNull(),
   phone: text("phone"),
+  email: text("email").notNull().unique(),
+  userId: text("user_id").notNull().unique(),
   role: userRoleEnum("role").notNull(),
-  managerId: integer("manager_id").references(() => users.id),
+  managerId: integer("manager_id"),
   cityId: integer("city_id").references(() => cities.id),
   clusterId: integer("cluster_id").references(() => clusters.id),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// User audit trail table
+export const userAuditTrail = pgTable("user_audit_trail", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  action: text("action").notNull(), // CREATE, UPDATE, DELETE
+  changedBy: integer("changed_by").notNull(), // ID of user who made the change
+  oldValues: json("old_values"), // Previous values before change
+  newValues: json("new_values"), // New values after change
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
 });
 
 // Hiring Module
@@ -333,7 +343,8 @@ export const insertClusterSchema = createInsertSchema(clusters).omit({ id: true,
 export const insertRoleSchema = createInsertSchema(roles).omit({ id: true, createdAt: true });
 export const insertVendorSchema = createInsertSchema(vendors).omit({ id: true, createdAt: true });
 export const insertRecruiterSchema = createInsertSchema(recruiters).omit({ id: true, createdAt: true });
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertUserAuditSchema = createInsertSchema(userAuditTrail).omit({ id: true });
 export const insertHiringRequestSchema = createInsertSchema(hiringRequests).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertCandidateSchema = createInsertSchema(candidates).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertTrainingSessionSchema = createInsertSchema(trainingSessions).omit({ id: true, createdAt: true, updatedAt: true });
@@ -348,6 +359,7 @@ export type Role = typeof roles.$inferSelect;
 export type Vendor = typeof vendors.$inferSelect;
 export type Recruiter = typeof recruiters.$inferSelect;
 export type User = typeof users.$inferSelect;
+export type UserAuditTrail = typeof userAuditTrail.$inferSelect;
 export type HiringRequest = typeof hiringRequests.$inferSelect;
 export type Candidate = typeof candidates.$inferSelect;
 export type TrainingSession = typeof trainingSessions.$inferSelect;
@@ -361,6 +373,7 @@ export type InsertRole = z.infer<typeof insertRoleSchema>;
 export type InsertVendor = z.infer<typeof insertVendorSchema>;
 export type InsertRecruiter = z.infer<typeof insertRecruiterSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertUserAuditTrail = z.infer<typeof insertUserAuditSchema>;
 export type InsertHiringRequest = z.infer<typeof insertHiringRequestSchema>;
 export type InsertCandidate = z.infer<typeof insertCandidateSchema>;
 export type InsertTrainingSession = z.infer<typeof insertTrainingSessionSchema>;

@@ -1,10 +1,10 @@
 import { 
-  users, cities, clusters, roles, vendors, recruiters, hiringRequests, candidates, 
+  users, userAuditTrail, cities, clusters, roles, vendors, recruiters, hiringRequests, candidates, 
   trainingSessions, employees, employeeActions, exitRecords, vendorInvoices, recruiterIncentives,
-  type User, type City, type Cluster, type Role, type Vendor, type Recruiter, 
+  type User, type UserAuditTrail, type City, type Cluster, type Role, type Vendor, type Recruiter, 
   type HiringRequest, type Candidate, type TrainingSession, type Employee, 
   type EmployeeAction, type ExitRecord,
-  type InsertUser, type InsertCity, type InsertCluster, type InsertRole, 
+  type InsertUser, type InsertUserAuditTrail, type InsertCity, type InsertCluster, type InsertRole, 
   type InsertVendor, type InsertRecruiter, type InsertHiringRequest, 
   type InsertCandidate, type InsertTrainingSession, type InsertEmployee,
   type InsertEmployeeAction, type InsertExitRecord
@@ -16,10 +16,14 @@ export interface IStorage {
   // User management
   getUsers(): Promise<User[]>;
   getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByUserId(userId: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  createUser(user: InsertUser, changedBy?: number): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>, changedBy?: number): Promise<User | undefined>;
+  
+  // Audit trail
+  createUserAudit(audit: InsertUserAuditTrail): Promise<UserAuditTrail>;
+  getUserAuditTrail(userId: number): Promise<UserAuditTrail[]>;
   
   // Master data
   getCities(): Promise<City[]>;
@@ -75,41 +79,7 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // User management
   async getUsers(): Promise<User[]> {
-    return await db.select({
-      id: users.id,
-      username: users.username,
-      email: users.email,
-      firstName: users.firstName,
-      lastName: users.lastName,
-      phone: users.phone,
-      role: users.role,
-      managerId: users.managerId,
-      cityId: users.cityId,
-      clusterId: users.clusterId,
-      isActive: users.isActive,
-      createdAt: users.createdAt,
-      manager: {
-        id: sql`manager.id`,
-        firstName: sql`manager.first_name`,
-        lastName: sql`manager.last_name`,
-        role: sql`manager.role`
-      },
-      city: {
-        id: sql`city.id`,
-        name: sql`city.name`,
-        code: sql`city.code`
-      },
-      cluster: {
-        id: sql`cluster.id`,
-        name: sql`cluster.name`,
-        code: sql`cluster.code`
-      }
-    })
-    .from(users)
-    .leftJoin(sql`users as manager`, sql`manager.id = users.manager_id`)
-    .leftJoin(cities, sql`city.id = users.city_id`)
-    .leftJoin(clusters, sql`cluster.id = users.cluster_id`)
-    .orderBy(desc(users.createdAt));
+    return await db.select().from(users).orderBy(desc(users.createdAt));
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -117,8 +87,8 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+  async getUserByUserId(userId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.userId, userId));
     return user || undefined;
   }
 
@@ -127,14 +97,56 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: InsertUser, changedBy?: number): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
+    
+    // Create audit trail
+    if (changedBy) {
+      await this.createUserAudit({
+        userId: user.id,
+        action: 'CREATE',
+        changedBy,
+        oldValues: null,
+        newValues: user,
+      });
+    }
+    
     return user;
   }
 
-  async updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined> {
-    const [updatedUser] = await db.update(users).set(user).where(eq(users.id, id)).returning();
+  async updateUser(id: number, updateData: Partial<InsertUser>, changedBy?: number): Promise<User | undefined> {
+    // Get old values for audit trail
+    const oldUser = changedBy ? await this.getUser(id) : null;
+    
+    const [updatedUser] = await db.update(users)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    
+    // Create audit trail
+    if (updatedUser && changedBy && oldUser) {
+      await this.createUserAudit({
+        userId: updatedUser.id,
+        action: 'UPDATE',
+        changedBy,
+        oldValues: oldUser,
+        newValues: updatedUser,
+      });
+    }
+    
     return updatedUser || undefined;
+  }
+
+  // Audit trail
+  async createUserAudit(audit: InsertUserAuditTrail): Promise<UserAuditTrail> {
+    const [auditRecord] = await db.insert(userAuditTrail).values(audit).returning();
+    return auditRecord;
+  }
+
+  async getUserAuditTrail(userId: number): Promise<UserAuditTrail[]> {
+    return await db.select().from(userAuditTrail)
+      .where(eq(userAuditTrail.userId, userId))
+      .orderBy(desc(userAuditTrail.timestamp));
   }
 
   // Master data
@@ -192,8 +204,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getHiringRequests(filters?: any): Promise<HiringRequest[]> {
-    let query = db.select().from(hiringRequests);
-    
     if (filters) {
       const conditions = [];
       if (filters.cityId) conditions.push(eq(hiringRequests.cityId, filters.cityId));
@@ -203,11 +213,13 @@ export class DatabaseStorage implements IStorage {
       if (filters.priority) conditions.push(eq(hiringRequests.priority, filters.priority));
       
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        return await db.select().from(hiringRequests)
+          .where(and(...conditions))
+          .orderBy(desc(hiringRequests.createdAt));
       }
     }
     
-    return await query.orderBy(desc(hiringRequests.createdAt));
+    return await db.select().from(hiringRequests).orderBy(desc(hiringRequests.createdAt));
   }
 
   async getHiringRequest(id: number): Promise<HiringRequest | undefined> {
@@ -230,8 +242,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCandidates(filters?: any): Promise<Candidate[]> {
-    let query = db.select().from(candidates);
-    
     if (filters) {
       const conditions = [];
       if (filters.status) conditions.push(eq(candidates.status, filters.status));
@@ -240,11 +250,13 @@ export class DatabaseStorage implements IStorage {
       if (filters.clusterId) conditions.push(eq(candidates.clusterId, filters.clusterId));
       
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        return await db.select().from(candidates)
+          .where(and(...conditions))
+          .orderBy(desc(candidates.createdAt));
       }
     }
     
-    return await query.orderBy(desc(candidates.createdAt));
+    return await db.select().from(candidates).orderBy(desc(candidates.createdAt));
   }
 
   async getCandidate(id: number): Promise<Candidate | undefined> {
@@ -267,8 +279,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTrainingSessions(filters?: any): Promise<TrainingSession[]> {
-    let query = db.select().from(trainingSessions);
-    
     if (filters) {
       const conditions = [];
       if (filters.candidateId) conditions.push(eq(trainingSessions.candidateId, filters.candidateId));
@@ -276,11 +286,13 @@ export class DatabaseStorage implements IStorage {
       if (filters.status) conditions.push(eq(trainingSessions.status, filters.status));
       
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        return await db.select().from(trainingSessions)
+          .where(and(...conditions))
+          .orderBy(desc(trainingSessions.createdAt));
       }
     }
     
-    return await query.orderBy(desc(trainingSessions.createdAt));
+    return await db.select().from(trainingSessions).orderBy(desc(trainingSessions.createdAt));
   }
 
   async updateTrainingSession(id: number, session: Partial<InsertTrainingSession>): Promise<TrainingSession | undefined> {
@@ -298,18 +310,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getEmployees(filters?: any): Promise<Employee[]> {
-    let query = db.select().from(employees);
-    
     if (filters) {
       const conditions = [];
       if (filters.status) conditions.push(eq(employees.status, filters.status));
       
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        return await db.select().from(employees)
+          .where(and(...conditions))
+          .orderBy(desc(employees.createdAt));
       }
     }
     
-    return await query.orderBy(desc(employees.createdAt));
+    return await db.select().from(employees).orderBy(desc(employees.createdAt));
   }
 
   async getEmployee(id: number): Promise<Employee | undefined> {
@@ -352,8 +364,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getExitRecords(filters?: any): Promise<ExitRecord[]> {
-    let query = db.select().from(exitRecords);
-    
     if (filters) {
       const conditions = [];
       if (filters.exitType) conditions.push(eq(exitRecords.exitType, filters.exitType));
@@ -361,11 +371,13 @@ export class DatabaseStorage implements IStorage {
       if (filters.endDate) conditions.push(lte(exitRecords.exitDate, filters.endDate));
       
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        return await db.select().from(exitRecords)
+          .where(and(...conditions))
+          .orderBy(desc(exitRecords.createdAt));
       }
     }
     
-    return await query.orderBy(desc(exitRecords.createdAt));
+    return await db.select().from(exitRecords).orderBy(desc(exitRecords.createdAt));
   }
 
   // Analytics
