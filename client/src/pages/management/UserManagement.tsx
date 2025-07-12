@@ -195,7 +195,12 @@ export default function UserManagement() {
       return;
     }
     
-    createUserMutation.mutate(formData);
+    // Convert userId to number before sending to API
+    const userData = {
+      ...formData,
+      userId: parseInt(formData.userId, 10)
+    };
+    createUserMutation.mutate(userData);
   };
 
   const handleBulkImport = () => {
@@ -221,7 +226,7 @@ export default function UserManagement() {
           name,
           phone,
           email,
-          userId,
+          userId: parseInt(userId, 10),  // Convert to number
           role: role || 'hr',
           password,
           managerId: null,

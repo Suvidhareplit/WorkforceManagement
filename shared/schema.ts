@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, pgEnum, json } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, serial, integer, boolean, timestamp, decimal, pgEnum, json } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -45,7 +45,7 @@ export const vendors = pgTable("vendors", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
-  phone: text("phone"),
+  phone: varchar("phone", { length: 10 }),
   contactPerson: text("contact_person"),
   commercialTerms: text("commercial_terms"),
   replacementPeriod: integer("replacement_period"), // in days
@@ -57,7 +57,7 @@ export const recruiters = pgTable("recruiters", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
-  phone: text("phone"),
+  phone: varchar("phone", { length: 10 }),
   incentiveStructure: text("incentive_structure"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
@@ -67,9 +67,9 @@ export const recruiters = pgTable("recruiters", {
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  phone: text("phone"),
+  phone: varchar("phone", { length: 10 }).notNull(), // Exactly 10 digits
   email: text("email").notNull().unique(),
-  userId: text("user_id").notNull().unique(),
+  userId: integer("user_id").notNull().unique(), // Changed to integer for numeric-only
   role: userRoleEnum("role").notNull(),
   managerId: integer("manager_id"),
   cityId: integer("city_id").references(() => cities.id),
@@ -111,7 +111,7 @@ export const hiringRequests = pgTable("hiring_requests", {
 export const candidates = pgTable("candidates", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  phone: text("phone").notNull(),
+  phone: varchar("phone", { length: 10 }).notNull(),
   email: text("email"),
   roleId: integer("role_id").references(() => roles.id).notNull(),
   cityId: integer("city_id").references(() => cities.id).notNull(),
