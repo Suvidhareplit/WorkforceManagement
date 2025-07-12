@@ -27,4 +27,11 @@ router.post('/roles', validateRequest(insertRoleSchema), masterDataController.cr
 router.post('/vendors', validateRequest(insertVendorSchema), masterDataController.createVendor);
 router.post('/recruiters', validateRequest(insertRecruiterSchema), masterDataController.createRecruiter);
 
+// Delete master data
+router.delete('/cities/:id', masterDataController.deleteCity);
+router.delete('/clusters/:id', masterDataController.deleteCluster);
+router.delete('/roles/:id', masterDataController.deleteRole);
+router.delete('/vendors/:id', masterDataController.deleteVendor);
+router.delete('/recruiters/:id', masterDataController.deleteRecruiter);
+
 export { router as masterDataRoutes };

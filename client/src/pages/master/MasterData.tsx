@@ -27,7 +27,7 @@ export default function MasterData() {
     commercialTerms: "",
     replacementPeriod: "",
     incentiveStructure: "",
-    cityId: "",
+    cityId: "1", // Default to first city to avoid empty string
   });
   const { toast } = useToast();
 
@@ -189,7 +189,7 @@ export default function MasterData() {
       commercialTerms: "",
       replacementPeriod: "",
       incentiveStructure: "",
-      cityId: "",
+      cityId: "1",
     });
     setSelectedCityId("");
   };
@@ -290,12 +290,24 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteCity = (id: number) => {
+  const handleDeleteCity = async (id: number) => {
     if (confirm("Are you sure you want to delete this city?")) {
-      toast({
-        title: "Delete Feature",
-        description: "Delete functionality coming soon",
-      });
+      try {
+        await apiRequest(`/api/master-data/cities/${id}`, {
+          method: "DELETE",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/master-data/cities"] });
+        toast({
+          title: "Success",
+          description: "City deleted successfully",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete city",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -306,12 +318,24 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteCluster = (id: number) => {
+  const handleDeleteCluster = async (id: number) => {
     if (confirm("Are you sure you want to delete this cluster?")) {
-      toast({
-        title: "Delete Feature",
-        description: "Delete functionality coming soon",
-      });
+      try {
+        await apiRequest(`/api/master-data/clusters/${id}`, {
+          method: "DELETE",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/master-data/clusters"] });
+        toast({
+          title: "Success",
+          description: "Cluster deleted successfully",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete cluster",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -322,12 +346,24 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteRole = (id: number) => {
+  const handleDeleteRole = async (id: number) => {
     if (confirm("Are you sure you want to delete this role?")) {
-      toast({
-        title: "Delete Feature",
-        description: "Delete functionality coming soon",
-      });
+      try {
+        await apiRequest(`/api/master-data/roles/${id}`, {
+          method: "DELETE",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/master-data/roles"] });
+        toast({
+          title: "Success", 
+          description: "Role deleted successfully",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete role",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -338,12 +374,24 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteVendor = (id: number) => {
+  const handleDeleteVendor = async (id: number) => {
     if (confirm("Are you sure you want to delete this vendor?")) {
-      toast({
-        title: "Delete Feature",
-        description: "Delete functionality coming soon",
-      });
+      try {
+        await apiRequest(`/api/master-data/vendors/${id}`, {
+          method: "DELETE",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendors"] });
+        toast({
+          title: "Success",
+          description: "Vendor deleted successfully",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete vendor",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -354,12 +402,24 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteRecruiter = (id: number) => {
+  const handleDeleteRecruiter = async (id: number) => {
     if (confirm("Are you sure you want to delete this recruiter?")) {
-      toast({
-        title: "Delete Feature", 
-        description: "Delete functionality coming soon",
-      });
+      try {
+        await apiRequest(`/api/master-data/recruiters/${id}`, {
+          method: "DELETE",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiters"] });
+        toast({
+          title: "Success",
+          description: "Recruiter deleted successfully",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete recruiter",
+          variant: "destructive",
+        });
+      }
     }
   };
 

@@ -37,6 +37,11 @@ export interface IStorage {
   createRole(role: InsertRole): Promise<Role>;
   createVendor(vendor: InsertVendor): Promise<Vendor>;
   createRecruiter(recruiter: InsertRecruiter): Promise<Recruiter>;
+  deleteCity(id: number): Promise<void>;
+  deleteCluster(id: number): Promise<void>;
+  deleteRole(id: number): Promise<void>;
+  deleteVendor(id: number): Promise<void>;
+  deleteRecruiter(id: number): Promise<void>;
   
   // Hiring requests
   createHiringRequest(request: InsertHiringRequest): Promise<HiringRequest>;
@@ -200,6 +205,26 @@ export class DatabaseStorage implements IStorage {
   async createRecruiter(recruiter: InsertRecruiter): Promise<Recruiter> {
     const [newRecruiter] = await db.insert(recruiters).values(recruiter).returning();
     return newRecruiter;
+  }
+
+  async deleteCity(id: number): Promise<void> {
+    await db.update(cities).set({ isActive: false }).where(eq(cities.id, id));
+  }
+
+  async deleteCluster(id: number): Promise<void> {
+    await db.update(clusters).set({ isActive: false }).where(eq(clusters.id, id));
+  }
+
+  async deleteRole(id: number): Promise<void> {
+    await db.update(roles).set({ isActive: false }).where(eq(roles.id, id));
+  }
+
+  async deleteVendor(id: number): Promise<void> {
+    await db.update(vendors).set({ isActive: false }).where(eq(vendors.id, id));
+  }
+
+  async deleteRecruiter(id: number): Promise<void> {
+    await db.update(recruiters).set({ isActive: false }).where(eq(recruiters.id, id));
   }
 
   // Hiring requests

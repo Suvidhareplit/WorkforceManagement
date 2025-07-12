@@ -112,6 +112,61 @@ const createRecruiter = async (req: Request, res: Response) => {
   }
 };
 
+const deleteCity = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    await storage.deleteCity(id);
+    res.json({ message: "City deleted successfully" });
+  } catch (error) {
+    console.error('Delete city error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteCluster = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    await storage.deleteCluster(id);
+    res.json({ message: "Cluster deleted successfully" });
+  } catch (error) {
+    console.error('Delete cluster error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteRole = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    await storage.deleteRole(id);
+    res.json({ message: "Role deleted successfully" });
+  } catch (error) {
+    console.error('Delete role error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteVendor = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    await storage.deleteVendor(id);
+    res.json({ message: "Vendor deleted successfully" });
+  } catch (error) {
+    console.error('Delete vendor error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteRecruiter = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    await storage.deleteRecruiter(id);
+    res.json({ message: "Recruiter deleted successfully" });
+  } catch (error) {
+    console.error('Delete recruiter error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const masterDataController = {
   getCities,
   getClustersByCity,
@@ -123,5 +178,10 @@ export const masterDataController = {
   createCluster,
   createRole,
   createVendor,
-  createRecruiter
+  createRecruiter,
+  deleteCity,
+  deleteCluster,
+  deleteRole,
+  deleteVendor,
+  deleteRecruiter
 };
