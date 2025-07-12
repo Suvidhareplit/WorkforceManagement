@@ -7,6 +7,11 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+- **July 12, 2025**: Replaced delete functionality with Active/Inactive toggle switches for all master data
+- **July 12, 2025**: Implemented comprehensive audit trail system for status changes and edits
+- **July 12, 2025**: Fixed browser dialog issues by removing confirm() calls and using toggle switches
+- **July 12, 2025**: Added backend routes for toggle status and edit operations with complete code linking
+- **July 12, 2025**: Fixed SelectItem validation errors and improved form initialization
 - **July 12, 2025**: Fixed authentication system with consistent JWT secret keys
 - **July 12, 2025**: Updated user management table to display all required fields: Name, Phone, Email, User ID, Role, Manager, City, Cluster, Password
 - **July 12, 2025**: Added complete user creation form with Manager, City, and Cluster selection dropdowns

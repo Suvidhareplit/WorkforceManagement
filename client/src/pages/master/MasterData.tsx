@@ -10,13 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { City, Cluster, Role, Vendor, Recruiter } from "@/types";
-import { Plus, MapPin, Building2, Briefcase, Users, UserCheck, Edit, Trash2 } from "lucide-react";
+import { Plus, MapPin, Building2, Briefcase, Users, UserCheck, Edit } from "lucide-react";
 
 export default function MasterData() {
   const [selectedCityId, setSelectedCityId] = useState("");
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editType, setEditType] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -284,31 +288,31 @@ export default function MasterData() {
 
   // Edit and Delete handlers
   const handleEditCity = (city: City) => {
-    toast({
-      title: "Edit Feature",
-      description: "Edit functionality coming soon",
+    setEditingItem(city);
+    setEditType("city");
+    setFormData({
+      ...formData,
+      name: city.name,
+      code: city.code,
     });
   };
 
   const handleToggleCityStatus = async (id: number, currentStatus: boolean) => {
-    const action = currentStatus ? "deactivate" : "activate";
-    if (confirm(`Are you sure you want to ${action} this city?`)) {
-      try {
-        await apiRequest(`/api/master-data/cities/${id}/toggle-status`, {
-          method: "PATCH",
-        });
-        queryClient.invalidateQueries({ queryKey: ["/api/master-data/cities"] });
-        toast({
-          title: "Success",
-          description: `City ${action}d successfully`,
-        });
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || `Failed to ${action} city`,
-          variant: "destructive",
-        });
-      }
+    try {
+      await apiRequest(`/api/master-data/cities/${id}/toggle-status`, {
+        method: "PATCH",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/cities"] });
+      toast({
+        title: "Success",
+        description: `City ${currentStatus ? 'deactivated' : 'activated'} successfully`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update city status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -320,24 +324,21 @@ export default function MasterData() {
   };
 
   const handleToggleClusterStatus = async (id: number, currentStatus: boolean) => {
-    const action = currentStatus ? "deactivate" : "activate";
-    if (confirm(`Are you sure you want to ${action} this cluster?`)) {
-      try {
-        await apiRequest(`/api/master-data/clusters/${id}/toggle-status`, {
-          method: "PATCH",
-        });
-        queryClient.invalidateQueries({ queryKey: ["/api/master-data/clusters"] });
-        toast({
-          title: "Success",
-          description: `Cluster ${action}d successfully`,
-        });
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || `Failed to ${action} cluster`,
-          variant: "destructive",
-        });
-      }
+    try {
+      await apiRequest(`/api/master-data/clusters/${id}/toggle-status`, {
+        method: "PATCH",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/clusters"] });
+      toast({
+        title: "Success",
+        description: `Cluster ${currentStatus ? 'deactivated' : 'activated'} successfully`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update cluster status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -349,24 +350,21 @@ export default function MasterData() {
   };
 
   const handleToggleRoleStatus = async (id: number, currentStatus: boolean) => {
-    const action = currentStatus ? "deactivate" : "activate";
-    if (confirm(`Are you sure you want to ${action} this role?`)) {
-      try {
-        await apiRequest(`/api/master-data/roles/${id}/toggle-status`, {
-          method: "PATCH",
-        });
-        queryClient.invalidateQueries({ queryKey: ["/api/master-data/roles"] });
-        toast({
-          title: "Success",
-          description: `Role ${action}d successfully`,
-        });
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || `Failed to ${action} role`,
-          variant: "destructive",
-        });
-      }
+    try {
+      await apiRequest(`/api/master-data/roles/${id}/toggle-status`, {
+        method: "PATCH",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/roles"] });
+      toast({
+        title: "Success",
+        description: `Role ${currentStatus ? 'deactivated' : 'activated'} successfully`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update role status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -378,24 +376,21 @@ export default function MasterData() {
   };
 
   const handleToggleVendorStatus = async (id: number, currentStatus: boolean) => {
-    const action = currentStatus ? "deactivate" : "activate";
-    if (confirm(`Are you sure you want to ${action} this vendor?`)) {
-      try {
-        await apiRequest(`/api/master-data/vendors/${id}/toggle-status`, {
-          method: "PATCH",
-        });
-        queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendors"] });
-        toast({
-          title: "Success",
-          description: `Vendor ${action}d successfully`,
-        });
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || `Failed to ${action} vendor`,
-          variant: "destructive",
-        });
-      }
+    try {
+      await apiRequest(`/api/master-data/vendors/${id}/toggle-status`, {
+        method: "PATCH",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendors"] });
+      toast({
+        title: "Success",
+        description: `Vendor ${currentStatus ? 'deactivated' : 'activated'} successfully`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update vendor status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -407,24 +402,21 @@ export default function MasterData() {
   };
 
   const handleToggleRecruiterStatus = async (id: number, currentStatus: boolean) => {
-    const action = currentStatus ? "deactivate" : "activate";
-    if (confirm(`Are you sure you want to ${action} this recruiter?`)) {
-      try {
-        await apiRequest(`/api/master-data/recruiters/${id}/toggle-status`, {
-          method: "PATCH",
-        });
-        queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiters"] });
-        toast({
-          title: "Success",
-          description: `Recruiter ${action}d successfully`,
-        });
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || `Failed to ${action} recruiter`,
-          variant: "destructive",
-        });
-      }
+    try {
+      await apiRequest(`/api/master-data/recruiters/${id}/toggle-status`, {
+        method: "PATCH",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiters"] });
+      toast({
+        title: "Success",
+        description: `Recruiter ${currentStatus ? 'deactivated' : 'activated'} successfully`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update recruiter status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -492,7 +484,7 @@ export default function MasterData() {
                             {new Date(city.createdAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <div className="flex space-x-2">
+                            <div className="flex items-center space-x-3">
                               <Button 
                                 variant="ghost" 
                                 size="sm"
@@ -500,13 +492,15 @@ export default function MasterData() {
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant={city.isActive ? "destructive" : "default"}
-                                size="sm"
-                                onClick={() => handleToggleCityStatus(city.id, city.isActive)}
-                              >
-                                {city.isActive ? "Deactivate" : "Activate"}
-                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm">
+                                  {city.isActive ? "Active" : "Inactive"}
+                                </span>
+                                <Switch
+                                  checked={city.isActive}
+                                  onCheckedChange={() => handleToggleCityStatus(city.id, city.isActive)}
+                                />
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -607,13 +601,15 @@ export default function MasterData() {
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant={cluster.isActive ? "destructive" : "default"}
-                                size="sm"
-                                onClick={() => handleToggleClusterStatus(cluster.id, cluster.isActive)}
-                              >
-                                {cluster.isActive ? "Deactivate" : "Activate"}
-                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm">
+                                  {cluster.isActive ? "Active" : "Inactive"}
+                                </span>
+                                <Switch
+                                  checked={cluster.isActive}
+                                  onCheckedChange={() => handleToggleClusterStatus(cluster.id, cluster.isActive)}
+                                />
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -732,13 +728,15 @@ export default function MasterData() {
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant={role.isActive ? "destructive" : "default"}
-                                size="sm"
-                                onClick={() => handleToggleRoleStatus(role.id, role.isActive)}
-                              >
-                                {role.isActive ? "Deactivate" : "Activate"}
-                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm">
+                                  {role.isActive ? "Active" : "Inactive"}
+                                </span>
+                                <Switch
+                                  checked={role.isActive}
+                                  onCheckedChange={() => handleToggleRoleStatus(role.id, role.isActive)}
+                                />
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -849,13 +847,15 @@ export default function MasterData() {
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant={vendor.isActive ? "destructive" : "default"}
-                                size="sm"
-                                onClick={() => handleToggleVendorStatus(vendor.id, vendor.isActive)}
-                              >
-                                {vendor.isActive ? "Deactivate" : "Activate"}
-                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm">
+                                  {vendor.isActive ? "Active" : "Inactive"}
+                                </span>
+                                <Switch
+                                  checked={vendor.isActive}
+                                  onCheckedChange={() => handleToggleVendorStatus(vendor.id, vendor.isActive)}
+                                />
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -993,13 +993,15 @@ export default function MasterData() {
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant={recruiter.isActive ? "destructive" : "default"}
-                                size="sm"
-                                onClick={() => handleToggleRecruiterStatus(recruiter.id, recruiter.isActive)}
-                              >
-                                {recruiter.isActive ? "Deactivate" : "Activate"}
-                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm">
+                                  {recruiter.isActive ? "Active" : "Inactive"}
+                                </span>
+                                <Switch
+                                  checked={recruiter.isActive}
+                                  onCheckedChange={() => handleToggleRecruiterStatus(recruiter.id, recruiter.isActive)}
+                                />
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
