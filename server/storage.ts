@@ -28,6 +28,7 @@ export interface IStorage {
   // Master data
   getCities(): Promise<City[]>;
   getClustersByCity(cityId: number): Promise<Cluster[]>;
+  getClusters(): Promise<Cluster[]>;
   getRoles(): Promise<Role[]>;
   getVendors(): Promise<Vendor[]>;
   getRecruiters(): Promise<Recruiter[]>;
@@ -158,6 +159,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(clusters)
       .where(and(eq(clusters.cityId, cityId), eq(clusters.isActive, true)))
       .orderBy(asc(clusters.name));
+  }
+
+  async getClusters(): Promise<Cluster[]> {
+    return await db.select().from(clusters).where(eq(clusters.isActive, true)).orderBy(asc(clusters.name));
   }
 
   async getRoles(): Promise<Role[]> {

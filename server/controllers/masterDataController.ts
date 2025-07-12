@@ -22,6 +22,16 @@ const getClustersByCity = async (req: Request, res: Response) => {
   }
 };
 
+const getClusters = async (req: Request, res: Response) => {
+  try {
+    const clusters = await storage.getClusters();
+    res.json(clusters);
+  } catch (error) {
+    console.error('Get all clusters error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const getRoles = async (req: Request, res: Response) => {
   try {
     const roles = await storage.getRoles();
@@ -105,6 +115,7 @@ const createRecruiter = async (req: Request, res: Response) => {
 export const masterDataController = {
   getCities,
   getClustersByCity,
+  getClusters,
   getRoles,
   getVendors,
   getRecruiters,

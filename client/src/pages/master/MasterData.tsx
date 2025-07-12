@@ -282,6 +282,87 @@ export default function MasterData() {
     });
   };
 
+  // Edit and Delete handlers
+  const handleEditCity = (city: City) => {
+    toast({
+      title: "Edit Feature",
+      description: "Edit functionality coming soon",
+    });
+  };
+
+  const handleDeleteCity = (id: number) => {
+    if (confirm("Are you sure you want to delete this city?")) {
+      toast({
+        title: "Delete Feature",
+        description: "Delete functionality coming soon",
+      });
+    }
+  };
+
+  const handleEditCluster = (cluster: Cluster) => {
+    toast({
+      title: "Edit Feature",
+      description: "Edit functionality coming soon",
+    });
+  };
+
+  const handleDeleteCluster = (id: number) => {
+    if (confirm("Are you sure you want to delete this cluster?")) {
+      toast({
+        title: "Delete Feature",
+        description: "Delete functionality coming soon",
+      });
+    }
+  };
+
+  const handleEditRole = (role: Role) => {
+    toast({
+      title: "Edit Feature", 
+      description: "Edit functionality coming soon",
+    });
+  };
+
+  const handleDeleteRole = (id: number) => {
+    if (confirm("Are you sure you want to delete this role?")) {
+      toast({
+        title: "Delete Feature",
+        description: "Delete functionality coming soon",
+      });
+    }
+  };
+
+  const handleEditVendor = (vendor: Vendor) => {
+    toast({
+      title: "Edit Feature",
+      description: "Edit functionality coming soon", 
+    });
+  };
+
+  const handleDeleteVendor = (id: number) => {
+    if (confirm("Are you sure you want to delete this vendor?")) {
+      toast({
+        title: "Delete Feature",
+        description: "Delete functionality coming soon",
+      });
+    }
+  };
+
+  const handleEditRecruiter = (recruiter: Recruiter) => {
+    toast({
+      title: "Edit Feature",
+      description: "Edit functionality coming soon",
+    });
+  };
+
+  const handleDeleteRecruiter = (id: number) => {
+    if (confirm("Are you sure you want to delete this recruiter?")) {
+      toast({
+        title: "Delete Feature", 
+        description: "Delete functionality coming soon",
+      });
+    }
+  };
+
   return (
     <div>
       {/* Header */}
@@ -347,10 +428,18 @@ export default function MasterData() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditCity(city)}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteCity(city.id)}
+                              >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -446,10 +535,18 @@ export default function MasterData() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditCluster(cluster)}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteCluster(cluster.id)}
+                              >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -563,10 +660,18 @@ export default function MasterData() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditRole(role)}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteRole(role.id)}
+                              >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -672,10 +777,18 @@ export default function MasterData() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditVendor(vendor)}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteVendor(vendor.id)}
+                              >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -808,10 +921,18 @@ export default function MasterData() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditRecruiter(recruiter)}
+                              >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteRecruiter(recruiter.id)}
+                              >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>

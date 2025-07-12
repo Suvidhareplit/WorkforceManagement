@@ -12,6 +12,7 @@ const router = Router();
 // Public endpoints for dropdowns
 router.get('/cities', masterDataController.getCities);
 router.get('/cities/:cityId/clusters', masterDataController.getClustersByCity);
+router.get('/clusters', masterDataController.getClusters);
 router.get('/roles', masterDataController.getRoles);
 router.get('/vendors', masterDataController.getVendors);
 router.get('/recruiters', masterDataController.getRecruiters);
