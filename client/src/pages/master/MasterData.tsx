@@ -60,7 +60,10 @@ export default function MasterData() {
 
   const createCityMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/master-data/cities", data);
+      return await apiRequest("/api/master-data/cities", {
+        method: "POST",
+        body: data,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/master-data/cities"] });
@@ -81,7 +84,10 @@ export default function MasterData() {
 
   const createClusterMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/master-data/clusters", data);
+      return await apiRequest("/api/master-data/clusters", {
+        method: "POST",
+        body: data,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/master-data/clusters"] });
@@ -102,7 +108,10 @@ export default function MasterData() {
 
   const createRoleMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/master-data/roles", data);
+      return await apiRequest("/api/master-data/roles", {
+        method: "POST",
+        body: data,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/master-data/roles"] });
@@ -123,7 +132,10 @@ export default function MasterData() {
 
   const createVendorMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/master-data/vendors", data);
+      return await apiRequest("/api/master-data/vendors", {
+        method: "POST",
+        body: data,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendors"] });
@@ -144,7 +156,10 @@ export default function MasterData() {
 
   const createRecruiterMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/master-data/recruiters", data);
+      return await apiRequest("/api/master-data/recruiters", {
+        method: "POST",
+        body: data,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiters"] });

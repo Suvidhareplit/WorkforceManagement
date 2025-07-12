@@ -409,13 +409,13 @@ export default function UserManagement() {
                   <Label htmlFor="manager">Manager</Label>
                   <Select
                     value={formData.managerId?.toString() || ""}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, managerId: value ? parseInt(value) : null }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, managerId: value && value !== "none" ? parseInt(value) : null }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select manager (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Manager</SelectItem>
+                      <SelectItem value="none">No Manager</SelectItem>
                       {users?.filter(u => u.role === 'manager' || u.role === 'admin').map((user) => (
                         <SelectItem key={user.id} value={user.id.toString()}>
                           {user.name} ({user.userId})
@@ -428,13 +428,13 @@ export default function UserManagement() {
                   <Label htmlFor="city">City</Label>
                   <Select
                     value={formData.cityId?.toString() || ""}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, cityId: value ? parseInt(value) : null }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, cityId: value && value !== "none" ? parseInt(value) : null }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select city (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No City</SelectItem>
+                      <SelectItem value="none">No City</SelectItem>
                       {cities?.map((city) => (
                         <SelectItem key={city.id} value={city.id.toString()}>
                           {city.name}
@@ -447,14 +447,14 @@ export default function UserManagement() {
                   <Label htmlFor="cluster">Cluster</Label>
                   <Select
                     value={formData.clusterId?.toString() || ""}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, clusterId: value ? parseInt(value) : null }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, clusterId: value && value !== "none" ? parseInt(value) : null }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select cluster (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Cluster</SelectItem>
-                      {safeClusters.map((cluster) => (
+                      <SelectItem value="none">No Cluster</SelectItem>
+                      {clusters?.map((cluster) => (
                         <SelectItem key={cluster.id} value={cluster.id.toString()}>
                           {cluster.name}
                         </SelectItem>
