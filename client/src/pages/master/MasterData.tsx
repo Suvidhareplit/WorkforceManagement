@@ -31,23 +31,23 @@ export default function MasterData() {
   });
   const { toast } = useToast();
 
-  const { data: cities, isLoading: loadingCities } = useQuery({
+  const { data: cities = [], isLoading: loadingCities } = useQuery({
     queryKey: ["/api/master-data/cities"],
   });
 
-  const { data: clusters, isLoading: loadingClusters } = useQuery({
+  const { data: clusters = [], isLoading: loadingClusters } = useQuery({
     queryKey: ["/api/master-data/clusters"],
   });
 
-  const { data: roles, isLoading: loadingRoles } = useQuery({
+  const { data: roles = [], isLoading: loadingRoles } = useQuery({
     queryKey: ["/api/master-data/roles"],
   });
 
-  const { data: vendors, isLoading: loadingVendors } = useQuery({
+  const { data: vendors = [], isLoading: loadingVendors } = useQuery({
     queryKey: ["/api/master-data/vendors"],
   });
 
-  const { data: recruiters, isLoading: loadingRecruiters } = useQuery({
+  const { data: recruiters = [], isLoading: loadingRecruiters } = useQuery({
     queryKey: ["/api/master-data/recruiters"],
   });
 
