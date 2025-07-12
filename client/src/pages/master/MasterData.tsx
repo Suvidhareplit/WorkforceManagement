@@ -51,6 +51,13 @@ export default function MasterData() {
     queryKey: ["/api/master-data/recruiters"],
   });
 
+  // Ensure data is always an array to prevent map errors
+  const safeCities = Array.isArray(cities) ? cities : [];
+  const safeClusters = Array.isArray(clusters) ? clusters : [];
+  const safeRoles = Array.isArray(roles) ? roles : [];
+  const safeVendors = Array.isArray(vendors) ? vendors : [];
+  const safeRecruiters = Array.isArray(recruiters) ? recruiters : [];
+
   const createCityMutation = useMutation({
     mutationFn: async (data: any) => {
       return await apiRequest("POST", "/api/master-data/cities", data);
@@ -304,14 +311,14 @@ export default function MasterData() {
                           Loading...
                         </TableCell>
                       </TableRow>
-                    ) : cities?.length === 0 ? (
+                    ) : safeCities.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8">
                           No cities found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      cities?.map((city: City) => (
+                      safeCities.map((city: City) => (
                         <TableRow key={city.id}>
                           <TableCell className="font-medium">{city.name}</TableCell>
                           <TableCell className="font-mono">{city.code}</TableCell>
@@ -403,19 +410,19 @@ export default function MasterData() {
                           Loading...
                         </TableCell>
                       </TableRow>
-                    ) : clusters?.length === 0 ? (
+                    ) : safeClusters.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8">
                           No clusters found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      clusters?.map((cluster: Cluster) => (
+                      safeClusters.map((cluster: Cluster) => (
                         <TableRow key={cluster.id}>
                           <TableCell className="font-medium">{cluster.name}</TableCell>
                           <TableCell className="font-mono">{cluster.code}</TableCell>
                           <TableCell>
-                            {cities?.find((city: City) => city.id === cluster.cityId)?.name}
+                            {safeCities.find((city: City) => city.id === cluster.cityId)?.name}
                           </TableCell>
                           <TableCell>
                             <Badge variant={cluster.isActive ? "default" : "secondary"}>
@@ -455,7 +462,7 @@ export default function MasterData() {
                       <SelectValue placeholder="Select city" />
                     </SelectTrigger>
                     <SelectContent>
-                      {cities?.map((city: City) => (
+                      {safeCities.map((city: City) => (
                         <SelectItem key={city.id} value={city.id.toString()}>
                           {city.name}
                         </SelectItem>
@@ -520,14 +527,14 @@ export default function MasterData() {
                           Loading...
                         </TableCell>
                       </TableRow>
-                    ) : roles?.length === 0 ? (
+                    ) : safeRoles.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8">
                           No roles found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      roles?.map((role: Role) => (
+                      safeRoles.map((role: Role) => (
                         <TableRow key={role.id}>
                           <TableCell className="font-medium">{role.name}</TableCell>
                           <TableCell className="font-mono">{role.code}</TableCell>
@@ -630,14 +637,14 @@ export default function MasterData() {
                           Loading...
                         </TableCell>
                       </TableRow>
-                    ) : vendors?.length === 0 ? (
+                    ) : safeVendors.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8">
                           No vendors found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      vendors?.map((vendor: Vendor) => (
+                      safeVendors.map((vendor: Vendor) => (
                         <TableRow key={vendor.id}>
                           <TableCell className="font-medium">{vendor.name}</TableCell>
                           <TableCell>{vendor.contactPerson || "N/A"}</TableCell>
@@ -767,14 +774,14 @@ export default function MasterData() {
                           Loading...
                         </TableCell>
                       </TableRow>
-                    ) : recruiters?.length === 0 ? (
+                    ) : safeRecruiters.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8">
                           No recruiters found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      recruiters?.map((recruiter: Recruiter) => (
+                      safeRecruiters.map((recruiter: Recruiter) => (
                         <TableRow key={recruiter.id}>
                           <TableCell className="font-medium">{recruiter.name}</TableCell>
                           <TableCell>{recruiter.email}</TableCell>

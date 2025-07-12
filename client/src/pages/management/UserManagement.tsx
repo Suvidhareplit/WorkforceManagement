@@ -66,6 +66,10 @@ export default function UserManagement() {
     queryKey: ["/api/master-data/clusters"],
   });
 
+  // Ensure data is always an array to prevent map errors
+  const safeCities = Array.isArray(cities) ? cities : [];
+  const safeClusters = Array.isArray(clusters) ? clusters : [];
+
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: (data: UserFormData) =>
@@ -377,7 +381,7 @@ export default function UserManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">No Cluster</SelectItem>
-                      {clusters?.map((cluster) => (
+                      {safeClusters.map((cluster) => (
                         <SelectItem key={cluster.id} value={cluster.id.toString()}>
                           {cluster.name}
                         </SelectItem>
@@ -462,10 +466,10 @@ export default function UserManagement() {
                     {user.managerId ? `Manager ${user.managerId}` : '-'}
                   </TableCell>
                   <TableCell>
-                    {user.cityId ? cities?.find(c => c.id === user.cityId)?.name || `City ${user.cityId}` : '-'}
+                    {user.cityId ? safeCities.find(c => c.id === user.cityId)?.name || `City ${user.cityId}` : '-'}
                   </TableCell>
                   <TableCell>
-                    {user.clusterId ? clusters?.find(c => c.id === user.clusterId)?.name || `Cluster ${user.clusterId}` : '-'}
+                    {user.clusterId ? safeClusters.find(c => c.id === user.clusterId)?.name || `Cluster ${user.clusterId}` : '-'}
                   </TableCell>
                   <TableCell>
                     {new Date(user.createdAt).toLocaleDateString()}
@@ -537,7 +541,7 @@ export default function UserManagement() {
                   <div>
                     <Label>Cluster</Label>
                     <p className="font-medium">
-                      {selectedUser.clusterId ? clusters?.find(c => c.id === selectedUser.clusterId)?.name || `Cluster ${selectedUser.clusterId}` : 'No Cluster'}
+                      {selectedUser.clusterId ? safeClusters.find(c => c.id === selectedUser.clusterId)?.name || `Cluster ${selectedUser.clusterId}` : 'No Cluster'}
                     </p>
                   </div>
                   <div>
