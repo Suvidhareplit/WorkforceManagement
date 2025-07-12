@@ -21,10 +21,16 @@ export class ApiClient {
       return config;
     });
 
-    // Response interceptor to handle errors
+    // Response interceptor to handle errors and token expiration
     this.apiClient.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
+        // Handle token expiration
+        if (error.response?.status === 401) {
+          // Clear expired token and redirect to login
+          localStorage.removeItem('hrms_auth_token');
+          window.location.reload(); // This will redirect to login since no token exists
+        }
         const message = error.response?.data?.message || error.message;
         throw new Error(`${error.response?.status || 500}: ${message}`);
       }

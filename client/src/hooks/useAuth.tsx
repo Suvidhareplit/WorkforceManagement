@@ -21,6 +21,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } catch (error) {
           console.error('Failed to get current user:', error);
           authService.logout();
+          setUser(null);
         }
       }
       setIsLoading(false);

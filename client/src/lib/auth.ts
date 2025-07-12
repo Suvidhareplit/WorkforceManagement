@@ -39,6 +39,13 @@ const authApiClient = axios.create({
 authApiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
+    // Handle token expiration
+    if (error.response?.status === 401) {
+      // Clear expired token and redirect to login
+      const authService = AuthService.getInstance();
+      authService.removeToken();
+      window.location.reload(); // This will redirect to login since no token exists
+    }
     const message = error.response?.data?.message || error.message;
     throw new Error(`${error.response?.status || 500}: ${message}`);
   }
@@ -99,7 +106,26 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+    
+    try {
+      // Check if token is expired by parsing the JWT payload
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      
+      if (payload.exp && payload.exp < currentTime) {
+        // Token is expired, remove it
+        this.removeToken();
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      // Invalid token format, remove it
+      this.removeToken();
+      return false;
+    }
   }
 
   getAuthHeaders(): HeadersInit {
