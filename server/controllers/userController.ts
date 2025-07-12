@@ -8,7 +8,7 @@ import { ZodError } from "zod";
 interface AuthenticatedRequest extends Request {
   user?: {
     userId: number;
-    username: string;
+    email: string;
     role: string;
   };
 }

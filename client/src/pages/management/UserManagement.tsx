@@ -313,11 +313,11 @@ export default function UserManagement() {
                 <div>
                   <Label htmlFor="role">Role</Label>
                   <Select
-                    value={formData.role}
+                    value={formData.role || "hr"}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="admin">Admin</SelectItem>

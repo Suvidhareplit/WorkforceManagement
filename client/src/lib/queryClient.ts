@@ -19,10 +19,16 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor to handle errors
+// Response interceptor to handle errors and token expiration
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
+    // Handle token expiration
+    if (error.response?.status === 401) {
+      localStorage.removeItem('hrms_auth_token');
+      window.location.reload(); // Redirect to login
+      return Promise.reject(error);
+    }
     const message = error.response?.data?.message || error.message;
     throw new Error(`${error.response?.status || 500}: ${message}`);
   }
@@ -54,6 +60,12 @@ export const getQueryFn: <T>(options: {
       return response.data;
     } catch (error: any) {
       if (unauthorizedBehavior === "returnNull" && error.response?.status === 401) {
+        return null;
+      }
+      // Handle token expiration for queries too
+      if (error.response?.status === 401) {
+        localStorage.removeItem('hrms_auth_token');
+        window.location.reload();
         return null;
       }
       throw error;
