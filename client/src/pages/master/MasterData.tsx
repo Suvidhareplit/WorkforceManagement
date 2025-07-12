@@ -48,23 +48,23 @@ export default function MasterData() {
   const { toast } = useToast();
 
   const { data: cities = [], isLoading: loadingCities } = useQuery({
-    queryKey: ["/api/master-data/cities"],
+    queryKey: ["/api/master-data/city"],
   });
 
   const { data: clusters = [], isLoading: loadingClusters } = useQuery({
-    queryKey: ["/api/master-data/clusters"],
+    queryKey: ["/api/master-data/cluster"],
   });
 
   const { data: roles = [], isLoading: loadingRoles } = useQuery({
-    queryKey: ["/api/master-data/roles"],
+    queryKey: ["/api/master-data/role"],
   });
 
   const { data: vendors = [], isLoading: loadingVendors } = useQuery({
-    queryKey: ["/api/master-data/vendors"],
+    queryKey: ["/api/master-data/vendor"],
   });
 
   const { data: recruiters = [], isLoading: loadingRecruiters } = useQuery({
-    queryKey: ["/api/master-data/recruiters"],
+    queryKey: ["/api/master-data/recruiter"],
   });
 
   // Ensure data is always an array to prevent map errors - SHOW ALL ITEMS INCLUDING INACTIVE
@@ -76,13 +76,13 @@ export default function MasterData() {
 
   const createCityMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/master-data/cities", {
+      return await apiRequest("/api/master-data/city", {
         method: "POST",
         body: data,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/cities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/city"] });
       toast({
         title: "Success",
         description: "City created successfully",
@@ -100,13 +100,13 @@ export default function MasterData() {
 
   const createClusterMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/master-data/clusters", {
+      return await apiRequest("/api/master-data/cluster", {
         method: "POST",
         body: data,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/clusters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/cluster"] });
       toast({
         title: "Success",
         description: "Cluster created successfully",
@@ -124,13 +124,13 @@ export default function MasterData() {
 
   const createRoleMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/master-data/roles", {
+      return await apiRequest("/api/master-data/role", {
         method: "POST",
         body: data,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/roles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/role"] });
       toast({
         title: "Success",
         description: "Role created successfully",
@@ -148,13 +148,13 @@ export default function MasterData() {
 
   const createVendorMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/master-data/vendors", {
+      return await apiRequest("/api/master-data/vendor", {
         method: "POST",
         body: data,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendors"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendor"] });
       toast({
         title: "Success",
         description: "Vendor created successfully",
@@ -172,13 +172,13 @@ export default function MasterData() {
 
   const createRecruiterMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("/api/master-data/recruiters", {
+      return await apiRequest("/api/master-data/recruiter", {
         method: "POST",
         body: data,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiter"] });
       toast({
         title: "Success",
         description: "Recruiter created successfully",
@@ -320,7 +320,7 @@ export default function MasterData() {
     if (!editingItem || !editType) return;
     
     try {
-      const endpoint = `/api/master-data/${editType === 'city' ? 'cities' : editType + 's'}/${editingItem.id}`;
+      const endpoint = `/api/master-data/${editType}/${editingItem.id}`;
       const updateData = {
         name: editFormData.name,
         code: editFormData.code,
@@ -345,7 +345,7 @@ export default function MasterData() {
         body: JSON.stringify(updateData),
       });
       
-      queryClient.invalidateQueries({ queryKey: [`/api/master-data/${editType === 'city' ? 'cities' : editType + 's'}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/master-data/${editType}`] });
       toast({
         title: "Success",
         description: `${editType.charAt(0).toUpperCase() + editType.slice(1)} updated successfully`,
@@ -376,10 +376,10 @@ export default function MasterData() {
 
   const handleToggleCityStatus = async (id: number, currentStatus: boolean) => {
     try {
-      await apiRequest(`/api/master-data/cities/${id}/toggle-status`, {
+      await apiRequest(`/api/master-data/city/${id}/toggle-status`, {
         method: "PATCH",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/cities"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/city"] });
       toast({
         title: "Success",
         description: `City ${currentStatus ? 'deactivated' : 'activated'} successfully`,
@@ -412,10 +412,10 @@ export default function MasterData() {
 
   const handleToggleClusterStatus = async (id: number, currentStatus: boolean) => {
     try {
-      await apiRequest(`/api/master-data/clusters/${id}/toggle-status`, {
+      await apiRequest(`/api/master-data/cluster/${id}/toggle-status`, {
         method: "PATCH",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/clusters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/cluster"] });
       toast({
         title: "Success",
         description: `Cluster ${currentStatus ? 'deactivated' : 'activated'} successfully`,
@@ -448,10 +448,10 @@ export default function MasterData() {
 
   const handleToggleRoleStatus = async (id: number, currentStatus: boolean) => {
     try {
-      await apiRequest(`/api/master-data/roles/${id}/toggle-status`, {
+      await apiRequest(`/api/master-data/role/${id}/toggle-status`, {
         method: "PATCH",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/roles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/role"] });
       toast({
         title: "Success",
         description: `Role ${currentStatus ? 'deactivated' : 'activated'} successfully`,
@@ -484,10 +484,10 @@ export default function MasterData() {
 
   const handleToggleVendorStatus = async (id: number, currentStatus: boolean) => {
     try {
-      await apiRequest(`/api/master-data/vendors/${id}/toggle-status`, {
+      await apiRequest(`/api/master-data/vendor/${id}/toggle-status`, {
         method: "PATCH",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendors"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendor"] });
       toast({
         title: "Success",
         description: `Vendor ${currentStatus ? 'deactivated' : 'activated'} successfully`,
@@ -520,10 +520,10 @@ export default function MasterData() {
 
   const handleToggleRecruiterStatus = async (id: number, currentStatus: boolean) => {
     try {
-      await apiRequest(`/api/master-data/recruiters/${id}/toggle-status`, {
+      await apiRequest(`/api/master-data/recruiter/${id}/toggle-status`, {
         method: "PATCH",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiter"] });
       toast({
         title: "Success",
         description: `Recruiter ${currentStatus ? 'deactivated' : 'activated'} successfully`,
