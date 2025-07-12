@@ -112,57 +112,137 @@ const createRecruiter = async (req: Request, res: Response) => {
   }
 };
 
-const deleteCity = async (req: Request, res: Response) => {
+const toggleCityStatus = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    await storage.deleteCity(id);
-    res.json({ message: "City deleted successfully" });
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.toggleCityStatus(id, userId);
+    res.json({ message: "City status updated successfully", data: result });
   } catch (error) {
-    console.error('Delete city error:', error);
+    console.error('Toggle city status error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const deleteCluster = async (req: Request, res: Response) => {
+const toggleClusterStatus = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    await storage.deleteCluster(id);
-    res.json({ message: "Cluster deleted successfully" });
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.toggleClusterStatus(id, userId);
+    res.json({ message: "Cluster status updated successfully", data: result });
   } catch (error) {
-    console.error('Delete cluster error:', error);
+    console.error('Toggle cluster status error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const deleteRole = async (req: Request, res: Response) => {
+const toggleRoleStatus = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    await storage.deleteRole(id);
-    res.json({ message: "Role deleted successfully" });
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.toggleRoleStatus(id, userId);
+    res.json({ message: "Role status updated successfully", data: result });
   } catch (error) {
-    console.error('Delete role error:', error);
+    console.error('Toggle role status error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const deleteVendor = async (req: Request, res: Response) => {
+const toggleVendorStatus = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    await storage.deleteVendor(id);
-    res.json({ message: "Vendor deleted successfully" });
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.toggleVendorStatus(id, userId);
+    res.json({ message: "Vendor status updated successfully", data: result });
   } catch (error) {
-    console.error('Delete vendor error:', error);
+    console.error('Toggle vendor status error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const deleteRecruiter = async (req: Request, res: Response) => {
+const toggleRecruiterStatus = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    await storage.deleteRecruiter(id);
-    res.json({ message: "Recruiter deleted successfully" });
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.toggleRecruiterStatus(id, userId);
+    res.json({ message: "Recruiter status updated successfully", data: result });
   } catch (error) {
-    console.error('Delete recruiter error:', error);
+    console.error('Toggle recruiter status error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const updateCity = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.updateCity(id, req.body, userId);
+    if (!result) {
+      return res.status(404).json({ message: "City not found" });
+    }
+    res.json({ message: "City updated successfully", data: result });
+  } catch (error) {
+    console.error('Update city error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const updateCluster = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.updateCluster(id, req.body, userId);
+    if (!result) {
+      return res.status(404).json({ message: "Cluster not found" });
+    }
+    res.json({ message: "Cluster updated successfully", data: result });
+  } catch (error) {
+    console.error('Update cluster error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const updateRole = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.updateRole(id, req.body, userId);
+    if (!result) {
+      return res.status(404).json({ message: "Role not found" });
+    }
+    res.json({ message: "Role updated successfully", data: result });
+  } catch (error) {
+    console.error('Update role error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const updateVendor = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.updateVendor(id, req.body, userId);
+    if (!result) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+    res.json({ message: "Vendor updated successfully", data: result });
+  } catch (error) {
+    console.error('Update vendor error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const updateRecruiter = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const userId = (req as any).user?.id || 1;
+    const result = await storage.updateRecruiter(id, req.body, userId);
+    if (!result) {
+      return res.status(404).json({ message: "Recruiter not found" });
+    }
+    res.json({ message: "Recruiter updated successfully", data: result });
+  } catch (error) {
+    console.error('Update recruiter error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -179,9 +259,14 @@ export const masterDataController = {
   createRole,
   createVendor,
   createRecruiter,
-  deleteCity,
-  deleteCluster,
-  deleteRole,
-  deleteVendor,
-  deleteRecruiter
+  toggleCityStatus,
+  toggleClusterStatus,
+  toggleRoleStatus,
+  toggleVendorStatus,
+  toggleRecruiterStatus,
+  updateCity,
+  updateCluster,
+  updateRole,
+  updateVendor,
+  updateRecruiter
 };

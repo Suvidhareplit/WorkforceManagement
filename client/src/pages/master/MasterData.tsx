@@ -290,21 +290,22 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteCity = async (id: number) => {
-    if (confirm("Are you sure you want to delete this city?")) {
+  const handleToggleCityStatus = async (id: number, currentStatus: boolean) => {
+    const action = currentStatus ? "deactivate" : "activate";
+    if (confirm(`Are you sure you want to ${action} this city?`)) {
       try {
-        await apiRequest(`/api/master-data/cities/${id}`, {
-          method: "DELETE",
+        await apiRequest(`/api/master-data/cities/${id}/toggle-status`, {
+          method: "PATCH",
         });
         queryClient.invalidateQueries({ queryKey: ["/api/master-data/cities"] });
         toast({
           title: "Success",
-          description: "City deleted successfully",
+          description: `City ${action}d successfully`,
         });
       } catch (error: any) {
         toast({
           title: "Error",
-          description: error.message || "Failed to delete city",
+          description: error.message || `Failed to ${action} city`,
           variant: "destructive",
         });
       }
@@ -318,21 +319,22 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteCluster = async (id: number) => {
-    if (confirm("Are you sure you want to delete this cluster?")) {
+  const handleToggleClusterStatus = async (id: number, currentStatus: boolean) => {
+    const action = currentStatus ? "deactivate" : "activate";
+    if (confirm(`Are you sure you want to ${action} this cluster?`)) {
       try {
-        await apiRequest(`/api/master-data/clusters/${id}`, {
-          method: "DELETE",
+        await apiRequest(`/api/master-data/clusters/${id}/toggle-status`, {
+          method: "PATCH",
         });
         queryClient.invalidateQueries({ queryKey: ["/api/master-data/clusters"] });
         toast({
           title: "Success",
-          description: "Cluster deleted successfully",
+          description: `Cluster ${action}d successfully`,
         });
       } catch (error: any) {
         toast({
           title: "Error",
-          description: error.message || "Failed to delete cluster",
+          description: error.message || `Failed to ${action} cluster`,
           variant: "destructive",
         });
       }
@@ -346,21 +348,22 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteRole = async (id: number) => {
-    if (confirm("Are you sure you want to delete this role?")) {
+  const handleToggleRoleStatus = async (id: number, currentStatus: boolean) => {
+    const action = currentStatus ? "deactivate" : "activate";
+    if (confirm(`Are you sure you want to ${action} this role?`)) {
       try {
-        await apiRequest(`/api/master-data/roles/${id}`, {
-          method: "DELETE",
+        await apiRequest(`/api/master-data/roles/${id}/toggle-status`, {
+          method: "PATCH",
         });
         queryClient.invalidateQueries({ queryKey: ["/api/master-data/roles"] });
         toast({
-          title: "Success", 
-          description: "Role deleted successfully",
+          title: "Success",
+          description: `Role ${action}d successfully`,
         });
       } catch (error: any) {
         toast({
           title: "Error",
-          description: error.message || "Failed to delete role",
+          description: error.message || `Failed to ${action} role`,
           variant: "destructive",
         });
       }
@@ -374,21 +377,22 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteVendor = async (id: number) => {
-    if (confirm("Are you sure you want to delete this vendor?")) {
+  const handleToggleVendorStatus = async (id: number, currentStatus: boolean) => {
+    const action = currentStatus ? "deactivate" : "activate";
+    if (confirm(`Are you sure you want to ${action} this vendor?`)) {
       try {
-        await apiRequest(`/api/master-data/vendors/${id}`, {
-          method: "DELETE",
+        await apiRequest(`/api/master-data/vendors/${id}/toggle-status`, {
+          method: "PATCH",
         });
         queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendors"] });
         toast({
           title: "Success",
-          description: "Vendor deleted successfully",
+          description: `Vendor ${action}d successfully`,
         });
       } catch (error: any) {
         toast({
           title: "Error",
-          description: error.message || "Failed to delete vendor",
+          description: error.message || `Failed to ${action} vendor`,
           variant: "destructive",
         });
       }
@@ -402,21 +406,22 @@ export default function MasterData() {
     });
   };
 
-  const handleDeleteRecruiter = async (id: number) => {
-    if (confirm("Are you sure you want to delete this recruiter?")) {
+  const handleToggleRecruiterStatus = async (id: number, currentStatus: boolean) => {
+    const action = currentStatus ? "deactivate" : "activate";
+    if (confirm(`Are you sure you want to ${action} this recruiter?`)) {
       try {
-        await apiRequest(`/api/master-data/recruiters/${id}`, {
-          method: "DELETE",
+        await apiRequest(`/api/master-data/recruiters/${id}/toggle-status`, {
+          method: "PATCH",
         });
         queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiters"] });
         toast({
           title: "Success",
-          description: "Recruiter deleted successfully",
+          description: `Recruiter ${action}d successfully`,
         });
       } catch (error: any) {
         toast({
           title: "Error",
-          description: error.message || "Failed to delete recruiter",
+          description: error.message || `Failed to ${action} recruiter`,
           variant: "destructive",
         });
       }
@@ -496,11 +501,11 @@ export default function MasterData() {
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button 
-                                variant="ghost" 
+                                variant={city.isActive ? "destructive" : "default"}
                                 size="sm"
-                                onClick={() => handleDeleteCity(city.id)}
+                                onClick={() => handleToggleCityStatus(city.id, city.isActive)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                {city.isActive ? "Deactivate" : "Activate"}
                               </Button>
                             </div>
                           </TableCell>
@@ -603,11 +608,11 @@ export default function MasterData() {
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button 
-                                variant="ghost" 
+                                variant={cluster.isActive ? "destructive" : "default"}
                                 size="sm"
-                                onClick={() => handleDeleteCluster(cluster.id)}
+                                onClick={() => handleToggleClusterStatus(cluster.id, cluster.isActive)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                {cluster.isActive ? "Deactivate" : "Activate"}
                               </Button>
                             </div>
                           </TableCell>
@@ -728,11 +733,11 @@ export default function MasterData() {
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button 
-                                variant="ghost" 
+                                variant={role.isActive ? "destructive" : "default"}
                                 size="sm"
-                                onClick={() => handleDeleteRole(role.id)}
+                                onClick={() => handleToggleRoleStatus(role.id, role.isActive)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                {role.isActive ? "Deactivate" : "Activate"}
                               </Button>
                             </div>
                           </TableCell>
@@ -845,11 +850,11 @@ export default function MasterData() {
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button 
-                                variant="ghost" 
+                                variant={vendor.isActive ? "destructive" : "default"}
                                 size="sm"
-                                onClick={() => handleDeleteVendor(vendor.id)}
+                                onClick={() => handleToggleVendorStatus(vendor.id, vendor.isActive)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                {vendor.isActive ? "Deactivate" : "Activate"}
                               </Button>
                             </div>
                           </TableCell>
@@ -989,11 +994,11 @@ export default function MasterData() {
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button 
-                                variant="ghost" 
+                                variant={recruiter.isActive ? "destructive" : "default"}
                                 size="sm"
-                                onClick={() => handleDeleteRecruiter(recruiter.id)}
+                                onClick={() => handleToggleRecruiterStatus(recruiter.id, recruiter.isActive)}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                {recruiter.isActive ? "Deactivate" : "Activate"}
                               </Button>
                             </div>
                           </TableCell>

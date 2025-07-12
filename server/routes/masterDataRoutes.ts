@@ -27,11 +27,18 @@ router.post('/roles', validateRequest(insertRoleSchema), masterDataController.cr
 router.post('/vendors', validateRequest(insertVendorSchema), masterDataController.createVendor);
 router.post('/recruiters', validateRequest(insertRecruiterSchema), masterDataController.createRecruiter);
 
-// Delete master data
-router.delete('/cities/:id', masterDataController.deleteCity);
-router.delete('/clusters/:id', masterDataController.deleteCluster);
-router.delete('/roles/:id', masterDataController.deleteRole);
-router.delete('/vendors/:id', masterDataController.deleteVendor);
-router.delete('/recruiters/:id', masterDataController.deleteRecruiter);
+// Toggle status for master data (Active/Inactive)
+router.patch('/cities/:id/toggle-status', masterDataController.toggleCityStatus);
+router.patch('/clusters/:id/toggle-status', masterDataController.toggleClusterStatus);
+router.patch('/roles/:id/toggle-status', masterDataController.toggleRoleStatus);
+router.patch('/vendors/:id/toggle-status', masterDataController.toggleVendorStatus);
+router.patch('/recruiters/:id/toggle-status', masterDataController.toggleRecruiterStatus);
+
+// Edit master data
+router.patch('/cities/:id', validateRequest(insertCitySchema.partial()), masterDataController.updateCity);
+router.patch('/clusters/:id', validateRequest(insertClusterSchema.partial()), masterDataController.updateCluster);
+router.patch('/roles/:id', validateRequest(insertRoleSchema.partial()), masterDataController.updateRole);
+router.patch('/vendors/:id', validateRequest(insertVendorSchema.partial()), masterDataController.updateVendor);
+router.patch('/recruiters/:id', validateRequest(insertRecruiterSchema.partial()), masterDataController.updateRecruiter);
 
 export { router as masterDataRoutes };

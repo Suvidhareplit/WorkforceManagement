@@ -37,11 +37,16 @@ export interface IStorage {
   createRole(role: InsertRole): Promise<Role>;
   createVendor(vendor: InsertVendor): Promise<Vendor>;
   createRecruiter(recruiter: InsertRecruiter): Promise<Recruiter>;
-  deleteCity(id: number): Promise<void>;
-  deleteCluster(id: number): Promise<void>;
-  deleteRole(id: number): Promise<void>;
-  deleteVendor(id: number): Promise<void>;
-  deleteRecruiter(id: number): Promise<void>;
+  toggleCityStatus(id: number, changedBy: number): Promise<City>;
+  toggleClusterStatus(id: number, changedBy: number): Promise<Cluster>;
+  toggleRoleStatus(id: number, changedBy: number): Promise<Role>;
+  toggleVendorStatus(id: number, changedBy: number): Promise<Vendor>;
+  toggleRecruiterStatus(id: number, changedBy: number): Promise<Recruiter>;
+  updateCity(id: number, data: Partial<InsertCity>, changedBy: number): Promise<City | undefined>;
+  updateCluster(id: number, data: Partial<InsertCluster>, changedBy: number): Promise<Cluster | undefined>;
+  updateRole(id: number, data: Partial<InsertRole>, changedBy: number): Promise<Role | undefined>;
+  updateVendor(id: number, data: Partial<InsertVendor>, changedBy: number): Promise<Vendor | undefined>;
+  updateRecruiter(id: number, data: Partial<InsertRecruiter>, changedBy: number): Promise<Recruiter | undefined>;
   
   // Hiring requests
   createHiringRequest(request: InsertHiringRequest): Promise<HiringRequest>;
@@ -207,24 +212,269 @@ export class DatabaseStorage implements IStorage {
     return newRecruiter;
   }
 
-  async deleteCity(id: number): Promise<void> {
-    await db.update(cities).set({ isActive: false }).where(eq(cities.id, id));
+  async toggleCityStatus(id: number, changedBy: number): Promise<City> {
+    const [currentCity] = await db.select().from(cities).where(eq(cities.id, id));
+    if (!currentCity) {
+      throw new Error("City not found");
+    }
+    
+    const newStatus = !currentCity.isActive;
+    const [updatedCity] = await db.update(cities)
+      .set({ isActive: newStatus, updatedAt: new Date() })
+      .where(eq(cities.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: `${newStatus ? 'activated' : 'deactivated'}_city`,
+      entityType: 'city',
+      entityId: id,
+      oldValue: JSON.stringify({ isActive: currentCity.isActive }),
+      newValue: JSON.stringify({ isActive: newStatus }),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedCity;
   }
 
-  async deleteCluster(id: number): Promise<void> {
-    await db.update(clusters).set({ isActive: false }).where(eq(clusters.id, id));
+  async toggleClusterStatus(id: number, changedBy: number): Promise<Cluster> {
+    const [currentCluster] = await db.select().from(clusters).where(eq(clusters.id, id));
+    if (!currentCluster) {
+      throw new Error("Cluster not found");
+    }
+    
+    const newStatus = !currentCluster.isActive;
+    const [updatedCluster] = await db.update(clusters)
+      .set({ isActive: newStatus, updatedAt: new Date() })
+      .where(eq(clusters.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: `${newStatus ? 'activated' : 'deactivated'}_cluster`,
+      entityType: 'cluster',
+      entityId: id,
+      oldValue: JSON.stringify({ isActive: currentCluster.isActive }),
+      newValue: JSON.stringify({ isActive: newStatus }),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedCluster;
   }
 
-  async deleteRole(id: number): Promise<void> {
-    await db.update(roles).set({ isActive: false }).where(eq(roles.id, id));
+  async toggleRoleStatus(id: number, changedBy: number): Promise<Role> {
+    const [currentRole] = await db.select().from(roles).where(eq(roles.id, id));
+    if (!currentRole) {
+      throw new Error("Role not found");
+    }
+    
+    const newStatus = !currentRole.isActive;
+    const [updatedRole] = await db.update(roles)
+      .set({ isActive: newStatus, updatedAt: new Date() })
+      .where(eq(roles.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: `${newStatus ? 'activated' : 'deactivated'}_role`,
+      entityType: 'role',
+      entityId: id,
+      oldValue: JSON.stringify({ isActive: currentRole.isActive }),
+      newValue: JSON.stringify({ isActive: newStatus }),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedRole;
   }
 
-  async deleteVendor(id: number): Promise<void> {
-    await db.update(vendors).set({ isActive: false }).where(eq(vendors.id, id));
+  async toggleVendorStatus(id: number, changedBy: number): Promise<Vendor> {
+    const [currentVendor] = await db.select().from(vendors).where(eq(vendors.id, id));
+    if (!currentVendor) {
+      throw new Error("Vendor not found");
+    }
+    
+    const newStatus = !currentVendor.isActive;
+    const [updatedVendor] = await db.update(vendors)
+      .set({ isActive: newStatus, updatedAt: new Date() })
+      .where(eq(vendors.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: `${newStatus ? 'activated' : 'deactivated'}_vendor`,
+      entityType: 'vendor',
+      entityId: id,
+      oldValue: JSON.stringify({ isActive: currentVendor.isActive }),
+      newValue: JSON.stringify({ isActive: newStatus }),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedVendor;
   }
 
-  async deleteRecruiter(id: number): Promise<void> {
-    await db.update(recruiters).set({ isActive: false }).where(eq(recruiters.id, id));
+  async toggleRecruiterStatus(id: number, changedBy: number): Promise<Recruiter> {
+    const [currentRecruiter] = await db.select().from(recruiters).where(eq(recruiters.id, id));
+    if (!currentRecruiter) {
+      throw new Error("Recruiter not found");
+    }
+    
+    const newStatus = !currentRecruiter.isActive;
+    const [updatedRecruiter] = await db.update(recruiters)
+      .set({ isActive: newStatus, updatedAt: new Date() })
+      .where(eq(recruiters.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: `${newStatus ? 'activated' : 'deactivated'}_recruiter`,
+      entityType: 'recruiter',
+      entityId: id,
+      oldValue: JSON.stringify({ isActive: currentRecruiter.isActive }),
+      newValue: JSON.stringify({ isActive: newStatus }),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedRecruiter;
+  }
+
+  async updateCity(id: number, data: Partial<InsertCity>, changedBy: number): Promise<City | undefined> {
+    const [currentCity] = await db.select().from(cities).where(eq(cities.id, id));
+    if (!currentCity) {
+      return undefined;
+    }
+
+    const [updatedCity] = await db.update(cities)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(cities.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: 'updated_city',
+      entityType: 'city',
+      entityId: id,
+      oldValue: JSON.stringify(currentCity),
+      newValue: JSON.stringify(updatedCity),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedCity;
+  }
+
+  async updateCluster(id: number, data: Partial<InsertCluster>, changedBy: number): Promise<Cluster | undefined> {
+    const [currentCluster] = await db.select().from(clusters).where(eq(clusters.id, id));
+    if (!currentCluster) {
+      return undefined;
+    }
+
+    const [updatedCluster] = await db.update(clusters)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(clusters.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: 'updated_cluster',
+      entityType: 'cluster',
+      entityId: id,
+      oldValue: JSON.stringify(currentCluster),
+      newValue: JSON.stringify(updatedCluster),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedCluster;
+  }
+
+  async updateRole(id: number, data: Partial<InsertRole>, changedBy: number): Promise<Role | undefined> {
+    const [currentRole] = await db.select().from(roles).where(eq(roles.id, id));
+    if (!currentRole) {
+      return undefined;
+    }
+
+    const [updatedRole] = await db.update(roles)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(roles.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: 'updated_role',
+      entityType: 'role',
+      entityId: id,
+      oldValue: JSON.stringify(currentRole),
+      newValue: JSON.stringify(updatedRole),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedRole;
+  }
+
+  async updateVendor(id: number, data: Partial<InsertVendor>, changedBy: number): Promise<Vendor | undefined> {
+    const [currentVendor] = await db.select().from(vendors).where(eq(vendors.id, id));
+    if (!currentVendor) {
+      return undefined;
+    }
+
+    const [updatedVendor] = await db.update(vendors)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(vendors.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: 'updated_vendor',
+      entityType: 'vendor',
+      entityId: id,
+      oldValue: JSON.stringify(currentVendor),
+      newValue: JSON.stringify(updatedVendor),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedVendor;
+  }
+
+  async updateRecruiter(id: number, data: Partial<InsertRecruiter>, changedBy: number): Promise<Recruiter | undefined> {
+    const [currentRecruiter] = await db.select().from(recruiters).where(eq(recruiters.id, id));
+    if (!currentRecruiter) {
+      return undefined;
+    }
+
+    const [updatedRecruiter] = await db.update(recruiters)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(recruiters.id, id))
+      .returning();
+
+    // Create audit trail
+    await this.createUserAudit({
+      userId: changedBy,
+      action: 'updated_recruiter',
+      entityType: 'recruiter',
+      entityId: id,
+      oldValue: JSON.stringify(currentRecruiter),
+      newValue: JSON.stringify(updatedRecruiter),
+      changedBy,
+      changedAt: new Date(),
+    });
+
+    return updatedRecruiter;
   }
 
   // Hiring requests
