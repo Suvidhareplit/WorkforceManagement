@@ -159,14 +159,64 @@ export default function UserManagement() {
   };
 
   const handleCreateUser = () => {
+    // Validation
+    const errors = [];
+    
+    if (!formData.name.trim()) {
+      errors.push("Name is required");
+    }
+    
+    if (!formData.phone || formData.phone.length !== 10 || !/^\d{10}$/.test(formData.phone)) {
+      errors.push("Phone must be exactly 10 digits");
+    }
+    
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.push("Please enter a valid email address");
+    }
+    
+    if (!formData.userId || !/^\d+$/.test(formData.userId)) {
+      errors.push("User ID must be numeric only");
+    }
+    
+    if (!formData.password.trim()) {
+      errors.push("Password is required");
+    }
+    
+    if (!formData.role) {
+      errors.push("Role is required");
+    }
+    
+    if (errors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: errors.join(", "),
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createUserMutation.mutate(formData);
   };
 
   const handleBulkImport = () => {
     try {
       const lines = bulkUserText.trim().split('\n');
-      const users = lines.map(line => {
+      const users = lines.map((line, index) => {
         const [name, phone, email, userId, role, password] = line.split(',').map(s => s.trim());
+        
+        // Validation for each line
+        if (!name) throw new Error(`Line ${index + 1}: Name is required`);
+        if (!phone || phone.length !== 10 || !/^\d{10}$/.test(phone)) {
+          throw new Error(`Line ${index + 1}: Phone must be exactly 10 digits`);
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          throw new Error(`Line ${index + 1}: Invalid email address`);
+        }
+        if (!userId || !/^\d+$/.test(userId)) {
+          throw new Error(`Line ${index + 1}: User ID must be numeric only`);
+        }
+        if (!password) throw new Error(`Line ${index + 1}: Password is required`);
+        
         return {
           name,
           phone,
@@ -181,10 +231,10 @@ export default function UserManagement() {
       });
 
       bulkCreateMutation.mutate({ users });
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Invalid format. Please check your input.",
+        title: "Validation Error",
+        description: error.message || "Invalid format. Please check your input.",
         variant: "destructive",
       });
     }
@@ -241,10 +291,10 @@ export default function UserManagement() {
                 <div>
                   <Label>CSV Format</Label>
                   <p className="text-sm text-gray-600 mb-2">
-                    Format: Name, Phone, Email, User ID, Role, Password (one per line)
+                    Format: Name, Phone (10 digits), Email, User ID (numeric), Role, Password (one per line)
                   </p>
                   <Textarea
-                    placeholder="John Doe, +1234567890, john@company.com, john.doe, hr, password123"
+                    placeholder="John Doe, 1234567890, john@company.com, 12345, hr, password123"
                     value={bulkUserText}
                     onChange={(e) => setBulkUserText(e.target.value)}
                     rows={10}
@@ -287,13 +337,21 @@ export default function UserManagement() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">Phone (10 digits)</Label>
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="+1234567890"
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setFormData(prev => ({ ...prev, phone: value }));
+                    }}
+                    placeholder="1234567890"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
                   />
+                  {formData.phone && formData.phone.length !== 10 && (
+                    <p className="text-sm text-red-500 mt-1">Phone must be exactly 10 digits</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="email">Email</Label>
@@ -304,15 +362,25 @@ export default function UserManagement() {
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     placeholder="user@company.com"
                   />
+                  {formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                    <p className="text-sm text-red-500 mt-1">Please enter a valid email address</p>
+                  )}
                 </div>
                 <div>
-                  <Label htmlFor="userId">User ID</Label>
+                  <Label htmlFor="userId">User ID (numeric)</Label>
                   <Input
                     id="userId"
                     value={formData.userId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
-                    placeholder="unique.user.id"
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setFormData(prev => ({ ...prev, userId: value }));
+                    }}
+                    placeholder="12345"
+                    pattern="[0-9]+"
                   />
+                  {formData.userId && !/^\d+$/.test(formData.userId) && (
+                    <p className="text-sm text-red-500 mt-1">User ID must be numeric only</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="role">Role</Label>
