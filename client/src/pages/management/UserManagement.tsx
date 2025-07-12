@@ -329,6 +329,63 @@ export default function UserManagement() {
                   </Select>
                 </div>
                 <div>
+                  <Label htmlFor="manager">Manager</Label>
+                  <Select
+                    value={formData.managerId?.toString() || ""}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, managerId: value ? parseInt(value) : null }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select manager (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Manager</SelectItem>
+                      {users?.filter(u => u.role === 'manager' || u.role === 'admin').map((user) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.name} ({user.userId})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Select
+                    value={formData.cityId?.toString() || ""}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, cityId: value ? parseInt(value) : null }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select city (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No City</SelectItem>
+                      {cities?.map((city) => (
+                        <SelectItem key={city.id} value={city.id.toString()}>
+                          {city.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="cluster">Cluster</Label>
+                  <Select
+                    value={formData.clusterId?.toString() || ""}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, clusterId: value ? parseInt(value) : null }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select cluster (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Cluster</SelectItem>
+                      {clusters?.map((cluster) => (
+                        <SelectItem key={cluster.id} value={cluster.id.toString()}>
+                          {cluster.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
@@ -382,6 +439,9 @@ export default function UserManagement() {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Manager</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>Cluster</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
@@ -397,6 +457,15 @@ export default function UserManagement() {
                     <Badge className={getRoleBadgeColor(user.role)}>
                       {user.role}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.managerId ? `Manager ${user.managerId}` : '-'}
+                  </TableCell>
+                  <TableCell>
+                    {user.cityId ? cities?.find(c => c.id === user.cityId)?.name || `City ${user.cityId}` : '-'}
+                  </TableCell>
+                  <TableCell>
+                    {user.clusterId ? clusters?.find(c => c.id === user.clusterId)?.name || `Cluster ${user.clusterId}` : '-'}
                   </TableCell>
                   <TableCell>
                     {new Date(user.createdAt).toLocaleDateString()}
@@ -452,6 +521,24 @@ export default function UserManagement() {
                     <Badge className={getRoleBadgeColor(selectedUser.role)}>
                       {selectedUser.role}
                     </Badge>
+                  </div>
+                  <div>
+                    <Label>Manager</Label>
+                    <p className="font-medium">
+                      {selectedUser.managerId ? `Manager ${selectedUser.managerId}` : 'No Manager'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label>City</Label>
+                    <p className="font-medium">
+                      {selectedUser.cityId ? cities?.find(c => c.id === selectedUser.cityId)?.name || `City ${selectedUser.cityId}` : 'No City'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Cluster</Label>
+                    <p className="font-medium">
+                      {selectedUser.clusterId ? clusters?.find(c => c.id === selectedUser.clusterId)?.name || `Cluster ${selectedUser.clusterId}` : 'No Cluster'}
+                    </p>
                   </div>
                   <div>
                     <Label>Created</Label>

@@ -6,6 +6,12 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+- **July 12, 2025**: Fixed authentication system with consistent JWT secret keys
+- **July 12, 2025**: Updated user management table to display all required fields: Name, Phone, Email, User ID, Role, Manager, City, Cluster, Password
+- **July 12, 2025**: Added complete user creation form with Manager, City, and Cluster selection dropdowns
+- **July 12, 2025**: Resolved Select component value prop errors and token expiration handling
+
 ## System Architecture
 
 ### Frontend Architecture
