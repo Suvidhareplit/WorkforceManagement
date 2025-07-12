@@ -1,7 +1,11 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+  { 
+    path: '', 
+    loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    title: 'Dashboard - Blue Collar HRMS'
+  },
   { path: 'hiring/create', loadComponent: () => import('./pages/hiring/create-hiring-request/create-hiring-request.component').then(m => m.CreateHiringRequestComponent) },
   { path: 'hiring/requests', loadComponent: () => import('./pages/hiring/view-hiring-requests/view-hiring-requests.component').then(m => m.ViewHiringRequestsComponent) },
   { path: 'interviews/applications', loadComponent: () => import('./pages/interviews/candidate-application/candidate-application.component').then(m => m.CandidateApplicationComponent) },
