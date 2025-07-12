@@ -55,7 +55,7 @@ export default function MasterData() {
     queryKey: ["/api/master-data/recruiters"],
   });
 
-  // Ensure data is always an array to prevent map errors
+  // Ensure data is always an array to prevent map errors - SHOW ALL ITEMS INCLUDING INACTIVE
   const safeCities = Array.isArray(cities) ? cities : [];
   const safeClusters = Array.isArray(clusters) ? clusters : [];
   const safeRoles = Array.isArray(roles) ? roles : [];
@@ -297,6 +297,64 @@ export default function MasterData() {
     });
   };
 
+  const handleSaveEdit = async () => {
+    if (!editingItem || !editType) return;
+    
+    try {
+      const endpoint = `/api/master-data/${editType}s/${editingItem.id}`;
+      const updateData = {
+        name: formData.name,
+        code: formData.code,
+        ...(editType === 'role' && { description: formData.description }),
+        ...(editType === 'vendor' && { 
+          email: formData.email,
+          phone: formData.phone,
+          contactPerson: formData.contactPerson,
+          commercialTerms: formData.commercialTerms,
+          replacementPeriod: formData.replacementPeriod ? parseInt(formData.replacementPeriod) : undefined
+        }),
+        ...(editType === 'recruiter' && { 
+          email: formData.email,
+          phone: formData.phone,
+          incentiveStructure: formData.incentiveStructure
+        }),
+        ...(editType === 'cluster' && { cityId: parseInt(formData.cityId) })
+      };
+
+      await apiRequest(endpoint, {
+        method: "PATCH",
+        body: JSON.stringify(updateData),
+      });
+      
+      queryClient.invalidateQueries({ queryKey: [`/api/master-data/${editType}s`] });
+      toast({
+        title: "Success",
+        description: `${editType.charAt(0).toUpperCase() + editType.slice(1)} updated successfully`,
+      });
+      
+      setEditingItem(null);
+      setEditType("");
+      setFormData({
+        name: "",
+        code: "",
+        description: "",
+        email: "",
+        phone: "",
+        contactPerson: "",
+        commercialTerms: "",
+        replacementPeriod: "",
+        incentiveStructure: "",
+        cityId: "1",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update item",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleToggleCityStatus = async (id: number, currentStatus: boolean) => {
     try {
       await apiRequest(`/api/master-data/cities/${id}/toggle-status`, {
@@ -317,9 +375,13 @@ export default function MasterData() {
   };
 
   const handleEditCluster = (cluster: Cluster) => {
-    toast({
-      title: "Edit Feature",
-      description: "Edit functionality coming soon",
+    setEditingItem(cluster);
+    setEditType("cluster");
+    setFormData({
+      ...formData,
+      name: cluster.name,
+      code: cluster.code,
+      cityId: cluster.cityId.toString(),
     });
   };
 
@@ -343,9 +405,13 @@ export default function MasterData() {
   };
 
   const handleEditRole = (role: Role) => {
-    toast({
-      title: "Edit Feature", 
-      description: "Edit functionality coming soon",
+    setEditingItem(role);
+    setEditType("role");
+    setFormData({
+      ...formData,
+      name: role.name,
+      code: role.code,
+      description: role.description || "",
     });
   };
 
@@ -369,9 +435,16 @@ export default function MasterData() {
   };
 
   const handleEditVendor = (vendor: Vendor) => {
-    toast({
-      title: "Edit Feature",
-      description: "Edit functionality coming soon", 
+    setEditingItem(vendor);
+    setEditType("vendor");
+    setFormData({
+      ...formData,
+      name: vendor.name,
+      email: vendor.email,
+      phone: vendor.phone || "",
+      contactPerson: vendor.contactPerson || "",
+      commercialTerms: vendor.commercialTerms || "",
+      replacementPeriod: vendor.replacementPeriod?.toString() || "",
     });
   };
 
@@ -395,9 +468,14 @@ export default function MasterData() {
   };
 
   const handleEditRecruiter = (recruiter: Recruiter) => {
-    toast({
-      title: "Edit Feature",
-      description: "Edit functionality coming soon",
+    setEditingItem(recruiter);
+    setEditType("recruiter");
+    setFormData({
+      ...formData,
+      name: recruiter.name,
+      email: recruiter.email,
+      phone: recruiter.phone || "",
+      incentiveStructure: recruiter.incentiveStructure || "",
     });
   };
 
@@ -1067,6 +1145,166 @@ export default function MasterData() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={() => {
+        setEditingItem(null);
+        setEditType("");
+        setFormData({
+          name: "",
+          code: "",
+          description: "",
+          email: "",
+          phone: "",
+          contactPerson: "",
+          commercialTerms: "",
+          replacementPeriod: "",
+          incentiveStructure: "",
+          cityId: "1",
+        });
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit {editType?.charAt(0).toUpperCase()}{editType?.slice(1)}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editName">Name</Label>
+              <Input
+                id="editName"
+                placeholder="Enter name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+
+            {editType !== "recruiter" && (
+              <div>
+                <Label htmlFor="editCode">Code</Label>
+                <Input
+                  id="editCode"
+                  placeholder="Enter code"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                />
+              </div>
+            )}
+
+            {editType === "role" && (
+              <div>
+                <Label htmlFor="editDescription">Description</Label>
+                <Textarea
+                  id="editDescription"
+                  placeholder="Enter description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+            )}
+
+            {editType === "cluster" && (
+              <div>
+                <Label htmlFor="editClusterCity">City</Label>
+                <Select
+                  value={formData.cityId}
+                  onValueChange={(value) => setFormData({ ...formData, cityId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {safeCities.map((city: City) => (
+                      <SelectItem key={city.id} value={city.id.toString()}>
+                        {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {(editType === "vendor" || editType === "recruiter") && (
+              <div>
+                <Label htmlFor="editEmail">Email</Label>
+                <Input
+                  id="editEmail"
+                  type="email"
+                  placeholder="Enter email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+            )}
+
+            {(editType === "vendor" || editType === "recruiter") && (
+              <div>
+                <Label htmlFor="editPhone">Phone</Label>
+                <Input
+                  id="editPhone"
+                  placeholder="Enter phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+            )}
+
+            {editType === "vendor" && (
+              <>
+                <div>
+                  <Label htmlFor="editContactPerson">Contact Person</Label>
+                  <Input
+                    id="editContactPerson"
+                    placeholder="Enter contact person"
+                    value={formData.contactPerson}
+                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editCommercialTerms">Commercial Terms</Label>
+                  <Input
+                    id="editCommercialTerms"
+                    placeholder="Enter commercial terms"
+                    value={formData.commercialTerms}
+                    onChange={(e) => setFormData({ ...formData, commercialTerms: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {editType === "recruiter" && (
+              <div>
+                <Label htmlFor="editIncentiveStructure">Incentive Structure</Label>
+                <Input
+                  id="editIncentiveStructure"
+                  placeholder="Enter incentive structure"
+                  value={formData.incentiveStructure}
+                  onChange={(e) => setFormData({ ...formData, incentiveStructure: e.target.value })}
+                />
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                onClick={handleSaveEdit}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                Save Changes
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditingItem(null);
+                  setEditType("");
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
