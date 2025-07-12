@@ -435,7 +435,7 @@ export default function UserManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No City</SelectItem>
-                      {cities?.map((city) => (
+                      {safeCities.map((city) => (
                         <SelectItem key={city.id} value={city.id.toString()}>
                           {city.name}
                         </SelectItem>
@@ -454,7 +454,7 @@ export default function UserManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No Cluster</SelectItem>
-                      {clusters?.map((cluster) => (
+                      {safeClusters.map((cluster) => (
                         <SelectItem key={cluster.id} value={cluster.id.toString()}>
                           {cluster.name}
                         </SelectItem>
