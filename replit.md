@@ -82,11 +82,12 @@ Preferred communication style: Simple, everyday language.
 7. TanStack Query invalidates and refetches relevant data
 
 ### Authentication Flow
-1. User submits login credentials
-2. Backend verifies credentials against database
-3. JWT token generated and returned to client
-4. Token stored and included in subsequent API requests
-5. Middleware validates token on protected routes
+1. User submits login credentials via email and password
+2. Backend verifies credentials against database using bcrypt
+3. JWT token generated with consistent secret key and returned to client
+4. Token stored in localStorage and included in subsequent API requests via Axios interceptors
+5. Authentication middleware validates token on protected routes using same secret key
+6. Automatic token expiration handling with cleanup and redirect to login
 
 ### File Upload Flow
 1. Files uploaded through Multer middleware

@@ -26,7 +26,10 @@ apiClient.interceptors.response.use(
     // Handle token expiration
     if (error.response?.status === 401) {
       localStorage.removeItem('hrms_auth_token');
-      window.location.reload(); // Redirect to login
+      // Only reload if we're not already on login page
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/auth')) {
+        window.location.reload();
+      }
       return Promise.reject(error);
     }
     const message = error.response?.data?.message || error.message;
@@ -65,7 +68,9 @@ export const getQueryFn: <T>(options: {
       // Handle token expiration for queries too
       if (error.response?.status === 401) {
         localStorage.removeItem('hrms_auth_token');
-        window.location.reload();
+        if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/auth')) {
+          window.location.reload();
+        }
         return null;
       }
       throw error;

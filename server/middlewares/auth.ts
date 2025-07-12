@@ -17,7 +17,7 @@ export function authenticate(req: AuthenticatedRequest, res: Response, next: Nex
       return res.status(401).json({ message: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret') as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
