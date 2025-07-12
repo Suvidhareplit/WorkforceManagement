@@ -21,6 +21,18 @@ export default function MasterData() {
   const [selectedCityId, setSelectedCityId] = useState("");
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editType, setEditType] = useState<string>("");
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    code: "",
+    description: "",
+    email: "",
+    phone: "",
+    contactPerson: "",
+    commercialTerms: "",
+    replacementPeriod: "",
+    incentiveStructure: "",
+    cityId: "1",
+  });
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -290,10 +302,17 @@ export default function MasterData() {
   const handleEditCity = (city: City) => {
     setEditingItem(city);
     setEditType("city");
-    setFormData({
-      ...formData,
+    setEditFormData({
       name: city.name,
       code: city.code,
+      description: "",
+      email: "",
+      phone: "",
+      contactPerson: "",
+      commercialTerms: "",
+      replacementPeriod: "",
+      incentiveStructure: "",
+      cityId: "1",
     });
   };
 
@@ -301,24 +320,24 @@ export default function MasterData() {
     if (!editingItem || !editType) return;
     
     try {
-      const endpoint = `/api/master-data/${editType}s/${editingItem.id}`;
+      const endpoint = `/api/master-data/${editType === 'city' ? 'cities' : editType + 's'}/${editingItem.id}`;
       const updateData = {
-        name: formData.name,
-        code: formData.code,
-        ...(editType === 'role' && { description: formData.description }),
+        name: editFormData.name,
+        code: editFormData.code,
+        ...(editType === 'role' && { description: editFormData.description }),
         ...(editType === 'vendor' && { 
-          email: formData.email,
-          phone: formData.phone,
-          contactPerson: formData.contactPerson,
-          commercialTerms: formData.commercialTerms,
-          replacementPeriod: formData.replacementPeriod ? parseInt(formData.replacementPeriod) : undefined
+          email: editFormData.email,
+          phone: editFormData.phone,
+          contactPerson: editFormData.contactPerson,
+          commercialTerms: editFormData.commercialTerms,
+          replacementPeriod: editFormData.replacementPeriod ? parseInt(editFormData.replacementPeriod) : undefined
         }),
         ...(editType === 'recruiter' && { 
-          email: formData.email,
-          phone: formData.phone,
-          incentiveStructure: formData.incentiveStructure
+          email: editFormData.email,
+          phone: editFormData.phone,
+          incentiveStructure: editFormData.incentiveStructure
         }),
-        ...(editType === 'cluster' && { cityId: parseInt(formData.cityId) })
+        ...(editType === 'cluster' && { cityId: parseInt(editFormData.cityId) })
       };
 
       await apiRequest(endpoint, {
@@ -326,7 +345,7 @@ export default function MasterData() {
         body: JSON.stringify(updateData),
       });
       
-      queryClient.invalidateQueries({ queryKey: [`/api/master-data/${editType}s`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/master-data/${editType === 'city' ? 'cities' : editType + 's'}`] });
       toast({
         title: "Success",
         description: `${editType.charAt(0).toUpperCase() + editType.slice(1)} updated successfully`,
@@ -334,7 +353,7 @@ export default function MasterData() {
       
       setEditingItem(null);
       setEditType("");
-      setFormData({
+      setEditFormData({
         name: "",
         code: "",
         description: "",
@@ -377,10 +396,16 @@ export default function MasterData() {
   const handleEditCluster = (cluster: Cluster) => {
     setEditingItem(cluster);
     setEditType("cluster");
-    setFormData({
-      ...formData,
+    setEditFormData({
       name: cluster.name,
       code: cluster.code,
+      description: "",
+      email: "",
+      phone: "",
+      contactPerson: "",
+      commercialTerms: "",
+      replacementPeriod: "",
+      incentiveStructure: "",
       cityId: cluster.cityId.toString(),
     });
   };
@@ -407,11 +432,17 @@ export default function MasterData() {
   const handleEditRole = (role: Role) => {
     setEditingItem(role);
     setEditType("role");
-    setFormData({
-      ...formData,
+    setEditFormData({
       name: role.name,
       code: role.code,
       description: role.description || "",
+      email: "",
+      phone: "",
+      contactPerson: "",
+      commercialTerms: "",
+      replacementPeriod: "",
+      incentiveStructure: "",
+      cityId: "1",
     });
   };
 
@@ -437,14 +468,17 @@ export default function MasterData() {
   const handleEditVendor = (vendor: Vendor) => {
     setEditingItem(vendor);
     setEditType("vendor");
-    setFormData({
-      ...formData,
+    setEditFormData({
       name: vendor.name,
+      code: "",
+      description: "",
       email: vendor.email,
       phone: vendor.phone || "",
       contactPerson: vendor.contactPerson || "",
       commercialTerms: vendor.commercialTerms || "",
       replacementPeriod: vendor.replacementPeriod?.toString() || "",
+      incentiveStructure: "",
+      cityId: "1",
     });
   };
 
@@ -470,12 +504,17 @@ export default function MasterData() {
   const handleEditRecruiter = (recruiter: Recruiter) => {
     setEditingItem(recruiter);
     setEditType("recruiter");
-    setFormData({
-      ...formData,
+    setEditFormData({
       name: recruiter.name,
+      code: "",
+      description: "",
       email: recruiter.email,
       phone: recruiter.phone || "",
+      contactPerson: "",
+      commercialTerms: "",
+      replacementPeriod: "",
       incentiveStructure: recruiter.incentiveStructure || "",
+      cityId: "1",
     });
   };
 
@@ -1150,7 +1189,7 @@ export default function MasterData() {
       <Dialog open={!!editingItem} onOpenChange={() => {
         setEditingItem(null);
         setEditType("");
-        setFormData({
+        setEditFormData({
           name: "",
           code: "",
           description: "",
@@ -1173,8 +1212,8 @@ export default function MasterData() {
               <Input
                 id="editName"
                 placeholder="Enter name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={editFormData.name}
+                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
               />
             </div>
 
@@ -1184,8 +1223,8 @@ export default function MasterData() {
                 <Input
                   id="editCode"
                   placeholder="Enter code"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  value={editFormData.code}
+                  onChange={(e) => setEditFormData({ ...editFormData, code: e.target.value })}
                 />
               </div>
             )}
@@ -1196,8 +1235,8 @@ export default function MasterData() {
                 <Textarea
                   id="editDescription"
                   placeholder="Enter description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                   rows={3}
                 />
               </div>
@@ -1207,8 +1246,8 @@ export default function MasterData() {
               <div>
                 <Label htmlFor="editClusterCity">City</Label>
                 <Select
-                  value={formData.cityId}
-                  onValueChange={(value) => setFormData({ ...formData, cityId: value })}
+                  value={editFormData.cityId}
+                  onValueChange={(value) => setEditFormData({ ...editFormData, cityId: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select city" />
@@ -1231,8 +1270,8 @@ export default function MasterData() {
                   id="editEmail"
                   type="email"
                   placeholder="Enter email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
                 />
               </div>
             )}
@@ -1243,8 +1282,8 @@ export default function MasterData() {
                 <Input
                   id="editPhone"
                   placeholder="Enter phone"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  value={editFormData.phone}
+                  onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
                 />
               </div>
             )}
@@ -1256,8 +1295,8 @@ export default function MasterData() {
                   <Input
                     id="editContactPerson"
                     placeholder="Enter contact person"
-                    value={formData.contactPerson}
-                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                    value={editFormData.contactPerson}
+                    onChange={(e) => setEditFormData({ ...editFormData, contactPerson: e.target.value })}
                   />
                 </div>
                 <div>
@@ -1265,8 +1304,8 @@ export default function MasterData() {
                   <Input
                     id="editCommercialTerms"
                     placeholder="Enter commercial terms"
-                    value={formData.commercialTerms}
-                    onChange={(e) => setFormData({ ...formData, commercialTerms: e.target.value })}
+                    value={editFormData.commercialTerms}
+                    onChange={(e) => setEditFormData({ ...editFormData, commercialTerms: e.target.value })}
                   />
                 </div>
               </>
@@ -1278,8 +1317,8 @@ export default function MasterData() {
                 <Input
                   id="editIncentiveStructure"
                   placeholder="Enter incentive structure"
-                  value={formData.incentiveStructure}
-                  onChange={(e) => setFormData({ ...formData, incentiveStructure: e.target.value })}
+                  value={editFormData.incentiveStructure}
+                  onChange={(e) => setEditFormData({ ...editFormData, incentiveStructure: e.target.value })}
                 />
               </div>
             )}
@@ -1296,6 +1335,18 @@ export default function MasterData() {
                 onClick={() => {
                   setEditingItem(null);
                   setEditType("");
+                  setEditFormData({
+                    name: "",
+                    code: "",
+                    description: "",
+                    email: "",
+                    phone: "",
+                    contactPerson: "",
+                    commercialTerms: "",
+                    replacementPeriod: "",
+                    incentiveStructure: "",
+                    cityId: "1",
+                  });
                 }}
                 className="flex-1"
               >
