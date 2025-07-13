@@ -7,6 +7,11 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+- **July 13, 2025**: Simplified and centralized API structure from plural to singular endpoints (cities → city, roles → role, etc.)
+- **July 13, 2025**: Fixed "roles?.filter is not a function" errors by adding proper array validation with fallback empty arrays
+- **July 13, 2025**: Resolved SelectItem empty value prop issues by using "all" instead of empty strings for filter dropdowns
+- **July 13, 2025**: Added database ID parsing validation to prevent "NaN" errors in hiring request controllers
+- **July 13, 2025**: Updated hiring pages to use simplified API endpoints and safe array handling
 - **July 12, 2025**: Replaced delete functionality with Active/Inactive toggle switches for all master data
 - **July 12, 2025**: Implemented comprehensive audit trail system for status changes and edits
 - **July 12, 2025**: Fixed browser dialog issues by removing confirm() calls and using toggle switches

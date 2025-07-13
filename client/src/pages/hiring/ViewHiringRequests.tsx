@@ -14,11 +14,11 @@ import { Plus, Filter, Search, Download, Eye, Edit, X } from "lucide-react";
 
 export default function ViewHiringRequests() {
   const [filters, setFilters] = useState({
-    cityId: "",
-    clusterId: "",
-    roleId: "",
-    status: "",
-    priority: "",
+    cityId: "all",
+    clusterId: "all",
+    roleId: "all",
+    status: "all",
+    priority: "all",
     search: "",
   });
   const { toast } = useToast();
@@ -27,17 +27,17 @@ export default function ViewHiringRequests() {
     queryKey: ["/api/hiring", filters],
   });
 
-  const { data: cities } = useQuery({
-    queryKey: ["/api/master-data/cities"],
+  const { data: cities = [] } = useQuery({
+    queryKey: ["/api/master-data/city"],
   });
 
-  const { data: clusters } = useQuery({
-    queryKey: ["/api/master-data/cities", filters.cityId, "clusters"],
+  const { data: clusters = [] } = useQuery({
+    queryKey: ["/api/master-data/city", filters.cityId, "clusters"],
     enabled: !!filters.cityId,
   });
 
-  const { data: roles } = useQuery({
-    queryKey: ["/api/master-data/roles"],
+  const { data: roles = [] } = useQuery({
+    queryKey: ["/api/master-data/role"],
   });
 
   const updateStatusMutation = useMutation({
@@ -134,14 +134,14 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.cityId}
-              onValueChange={(value) => setFilters({ ...filters, cityId: value, clusterId: "" })}
+              onValueChange={(value) => setFilters({ ...filters, cityId: value === "all" ? "" : value, clusterId: "all" })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Cities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Cities</SelectItem>
-                {cities?.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
+                <SelectItem value="all">All Cities</SelectItem>
+                {Array.isArray(cities) && cities.filter((city: any) => city.id && city.id.toString() && city.name).map((city: any) => (
                   <SelectItem key={city.id} value={city.id.toString()}>
                     {city.name}
                   </SelectItem>
@@ -151,14 +151,14 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.clusterId}
-              onValueChange={(value) => setFilters({ ...filters, clusterId: value })}
+              onValueChange={(value) => setFilters({ ...filters, clusterId: value === "all" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Clusters" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Clusters</SelectItem>
-                {clusters?.filter((cluster: any) => cluster.id && cluster.id.toString()).map((cluster: any) => (
+                <SelectItem value="all">All Clusters</SelectItem>
+                {Array.isArray(clusters) && clusters.filter((cluster: any) => cluster.id && cluster.id.toString() && cluster.name).map((cluster: any) => (
                   <SelectItem key={cluster.id} value={cluster.id.toString()}>
                     {cluster.name}
                   </SelectItem>
@@ -168,14 +168,14 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.roleId}
-              onValueChange={(value) => setFilters({ ...filters, roleId: value })}
+              onValueChange={(value) => setFilters({ ...filters, roleId: value === "all" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Roles" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Roles</SelectItem>
-                {roles?.filter((role: any) => role.id && role.id.toString()).map((role: any) => (
+                <SelectItem value="all">All Roles</SelectItem>
+                {Array.isArray(roles) && roles.filter((role: any) => role.id && role.id.toString() && role.name).map((role: any) => (
                   <SelectItem key={role.id} value={role.id.toString()}>
                     {role.name}
                   </SelectItem>
@@ -185,13 +185,13 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.status}
-              onValueChange={(value) => setFilters({ ...filters, status: value })}
+              onValueChange={(value) => setFilters({ ...filters, status: value === "all" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="open">Open</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>
                 <SelectItem value="called_off">Called Off</SelectItem>
@@ -200,13 +200,13 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.priority}
-              onValueChange={(value) => setFilters({ ...filters, priority: value })}
+              onValueChange={(value) => setFilters({ ...filters, priority: value === "all" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Priorities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Priorities</SelectItem>
+                <SelectItem value="all">All Priorities</SelectItem>
                 <SelectItem value="P0">P0 - Critical</SelectItem>
                 <SelectItem value="P1">P1 - High</SelectItem>
                 <SelectItem value="P2">P2 - Medium</SelectItem>

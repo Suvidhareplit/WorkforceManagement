@@ -66,6 +66,12 @@ const getRequests = async (req: Request, res: Response) => {
 const getRequestById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
+    
+    // Validate ID is a valid number
+    if (isNaN(id) || id <= 0) {
+      return res.status(400).json({ message: "Invalid hiring request ID" });
+    }
+    
     const request = await storage.getHiringRequest(id);
     
     if (!request) {
@@ -83,6 +89,12 @@ const getRequestById = async (req: Request, res: Response) => {
 const updateRequestStatus = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
+    
+    // Validate ID is a valid number
+    if (isNaN(id) || id <= 0) {
+      return res.status(400).json({ message: "Invalid hiring request ID" });
+    }
+    
     const { status } = req.body;
     
     if (!['open', 'closed', 'called_off'].includes(status)) {

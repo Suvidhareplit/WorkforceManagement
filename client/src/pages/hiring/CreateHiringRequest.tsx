@@ -28,17 +28,17 @@ export default function CreateHiringRequest() {
   const { toast } = useToast();
   const [selectedCityId, setSelectedCityId] = useState<string>("");
 
-  const { data: cities } = useQuery({
-    queryKey: ["/api/master-data/cities"],
+  const { data: cities = [] } = useQuery({
+    queryKey: ["/api/master-data/city"],
   });
 
-  const { data: clusters } = useQuery({
-    queryKey: ["/api/master-data/cities", selectedCityId, "clusters"],
+  const { data: clusters = [] } = useQuery({
+    queryKey: ["/api/master-data/city", selectedCityId, "clusters"],
     enabled: !!selectedCityId,
   });
 
-  const { data: roles } = useQuery({
-    queryKey: ["/api/master-data/roles"],
+  const { data: roles = [] } = useQuery({
+    queryKey: ["/api/master-data/role"],
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -126,7 +126,7 @@ export default function CreateHiringRequest() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {cities?.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
+                          {Array.isArray(cities) && cities.filter((city: any) => city.id && city.id.toString() && city.name).map((city: any) => (
                             <SelectItem key={city.id} value={city.id.toString()}>
                               {city.name}
                             </SelectItem>
@@ -151,7 +151,7 @@ export default function CreateHiringRequest() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {clusters?.filter((cluster: any) => cluster.id && cluster.id.toString()).map((cluster: any) => (
+                          {Array.isArray(clusters) && clusters.filter((cluster: any) => cluster.id && cluster.id.toString() && cluster.name).map((cluster: any) => (
                             <SelectItem key={cluster.id} value={cluster.id.toString()}>
                               {cluster.name}
                             </SelectItem>
@@ -178,7 +178,7 @@ export default function CreateHiringRequest() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {roles?.filter((role: any) => role.id && role.id.toString()).map((role: any) => (
+                          {Array.isArray(roles) && roles.filter((role: any) => role.id && role.id.toString() && role.name).map((role: any) => (
                             <SelectItem key={role.id} value={role.id.toString()}>
                               {role.name}
                             </SelectItem>
