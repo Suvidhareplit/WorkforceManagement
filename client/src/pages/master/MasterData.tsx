@@ -828,8 +828,10 @@ export default function MasterData() {
                         <TableRow key={role.id}>
                           <TableCell className="font-medium">{role.name}</TableCell>
                           <TableCell className="font-mono">{role.code}</TableCell>
-                          <TableCell className="max-w-xs truncate">
-                            {role.description || "No description"}
+                          <TableCell className="max-w-md">
+                            <div className="text-sm leading-5">
+                              {role.description || "No description"}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge variant={role.isActive ? "default" : "secondary"}>
