@@ -335,29 +335,45 @@ export default function MasterData() {
     
     try {
       const endpoint = `/api/master-data/${editType}/${editingItem.id}`;
-      const updateData = {
-        name: editFormData.name,
-        code: editFormData.code,
-        ...(editType === 'role' && { description: editFormData.description }),
-        ...(editType === 'vendor' && { 
-          email: editFormData.email,
-          phone: editFormData.phone,
-          contactPerson: editFormData.contactPerson,
-          commercialTerms: editFormData.commercialTerms,
-          replacementPeriod: editFormData.replacementPeriod ? parseInt(editFormData.replacementPeriod) : undefined
-        }),
-        ...(editType === 'recruiter' && { 
-          email: editFormData.email,
-          phone: editFormData.phone,
-          incentiveStructure: editFormData.incentiveStructure
-        }),
-        ...(editType === 'cluster' && { cityId: parseInt(editFormData.cityId) })
-      };
+      
+      // Handle file uploads for roles
+      if (editType === 'role' && editFormData.jobDescriptionFile) {
+        const formData = new FormData();
+        formData.append('name', editFormData.name);
+        formData.append('code', editFormData.code);
+        formData.append('description', editFormData.description || '');
+        formData.append('jobDescriptionFile', editFormData.jobDescriptionFile);
+        
+        await apiRequest(endpoint, {
+          method: "PATCH",
+          body: formData,
+        });
+      } else {
+        // Handle regular updates
+        const updateData = {
+          name: editFormData.name,
+          code: editFormData.code,
+          ...(editType === 'role' && { description: editFormData.description }),
+          ...(editType === 'vendor' && { 
+            email: editFormData.email,
+            phone: editFormData.phone,
+            contactPerson: editFormData.contactPerson,
+            commercialTerms: editFormData.commercialTerms,
+            replacementPeriod: editFormData.replacementPeriod ? parseInt(editFormData.replacementPeriod) : undefined
+          }),
+          ...(editType === 'recruiter' && { 
+            email: editFormData.email,
+            phone: editFormData.phone,
+            incentiveStructure: editFormData.incentiveStructure
+          }),
+          ...(editType === 'cluster' && { cityId: parseInt(editFormData.cityId) })
+        };
 
-      await apiRequest(endpoint, {
-        method: "PATCH",
-        body: JSON.stringify(updateData),
-      });
+        await apiRequest(endpoint, {
+          method: "PATCH",
+          body: JSON.stringify(updateData),
+        });
+      }
       
       queryClient.invalidateQueries({ queryKey: [`/api/master-data/${editType}`] });
       toast({
@@ -378,6 +394,7 @@ export default function MasterData() {
         replacementPeriod: "",
         incentiveStructure: "",
         cityId: "1",
+        jobDescriptionFile: null,
       });
     } catch (error: any) {
       toast({
@@ -449,7 +466,7 @@ export default function MasterData() {
     setEditFormData({
       name: role.name,
       code: role.code,
-      description: role.description || "",
+      description: "",
       email: "",
       phone: "",
       contactPerson: "",
@@ -457,6 +474,7 @@ export default function MasterData() {
       replacementPeriod: "",
       incentiveStructure: "",
       cityId: "1",
+      jobDescriptionFile: null,
     });
   };
 
@@ -852,7 +870,7 @@ export default function MasterData() {
                                     onClick={() => window.open(`/api/master-data/files/${role.jobDescriptionFile}`, '_blank')}
                                     className="text-blue-600 hover:text-blue-800"
                                   >
-                                    View JD
+                                    Download JD
                                   </Button>
                                 </div>
                               ) : (
@@ -1237,6 +1255,7 @@ export default function MasterData() {
           replacementPeriod: "",
           incentiveStructure: "",
           cityId: "1",
+          jobDescriptionFile: null,
         });
       }}>
         <DialogContent className="max-w-md">
@@ -1268,14 +1287,35 @@ export default function MasterData() {
 
             {editType === "role" && (
               <div>
-                <Label htmlFor="editDescription">Description</Label>
-                <Textarea
-                  id="editDescription"
-                  placeholder="Enter description"
-                  value={editFormData.description}
-                  onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                  rows={3}
+                <Label htmlFor="editJobDescription">Job Description (PDF/DOC)</Label>
+                <Input
+                  id="editJobDescription"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setEditFormData({ ...editFormData, jobDescriptionFile: file });
+                    }
+                  }}
+                  className="cursor-pointer"
                 />
+                <p className="text-sm text-slate-500 mt-1">
+                  Upload PDF or DOC file (max 5MB)
+                </p>
+                {editingItem?.jobDescriptionFile && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-sm text-slate-600">Current file:</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`/api/master-data/files/${editingItem.jobDescriptionFile}`, '_blank')}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      Download Current JD
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 

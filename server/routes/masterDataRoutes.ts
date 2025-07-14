@@ -71,7 +71,7 @@ router.patch('/recruiter/:id/toggle-status', masterDataController.toggleRecruite
 // Edit master data
 router.patch('/city/:id', validateRequest(insertCitySchema.partial()), masterDataController.updateCity);
 router.patch('/cluster/:id', validateRequest(insertClusterSchema.partial()), masterDataController.updateCluster);
-router.patch('/role/:id', validateRequest(insertRoleSchema.partial()), masterDataController.updateRole);
+router.patch('/role/:id', upload.single('jobDescriptionFile'), masterDataController.updateRole);
 router.patch('/vendor/:id', validateRequest(insertVendorSchema.partial()), masterDataController.updateVendor);
 router.patch('/recruiter/:id', validateRequest(insertRecruiterSchema.partial()), masterDataController.updateRecruiter);
 

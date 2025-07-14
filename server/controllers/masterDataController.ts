@@ -216,7 +216,17 @@ const updateRole = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const userId = (req as any).user?.id || 1;
-    const result = await storage.updateRole(id, req.body, userId);
+    const { name, code, description } = req.body;
+    const jobDescriptionFile = req.file ? req.file.filename : null;
+    
+    const updateData = {
+      name,
+      code,
+      description,
+      ...(jobDescriptionFile && { jobDescriptionFile }),
+    };
+    
+    const result = await storage.updateRole(id, updateData, userId);
     if (!result) {
       return res.status(404).json({ message: "Role not found" });
     }
