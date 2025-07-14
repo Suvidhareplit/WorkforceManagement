@@ -17,7 +17,7 @@ import ClassroomTraining from "./pages/training/ClassroomTraining";
 import FieldTraining from "./pages/training/FieldTraining";
 import EmployeeLifecycle from "./pages/employee/EmployeeLifecycle";
 import ExitManagement from "./pages/employee/ExitManagement";
-import MasterData from "./pages/master/MasterData";
+import MasterData from "./pages/master/MasterDataEnhanced";
 import UserManagement from "./pages/management/UserManagement";
 import Analytics from "./pages/analytics/Analytics";
 import NotFound from "@/pages/not-found";
