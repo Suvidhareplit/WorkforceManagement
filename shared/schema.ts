@@ -37,6 +37,7 @@ export const roles = pgTable("roles", {
   name: text("name").notNull().unique(),
   code: text("code").notNull().unique(),
   description: text("description"),
+  jobDescriptionFile: text("job_description_file"), // Path to uploaded JD file
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });

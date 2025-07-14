@@ -32,6 +32,7 @@ export default function MasterData() {
     replacementPeriod: "",
     incentiveStructure: "",
     cityId: "1",
+    jobDescriptionFile: null as File | null,
   });
   const [formData, setFormData] = useState({
     name: "",
@@ -44,6 +45,7 @@ export default function MasterData() {
     replacementPeriod: "",
     incentiveStructure: "",
     cityId: "1", // Default to first city to avoid empty string
+    jobDescriptionFile: null as File | null,
   });
   const { toast } = useToast();
 
@@ -123,7 +125,7 @@ export default function MasterData() {
   });
 
   const createRoleMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: FormData) => {
       return await apiRequest("/api/master-data/role", {
         method: "POST",
         body: data,
@@ -243,7 +245,7 @@ export default function MasterData() {
     });
   };
 
-  const handleCreateRole = () => {
+  const handleCreateRole = async () => {
     if (!formData.name || !formData.code) {
       toast({
         title: "Error",
@@ -253,11 +255,23 @@ export default function MasterData() {
       return;
     }
 
-    createRoleMutation.mutate({
-      name: formData.name,
-      code: formData.code.toUpperCase(),
-      description: formData.description,
-    });
+    const roleData = new FormData();
+    roleData.append('name', formData.name);
+    roleData.append('code', formData.code.toUpperCase());
+    roleData.append('description', formData.description);
+    if (formData.jobDescriptionFile) {
+      roleData.append('jobDescriptionFile', formData.jobDescriptionFile);
+    }
+    
+    try {
+      await createRoleMutation.mutateAsync(roleData);
+      setFormData({ ...formData, name: "", code: "", description: "", jobDescriptionFile: null });
+      // Reset file input
+      const fileInput = document.getElementById('roleJD') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    } catch (error) {
+      console.error("Error creating role:", error);
+    }
   };
 
   const handleCreateVendor = () => {
@@ -806,7 +820,7 @@ export default function MasterData() {
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Code</TableHead>
-                        <TableHead className="w-80">Description</TableHead>
+                        <TableHead>Job Description</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -829,12 +843,21 @@ export default function MasterData() {
                           <TableRow key={role.id}>
                             <TableCell className="font-medium">{role.name}</TableCell>
                             <TableCell className="font-mono">{role.code}</TableCell>
-                            <TableCell className="w-80">
-                              <div className="max-w-80 overflow-x-auto">
-                                <div className="text-sm leading-5 whitespace-nowrap pr-4">
-                                  {role.description || "No description"}
+                            <TableCell>
+                              {role.jobDescriptionFile ? (
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => window.open(`/api/master-data/files/${role.jobDescriptionFile}`, '_blank')}
+                                    className="text-blue-600 hover:text-blue-800"
+                                  >
+                                    View JD
+                                  </Button>
                                 </div>
-                              </div>
+                              ) : (
+                                <span className="text-slate-500 text-sm">No JD uploaded</span>
+                              )}
                             </TableCell>
                             <TableCell>
                               <Badge variant={role.isActive ? "default" : "secondary"}>
@@ -894,14 +917,22 @@ export default function MasterData() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="roleDescription">Description</Label>
-                  <Textarea
-                    id="roleDescription"
-                    placeholder="Enter role description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
+                  <Label htmlFor="roleJD">Job Description (PDF/DOC)</Label>
+                  <Input
+                    id="roleJD"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setFormData({ ...formData, jobDescriptionFile: file });
+                      }
+                    }}
+                    className="cursor-pointer"
                   />
+                  <p className="text-sm text-slate-500 mt-1">
+                    Upload PDF or DOC file (max 5MB)
+                  </p>
                 </div>
                 <Button
                   onClick={handleCreateRole}

@@ -84,7 +84,17 @@ const createCluster = async (req: Request, res: Response) => {
 
 const createRole = async (req: Request, res: Response) => {
   try {
-    const role = await storage.createRole(req.body);
+    const { name, code, description } = req.body;
+    const jobDescriptionFile = req.file ? req.file.filename : null;
+    
+    const roleData = {
+      name,
+      code,
+      description,
+      jobDescriptionFile,
+    };
+    
+    const role = await storage.createRole(roleData);
     res.status(201).json(role);
   } catch (error) {
     console.error('Create role error:', error);

@@ -44,10 +44,14 @@ export async function apiRequest(
     body?: unknown;
   },
 ): Promise<any> {
+  const isFormData = options.body instanceof FormData;
   const response = await apiClient.request({
     url,
     method: options.method,
     data: options.body,
+    headers: isFormData ? {
+      'Content-Type': 'multipart/form-data',
+    } : undefined,
   });
   return response.data;
 }

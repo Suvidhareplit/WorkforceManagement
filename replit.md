@@ -7,7 +7,7 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
-- **July 14, 2025**: Redesigned roles section with floating cards layout instead of table for better visual hierarchy and readability
+- **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  
 - **July 13, 2025**: Simplified and centralized API structure from plural to singular endpoints (cities → city, roles → role, etc.)
