@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { City, Cluster, Role, Vendor, Recruiter } from "@/types";
-import { Plus, MapPin, Building2, Briefcase, Users, UserCheck, Edit, Settings, Database, Activity } from "lucide-react";
+import { Plus, MapPin, Building2, Briefcase, Users, UserCheck, Edit } from "lucide-react";
 
 export default function MasterData() {
   const [selectedCityId, setSelectedCityId] = useState("");
@@ -538,310 +538,140 @@ export default function MasterData() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-900 dark:to-slate-800/50">
-      {/* Enhanced Header */}
-      <div className="mb-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 p-6 shadow-sm">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Database className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
-                Master Data Management
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-lg">
-                Configure and manage core system data across all modules
-              </p>
-            </div>
-          </div>
-          
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
-            <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Cities</span>
-              </div>
-              <p className="text-xl font-bold text-blue-800 dark:text-blue-200">{safeCities.length}</p>
-            </div>
-            <div className="bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800">
-              <div className="flex items-center space-x-2">
-                <Building2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Clusters</span>
-              </div>
-              <p className="text-xl font-bold text-emerald-800 dark:text-emerald-200">{safeClusters.length}</p>
-            </div>
-            <div className="bg-purple-50 dark:bg-purple-950/30 p-3 rounded-lg border border-purple-100 dark:border-purple-800">
-              <div className="flex items-center space-x-2">
-                <Briefcase className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Roles</span>
-              </div>
-              <p className="text-xl font-bold text-purple-800 dark:text-purple-200">{safeRoles.length}</p>
-            </div>
-            <div className="bg-orange-50 dark:bg-orange-950/30 p-3 rounded-lg border border-orange-100 dark:border-orange-800">
-              <div className="flex items-center space-x-2">
-                <Users className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                <span className="text-sm font-medium text-orange-700 dark:text-orange-300">Vendors</span>
-              </div>
-              <p className="text-xl font-bold text-orange-800 dark:text-orange-200">{safeVendors.length}</p>
-            </div>
-            <div className="bg-indigo-50 dark:bg-indigo-950/30 p-3 rounded-lg border border-indigo-100 dark:border-indigo-800">
-              <div className="flex items-center space-x-2">
-                <UserCheck className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Recruiters</span>
-              </div>
-              <p className="text-xl font-bold text-indigo-800 dark:text-indigo-200">{safeRecruiters.length}</p>
-            </div>
-          </div>
-        </div>
+    <div>
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-slate-800">Master Data Management</h2>
+        <p className="text-slate-600 mt-1">Manage all master data including cities, clusters, roles, vendors, and recruiters</p>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6">
-        <Tabs defaultValue="cities" className="space-y-8">
-          <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-            <TabsList className="grid w-full grid-cols-5 bg-slate-50 dark:bg-slate-800">
-              <TabsTrigger 
-                value="cities" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-medium transition-all duration-200"
-              >
-                <MapPin className="h-4 w-4 mr-2" />
-                Cities
-              </TabsTrigger>
-              <TabsTrigger 
-                value="clusters"
-                className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-medium transition-all duration-200"
-              >
-                <Building2 className="h-4 w-4 mr-2" />
-                Clusters
-              </TabsTrigger>
-              <TabsTrigger 
-                value="roles"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white font-medium transition-all duration-200"
-              >
-                <Briefcase className="h-4 w-4 mr-2" />
-                Roles
-              </TabsTrigger>
-              <TabsTrigger 
-                value="vendors"
-                className="data-[state=active]:bg-orange-600 data-[state=active]:text-white font-medium transition-all duration-200"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Vendors
-              </TabsTrigger>
-              <TabsTrigger 
-                value="recruiters"
-                className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium transition-all duration-200"
-              >
-                <UserCheck className="h-4 w-4 mr-2" />
-                Recruiters
-              </TabsTrigger>
-            </TabsList>
-          </div>
+      <Tabs defaultValue="cities" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="cities">Cities</TabsTrigger>
+          <TabsTrigger value="clusters">Clusters</TabsTrigger>
+          <TabsTrigger value="roles">Roles</TabsTrigger>
+          <TabsTrigger value="vendors">Vendors</TabsTrigger>
+          <TabsTrigger value="recruiters">Recruiters</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="cities" className="space-y-6">
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-              <Card className="xl:col-span-3 shadow-md border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/30 border-b border-blue-100 dark:border-blue-800">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-blue-600 rounded-lg">
-                        <MapPin className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl text-blue-900 dark:text-blue-100">City Management</CardTitle>
-                        <CardDescription className="text-blue-700 dark:text-blue-300">
-                          Manage geographical locations and territories
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300">
-                      {safeCities.filter(c => c.isActive).length} Active
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="overflow-hidden">
-                    <Table>
-                      <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
-                        <TableRow className="border-slate-200 dark:border-slate-700">
-                          <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Name</TableHead>
-                          <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Code</TableHead>
-                          <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Status</TableHead>
-                          <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Created</TableHead>
-                          <TableHead className="font-semibold text-slate-700 dark:text-slate-300">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {loadingCities ? (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center py-12">
-                              <div className="flex items-center justify-center space-x-3">
-                                <Activity className="h-5 w-5 animate-spin text-blue-600" />
-                                <span className="text-slate-600 dark:text-slate-400">Loading cities...</span>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ) : safeCities.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center py-12">
-                              <div className="flex flex-col items-center space-y-3">
-                                <MapPin className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-                                <span className="text-slate-500 dark:text-slate-400 font-medium">No cities found</span>
-                                <span className="text-slate-400 dark:text-slate-500 text-sm">Create your first city to get started</span>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          safeCities.map((city: City, index) => (
-                            <TableRow 
-                              key={city.id} 
-                              className={`hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-colors border-slate-100 dark:border-slate-700 ${
-                                index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/30 dark:bg-slate-800/30'
-                              }`}
-                            >
-                              <TableCell className="font-semibold text-slate-800 dark:text-slate-200 py-4">
-                                {city.name}
-                              </TableCell>
-                              <TableCell className="font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded px-2 py-1 text-xs font-medium w-fit">
-                                {city.code}
-                              </TableCell>
-                              <TableCell>
-                                <Badge 
-                                  variant={city.isActive ? "default" : "secondary"}
-                                  className={city.isActive 
-                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700" 
-                                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-600"
-                                  }
-                                >
-                                  <div className={`w-2 h-2 rounded-full mr-2 ${city.isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                                  {city.isActive ? "Active" : "Inactive"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-slate-600 dark:text-slate-400">
-                                {new Date(city.createdAt).toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric'
-                                })}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center space-x-3">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    onClick={() => handleEditCity(city)}
-                                    className="hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-300"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <div className="flex items-center space-x-3 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2">
-                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                                      {city.isActive ? "Active" : "Inactive"}
-                                    </span>
-                                    <Switch
-                                      checked={city.isActive}
-                                      onCheckedChange={() => handleToggleCityStatus(city.id, city.isActive)}
-                                      className="data-[state=checked]:bg-blue-600"
-                                    />
-                                  </div>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-md border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/30 border-b border-blue-100 dark:border-blue-800">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-blue-600 rounded-lg">
-                      <Plus className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg text-blue-900 dark:text-blue-100">Add New City</CardTitle>
-                      <CardDescription className="text-blue-700 dark:text-blue-300">
-                        Create a new geographical location
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6 p-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="cityName" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      City Name <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="cityName"
-                      placeholder="e.g., Mumbai, Delhi, Bangalore"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cityCode" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      City Code <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="cityCode"
-                      placeholder="3-letter code (e.g., MUM, DEL, BLR)"
-                      value={formData.code}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                      className="border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
-                      maxLength={3}
-                    />
-                  </div>
-                  
-                  <Separator className="my-4" />
-                  
-                  <Button
-                    onClick={handleCreateCity}
-                    disabled={createCityMutation.isPending || !formData.name || !formData.code}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-2.5 transition-all duration-200 disabled:opacity-50"
-                  >
-                    {createCityMutation.isPending ? (
-                      <div className="flex items-center space-x-2">
-                        <Activity className="h-4 w-4 animate-spin" />
-                        <span>Creating...</span>
-                      </div>
+        <TabsContent value="cities">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <MapPin className="h-5 w-5 mr-2" />
+                  Cities
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingCities ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          Loading...
+                        </TableCell>
+                      </TableRow>
+                    ) : safeCities.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          No cities found
+                        </TableCell>
+                      </TableRow>
                     ) : (
-                      <div className="flex items-center space-x-2">
-                        <Plus className="h-4 w-4" />
-                        <span>Create City</span>
-                      </div>
+                      safeCities.map((city: City) => (
+                        <TableRow key={city.id}>
+                          <TableCell className="font-medium">{city.name}</TableCell>
+                          <TableCell className="font-mono">{city.code}</TableCell>
+                          <TableCell>
+                            <Badge variant={city.isActive ? "default" : "secondary"}>
+                              {city.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(city.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditCity(city)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm">
+                                  {city.isActive ? "Active" : "Inactive"}
+                                </span>
+                                <Switch
+                                  checked={city.isActive}
+                                  onCheckedChange={() => handleToggleCityStatus(city.id, city.isActive)}
+                                />
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
                     )}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
 
-          <TabsContent value="clusters" className="space-y-6">
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-              <Card className="xl:col-span-3 shadow-md border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/30 border-b border-emerald-100 dark:border-emerald-800">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-emerald-600 rounded-lg">
-                        <Building2 className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl text-emerald-900 dark:text-emerald-100">Cluster Management</CardTitle>
-                        <CardDescription className="text-emerald-700 dark:text-emerald-300">
-                          Manage operational areas within cities
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300">
-                      {safeClusters.filter(c => c.isActive).length} Active
-                    </Badge>
-                  </div>
-                </CardHeader>
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New City</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="cityName">City Name</Label>
+                  <Input
+                    id="cityName"
+                    placeholder="Enter city name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cityCode">City Code</Label>
+                  <Input
+                    id="cityCode"
+                    placeholder="Enter city code (e.g., MUM)"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <Button
+                  onClick={handleCreateCity}
+                  disabled={createCityMutation.isPending}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  {createCityMutation.isPending ? "Creating..." : "Create City"}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="clusters">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Building2 className="h-5 w-5 mr-2" />
+                  Clusters
+                </CardTitle>
+              </CardHeader>
               <CardContent className="p-0">
                 <Table>
                   <TableHeader>
@@ -1526,8 +1356,6 @@ export default function MasterData() {
           </div>
         </DialogContent>
       </Dialog>
-        </Tabs>
-      </div>
     </div>
   );
 }

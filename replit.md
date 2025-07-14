@@ -7,9 +7,6 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
-- **July 14, 2025**: Enhanced Master Data Management UI with modern Shadcn/Radix UI design, gradient backgrounds, improved typography, and visual hierarchy
-- **July 14, 2025**: Added comprehensive statistics dashboard with color-coded cards for each master data type
-- **July 14, 2025**: Redesigned table layouts with alternating row colors, enhanced status badges, and improved switch components
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  
 - **July 13, 2025**: Simplified and centralized API structure from plural to singular endpoints (cities → city, roles → role, etc.)
