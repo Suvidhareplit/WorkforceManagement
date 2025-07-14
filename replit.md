@@ -7,6 +7,8 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+- **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
+- **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  
 - **July 13, 2025**: Simplified and centralized API structure from plural to singular endpoints (cities → city, roles → role, etc.)
 - **July 13, 2025**: Fixed "roles?.filter is not a function" errors by adding proper array validation with fallback empty arrays
 - **July 13, 2025**: Resolved SelectItem empty value prop issues by using "all" instead of empty strings for filter dropdowns

@@ -162,29 +162,29 @@ export class DatabaseStorage implements IStorage {
 
   // Master data
   async getCities(): Promise<City[]> {
-    return await db.select().from(cities).where(eq(cities.isActive, true)).orderBy(asc(cities.name));
+    return await db.select().from(cities).orderBy(asc(cities.name));
   }
 
   async getClustersByCity(cityId: number): Promise<Cluster[]> {
     return await db.select().from(clusters)
-      .where(and(eq(clusters.cityId, cityId), eq(clusters.isActive, true)))
+      .where(eq(clusters.cityId, cityId))
       .orderBy(asc(clusters.name));
   }
 
   async getClusters(): Promise<Cluster[]> {
-    return await db.select().from(clusters).where(eq(clusters.isActive, true)).orderBy(asc(clusters.name));
+    return await db.select().from(clusters).orderBy(asc(clusters.name));
   }
 
   async getRoles(): Promise<Role[]> {
-    return await db.select().from(roles).where(eq(roles.isActive, true)).orderBy(asc(roles.name));
+    return await db.select().from(roles).orderBy(asc(roles.name));
   }
 
   async getVendors(): Promise<Vendor[]> {
-    return await db.select().from(vendors).where(eq(vendors.isActive, true)).orderBy(asc(vendors.name));
+    return await db.select().from(vendors).orderBy(asc(vendors.name));
   }
 
   async getRecruiters(): Promise<Recruiter[]> {
-    return await db.select().from(recruiters).where(eq(recruiters.isActive, true)).orderBy(asc(recruiters.name));
+    return await db.select().from(recruiters).orderBy(asc(recruiters.name));
   }
 
   async createCity(city: InsertCity): Promise<City> {
