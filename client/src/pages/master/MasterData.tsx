@@ -792,70 +792,83 @@ export default function MasterData() {
 
         <TabsContent value="roles">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-slate-800 flex items-center">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
                   <Briefcase className="h-5 w-5 mr-2" />
                   Roles
-                </h3>
-              </div>
-              
-              {loadingRoles ? (
-                <div className="text-center py-8">
-                  <div className="text-slate-500">Loading roles...</div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Code</TableHead>
+                        <TableHead className="w-80">Description</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loadingRoles ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8">
+                            Loading...
+                          </TableCell>
+                        </TableRow>
+                      ) : safeRoles.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8">
+                            No roles found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        safeRoles.map((role: Role) => (
+                          <TableRow key={role.id}>
+                            <TableCell className="font-medium">{role.name}</TableCell>
+                            <TableCell className="font-mono">{role.code}</TableCell>
+                            <TableCell className="w-80">
+                              <div className="max-w-80 overflow-x-auto">
+                                <div className="text-sm leading-5 whitespace-nowrap pr-4">
+                                  {role.description || "No description"}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={role.isActive ? "default" : "secondary"}>
+                                {role.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleEditRole(role)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-sm">
+                                    {role.isActive ? "Active" : "Inactive"}
+                                  </span>
+                                  <Switch
+                                    checked={role.isActive}
+                                    onCheckedChange={() => handleToggleRoleStatus(role.id, role.isActive)}
+                                  />
+                                </div>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
-              ) : safeRoles.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-slate-500">No roles found</div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {safeRoles.map((role: Role) => (
-                    <Card key={role.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h4 className="font-semibold text-slate-800 text-lg">{role.name}</h4>
-                            <p className="text-slate-600 font-mono text-sm">{role.code}</p>
-                          </div>
-                          <Badge variant={role.isActive ? "default" : "secondary"}>
-                            {role.isActive ? "Active" : "Inactive"}
-                          </Badge>
-                        </div>
-                        
-                        <div className="mb-4">
-                          <p className="text-slate-700 text-sm leading-relaxed">
-                            {role.description || "No description available"}
-                          </p>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleEditRole(role)}
-                            className="flex items-center gap-1"
-                          >
-                            <Edit className="h-3 w-3" />
-                            Edit
-                          </Button>
-                          
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm text-slate-600">
-                              {role.isActive ? "Active" : "Inactive"}
-                            </span>
-                            <Switch
-                              checked={role.isActive}
-                              onCheckedChange={() => handleToggleRoleStatus(role.id, role.isActive)}
-                            />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader>
