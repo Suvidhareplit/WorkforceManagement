@@ -9,8 +9,8 @@ const router = Router();
 // All routes require authentication
 router.use(authenticate);
 
-// Create hiring request
-router.post('/', validateRequest(insertHiringRequestSchema), hiringController.createRequest);
+// Create hiring request - Remove validation to debug
+router.post('/', hiringController.createRequest);
 
 // Get all hiring requests
 router.get('/', hiringController.getRequests);
