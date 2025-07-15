@@ -25,6 +25,26 @@ export default function ViewHiringRequests() {
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ["/api/hiring", filters],
+    queryFn: async () => {
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value && value !== 'all' && value !== '') {
+          queryParams.append(key, value);
+        }
+      });
+      
+      const response = await fetch(`/api/hiring?${queryParams.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch hiring requests');
+      }
+      
+      return response.json();
+    },
   });
 
   const { data: cities = [] } = useQuery({
@@ -257,12 +277,12 @@ export default function ViewHiringRequests() {
                       {request.requestId}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {request.role?.name}
+                      {request.roleName || 'Unknown Role'}
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <div>{request.city?.name}</div>
-                        <div className="text-slate-500">{request.cluster?.name}</div>
+                        <div>{request.cityName || 'Unknown City'}</div>
+                        <div className="text-slate-500">{request.clusterName || 'Unknown Cluster'}</div>
                       </div>
                     </TableCell>
                     <TableCell>{request.numberOfPositions}</TableCell>

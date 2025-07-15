@@ -69,6 +69,9 @@ export interface HiringRequest {
   createdBy: number;
   createdAt: string;
   updatedAt: string;
+  cityName?: string;
+  clusterName?: string;
+  roleName?: string;
   city?: City;
   cluster?: Cluster;
   role?: Role;

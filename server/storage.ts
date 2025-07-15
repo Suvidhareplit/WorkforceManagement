@@ -484,6 +484,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getHiringRequests(filters?: any): Promise<HiringRequest[]> {
+    const baseQuery = db.select({
+      id: hiringRequests.id,
+      requestId: hiringRequests.requestId,
+      cityId: hiringRequests.cityId,
+      cityName: cities.name,
+      clusterId: hiringRequests.clusterId,
+      clusterName: clusters.name,
+      roleId: hiringRequests.roleId,
+      roleName: roles.name,
+      numberOfPositions: hiringRequests.numberOfPositions,
+      priority: hiringRequests.priority,
+      requestType: hiringRequests.requestType,
+      status: hiringRequests.status,
+      notes: hiringRequests.notes,
+      createdBy: hiringRequests.createdBy,
+      createdAt: hiringRequests.createdAt,
+      updatedAt: hiringRequests.updatedAt,
+    })
+    .from(hiringRequests)
+    .leftJoin(cities, eq(hiringRequests.cityId, cities.id))
+    .leftJoin(clusters, eq(hiringRequests.clusterId, clusters.id))
+    .leftJoin(roles, eq(hiringRequests.roleId, roles.id));
+
     if (filters) {
       const conditions = [];
       if (filters.cityId && filters.cityId !== 'all') conditions.push(eq(hiringRequests.cityId, parseInt(filters.cityId)));
@@ -493,13 +516,13 @@ export class DatabaseStorage implements IStorage {
       if (filters.priority && filters.priority !== 'all') conditions.push(eq(hiringRequests.priority, filters.priority));
       
       if (conditions.length > 0) {
-        return await db.select().from(hiringRequests)
+        return await baseQuery
           .where(and(...conditions))
           .orderBy(desc(hiringRequests.createdAt));
       }
     }
     
-    return await db.select().from(hiringRequests).orderBy(desc(hiringRequests.createdAt));
+    return await baseQuery.orderBy(desc(hiringRequests.createdAt));
   }
 
   async getHiringRequest(id: number): Promise<HiringRequest | undefined> {

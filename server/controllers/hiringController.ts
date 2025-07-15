@@ -9,19 +9,10 @@ const createRequest = async (req: Request, res: Response) => {
     const requestData = req.body;
     const userId = (req as any).user.userId;
     
-    console.log('Create request data:', requestData);
-    console.log('User ID:', userId);
-    
     // Validate required fields
     if (!requestData.cityId || !requestData.clusterId || !requestData.roleId || !requestData.numberOfPositions) {
-      return res.status(400).json({ message: "Missing required fields", data: requestData });
+      return res.status(400).json({ message: "Missing required fields" });
     }
-    
-    // Add default values for required fields
-    requestData.requestId = requestData.requestId || 'TEMP-' + Date.now();
-    requestData.priority = requestData.priority || 'P1';
-    requestData.requestType = requestData.requestType || 'fresh';
-    requestData.status = requestData.status || 'open';
 
     // Generate unique request ID
     const city = await storage.getCities().then(cities => cities.find(c => c.id === requestData.cityId));
