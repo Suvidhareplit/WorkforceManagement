@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import {
+  LayoutDashboard,
   Plus,
   List,
   TrendingUp,
@@ -18,6 +19,16 @@ import {
 } from "lucide-react";
 
 const menuItems = [
+  {
+    title: "OVERVIEW",
+    items: [
+      {
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        href: "/",
+      },
+    ],
+  },
   {
     title: "HIRING",
     items: [
