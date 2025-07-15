@@ -231,7 +231,8 @@ export default function ViewHiringRequests() {
               <TableRow>
                 <TableHead>Request ID</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Location</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>Cluster</TableHead>
                 <TableHead>Positions</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Type</TableHead>
@@ -243,13 +244,13 @@ export default function ViewHiringRequests() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={10} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : !Array.isArray(requests) || requests.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={10} className="text-center py-8">
                     No hiring requests found
                   </TableCell>
                 </TableRow>
@@ -263,10 +264,10 @@ export default function ViewHiringRequests() {
                       {request.roleName || 'Unknown Role'}
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm">
-                        <div>{request.cityName || 'Unknown City'}</div>
-                        <div className="text-slate-500">{request.clusterName || 'Unknown Cluster'}</div>
-                      </div>
+                      {request.cityName || 'Unknown City'}
+                    </TableCell>
+                    <TableCell>
+                      {request.clusterName || 'Unknown Cluster'}
                     </TableCell>
                     <TableCell>{request.numberOfPositions}</TableCell>
                     <TableCell>
