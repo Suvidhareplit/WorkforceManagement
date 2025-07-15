@@ -25,26 +25,6 @@ export default function ViewHiringRequests() {
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ["/api/hiring", filters],
-    queryFn: async () => {
-      const queryParams = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all' && value !== '') {
-          queryParams.append(key, value);
-        }
-      });
-      
-      const response = await fetch(`/api/hiring?${queryParams.toString()}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch hiring requests');
-      }
-      
-      return response.json();
-    },
   });
 
   const { data: cities = [] } = useQuery({
@@ -264,14 +244,14 @@ export default function ViewHiringRequests() {
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : requests?.length === 0 ? (
+              ) : !requests || requests.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-8">
                     No hiring requests found
                   </TableCell>
                 </TableRow>
               ) : (
-                requests?.map((request: HiringRequest) => (
+                requests.map((request: HiringRequest) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-mono text-sm">
                       {request.requestId}
