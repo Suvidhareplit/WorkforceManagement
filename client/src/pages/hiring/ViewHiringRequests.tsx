@@ -23,9 +23,12 @@ export default function ViewHiringRequests() {
   });
   const { toast } = useToast();
 
-  const { data: requests, isLoading } = useQuery({
-    queryKey: ["/api/hiring", filters],
+  const { data: requests, isLoading, error } = useQuery({
+    queryKey: ["/api/hiring"],
+    retry: 1,
   });
+
+
 
   const { data: cities = [] } = useQuery({
     queryKey: ["/api/master-data/city"],
@@ -203,7 +206,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.priority}
-              onValueChange={(value) => setFilters({ ...filters, priority: value === "all" ? "" : value })}
+              onValueChange={(value) => setFilters({ ...filters, priority: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Priorities" />
@@ -244,14 +247,14 @@ export default function ViewHiringRequests() {
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : !requests || requests.length === 0 ? (
+              ) : !Array.isArray(requests) || requests.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-8">
                     No hiring requests found
                   </TableCell>
                 </TableRow>
               ) : (
-                requests.map((request: HiringRequest) => (
+                Array.isArray(requests) && requests.map((request: HiringRequest) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-mono text-sm">
                       {request.requestId}

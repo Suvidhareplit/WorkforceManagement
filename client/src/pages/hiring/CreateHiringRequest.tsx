@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,7 +27,14 @@ const formSchema = z.object({
 export default function CreateHiringRequest() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedCityId, setSelectedCityId] = useState<string>("");
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    setLocation('/');
+    return null;
+  }
 
   const { data: cities = [] } = useQuery({
     queryKey: ["/api/master-data/city"],
