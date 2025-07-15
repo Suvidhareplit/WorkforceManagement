@@ -8,6 +8,9 @@ const createRequest = async (req: Request, res: Response) => {
   try {
     const requestData = req.body;
     const userId = (req as any).user.userId;
+    
+    console.log('Create request data:', requestData);
+    console.log('User ID:', userId);
 
     // Generate unique request ID
     const city = await storage.getCities().then(cities => cities.find(c => c.id === requestData.cityId));

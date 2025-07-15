@@ -33,7 +33,7 @@ export default function CreateHiringRequest() {
   });
 
   const { data: clusters = [] } = useQuery({
-    queryKey: ["/api/master-data/city", selectedCityId, "clusters"],
+    queryKey: [`/api/master-data/city/${selectedCityId}/clusters`],
     enabled: !!selectedCityId,
   });
 
@@ -56,14 +56,17 @@ export default function CreateHiringRequest() {
 
   const createRequestMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/hiring", {
-        cityId: parseInt(data.cityId),
-        clusterId: parseInt(data.clusterId),
-        roleId: parseInt(data.roleId),
-        numberOfPositions: parseInt(data.numberOfPositions),
-        priority: data.priority,
-        requestType: data.requestType,
-        notes: data.notes,
+      return await apiRequest("/api/hiring", {
+        method: "POST",
+        body: JSON.stringify({
+          cityId: parseInt(data.cityId),
+          clusterId: parseInt(data.clusterId),
+          roleId: parseInt(data.roleId),
+          numberOfPositions: parseInt(data.numberOfPositions),
+          priority: data.priority,
+          requestType: data.requestType,
+          notes: data.notes,
+        }),
       });
     },
     onSuccess: () => {

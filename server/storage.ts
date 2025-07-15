@@ -486,11 +486,11 @@ export class DatabaseStorage implements IStorage {
   async getHiringRequests(filters?: any): Promise<HiringRequest[]> {
     if (filters) {
       const conditions = [];
-      if (filters.cityId) conditions.push(eq(hiringRequests.cityId, filters.cityId));
-      if (filters.clusterId) conditions.push(eq(hiringRequests.clusterId, filters.clusterId));
-      if (filters.roleId) conditions.push(eq(hiringRequests.roleId, filters.roleId));
-      if (filters.status) conditions.push(eq(hiringRequests.status, filters.status));
-      if (filters.priority) conditions.push(eq(hiringRequests.priority, filters.priority));
+      if (filters.cityId && filters.cityId !== 'all') conditions.push(eq(hiringRequests.cityId, parseInt(filters.cityId)));
+      if (filters.clusterId && filters.clusterId !== 'all') conditions.push(eq(hiringRequests.clusterId, parseInt(filters.clusterId)));
+      if (filters.roleId && filters.roleId !== 'all') conditions.push(eq(hiringRequests.roleId, parseInt(filters.roleId)));
+      if (filters.status && filters.status !== 'all') conditions.push(eq(hiringRequests.status, filters.status));
+      if (filters.priority && filters.priority !== 'all') conditions.push(eq(hiringRequests.priority, filters.priority));
       
       if (conditions.length > 0) {
         return await db.select().from(hiringRequests)

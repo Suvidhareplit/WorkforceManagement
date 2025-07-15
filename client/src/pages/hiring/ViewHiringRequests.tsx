@@ -32,8 +32,8 @@ export default function ViewHiringRequests() {
   });
 
   const { data: clusters = [] } = useQuery({
-    queryKey: ["/api/master-data/city", filters.cityId, "clusters"],
-    enabled: !!filters.cityId,
+    queryKey: [`/api/master-data/city/${filters.cityId}/clusters`],
+    enabled: !!filters.cityId && filters.cityId !== "all",
   });
 
   const { data: roles = [] } = useQuery({
@@ -42,7 +42,10 @@ export default function ViewHiringRequests() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      return await apiRequest("PATCH", `/api/hiring/${id}/status`, { status });
+      return await apiRequest(`/api/hiring/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hiring"] });
@@ -134,7 +137,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.cityId}
-              onValueChange={(value) => setFilters({ ...filters, cityId: value === "all" ? "" : value, clusterId: "all" })}
+              onValueChange={(value) => setFilters({ ...filters, cityId: value, clusterId: "all" })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Cities" />
@@ -151,7 +154,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.clusterId}
-              onValueChange={(value) => setFilters({ ...filters, clusterId: value === "all" ? "" : value })}
+              onValueChange={(value) => setFilters({ ...filters, clusterId: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Clusters" />
@@ -168,7 +171,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.roleId}
-              onValueChange={(value) => setFilters({ ...filters, roleId: value === "all" ? "" : value })}
+              onValueChange={(value) => setFilters({ ...filters, roleId: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Roles" />
@@ -185,7 +188,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.status}
-              onValueChange={(value) => setFilters({ ...filters, status: value === "all" ? "" : value })}
+              onValueChange={(value) => setFilters({ ...filters, status: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Status" />
