@@ -43,6 +43,29 @@ export interface Vendor {
   contactPerson?: string;
   commercialTerms?: string;
   replacementPeriod?: number;
+  
+  // Commercial terms - detailed breakdown
+  managementFees?: number;
+  sourcingFee?: number;
+  replacementDays?: number;
+  
+  // Contact details for different SPOCs
+  deliveryLeadName?: string;
+  deliveryLeadEmail?: string;
+  deliveryLeadPhone?: string;
+  
+  cityRecruitmentSpocName?: string;
+  cityRecruitmentSpocEmail?: string;
+  cityRecruitmentSpocPhone?: string;
+  
+  businessHeadName?: string;
+  businessHeadEmail?: string;
+  businessHeadPhone?: string;
+  
+  payrollSpocName?: string;
+  payrollSpocEmail?: string;
+  payrollSpocPhone?: string;
+  
   isActive: boolean;
 }
 

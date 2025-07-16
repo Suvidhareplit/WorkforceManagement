@@ -15,12 +15,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { City, Cluster, Role, Vendor, Recruiter } from "@/types";
-import { Plus, MapPin, Building2, Briefcase, Users, UserCheck, Edit } from "lucide-react";
+import { Plus, MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye } from "lucide-react";
 
 export default function MasterData() {
   const [selectedCityId, setSelectedCityId] = useState("");
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editType, setEditType] = useState<string>("");
+  const [vendorDetailsOpen, setVendorDetailsOpen] = useState(false);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [editFormData, setEditFormData] = useState({
     name: "",
     code: "",
@@ -495,6 +497,11 @@ export default function MasterData() {
     }
   };
 
+  const handleViewVendorDetails = (vendor: Vendor) => {
+    setSelectedVendor(vendor);
+    setVendorDetailsOpen(true);
+  };
+
   const handleEditVendor = (vendor: Vendor) => {
     setEditingItem(vendor);
     setEditType("vendor");
@@ -509,6 +516,7 @@ export default function MasterData() {
       replacementPeriod: vendor.replacementPeriod?.toString() || "",
       incentiveStructure: "",
       cityId: "1",
+      jobDescriptionFile: null,
     });
   };
 
@@ -1013,14 +1021,18 @@ export default function MasterData() {
                               <Button 
                                 variant="ghost" 
                                 size="sm"
+                                onClick={() => handleViewVendorDetails(vendor)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
                                 onClick={() => handleEditVendor(vendor)}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <div className="flex items-center space-x-2">
-                                <span className="text-sm">
-                                  {vendor.isActive ? "Active" : "Inactive"}
-                                </span>
                                 <Switch
                                   checked={vendor.isActive}
                                   onCheckedChange={() => handleToggleVendorStatus(vendor.id, vendor.isActive)}
@@ -1436,6 +1448,149 @@ export default function MasterData() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Vendor Details Dialog */}
+      <Dialog open={vendorDetailsOpen} onOpenChange={setVendorDetailsOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {selectedVendor?.name} - Vendor Details
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedVendor && (
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Basic Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">Vendor Name</Label>
+                      <p className="text-sm font-semibold">{selectedVendor.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">Contact Person</Label>
+                      <p className="text-sm">{selectedVendor.contactPerson || "N/A"}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">Email</Label>
+                      <p className="text-sm">{selectedVendor.email}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-slate-600">Phone</Label>
+                      <p className="text-sm">{selectedVendor.phone || "N/A"}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Commercial Terms */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Commercial Terms</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-hidden border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-yellow-50">
+                          <TableHead className="font-semibold border-r">Commercials</TableHead>
+                          <TableHead className="font-semibold">Percentage</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="border-r font-medium">Management fees</TableCell>
+                          <TableCell>{selectedVendor.managementFees ? `${selectedVendor.managementFees}%` : "N/A"}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="border-r font-medium">Sourcing Fee</TableCell>
+                          <TableCell>{selectedVendor.sourcingFee ? `${selectedVendor.sourcingFee}%` : "N/A"}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="border-r font-medium">Replacement Days</TableCell>
+                          <TableCell>{selectedVendor.replacementDays ? `${selectedVendor.replacementDays} days` : "N/A"}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Contact Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Contact Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-hidden border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-yellow-50">
+                          <TableHead className="font-semibold border-r">Particulars</TableHead>
+                          <TableHead className="font-semibold border-r">Delivery Lead</TableHead>
+                          <TableHead className="font-semibold border-r">CITY RECRUITMENT SPOC</TableHead>
+                          <TableHead className="font-semibold border-r">Business Head</TableHead>
+                          <TableHead className="font-semibold">PAYROLL SPOC</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="border-r font-medium">Name</TableCell>
+                          <TableCell className="border-r">{selectedVendor.deliveryLeadName || "N/A"}</TableCell>
+                          <TableCell className="border-r">{selectedVendor.cityRecruitmentSpocName || "N/A"}</TableCell>
+                          <TableCell className="border-r">{selectedVendor.businessHeadName || "N/A"}</TableCell>
+                          <TableCell>{selectedVendor.payrollSpocName || "N/A"}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="border-r font-medium">Email ID</TableCell>
+                          <TableCell className="border-r">{selectedVendor.deliveryLeadEmail || "N/A"}</TableCell>
+                          <TableCell className="border-r">{selectedVendor.cityRecruitmentSpocEmail || "N/A"}</TableCell>
+                          <TableCell className="border-r">{selectedVendor.businessHeadEmail || "N/A"}</TableCell>
+                          <TableCell>{selectedVendor.payrollSpocEmail || "N/A"}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="border-r font-medium">Number</TableCell>
+                          <TableCell className="border-r">{selectedVendor.deliveryLeadPhone || "N/A"}</TableCell>
+                          <TableCell className="border-r">{selectedVendor.cityRecruitmentSpocPhone || "N/A"}</TableCell>
+                          <TableCell className="border-r">{selectedVendor.businessHeadPhone || "N/A"}</TableCell>
+                          <TableCell>{selectedVendor.payrollSpocPhone || "N/A"}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Additional Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Additional Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-slate-600">Commercial Terms Notes</Label>
+                    <p className="text-sm mt-1">{selectedVendor.commercialTerms || "No additional terms specified"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-600">Replacement Period</Label>
+                    <p className="text-sm mt-1">{selectedVendor.replacementPeriod ? `${selectedVendor.replacementPeriod} days` : "Not specified"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-600">Status</Label>
+                    <Badge variant={selectedVendor.isActive ? "default" : "secondary"} className="mt-1">
+                      {selectedVendor.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

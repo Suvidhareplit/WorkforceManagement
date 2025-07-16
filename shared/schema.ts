@@ -50,6 +50,29 @@ export const vendors = pgTable("vendors", {
   contactPerson: text("contact_person"),
   commercialTerms: text("commercial_terms"),
   replacementPeriod: integer("replacement_period"), // in days
+  
+  // Commercial terms - detailed breakdown
+  managementFees: decimal("management_fees", { precision: 5, scale: 2 }), // percentage
+  sourcingFee: decimal("sourcing_fee", { precision: 5, scale: 2 }), // percentage
+  replacementDays: integer("replacement_days"),
+  
+  // Contact details for different SPOCs
+  deliveryLeadName: text("delivery_lead_name"),
+  deliveryLeadEmail: text("delivery_lead_email"),
+  deliveryLeadPhone: varchar("delivery_lead_phone", { length: 10 }),
+  
+  cityRecruitmentSpocName: text("city_recruitment_spoc_name"),
+  cityRecruitmentSpocEmail: text("city_recruitment_spoc_email"),
+  cityRecruitmentSpocPhone: varchar("city_recruitment_spoc_phone", { length: 10 }),
+  
+  businessHeadName: text("business_head_name"),
+  businessHeadEmail: text("business_head_email"),
+  businessHeadPhone: varchar("business_head_phone", { length: 10 }),
+  
+  payrollSpocName: text("payroll_spoc_name"),
+  payrollSpocEmail: text("payroll_spoc_email"),
+  payrollSpocPhone: varchar("payroll_spoc_phone", { length: 10 }),
+  
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });

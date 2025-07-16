@@ -7,6 +7,14 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+- **July 16, 2025**: Implemented comprehensive vendor details system with commercial terms and contact information
+- **July 16, 2025**: Added new database fields for vendors: management fees, sourcing fee, replacement days, and SPOC contacts
+- **July 16, 2025**: Created detailed vendor details dialog with commercial terms table and contact matrix
+- **July 16, 2025**: Updated vendor table with "View Details" button using Eye icon for easy access
+- **July 16, 2025**: Added support for multiple vendor contact points: Delivery Lead, City Recruitment SPOC, Business Head, Payroll SPOC
+- **July 16, 2025**: Removed all mock data from dashboard cards, replaced with proper "No data available" indicators
+- **July 16, 2025**: Updated recruiter management: added City field mapping and removed Incentive Structure field
+- **July 16, 2025**: Modified database schema for recruiters (removed incentive_structure column, added city_id with foreign key)
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  
