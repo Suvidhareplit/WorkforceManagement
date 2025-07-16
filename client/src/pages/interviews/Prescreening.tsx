@@ -3,6 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -14,27 +16,34 @@ import { CheckCircle, XCircle, Eye, FileText } from "lucide-react";
 export default function Prescreening() {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [notes, setNotes] = useState("");
+  const [marks, setMarks] = useState("");
   const { toast } = useToast();
 
   const { data: candidates, isLoading } = useQuery({
-    queryKey: ["/api/interviews/candidates", { status: "applied" }],
+    queryKey: ["/api/interviews/candidates", { status: "prescreening" }],
   });
 
   const updatePrescreeningMutation = useMutation({
-    mutationFn: async ({ id, approved, notes }: { id: number; approved: boolean; notes: string }) => {
+    mutationFn: async ({ id, marks, notes }: { id: number; marks: number; notes: string }) => {
+      const approved = marks >= 7;
+      const status = approved ? 'technical' : 'rejected';
+      
       return await apiRequest("PATCH", `/api/interviews/candidates/${id}/prescreening`, {
         approved,
         notes,
+        prescreeningScore: marks,
+        status,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
       toast({
         title: "Success",
-        description: "Prescreening status updated successfully",
+        description: "Prescreening completed successfully",
       });
       setSelectedCandidate(null);
       setNotes("");
+      setMarks("");
     },
     onError: (error: any) => {
       toast({
@@ -45,18 +54,21 @@ export default function Prescreening() {
     },
   });
 
-  const handleApprove = (candidate: Candidate) => {
+  const handleSubmitMarks = (candidate: Candidate) => {
+    const marksNum = parseInt(marks);
+    
+    if (!marks || isNaN(marksNum) || marksNum < 0 || marksNum > 10) {
+      toast({
+        title: "Invalid marks",
+        description: "Please enter marks between 0 and 10",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     updatePrescreeningMutation.mutate({
       id: candidate.id,
-      approved: true,
-      notes,
-    });
-  };
-
-  const handleReject = (candidate: Candidate) => {
-    updatePrescreeningMutation.mutate({
-      id: candidate.id,
-      approved: false,
+      marks: marksNum,
       notes,
     });
   };
@@ -80,26 +92,22 @@ export default function Prescreening() {
                 <TableHead>Application ID</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
                 <TableHead>City</TableHead>
                 <TableHead>Cluster</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Qualification</TableHead>
-                <TableHead>Applied Date</TableHead>
+                <TableHead>Role</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : candidates?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     No candidates awaiting prescreening
                   </TableCell>
                 </TableRow>
@@ -109,28 +117,9 @@ export default function Prescreening() {
                     <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                     <TableCell className="font-medium">{candidate.name}</TableCell>
                     <TableCell>{candidate.phone}</TableCell>
-                    <TableCell>{candidate.email || "Not provided"}</TableCell>
-                    <TableCell>{candidate.roleName || candidate.role?.name}</TableCell>
-                    <TableCell>{candidate.cityName || candidate.city?.name}</TableCell>
-                    <TableCell>{candidate.clusterName || candidate.cluster?.name}</TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div className="capitalize">{candidate.resumeSource?.replace('_', ' ')}</div>
-                        {candidate.vendor && (
-                          <div className="text-slate-500">{candidate.vendor.name}</div>
-                        )}
-                        {candidate.recruiter && (
-                          <div className="text-slate-500">{candidate.recruiter.name}</div>
-                        )}
-                        {candidate.referralName && (
-                          <div className="text-slate-500">{candidate.referralName}</div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{candidate.qualification || "Not specified"}</TableCell>
-                    <TableCell>
-                      {new Date(candidate.createdAt).toLocaleDateString()}
-                    </TableCell>
+                    <TableCell>{candidate.city}</TableCell>
+                    <TableCell>{candidate.cluster}</TableCell>
+                    <TableCell>{candidate.role}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Dialog>
@@ -141,6 +130,7 @@ export default function Prescreening() {
                               onClick={() => {
                                 setSelectedCandidate(candidate);
                                 setNotes("");
+                                setMarks("");
                               }}
                             >
                               <Eye className="h-4 w-4" />
@@ -164,41 +154,55 @@ export default function Prescreening() {
                                 <div>
                                   <h4 className="font-medium mb-2">Job Details</h4>
                                   <div className="space-y-1 text-sm">
-                                    <div><strong>Role:</strong> {candidate.role?.name}</div>
-                                    <div><strong>City:</strong> {candidate.city?.name}</div>
-                                    <div><strong>Cluster:</strong> {candidate.cluster?.name}</div>
+                                    <div><strong>Role:</strong> {candidate.role}</div>
+                                    <div><strong>City:</strong> {candidate.city}</div>
+                                    <div><strong>Cluster:</strong> {candidate.cluster}</div>
                                     <div><strong>Source:</strong> {candidate.resumeSource?.replace('_', ' ')}</div>
                                   </div>
                                 </div>
                               </div>
 
                               <div>
-                                <h4 className="font-medium mb-2">Prescreening Notes</h4>
-                                <Textarea
-                                  placeholder="Add your notes about the candidate verification..."
-                                  value={notes}
-                                  onChange={(e) => setNotes(e.target.value)}
-                                  rows={4}
-                                />
+                                <h4 className="font-medium mb-2">Prescreening Evaluation</h4>
+                                <div className="mb-4">
+                                  <Label htmlFor="marks">Marks (out of 10)</Label>
+                                  <Input
+                                    id="marks"
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    placeholder="Enter marks out of 10"
+                                    value={marks}
+                                    onChange={(e) => setMarks(e.target.value)}
+                                    className="mt-1"
+                                  />
+                                  {marks && (
+                                    <p className={`mt-2 text-sm ${parseInt(marks) >= 7 ? 'text-green-600' : 'text-red-600'}`}>
+                                      Result: {parseInt(marks) >= 7 ? 'Pass (Will proceed to technical round)' : 'Fail (Will be rejected)'}
+                                    </p>
+                                  )}
+                                </div>
+                                
+                                <div>
+                                  <Label htmlFor="notes">Notes (Optional)</Label>
+                                  <Textarea
+                                    id="notes"
+                                    placeholder="Add your notes about the candidate..."
+                                    value={notes}
+                                    onChange={(e) => setNotes(e.target.value)}
+                                    rows={4}
+                                    className="mt-1"
+                                  />
+                                </div>
                               </div>
 
-                              <div className="flex justify-end space-x-2">
+                              <div className="flex justify-end">
                                 <Button
-                                  variant="outline"
-                                  onClick={() => handleReject(candidate)}
-                                  disabled={updatePrescreeningMutation.isPending}
-                                  className="text-red-600 border-red-600 hover:bg-red-50"
+                                  onClick={() => handleSubmitMarks(candidate)}
+                                  disabled={updatePrescreeningMutation.isPending || !marks}
+                                  className="bg-blue-600 hover:bg-blue-700"
                                 >
-                                  <XCircle className="h-4 w-4 mr-2" />
-                                  Reject
-                                </Button>
-                                <Button
-                                  onClick={() => handleApprove(candidate)}
-                                  disabled={updatePrescreeningMutation.isPending}
-                                  className="bg-green-600 hover:bg-green-700"
-                                >
-                                  <CheckCircle className="h-4 w-4 mr-2" />
-                                  Approve
+                                  {updatePrescreeningMutation.isPending ? "Submitting..." : "Submit Marks"}
                                 </Button>
                               </div>
                             </div>

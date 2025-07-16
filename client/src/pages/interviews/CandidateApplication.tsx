@@ -14,7 +14,8 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Download, CheckCircle, XCircle, AlertCircle, UserPlus, Users } from "lucide-react";
+import { Upload, Download, CheckCircle, XCircle, AlertCircle, UserPlus, Users, ArrowRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const candidateSchema = z.object({
@@ -663,6 +664,7 @@ export default function CandidateApplication() {
   const [view, setView] = useState<'form' | 'list'>('form');
   const [selectedCityId, setSelectedCityId] = useState<string>("");
   const [selectedSource, setSelectedSource] = useState<string>("");
+  const [selectedCandidates, setSelectedCandidates] = useState<number[]>([]);
   const { toast } = useToast();
 
   const { data: cities } = useQuery({
@@ -810,6 +812,34 @@ export default function CandidateApplication() {
         return 'default';
       default:
         return 'default';
+    }
+  };
+
+  const handlePushToPrescreening = async () => {
+    try {
+      // Update all selected candidates to prescreening status
+      const updatePromises = selectedCandidates.map(candidateId => 
+        apiRequest("PATCH", `/api/interviews/candidates/${candidateId}`, {
+          status: 'prescreening'
+        })
+      );
+      
+      await Promise.all(updatePromises);
+      
+      toast({
+        title: "Success",
+        description: `${selectedCandidates.length} candidates pushed to prescreening`,
+      });
+      
+      // Clear selection and refresh
+      setSelectedCandidates([]);
+      queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update candidates",
+        variant: "destructive",
+      });
     }
   };
 
@@ -1147,12 +1177,35 @@ export default function CandidateApplication() {
   ) : (
         <Card>
           <CardHeader>
-            <CardTitle>All Candidate Applications</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>All Candidate Applications</CardTitle>
+              {selectedCandidates.length > 0 && (
+                <Button 
+                  onClick={() => handlePushToPrescreening()}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  Push to Prescreening ({selectedCandidates.length})
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <Checkbox 
+                      checked={candidates?.length > 0 && selectedCandidates.length === candidates?.filter(c => c.status === 'applied').length}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedCandidates(candidates?.filter(c => c.status === 'applied').map(c => c.id) || []);
+                        } else {
+                          setSelectedCandidates([]);
+                        }
+                      }}
+                    />
+                  </TableHead>
                   <TableHead>Application ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Phone</TableHead>
@@ -1167,19 +1220,32 @@ export default function CandidateApplication() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8">
+                    <TableCell colSpan={10} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : candidates?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8">
+                    <TableCell colSpan={10} className="text-center py-8">
                       No candidates found
                     </TableCell>
                   </TableRow>
                 ) : (
                   candidates?.map((candidate: any) => (
                     <TableRow key={candidate.id}>
+                      <TableCell>
+                        <Checkbox 
+                          checked={selectedCandidates.includes(candidate.id)}
+                          disabled={candidate.status !== 'applied'}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCandidates([...selectedCandidates, candidate.id]);
+                            } else {
+                              setSelectedCandidates(selectedCandidates.filter(id => id !== candidate.id));
+                            }
+                          }}
+                        />
+                      </TableCell>
                       <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.phone}</TableCell>
