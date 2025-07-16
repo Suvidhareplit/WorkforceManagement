@@ -229,9 +229,10 @@ export default function Dashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="P0">P0 - Critical</SelectItem>
+                  <SelectItem value="P1">P1 - High</SelectItem>
+                  <SelectItem value="P2">P2 - Medium</SelectItem>
+                  <SelectItem value="P3">P3 - Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
