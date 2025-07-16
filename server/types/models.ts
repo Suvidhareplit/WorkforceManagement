@@ -127,11 +127,11 @@ export interface Candidate {
   name: string;
   email: string;
   phone: string;
-  cityId: number;
-  clusterId: number;
-  roleId: number;
-  vendorId: number | null;
-  recruiterId: number | null;
+  city: string;
+  cluster: string;
+  role: string;
+  vendor: string | null;
+  recruiter: string | null;
   sourcingChannel: string | null;
   qualification: string | null;
   applicationDate: Date | null;

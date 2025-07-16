@@ -148,11 +148,11 @@ export interface Candidate {
   name: string;
   email: string;
   phone: string;
-  cityId: number;
-  clusterId: number;
-  roleId: number;
-  vendorId?: number;
-  recruiterId?: number;
+  city: string;
+  cluster: string;
+  role: string;
+  vendor?: string;
+  recruiter?: string;
   sourcingChannel?: string;
   qualification?: string;
   applicationDate?: string;
@@ -172,11 +172,6 @@ export interface Candidate {
   createdAt: string;
   updatedAt: string;
   // Extended with relations
-  city?: City;
-  cluster?: Cluster;
-  role?: Role;
-  vendor?: Vendor;
-  recruiter?: Recruiter;
   hiringRequest?: HiringRequest;
 }
 

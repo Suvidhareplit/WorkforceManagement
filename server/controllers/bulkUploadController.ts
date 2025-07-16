@@ -212,13 +212,13 @@ export const processBulkUpload = async (req: Request, res: Response) => {
           name: candidate.name,
           phone: candidate.phone,
           email: candidate.email,
-          roleId: candidate.roleId,
-          cityId: candidate.cityId,
-          clusterId: candidate.clusterId,
+          role: candidate.role,
+          city: candidate.city,
+          cluster: candidate.cluster,
           qualification: candidate.qualification,
           resumeSource: candidate.resumeSource,
-          vendorId: candidate.vendorId,
-          recruiterId: candidate.recruiterId,
+          vendor: candidate.resumeSource === 'vendor' ? candidate.sourceName : null,
+          recruiter: candidate.resumeSource === 'field_recruiter' ? candidate.sourceName : null,
           referralName: candidate.resumeSource === 'referral' ? candidate.sourceName : undefined,
         });
         results.push(newCandidate);

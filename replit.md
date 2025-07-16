@@ -53,6 +53,10 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Created interactive table with error highlighting and inline editing for fixing validation errors
 - **July 16, 2025**: Added CSV template download feature with example data for bulk upload guidance
 - **July 16, 2025**: Integrated bulk upload into candidate application page with tabs for single/bulk modes
+- **July 16, 2025**: MAJOR DATABASE CHANGE - Removed foreign key constraints from candidates table for role, city, cluster, vendor, recruiter
+- **July 16, 2025**: Changed candidates table to store actual names instead of IDs for role, city, cluster, vendor, recruiter fields
+- **July 16, 2025**: Updated bulk upload to pass names directly without ID mapping
+- **July 16, 2025**: Modified storage layer to accept and store name values instead of foreign key references
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  

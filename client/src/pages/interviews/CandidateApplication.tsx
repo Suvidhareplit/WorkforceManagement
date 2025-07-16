@@ -42,17 +42,14 @@ interface ValidatedRow {
   qualification: string;
   resumeSource: string;
   sourceName?: string;
+  vendor?: string;
+  recruiter?: string;
   errors: Array<{
     row: number;
     field: string;
     value: string;
     message: string;
   }>;
-  roleId?: number;
-  cityId?: number;
-  clusterId?: number;
-  vendorId?: number;
-  recruiterId?: number;
 }
 
 function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast }: any) {
@@ -104,17 +101,17 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     // Re-validate this field
     validateField(updatedData[index], field);
     
-    // If city changed, re-validate cluster to ensure clusterId is updated
+    // If city changed, re-validate cluster
     if (field === 'city') {
       updatedData[index].errors = updatedData[index].errors.filter(e => e.field !== 'cluster');
       validateField(updatedData[index], 'cluster');
     }
     
-    // If resumeSource changed, clear sourceName and related IDs
+    // If resumeSource changed, clear sourceName and vendor/recruiter
     if (field === 'resumeSource') {
       updatedData[index].sourceName = '';
-      updatedData[index].vendorId = undefined;
-      updatedData[index].recruiterId = undefined;
+      updatedData[index].vendor = undefined;
+      updatedData[index].recruiter = undefined;
       updatedData[index].errors = updatedData[index].errors.filter(e => e.field !== 'sourceName');
     }
     
@@ -222,8 +219,6 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
         const role = roles?.find((r: any) => r.name.toLowerCase() === row.role.toLowerCase());
         if (!role) {
           errors.push({ row: row.row, field: 'role', value: row.role, message: 'Invalid role. Must match existing roles.' });
-        } else {
-          row.roleId = role.id;
         }
         break;
         
@@ -231,20 +226,16 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
         const city = cities?.find((c: any) => c.name.toLowerCase() === row.city.toLowerCase());
         if (!city) {
           errors.push({ row: row.row, field: 'city', value: row.city, message: 'Invalid city. Must match existing cities.' });
-        } else {
-          row.cityId = city.id;
         }
         break;
         
       case 'cluster':
-        const cityId = row.cityId || cities?.find((c: any) => c.name.toLowerCase() === row.city.toLowerCase())?.id;
+        const cityId = cities?.find((c: any) => c.name.toLowerCase() === row.city.toLowerCase())?.id;
         const cityCluster = clusters?.find((cl: any) => 
           cl.cityId === cityId && cl.name.toLowerCase() === row.cluster.toLowerCase()
         );
         if (!cityCluster) {
           errors.push({ row: row.row, field: 'cluster', value: row.cluster, message: 'Invalid cluster for selected city' });
-        } else {
-          row.clusterId = cityCluster.id;
         }
         break;
         
@@ -266,14 +257,14 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           if (!row.sourceName || !vendor) {
             errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Vendor name is required when source is vendor' });
           } else {
-            row.vendorId = vendor.id;
+            row.vendor = row.sourceName;
           }
         } else if (row.resumeSource === 'field_recruiter') {
           const recruiter = recruiters?.find((r: any) => r.name === row.sourceName);
           if (!row.sourceName || !recruiter) {
             errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Recruiter name is required when source is field_recruiter' });
           } else {
-            row.recruiterId = recruiter.id;
+            row.recruiter = row.sourceName;
           }
         } else if (row.resumeSource === 'referral' && !row.sourceName) {
           errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Referral name is required when source is referral' });

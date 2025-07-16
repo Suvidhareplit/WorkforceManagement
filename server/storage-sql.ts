@@ -649,14 +649,18 @@ export class SqlStorage implements IStorage {
     const count = parseInt(countResult.rows[0].count) + 1;
     const applicationId = `APP-${dateStr}-${count.toString().padStart(4, '0')}`;
     
-    // Find hiring request if exists
+    // Find hiring request if exists based on names
     let hiringRequestId = null;
-    if (candidate.roleId && candidate.cityId && candidate.clusterId) {
+    if (candidate.role && candidate.city && candidate.cluster) {
       const hiringCheck = await query(
-        `SELECT id FROM hiring_requests 
-         WHERE role_id = $1 AND city_id = $2 AND cluster_id = $3 AND status = 'open'
+        `SELECT hr.id 
+         FROM hiring_requests hr
+         JOIN roles r ON hr.role_id = r.id
+         JOIN cities c ON hr.city_id = c.id
+         JOIN clusters cl ON hr.cluster_id = cl.id
+         WHERE r.name = $1 AND c.name = $2 AND cl.name = $3 AND hr.status = 'open'
          LIMIT 1`,
-        [candidate.roleId, candidate.cityId, candidate.clusterId]
+        [candidate.role, candidate.city, candidate.cluster]
       );
       
       if (hiringCheck.rows.length > 0) {
@@ -666,16 +670,16 @@ export class SqlStorage implements IStorage {
     
     const result = await query(
       `INSERT INTO candidates (
-        application_id, hiring_request_id, name, email, phone, city_id, cluster_id, role_id,
-        vendor_id, recruiter_id, resume_source, qualification, referral_name
+        application_id, hiring_request_id, name, email, phone, city, cluster, role,
+        vendor, recruiter, resume_source, qualification, referral_name
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *`,
       [
         applicationId,
         hiringRequestId,
         candidate.name, candidate.email, candidate.phone,
-        candidate.cityId, candidate.clusterId, candidate.roleId,
-        candidate.vendorId, candidate.recruiterId, 
+        candidate.city, candidate.cluster, candidate.role,
+        candidate.vendor, candidate.recruiter, 
         candidate.sourcingChannel || candidate.resumeSource,
         candidate.qualification,
         candidate.referralName
@@ -687,16 +691,9 @@ export class SqlStorage implements IStorage {
   async getCandidates(filters?: any): Promise<Candidate[]> {
     let queryText = `
       SELECT c.*, 
-        hr.request_id as hiring_request_id,
-        ct.name as city_name, cl.name as cluster_name, r.name as role_name,
-        v.name as vendor_name, rc.name as recruiter_name
+        hr.request_id as hiring_request_id
       FROM candidates c
       LEFT JOIN hiring_requests hr ON c.hiring_request_id = hr.id
-      JOIN cities ct ON c.city_id = ct.id
-      JOIN clusters cl ON c.cluster_id = cl.id
-      JOIN roles r ON c.role_id = r.id
-      LEFT JOIN vendors v ON c.vendor_id = v.id
-      LEFT JOIN recruiters rc ON c.recruiter_id = rc.id
     `;
     
     const conditions = [];
