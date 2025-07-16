@@ -43,6 +43,8 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Set Bangalore as default city selection in Dashboard instead of showing empty state
 - **July 16, 2025**: Added Priority filter alongside City filter for better data segmentation
 - **July 16, 2025**: Simplified table display to show only position counts since priority is now a filter
+- **July 16, 2025**: Made Email ID mandatory field in candidate application form
+- **July 16, 2025**: Changed qualification field from text input to dropdown with options: 8th-10th, 11th-12th, Graduation, B.Tech, Diploma, ITI
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  

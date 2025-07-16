@@ -17,11 +17,11 @@ import { Badge } from "@/components/ui/badge";
 const candidateSchema = z.object({
   name: z.string().min(1, "Name is required"),
   phone: z.string().min(10, "Valid phone number is required"),
-  email: z.string().email("Valid email is required").optional().or(z.literal("")),
+  email: z.string().email("Valid email is required"),
   roleId: z.string().min(1, "Role is required"),
   cityId: z.string().min(1, "City is required"),
   clusterId: z.string().min(1, "Cluster is required"),
-  qualification: z.string().optional(),
+  qualification: z.string().min(1, "Qualification is required"),
   resumeSource: z.string().min(1, "Resume source is required"),
   vendorId: z.string().optional(),
   recruiterId: z.string().optional(),
@@ -83,7 +83,7 @@ export default function CandidateApplication() {
       const payload: any = {
         name: data.name,
         phone: data.phone,
-        email: data.email || undefined,
+        email: data.email,
         roleId: parseInt(data.roleId),
         cityId: parseInt(data.cityId),
         clusterId: parseInt(data.clusterId),
@@ -220,7 +220,7 @@ export default function CandidateApplication() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email ID (Optional)</FormLabel>
+                      <FormLabel>Email ID</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="email@example.com" {...field} />
                       </FormControl>
@@ -320,9 +320,21 @@ export default function CandidateApplication() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Qualification</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Educational qualification" {...field} />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Qualification" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="8th - 10th">8th - 10th</SelectItem>
+                          <SelectItem value="11th - 12th">11th - 12th</SelectItem>
+                          <SelectItem value="Graduation">Graduation</SelectItem>
+                          <SelectItem value="B.Tech">B.Tech</SelectItem>
+                          <SelectItem value="Diploma">Diploma</SelectItem>
+                          <SelectItem value="ITI">ITI</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
