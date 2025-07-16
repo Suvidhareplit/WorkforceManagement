@@ -34,6 +34,23 @@ export default function MasterData() {
     replacementPeriod: "",
     cityId: "1",
     jobDescriptionFile: null as File | null,
+    // Commercial terms
+    managementFees: "",
+    sourcingFee: "",
+    replacementDays: "",
+    // Contact details
+    deliveryLeadName: "",
+    deliveryLeadEmail: "",
+    deliveryLeadPhone: "",
+    cityRecruitmentSpocName: "",
+    cityRecruitmentSpocEmail: "",
+    cityRecruitmentSpocPhone: "",
+    businessHeadName: "",
+    businessHeadEmail: "",
+    businessHeadPhone: "",
+    payrollSpocName: "",
+    payrollSpocEmail: "",
+    payrollSpocPhone: "",
   });
   const [formData, setFormData] = useState({
     name: "",
@@ -46,6 +63,23 @@ export default function MasterData() {
     replacementPeriod: "",
     cityId: "1", // Default to first city to avoid empty string
     jobDescriptionFile: null as File | null,
+    // Commercial terms
+    managementFees: "",
+    sourcingFee: "",
+    replacementDays: "",
+    // Contact details
+    deliveryLeadName: "",
+    deliveryLeadEmail: "",
+    deliveryLeadPhone: "",
+    cityRecruitmentSpocName: "",
+    cityRecruitmentSpocEmail: "",
+    cityRecruitmentSpocPhone: "",
+    businessHeadName: "",
+    businessHeadEmail: "",
+    businessHeadPhone: "",
+    payrollSpocName: "",
+    payrollSpocEmail: "",
+    payrollSpocPhone: "",
   });
   const { toast } = useToast();
 
@@ -291,6 +325,23 @@ export default function MasterData() {
       contactPerson: formData.contactPerson,
       commercialTerms: formData.commercialTerms,
       replacementPeriod: formData.replacementPeriod ? parseInt(formData.replacementPeriod) : undefined,
+      // Commercial terms
+      managementFees: formData.managementFees ? parseFloat(formData.managementFees) : undefined,
+      sourcingFee: formData.sourcingFee ? parseFloat(formData.sourcingFee) : undefined,
+      replacementDays: formData.replacementDays ? parseInt(formData.replacementDays) : undefined,
+      // Contact details
+      deliveryLeadName: formData.deliveryLeadName,
+      deliveryLeadEmail: formData.deliveryLeadEmail,
+      deliveryLeadPhone: formData.deliveryLeadPhone,
+      cityRecruitmentSpocName: formData.cityRecruitmentSpocName,
+      cityRecruitmentSpocEmail: formData.cityRecruitmentSpocEmail,
+      cityRecruitmentSpocPhone: formData.cityRecruitmentSpocPhone,
+      businessHeadName: formData.businessHeadName,
+      businessHeadEmail: formData.businessHeadEmail,
+      businessHeadPhone: formData.businessHeadPhone,
+      payrollSpocName: formData.payrollSpocName,
+      payrollSpocEmail: formData.payrollSpocEmail,
+      payrollSpocPhone: formData.payrollSpocPhone,
     });
   };
 
@@ -359,7 +410,24 @@ export default function MasterData() {
             phone: editFormData.phone,
             contactPerson: editFormData.contactPerson,
             commercialTerms: editFormData.commercialTerms,
-            replacementPeriod: editFormData.replacementPeriod ? parseInt(editFormData.replacementPeriod) : undefined
+            replacementPeriod: editFormData.replacementPeriod ? parseInt(editFormData.replacementPeriod) : undefined,
+            // Commercial terms
+            managementFees: editFormData.managementFees ? parseFloat(editFormData.managementFees) : undefined,
+            sourcingFee: editFormData.sourcingFee ? parseFloat(editFormData.sourcingFee) : undefined,
+            replacementDays: editFormData.replacementDays ? parseInt(editFormData.replacementDays) : undefined,
+            // Contact details
+            deliveryLeadName: editFormData.deliveryLeadName,
+            deliveryLeadEmail: editFormData.deliveryLeadEmail,
+            deliveryLeadPhone: editFormData.deliveryLeadPhone,
+            cityRecruitmentSpocName: editFormData.cityRecruitmentSpocName,
+            cityRecruitmentSpocEmail: editFormData.cityRecruitmentSpocEmail,
+            cityRecruitmentSpocPhone: editFormData.cityRecruitmentSpocPhone,
+            businessHeadName: editFormData.businessHeadName,
+            businessHeadEmail: editFormData.businessHeadEmail,
+            businessHeadPhone: editFormData.businessHeadPhone,
+            payrollSpocName: editFormData.payrollSpocName,
+            payrollSpocEmail: editFormData.payrollSpocEmail,
+            payrollSpocPhone: editFormData.payrollSpocPhone,
           }),
           ...(editType === 'recruiter' && { 
             email: editFormData.email,
@@ -517,6 +585,23 @@ export default function MasterData() {
       incentiveStructure: "",
       cityId: "1",
       jobDescriptionFile: null,
+      // Commercial terms
+      managementFees: vendor.managementFees?.toString() || "",
+      sourcingFee: vendor.sourcingFee?.toString() || "",
+      replacementDays: vendor.replacementDays?.toString() || "",
+      // Contact details
+      deliveryLeadName: vendor.deliveryLeadName || "",
+      deliveryLeadEmail: vendor.deliveryLeadEmail || "",
+      deliveryLeadPhone: vendor.deliveryLeadPhone || "",
+      cityRecruitmentSpocName: vendor.cityRecruitmentSpocName || "",
+      cityRecruitmentSpocEmail: vendor.cityRecruitmentSpocEmail || "",
+      cityRecruitmentSpocPhone: vendor.cityRecruitmentSpocPhone || "",
+      businessHeadName: vendor.businessHeadName || "",
+      businessHeadEmail: vendor.businessHeadEmail || "",
+      businessHeadPhone: vendor.businessHeadPhone || "",
+      payrollSpocName: vendor.payrollSpocName || "",
+      payrollSpocEmail: vendor.payrollSpocEmail || "",
+      payrollSpocPhone: vendor.payrollSpocPhone || "",
     });
   };
 
@@ -1110,6 +1195,191 @@ export default function MasterData() {
                     onChange={(e) => setFormData({ ...formData, replacementPeriod: e.target.value })}
                   />
                 </div>
+                
+                {/* Commercial Terms Section */}
+                <div className="border-t pt-4">
+                  <h3 className="font-medium mb-3">Commercial Terms</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="managementFees">Management Fees (%)</Label>
+                      <Input
+                        id="managementFees"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={formData.managementFees}
+                        onChange={(e) => setFormData({ ...formData, managementFees: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="sourcingFee">Sourcing Fee (%)</Label>
+                      <Input
+                        id="sourcingFee"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={formData.sourcingFee}
+                        onChange={(e) => setFormData({ ...formData, sourcingFee: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="replacementDays">Replacement Days</Label>
+                      <Input
+                        id="replacementDays"
+                        type="number"
+                        placeholder="0"
+                        value={formData.replacementDays}
+                        onChange={(e) => setFormData({ ...formData, replacementDays: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Details Section */}
+                <div className="border-t pt-4">
+                  <h3 className="font-medium mb-3">Contact Details</h3>
+                  
+                  {/* Delivery Lead */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Delivery Lead</h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="deliveryLeadName">Name</Label>
+                        <Input
+                          id="deliveryLeadName"
+                          placeholder="Enter name"
+                          value={formData.deliveryLeadName}
+                          onChange={(e) => setFormData({ ...formData, deliveryLeadName: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="deliveryLeadEmail">Email</Label>
+                        <Input
+                          id="deliveryLeadEmail"
+                          type="email"
+                          placeholder="Enter email"
+                          value={formData.deliveryLeadEmail}
+                          onChange={(e) => setFormData({ ...formData, deliveryLeadEmail: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="deliveryLeadPhone">Phone</Label>
+                        <Input
+                          id="deliveryLeadPhone"
+                          placeholder="Enter phone"
+                          value={formData.deliveryLeadPhone}
+                          onChange={(e) => setFormData({ ...formData, deliveryLeadPhone: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* City Recruitment SPOC */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">City Recruitment SPOC</h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="cityRecruitmentSpocName">Name</Label>
+                        <Input
+                          id="cityRecruitmentSpocName"
+                          placeholder="Enter name"
+                          value={formData.cityRecruitmentSpocName}
+                          onChange={(e) => setFormData({ ...formData, cityRecruitmentSpocName: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cityRecruitmentSpocEmail">Email</Label>
+                        <Input
+                          id="cityRecruitmentSpocEmail"
+                          type="email"
+                          placeholder="Enter email"
+                          value={formData.cityRecruitmentSpocEmail}
+                          onChange={(e) => setFormData({ ...formData, cityRecruitmentSpocEmail: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cityRecruitmentSpocPhone">Phone</Label>
+                        <Input
+                          id="cityRecruitmentSpocPhone"
+                          placeholder="Enter phone"
+                          value={formData.cityRecruitmentSpocPhone}
+                          onChange={(e) => setFormData({ ...formData, cityRecruitmentSpocPhone: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Business Head */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Business Head</h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="businessHeadName">Name</Label>
+                        <Input
+                          id="businessHeadName"
+                          placeholder="Enter name"
+                          value={formData.businessHeadName}
+                          onChange={(e) => setFormData({ ...formData, businessHeadName: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="businessHeadEmail">Email</Label>
+                        <Input
+                          id="businessHeadEmail"
+                          type="email"
+                          placeholder="Enter email"
+                          value={formData.businessHeadEmail}
+                          onChange={(e) => setFormData({ ...formData, businessHeadEmail: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="businessHeadPhone">Phone</Label>
+                        <Input
+                          id="businessHeadPhone"
+                          placeholder="Enter phone"
+                          value={formData.businessHeadPhone}
+                          onChange={(e) => setFormData({ ...formData, businessHeadPhone: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payroll SPOC */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium mb-2">Payroll SPOC</h4>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="payrollSpocName">Name</Label>
+                        <Input
+                          id="payrollSpocName"
+                          placeholder="Enter name"
+                          value={formData.payrollSpocName}
+                          onChange={(e) => setFormData({ ...formData, payrollSpocName: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="payrollSpocEmail">Email</Label>
+                        <Input
+                          id="payrollSpocEmail"
+                          type="email"
+                          placeholder="Enter email"
+                          value={formData.payrollSpocEmail}
+                          onChange={(e) => setFormData({ ...formData, payrollSpocEmail: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="payrollSpocPhone">Phone</Label>
+                        <Input
+                          id="payrollSpocPhone"
+                          placeholder="Enter phone"
+                          value={formData.payrollSpocPhone}
+                          onChange={(e) => setFormData({ ...formData, payrollSpocPhone: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <Button
                   onClick={handleCreateVendor}
                   disabled={createVendorMutation.isPending}

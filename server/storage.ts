@@ -203,7 +203,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createVendor(vendor: InsertVendor): Promise<Vendor> {
-    const [newVendor] = await db.insert(vendors).values(vendor).returning();
+    const [newVendor] = await db.insert(vendors).values({
+      ...vendor,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).returning();
     return newVendor;
   }
 
@@ -432,7 +436,15 @@ export class DatabaseStorage implements IStorage {
     }
 
     const [updatedVendor] = await db.update(vendors)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ 
+        ...data, 
+        updatedAt: new Date(),
+        // Handle null values for numeric fields
+        managementFees: data.managementFees === undefined ? null : data.managementFees,
+        sourcingFee: data.sourcingFee === undefined ? null : data.sourcingFee,
+        replacementDays: data.replacementDays === undefined ? null : data.replacementDays,
+        replacementPeriod: data.replacementPeriod === undefined ? null : data.replacementPeriod,
+      })
       .where(eq(vendors.id, id))
       .returning();
 
