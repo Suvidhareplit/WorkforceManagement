@@ -85,10 +85,10 @@ Preferred communication style: Simple, everyday language.
 - **Package Management**: Standalone package.json in server directory
 
 ### Database Architecture
-- **Database**: PostgreSQL (configured for Neon serverless)
-- **Schema Management**: Drizzle Kit for migrations (server/drizzle.config.ts)
-- **Connection**: Connection pooling with @neondatabase/serverless
-- **Schema Location**: server/schema.ts (no longer shared)
+- **Database**: PostgreSQL (standard PostgreSQL instance)
+- **Schema Management**: Raw SQL migrations (server/sql/schema.sql)
+- **Connection**: Connection pooling with standard pg library
+- **Schema Location**: Raw SQL schema in server/sql/schema.sql
 
 ## Key Components
 
