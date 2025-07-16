@@ -237,10 +237,10 @@ export const processBulkUpload = async (req: Request, res: Response) => {
           city: candidate.city,
           cluster: candidate.cluster,
           qualification: candidate.qualification,
-          resumeSource: candidate.resumeSource,
+          resumeSource: candidate.resume_source || candidate.resumeSource,
           vendor: candidate.vendor,
           recruiter: candidate.recruiter,
-          referralName: candidate.referralName,
+          referralName: candidate.referral_name || candidate.referralName,
         });
         results.push(newCandidate);
       } catch (error) {
