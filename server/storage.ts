@@ -186,8 +186,38 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(roles).orderBy(asc(roles.name));
   }
 
-  async getVendors(): Promise<Vendor[]> {
-    return await db.select().from(vendors).orderBy(asc(vendors.name));
+  async getVendors(): Promise<any[]> {
+    const vendorList = await db.select().from(vendors).orderBy(asc(vendors.name));
+    
+    // Enhance each vendor with city-specific SPOC data
+    const enhancedVendors = await Promise.all(
+      vendorList.map(async (vendor) => {
+        const cityContacts = await this.getVendorCityContacts(vendor.id);
+        
+        // Transform city contacts into the expected format
+        const citySpocData: { [cityId: number]: { name: string; email: string; phone: string; cityId: number; cityName: string } } = {};
+        
+        for (const contact of cityContacts) {
+          // Get city name for each contact
+          const [city] = await db.select().from(cities).where(eq(cities.id, contact.cityId));
+          
+          citySpocData[contact.cityId] = {
+            name: contact.spocName,
+            email: contact.spocEmail,
+            phone: contact.spocPhone || '',
+            cityId: contact.cityId,
+            cityName: city?.name || 'Unknown City'
+          };
+        }
+        
+        return {
+          ...vendor,
+          citySpocData
+        };
+      })
+    );
+    
+    return enhancedVendors;
   }
 
   async getRecruiters(): Promise<Recruiter[]> {
@@ -209,18 +239,84 @@ export class DatabaseStorage implements IStorage {
     return newRole;
   }
 
-  async createVendor(vendor: InsertVendor): Promise<Vendor> {
+  async createVendor(vendorData: any): Promise<Vendor> {
+    // Separate city SPOC data from vendor data
+    const citySpocFields = {};
+    const vendorFields = {};
+    
+    for (const [key, value] of Object.entries(vendorData)) {
+      if (key.startsWith('citySpoc_') && typeof value === 'string' && value.trim()) {
+        citySpocFields[key] = value;
+      } else {
+        vendorFields[key] = value;
+      }
+    }
+
+    // Create the vendor first
     const [newVendor] = await db.insert(vendors).values({
-      ...vendor,
+      ...vendorFields,
       createdAt: new Date(),
       updatedAt: new Date(),
     }).returning();
+
+    // Process city-specific SPOC data
+    const citySpocEntries = Object.entries(citySpocFields);
+    const citySpocData: { [cityId: string]: { name?: string; email?: string; phone?: string } } = {};
+
+    // Group by city ID
+    for (const [key, value] of citySpocEntries) {
+      const match = key.match(/^citySpoc_(\d+)_(name|email|phone)$/);
+      if (match) {
+        const [, cityId, field] = match;
+        if (!citySpocData[cityId]) {
+          citySpocData[cityId] = {};
+        }
+        citySpocData[cityId][field] = value as string;
+      }
+    }
+
+    // Insert city SPOC contacts
+    for (const [cityId, spocData] of Object.entries(citySpocData)) {
+      if (spocData.name && spocData.email) {
+        await this.createVendorCityContact({
+          vendorId: newVendor.id,
+          cityId: parseInt(cityId),
+          spocName: spocData.name,
+          spocEmail: spocData.email,
+          spocPhone: spocData.phone || null,
+        });
+      }
+    }
+
     return newVendor;
   }
 
   async createRecruiter(recruiter: InsertRecruiter): Promise<Recruiter> {
     const [newRecruiter] = await db.insert(recruiters).values(recruiter).returning();
     return newRecruiter;
+  }
+
+  // Vendor city contacts
+  async createVendorCityContact(contact: InsertVendorCityContact): Promise<VendorCityContact> {
+    const [newContact] = await db.insert(vendorCityContacts).values(contact).returning();
+    return newContact;
+  }
+
+  async getVendorCityContacts(vendorId: number): Promise<VendorCityContact[]> {
+    return await db.select().from(vendorCityContacts).where(eq(vendorCityContacts.vendorId, vendorId));
+  }
+
+  async updateVendorCityContact(id: number, contact: Partial<InsertVendorCityContact>): Promise<VendorCityContact | undefined> {
+    const [updatedContact] = await db.update(vendorCityContacts)
+      .set(contact)
+      .where(eq(vendorCityContacts.id, id))
+      .returning();
+    return updatedContact || undefined;
+  }
+
+  async deleteVendorCityContact(id: number): Promise<boolean> {
+    const result = await db.delete(vendorCityContacts).where(eq(vendorCityContacts.id, id));
+    return result.rowCount > 0;
   }
 
   async toggleCityStatus(id: number, changedBy: number): Promise<City> {
