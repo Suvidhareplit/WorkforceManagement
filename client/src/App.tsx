@@ -9,7 +9,6 @@ import Dashboard from "./pages/Dashboard";
 import CreateHiringRequest from "./pages/hiring/CreateHiringRequest";
 import ViewHiringRequests from "./pages/hiring/ViewHiringRequests";
 import CandidateApplication from "./pages/interviews/CandidateApplication";
-import BulkUpload from "./pages/interviews/BulkUpload";
 import Prescreening from "./pages/interviews/Prescreening";
 import TechnicalRound from "./pages/interviews/TechnicalRound";
 import OfferManagement from "./pages/interviews/OfferManagement";
@@ -32,7 +31,6 @@ function Router() {
         <Route path="/hiring/create" component={CreateHiringRequest} />
         <Route path="/hiring/requests" component={ViewHiringRequests} />
         <Route path="/interviews/applications" component={CandidateApplication} />
-        <Route path="/interviews/bulk-upload" component={BulkUpload} />
         <Route path="/interviews/prescreening" component={Prescreening} />
         <Route path="/interviews/technical" component={TechnicalRound} />
         <Route path="/interviews/offers" component={OfferManagement} />

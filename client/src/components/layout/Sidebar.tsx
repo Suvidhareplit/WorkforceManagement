@@ -59,11 +59,6 @@ const menuItems = [
         href: "/interviews/applications",
       },
       {
-        icon: Upload,
-        label: "Bulk Upload",
-        href: "/interviews/bulk-upload",
-      },
-      {
         icon: ClipboardCheck,
         label: "Prescreening",
         href: "/interviews/prescreening",

@@ -52,6 +52,7 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Implemented validation against master data (roles, cities, clusters, vendors, recruiters) in bulk upload
 - **July 16, 2025**: Created interactive table with error highlighting and inline editing for fixing validation errors
 - **July 16, 2025**: Added CSV template download feature with example data for bulk upload guidance
+- **July 16, 2025**: Integrated bulk upload into candidate application page with tabs for single/bulk modes
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  
