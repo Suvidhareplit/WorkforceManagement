@@ -53,6 +53,9 @@ export default function HiringAnalytics() {
   const [cityFilter, setCityFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedCityRows, setSelectedCityRows] = useState<{[cityId: string]: string[]}>({});
+  const [isCityEmailDialogOpen, setIsCityEmailDialogOpen] = useState(false);
+  const [selectedCityForEmail, setSelectedCityForEmail] = useState<string>("");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -114,33 +117,59 @@ export default function HiringAnalytics() {
     );
   });
 
-  // Group requests by city for analytics summary
-  const analyticsData = filteredRequests.reduce((acc: any, request: HiringRequest) => {
-    const key = `${request.cityName}-${request.clusterName}-${request.roleName}`;
-    if (!acc[key]) {
-      acc[key] = {
-        city: request.cityName,
-        cluster: request.clusterName,
-        role: request.roleName,
-        totalPositions: 0,
-        requestCount: 0,
-        priorities: { high: 0, medium: 0, low: 0 },
-        statuses: { open: 0, in_progress: 0, closed: 0 },
+  // Group requests by city for detailed analytics
+  const cityAnalytics = filteredRequests.reduce((acc: any, request: HiringRequest) => {
+    const cityKey = request.cityName;
+    const roleKey = request.roleName;
+    const clusterKey = request.clusterName;
+    
+    if (!acc[cityKey]) {
+      acc[cityKey] = {
         cityId: request.cityId,
-        roleId: request.roleId,
-        clusterId: request.clusterId,
+        cityName: request.cityName,
+        roles: {},
+        clusters: new Set(),
+        totalOpenPositions: 0,
       };
     }
-    acc[key].totalPositions += request.numberOfPositions;
-    acc[key].requestCount += 1;
-    if (request.priority in acc[key].priorities) {
-      acc[key].priorities[request.priority as 'high' | 'medium' | 'low']++;
+    
+    if (!acc[cityKey].roles[roleKey]) {
+      acc[cityKey].roles[roleKey] = {
+        roleId: request.roleId,
+        roleName: request.roleName,
+        clusters: {},
+        totalOpenPositions: 0,
+      };
     }
-    if (request.status in acc[key].statuses) {
-      acc[key].statuses[request.status as 'open' | 'in_progress' | 'closed']++;
+    
+    if (!acc[cityKey].roles[roleKey].clusters[clusterKey]) {
+      acc[cityKey].roles[roleKey].clusters[clusterKey] = {
+        clusterId: request.clusterId,
+        clusterName: request.clusterName,
+        openPositions: 0,
+        totalRequests: 0,
+      };
     }
+    
+    // Add cluster to city clusters set
+    acc[cityKey].clusters.add(clusterKey);
+    
+    // Only count open positions (not closed)
+    if (request.status !== 'closed') {
+      acc[cityKey].roles[roleKey].clusters[clusterKey].openPositions += request.numberOfPositions;
+      acc[cityKey].roles[roleKey].totalOpenPositions += request.numberOfPositions;
+      acc[cityKey].totalOpenPositions += request.numberOfPositions;
+    }
+    
+    acc[cityKey].roles[roleKey].clusters[clusterKey].totalRequests += 1;
+    
     return acc;
   }, {});
+
+  // Convert clusters set to array for each city
+  Object.keys(cityAnalytics).forEach(cityKey => {
+    cityAnalytics[cityKey].clustersArray = Array.from(cityAnalytics[cityKey].clusters).sort();
+  });
 
   const handleSelectRequest = (requestId: number) => {
     setSelectedRequests(prev => 
@@ -156,6 +185,54 @@ export default function HiringAnalytics() {
     } else {
       setSelectedRequests(filteredRequests.map((req: HiringRequest) => req.id));
     }
+  };
+
+  const handleSelectCityRow = (cityId: string, roleId: string) => {
+    setSelectedCityRows(prev => {
+      const currentCitySelections = prev[cityId] || [];
+      const isSelected = currentCitySelections.includes(roleId);
+      
+      if (isSelected) {
+        // Remove from selection
+        const newSelections = currentCitySelections.filter(id => id !== roleId);
+        if (newSelections.length === 0) {
+          const { [cityId]: _, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [cityId]: newSelections };
+      } else {
+        // Add to selection
+        return { ...prev, [cityId]: [...currentCitySelections, roleId] };
+      }
+    });
+  };
+
+  const handleSelectAllCityRows = (cityId: string) => {
+    const cityData = cityAnalytics[Object.keys(cityAnalytics).find(key => cityAnalytics[key].cityId.toString() === cityId)];
+    if (!cityData) return;
+    
+    const allRoleIds = Object.values(cityData.roles).map((role: any) => role.roleId.toString());
+    const currentSelections = selectedCityRows[cityId] || [];
+    
+    if (currentSelections.length === allRoleIds.length) {
+      // Deselect all
+      const { [cityId]: _, ...rest } = selectedCityRows;
+      setSelectedCityRows(rest);
+    } else {
+      // Select all
+      setSelectedCityRows(prev => ({ ...prev, [cityId]: allRoleIds }));
+    }
+  };
+
+  const openCityEmailDialog = (cityId: string) => {
+    setSelectedCityForEmail(cityId);
+    setIsCityEmailDialogOpen(true);
+  };
+
+  const getVendorsForCity = (cityId: string) => {
+    return vendors.filter((vendor: Vendor) => 
+      vendor.citySpocData && vendor.citySpocData[parseInt(cityId)]
+    );
   };
 
   const getAvailableVendorsForCity = () => {
@@ -299,6 +376,95 @@ export default function HiringAnalytics() {
         </div>
       </div>
 
+      {/* City Email Dialog */}
+      <Dialog open={isCityEmailDialogOpen} onOpenChange={setIsCityEmailDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Send to City Vendors</DialogTitle>
+            <DialogDescription>
+              Send selected hiring requirements to all available vendors for this city
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-semibold text-blue-900 mb-2">Selected City:</h4>
+              <p className="text-blue-800">
+                {selectedCityForEmail && Object.values(cityAnalytics).find((city: any) => 
+                  city.cityId.toString() === selectedCityForEmail
+                )?.cityName}
+              </p>
+            </div>
+
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <h4 className="font-semibold text-gray-900 mb-2">Selected Roles:</h4>
+              <div className="space-y-1">
+                {selectedCityForEmail && (selectedCityRows[selectedCityForEmail] || []).map((roleId: string) => {
+                  const cityData = Object.values(cityAnalytics).find((city: any) => 
+                    city.cityId.toString() === selectedCityForEmail
+                  );
+                  const roleData = cityData && Object.values(cityData.roles).find((role: any) => 
+                    role.roleId.toString() === roleId
+                  );
+                  return (
+                    <div key={roleId} className="flex justify-between">
+                      <span>{roleData?.roleName}</span>
+                      <span className="font-semibold">{roleData?.totalOpenPositions} positions</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="p-4 bg-green-50 rounded-lg">
+              <h4 className="font-semibold text-green-900 mb-2">Available Vendors:</h4>
+              <div className="space-y-2">
+                {selectedCityForEmail && getVendorsForCity(selectedCityForEmail).map((vendor: Vendor) => (
+                  <div key={vendor.id} className="flex justify-between items-center">
+                    <span className="font-medium">{vendor.name}</span>
+                    <span className="text-sm text-green-700">
+                      {vendor.citySpocData?.[parseInt(selectedCityForEmail)]?.name} 
+                      ({vendor.citySpocData?.[parseInt(selectedCityForEmail)]?.email})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="city-message">Custom Message (Optional)</Label>
+              <Textarea
+                id="city-message"
+                placeholder="Add any additional notes or instructions for vendors..."
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                // TODO: Implement city vendor email sending
+                console.log('Send to city vendors:', {
+                  cityId: selectedCityForEmail,
+                  selectedRoles: selectedCityRows[selectedCityForEmail],
+                  vendors: getVendorsForCity(selectedCityForEmail),
+                  customMessage
+                });
+                setIsCityEmailDialogOpen(false);
+                setSelectedCityForEmail("");
+                setCustomMessage("");
+              }}
+              disabled={!selectedCityForEmail || (selectedCityRows[selectedCityForEmail] || []).length === 0}
+              className="flex items-center gap-2"
+            >
+              <Send className="h-4 w-4" />
+              Send to {selectedCityForEmail ? getVendorsForCity(selectedCityForEmail).length : 0} Vendors
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Filters */}
       <Card>
         <CardHeader>
@@ -398,79 +564,105 @@ export default function HiringAnalytics() {
         </Card>
       </div>
 
-      {/* Analytics Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>City-Role-Cluster Analytics</CardTitle>
-          <CardDescription>
-            Grouped view of hiring requests with aggregated metrics
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>City</TableHead>
-                <TableHead>Cluster</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Requests</TableHead>
-                <TableHead>Total Positions</TableHead>
-                <TableHead>Priority Breakdown</TableHead>
-                <TableHead>Status Breakdown</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Object.values(analyticsData).map((item: any, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{item.city}</TableCell>
-                  <TableCell>{item.cluster}</TableCell>
-                  <TableCell>{item.role}</TableCell>
-                  <TableCell>{item.requestCount}</TableCell>
-                  <TableCell>{item.totalPositions}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {item.priorities.high > 0 && (
-                        <Badge variant="outline" className="text-xs bg-red-50 text-red-700">
-                          H: {item.priorities.high}
-                        </Badge>
-                      )}
-                      {item.priorities.medium > 0 && (
-                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
-                          M: {item.priorities.medium}
-                        </Badge>
-                      )}
-                      {item.priorities.low > 0 && (
-                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                          L: {item.priorities.low}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {item.statuses.open > 0 && (
-                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                          Open: {item.statuses.open}
-                        </Badge>
-                      )}
-                      {item.statuses.in_progress > 0 && (
-                        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">
-                          Progress: {item.statuses.in_progress}
-                        </Badge>
-                      )}
-                      {item.statuses.closed > 0 && (
-                        <Badge variant="outline" className="text-xs bg-gray-50 text-gray-700">
-                          Closed: {item.statuses.closed}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* City-wise Analytics Tables */}
+      {Object.entries(cityAnalytics).map(([cityKey, cityData]: [string, any]) => (
+        <Card key={cityKey} className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold bg-blue-600 text-white px-4 py-2 rounded text-center">
+                  {cityData.cityName}
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  Role-wise open positions by cluster
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSelectAllCityRows(cityData.cityId.toString())}
+                >
+                  {(selectedCityRows[cityData.cityId.toString()] || []).length === Object.keys(cityData.roles).length && Object.keys(cityData.roles).length > 0
+                    ? "Deselect All" 
+                    : "Select All"}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={(selectedCityRows[cityData.cityId.toString()] || []).length === 0}
+                  onClick={() => openCityEmailDialog(cityData.cityId.toString())}
+                  className="flex items-center gap-2"
+                >
+                  <Mail className="h-4 w-4" />
+                  Send to Vendors ({(selectedCityRows[cityData.cityId.toString()] || []).length})
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={(selectedCityRows[cityData.cityId.toString()] || []).length === Object.keys(cityData.roles).length && Object.keys(cityData.roles).length > 0}
+                        onCheckedChange={() => handleSelectAllCityRows(cityData.cityId.toString())}
+                      />
+                    </TableHead>
+                    <TableHead className="bg-yellow-100 font-semibold">Role</TableHead>
+                    {cityData.clustersArray.map((cluster: string) => (
+                      <TableHead key={cluster} className="text-center min-w-[100px]">
+                        {cluster}
+                      </TableHead>
+                    ))}
+                    <TableHead className="text-center font-semibold bg-orange-100">
+                      Total Open Positions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Object.entries(cityData.roles).map(([roleKey, roleData]: [string, any]) => (
+                    <TableRow key={roleKey}>
+                      <TableCell>
+                        <Checkbox
+                          checked={(selectedCityRows[cityData.cityId.toString()] || []).includes(roleData.roleId.toString())}
+                          onCheckedChange={() => handleSelectCityRow(cityData.cityId.toString(), roleData.roleId.toString())}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium bg-yellow-50">
+                        {roleData.roleName}
+                      </TableCell>
+                      {cityData.clustersArray.map((cluster: string) => (
+                        <TableCell key={cluster} className="text-center">
+                          {roleData.clusters[cluster]?.openPositions || 0}
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-center font-semibold bg-orange-50">
+                        {roleData.totalOpenPositions}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-gray-50 font-semibold">
+                    <TableCell></TableCell>
+                    <TableCell className="font-bold">Cluster-wise Total</TableCell>
+                    {cityData.clustersArray.map((cluster: string) => (
+                      <TableCell key={cluster} className="text-center font-bold">
+                        {Object.values(cityData.roles).reduce((sum: number, role: any) => 
+                          sum + (role.clusters[cluster]?.openPositions || 0), 0
+                        )}
+                      </TableCell>
+                    ))}
+                    <TableCell className="text-center font-bold bg-orange-100">
+                      {cityData.totalOpenPositions}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
 
       {/* Detailed Requests Table */}
       <Card>
