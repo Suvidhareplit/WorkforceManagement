@@ -266,8 +266,12 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           } else {
             row.recruiter = row.sourceName;
           }
-        } else if (row.resumeSource === 'referral' && !row.sourceName) {
-          errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Referral name is required when source is referral' });
+        } else if (row.resumeSource === 'referral') {
+          if (!row.sourceName) {
+            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Referral name is required when source is referral' });
+          } else {
+            row.referralName = row.sourceName;
+          }
         }
         break;
     }

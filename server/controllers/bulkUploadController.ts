@@ -207,8 +207,11 @@ export const processBulkUpload = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid data' });
     }
 
+    // Debug: log received data
+    console.log('Received candidates:', JSON.stringify(candidates, null, 2));
+
     // Process only valid candidates
-    const validCandidates = candidates.filter((c: ValidatedRow) => c.errors.length === 0);
+    const validCandidates = candidates.filter((c: any) => !c.errors || c.errors.length === 0);
     
     const results = [];
     const errors = [];
@@ -216,7 +219,8 @@ export const processBulkUpload = async (req: Request, res: Response) => {
     for (const candidate of validCandidates) {
       try {
         // Debug logging
-        console.log('Processing candidate:', {
+        console.log('Processing candidate full:', candidate);
+        console.log('Processing candidate summary:', {
           name: candidate.name,
           resumeSource: candidate.resumeSource,
           sourceName: candidate.sourceName,

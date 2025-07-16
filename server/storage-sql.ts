@@ -680,7 +680,7 @@ export class SqlStorage implements IStorage {
         candidate.name, candidate.email, candidate.phone,
         candidate.city, candidate.cluster, candidate.role,
         candidate.vendor, candidate.recruiter, 
-        candidate.sourcingChannel || candidate.resumeSource,
+        candidate.resumeSource || candidate.sourcingChannel || '',
         candidate.qualification,
         candidate.referralName
       ]
