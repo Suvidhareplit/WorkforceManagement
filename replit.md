@@ -37,8 +37,9 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Removed Quick Actions section from Dashboard (user request)
 - **July 16, 2025**: Removed Recent Hiring Requests and Candidate Pipeline sections from Dashboard (user request)
 - **July 16, 2025**: Dashboard now only displays KPI cards: Open/Closed Positions, Active Candidates, Avg Time to Hire, Success Rate
-- **July 16, 2025**: Added Role-wise Open Positions table to Dashboard with city and cluster filters
-- **July 16, 2025**: Table shows all roles even with 0 open positions, displays open positions count and active requests
+- **July 16, 2025**: Added Role-wise Open Positions table to Dashboard with city filter only
+- **July 16, 2025**: Table shows clusters as columns, displays only roles with open positions
+- **July 16, 2025**: Each cluster shows its open positions count, with a total column at the end
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  

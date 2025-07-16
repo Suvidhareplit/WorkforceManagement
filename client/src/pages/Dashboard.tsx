@@ -9,7 +9,6 @@ import { useState } from "react";
 
 export default function Dashboard() {
   const [selectedCity, setSelectedCity] = useState<string>("all");
-  const [selectedCluster, setSelectedCluster] = useState<string>("all");
 
   const { data: hiringRequestsData, isLoading: loadingHiring } = useQuery({
     queryKey: ["/api/analytics/hiring"],
@@ -27,26 +26,41 @@ export default function Dashboard() {
     queryKey: ["/api/master-data/cluster"],
   });
 
-  // Filter hiring requests based on selected city and cluster
+  // Filter hiring requests based on selected city
   const filteredHiringRequests = hiringRequestsData?.filter((req: any) => {
     const cityMatch = selectedCity === "all" || req.cityId === parseInt(selectedCity);
-    const clusterMatch = selectedCluster === "all" || req.clusterId === parseInt(selectedCluster);
-    return cityMatch && clusterMatch && req.status === 'open';
+    return cityMatch && req.status === 'open';
   }) || [];
 
-  // Calculate role-wise open positions
+  // Get clusters for selected city
+  const relevantClusters = selectedCity === "all" 
+    ? clustersData || []
+    : clustersData?.filter((cluster: any) => cluster.cityId === parseInt(selectedCity)) || [];
+
+  // Calculate role-wise open positions by cluster
   const roleWiseOpenPositions = rolesData?.map((role: any) => {
-    const openRequests = filteredHiringRequests.filter((req: any) => req.roleId === role.id);
-    const totalOpenPositions = openRequests.reduce((sum: number, req: any) => 
-      sum + (parseInt(req.numberOfPositions) || 0), 0
-    );
+    const roleRequests = filteredHiringRequests.filter((req: any) => req.roleId === role.id);
+    
+    // Calculate positions by cluster
+    const clusterPositions: any = {};
+    let totalPositions = 0;
+    
+    relevantClusters.forEach((cluster: any) => {
+      const clusterRequests = roleRequests.filter((req: any) => req.clusterId === cluster.id);
+      const positions = clusterRequests.reduce((sum: number, req: any) => 
+        sum + (parseInt(req.numberOfPositions) || 0), 0
+      );
+      clusterPositions[cluster.id] = positions;
+      totalPositions += positions;
+    });
+    
     return {
       roleId: role.id,
       roleName: role.name,
-      openPositions: totalOpenPositions,
-      requests: openRequests.length
+      clusterPositions,
+      totalPositions
     };
-  }) || [];
+  }).filter((role: any) => role.totalPositions > 0) || [];
 
   // Calculate metrics from hiring requests data (data is now in camelCase from API)
   const openPositions = hiringRequestsData && Array.isArray(hiringRequestsData) 
@@ -164,75 +178,67 @@ export default function Dashboard() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Role-wise Open Positions</CardTitle>
-            <div className="flex gap-4">
-              <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select City" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
-                  {citiesData?.map((city: any) => (
-                    <SelectItem key={city.id} value={city.id.toString()}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={selectedCluster} onValueChange={setSelectedCluster}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select Cluster" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Clusters</SelectItem>
-                  {clustersData?.filter((cluster: any) => 
-                    selectedCity === "all" || cluster.cityId === parseInt(selectedCity)
-                  ).map((cluster: any) => (
-                    <SelectItem key={cluster.id} value={cluster.id.toString()}>
-                      {cluster.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <CardTitle>Role-wise Open Positions by Cluster</CardTitle>
+            <Select value={selectedCity} onValueChange={setSelectedCity}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select City" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Cities</SelectItem>
+                {citiesData?.map((city: any) => (
+                  <SelectItem key={city.id} value={city.id.toString()}>
+                    {city.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Role</TableHead>
-                <TableHead className="text-center">Open Positions</TableHead>
-                <TableHead className="text-center">Active Requests</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {roleWiseOpenPositions.length > 0 ? (
-                roleWiseOpenPositions.map((role: any) => (
-                  <TableRow key={role.roleId}>
-                    <TableCell className="font-medium">{role.roleName}</TableCell>
-                    <TableCell className="text-center">
-                      <span className={role.openPositions > 0 ? "font-semibold text-blue-600" : "text-slate-400"}>
-                        {role.openPositions}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className={role.requests > 0 ? "text-slate-600" : "text-slate-400"}>
-                        {role.requests}
-                      </span>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="sticky left-0 bg-white">Role</TableHead>
+                  {relevantClusters.map((cluster: any) => (
+                    <TableHead key={cluster.id} className="text-center min-w-[120px]">
+                      {cluster.name}
+                    </TableHead>
+                  ))}
+                  <TableHead className="text-center font-semibold">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {roleWiseOpenPositions.length > 0 ? (
+                  roleWiseOpenPositions.map((role: any) => (
+                    <TableRow key={role.roleId}>
+                      <TableCell className="font-medium sticky left-0 bg-white">
+                        {role.roleName}
+                      </TableCell>
+                      {relevantClusters.map((cluster: any) => (
+                        <TableCell key={cluster.id} className="text-center">
+                          <span className={role.clusterPositions[cluster.id] > 0 ? "font-semibold text-blue-600" : "text-slate-300"}>
+                            {role.clusterPositions[cluster.id] || "-"}
+                          </span>
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-center">
+                        <span className="font-bold text-slate-800">
+                          {role.totalPositions}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={relevantClusters.length + 2} className="text-center text-slate-500">
+                      No open positions found
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center text-slate-500">
-                    No data available
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
