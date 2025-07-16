@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { storage } from "../storage";
 import { UserModel } from "../models";
-import { insertUserSchema } from "../schema";
 import { ZodError } from "zod";
 
 interface AuthenticatedRequest extends Request {

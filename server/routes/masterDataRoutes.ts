@@ -2,11 +2,6 @@ import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import { masterDataController } from "../controllers/masterDataController";
-import { validateRequest } from "../middlewares/validation";
-import { 
-  insertCitySchema, insertClusterSchema, insertRoleSchema, 
-  insertVendorSchema, insertRecruiterSchema 
-} from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 // Configure multer for file uploads
@@ -55,11 +50,11 @@ router.get('/files/:filename', (req, res) => {
 router.use(authenticate);
 
 // Create master data
-router.post('/city', validateRequest(insertCitySchema), masterDataController.createCity);
-router.post('/cluster', validateRequest(insertClusterSchema), masterDataController.createCluster);
+router.post('/city', masterDataController.createCity);
+router.post('/cluster', masterDataController.createCluster);
 router.post('/role', upload.single('jobDescriptionFile'), masterDataController.createRole);
-router.post('/vendor', validateRequest(insertVendorSchema), masterDataController.createVendor);
-router.post('/recruiter', validateRequest(insertRecruiterSchema), masterDataController.createRecruiter);
+router.post('/vendor', masterDataController.createVendor);
+router.post('/recruiter', masterDataController.createRecruiter);
 
 // Toggle status for master data (Active/Inactive)
 router.patch('/city/:id/toggle-status', masterDataController.toggleCityStatus);
@@ -69,10 +64,10 @@ router.patch('/vendor/:id/toggle-status', masterDataController.toggleVendorStatu
 router.patch('/recruiter/:id/toggle-status', masterDataController.toggleRecruiterStatus);
 
 // Edit master data
-router.patch('/city/:id', validateRequest(insertCitySchema.partial()), masterDataController.updateCity);
-router.patch('/cluster/:id', validateRequest(insertClusterSchema.partial()), masterDataController.updateCluster);
+router.patch('/city/:id', masterDataController.updateCity);
+router.patch('/cluster/:id', masterDataController.updateCluster);
 router.patch('/role/:id', upload.single('jobDescriptionFile'), masterDataController.updateRole);
-router.patch('/vendor/:id', validateRequest(insertVendorSchema.partial()), masterDataController.updateVendor);
-router.patch('/recruiter/:id', validateRequest(insertRecruiterSchema.partial()), masterDataController.updateRecruiter);
+router.patch('/vendor/:id', masterDataController.updateVendor);
+router.patch('/recruiter/:id', masterDataController.updateRecruiter);
 
 export { router as masterDataRoutes };

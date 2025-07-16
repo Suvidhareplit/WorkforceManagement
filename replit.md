@@ -7,12 +7,18 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+- **July 16, 2025**: MAJOR ARCHITECTURE CHANGE - Removed all Drizzle ORM dependencies and switched to raw SQL queries
+- **July 16, 2025**: Created new SQL-based storage implementation (server/storage-sql.ts) with complete feature parity
+- **July 16, 2025**: Migrated from @neondatabase/serverless to standard pg library for database connections
+- **July 16, 2025**: Created raw SQL schema file (server/sql/schema.sql) for database structure
+- **July 16, 2025**: Added database initialization script (server/scripts/init-db.ts) to set up tables and indexes
+- **July 16, 2025**: Removed drizzle.config.ts, schema.ts, and all Drizzle-related configurations
 - **July 16, 2025**: MAJOR REFACTORING - Completely separated frontend and backend with no shared code for independent deployment
 - **July 16, 2025**: Created separate type definitions: server/types/models.ts for backend, client/src/types/api.ts for frontend
 - **July 16, 2025**: Created independent package.json files for client/ and server/ directories
 - **July 16, 2025**: Set up separate TypeScript configurations for frontend and backend
 - **July 16, 2025**: Fixed database schema password field name from password_hash to password
-- **July 16, 2025**: Created separate Vite config for frontend and Drizzle config for backend
+- **July 16, 2025**: Created separate Vite config for frontend and removed Drizzle config from backend
 - **July 16, 2025**: Added comprehensive README documentation for root, frontend, and backend
 - **July 16, 2025**: Fixed all backend imports to use local schema references instead of @shared/schema
 - **July 16, 2025**: Successfully removed shared folder - complete separation achieved
@@ -67,7 +73,9 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture (server/)
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
-- **Database ORM**: Drizzle ORM for type-safe database operations
+- **Database**: Raw SQL queries with pg (PostgreSQL) client - NO ORM
+- **Database Schema**: Defined in server/sql/schema.sql
+- **Storage Layer**: SQL-based implementation in server/storage-sql.ts
 - **Authentication**: JWT-based authentication with bcrypt for password hashing
 - **File Uploads**: Multer for handling file uploads
 - **Email Service**: Nodemailer for email notifications

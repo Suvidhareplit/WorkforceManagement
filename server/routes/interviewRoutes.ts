@@ -1,13 +1,11 @@
 import { Router } from "express";
 import { interviewController } from "../controllers/interviewController";
-import { validateRequest } from "../middlewares/validation";
-import { insertCandidateSchema } from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 const router = Router();
 
 // Candidate application (public endpoint)
-router.post('/candidates', validateRequest(insertCandidateSchema), interviewController.createCandidate);
+router.post('/candidates', interviewController.createCandidate);
 
 // All other routes require authentication
 router.use(authenticate);

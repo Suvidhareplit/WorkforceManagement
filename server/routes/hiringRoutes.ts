@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { hiringController } from "../controllers/hiringController";
-import { validateRequest } from "../middlewares/validation";
-import { insertHiringRequestSchema } from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 const router = Router();
@@ -10,7 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 // Create hiring request
-router.post('/', validateRequest(insertHiringRequestSchema), hiringController.createRequest);
+router.post('/', hiringController.createRequest);
 
 // Get all hiring requests
 router.get('/', hiringController.getRequests);

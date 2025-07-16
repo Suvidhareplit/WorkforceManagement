@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { employeeController } from "../controllers/employeeController";
-import { validateRequest } from "../middlewares/validation";
-import { insertEmployeeSchema, insertEmployeeActionSchema } from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 const router = Router();
@@ -10,7 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 // Create employee
-router.post('/', validateRequest(insertEmployeeSchema), employeeController.createEmployee);
+router.post('/', employeeController.createEmployee);
 
 // Get all employees
 router.get('/', employeeController.getEmployees);
@@ -22,7 +20,7 @@ router.get('/:id', employeeController.getEmployeeById);
 router.patch('/:id', employeeController.updateEmployee);
 
 // Create employee action (PIP, warning, termination)
-router.post('/:id/actions', validateRequest(insertEmployeeActionSchema), employeeController.createEmployeeAction);
+router.post('/:id/actions', employeeController.createEmployeeAction);
 
 // Get employee actions
 router.get('/:id/actions', employeeController.getEmployeeActions);

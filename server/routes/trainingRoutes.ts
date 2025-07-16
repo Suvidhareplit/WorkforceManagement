@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { trainingController } from "../controllers/trainingController";
-import { validateRequest } from "../middlewares/validation";
-import { insertTrainingSessionSchema } from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 const router = Router();
@@ -10,7 +8,7 @@ const router = Router();
 router.use(authenticate);
 
 // Create training session
-router.post('/', validateRequest(insertTrainingSessionSchema), trainingController.createTrainingSession);
+router.post('/', trainingController.createTrainingSession);
 
 // Get training sessions
 router.get('/', trainingController.getTrainingSessions);
