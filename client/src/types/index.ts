@@ -51,7 +51,7 @@ export interface Recruiter {
   name: string;
   email: string;
   phone?: string;
-  incentiveStructure?: string;
+  cityId: number;
   isActive: boolean;
 }
 

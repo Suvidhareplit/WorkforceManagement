@@ -59,7 +59,7 @@ export const recruiters = pgTable("recruiters", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: varchar("phone", { length: 10 }),
-  incentiveStructure: text("incentive_structure"),
+  cityId: integer("city_id").references(() => cities.id).notNull(),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });

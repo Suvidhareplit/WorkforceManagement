@@ -30,7 +30,6 @@ export default function MasterData() {
     contactPerson: "",
     commercialTerms: "",
     replacementPeriod: "",
-    incentiveStructure: "",
     cityId: "1",
     jobDescriptionFile: null as File | null,
   });
@@ -43,7 +42,6 @@ export default function MasterData() {
     contactPerson: "",
     commercialTerms: "",
     replacementPeriod: "",
-    incentiveStructure: "",
     cityId: "1", // Default to first city to avoid empty string
     jobDescriptionFile: null as File | null,
   });
@@ -206,8 +204,8 @@ export default function MasterData() {
       contactPerson: "",
       commercialTerms: "",
       replacementPeriod: "",
-      incentiveStructure: "",
       cityId: "1",
+      jobDescriptionFile: null,
     });
     setSelectedCityId("");
   };
@@ -308,7 +306,7 @@ export default function MasterData() {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
-      incentiveStructure: formData.incentiveStructure,
+      cityId: parseInt(formData.cityId),
     });
   };
 
@@ -545,8 +543,8 @@ export default function MasterData() {
       contactPerson: "",
       commercialTerms: "",
       replacementPeriod: "",
-      incentiveStructure: recruiter.incentiveStructure || "",
-      cityId: "1",
+      cityId: recruiter.cityId?.toString() || "1",
+      jobDescriptionFile: null,
     });
   };
 
@@ -1128,6 +1126,7 @@ export default function MasterData() {
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
+                      <TableHead>City</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -1135,49 +1134,50 @@ export default function MasterData() {
                   <TableBody>
                     {loadingRecruiters ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
+                        <TableCell colSpan={6} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : safeRecruiters.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
+                        <TableCell colSpan={6} className="text-center py-8">
                           No recruiters found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      safeRecruiters.map((recruiter: Recruiter) => (
-                        <TableRow key={recruiter.id}>
-                          <TableCell className="font-medium">{recruiter.name}</TableCell>
-                          <TableCell>{recruiter.email}</TableCell>
-                          <TableCell>{recruiter.phone || "N/A"}</TableCell>
-                          <TableCell>
-                            <Badge variant={recruiter.isActive ? "default" : "secondary"}>
-                              {recruiter.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleEditRecruiter(recruiter)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm">
-                                  {recruiter.isActive ? "Active" : "Inactive"}
-                                </span>
-                                <Switch
-                                  checked={recruiter.isActive}
-                                  onCheckedChange={() => handleToggleRecruiterStatus(recruiter.id, recruiter.isActive)}
-                                />
+                      safeRecruiters.map((recruiter: Recruiter) => {
+                        const recruiterCity = safeCities.find(city => city.id === recruiter.cityId);
+                        return (
+                          <TableRow key={recruiter.id}>
+                            <TableCell className="font-medium">{recruiter.name}</TableCell>
+                            <TableCell>{recruiter.email}</TableCell>
+                            <TableCell>{recruiter.phone || "N/A"}</TableCell>
+                            <TableCell>{recruiterCity?.name || "N/A"}</TableCell>
+                            <TableCell>
+                              <Badge variant={recruiter.isActive ? "default" : "secondary"}>
+                                {recruiter.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleEditRecruiter(recruiter)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <div className="flex items-center space-x-2">
+                                  <Switch
+                                    checked={recruiter.isActive}
+                                    onCheckedChange={() => handleToggleRecruiterStatus(recruiter.id, recruiter.isActive)}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                     )}
                   </TableBody>
                 </Table>
@@ -1218,14 +1218,19 @@ export default function MasterData() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="incentiveStructure">Incentive Structure</Label>
-                  <Textarea
-                    id="incentiveStructure"
-                    placeholder="Enter incentive structure details"
-                    value={formData.incentiveStructure}
-                    onChange={(e) => setFormData({ ...formData, incentiveStructure: e.target.value })}
-                    rows={3}
-                  />
+                  <Label htmlFor="recruiterCity">City</Label>
+                  <Select value={formData.cityId} onValueChange={(value) => setFormData({ ...formData, cityId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select city" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeCities.map((city: City) => (
+                        <SelectItem key={city.id} value={city.id.toString()}>
+                          {city.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button
                   onClick={handleCreateRecruiter}
