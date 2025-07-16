@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 
 export default function Dashboard() {
-  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [selectedCity, setSelectedCity] = useState<string>("");
 
   const { data: hiringRequestsData, isLoading: loadingHiring } = useQuery({
     queryKey: ["/api/analytics/hiring"],
@@ -28,14 +28,14 @@ export default function Dashboard() {
 
   // Filter hiring requests based on selected city
   const filteredHiringRequests = hiringRequestsData?.filter((req: any) => {
-    const cityMatch = selectedCity === "all" || req.cityId === parseInt(selectedCity);
-    return cityMatch && req.status === 'open';
+    if (!selectedCity) return false; // No city selected
+    return req.cityId === parseInt(selectedCity) && req.status === 'open';
   }) || [];
 
-  // Get all clusters based on city selection
-  const allClusters = selectedCity === "all" 
-    ? clustersData || []
-    : clustersData?.filter((cluster: any) => cluster.cityId === parseInt(selectedCity)) || [];
+  // Get clusters for selected city
+  const allClusters = selectedCity 
+    ? clustersData?.filter((cluster: any) => cluster.cityId === parseInt(selectedCity)) || []
+    : [];
 
   // First pass: identify which clusters have open positions
   const clustersWithPositions = new Set<number>();
@@ -205,13 +205,12 @@ export default function Dashboard() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Role-wise Open Positions by Cluster</CardTitle>
+            <CardTitle>Open Positions - City wise_Role wise_Cluster wise</CardTitle>
             <Select value={selectedCity} onValueChange={setSelectedCity}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select City" />
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select a City" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Cities</SelectItem>
                 {citiesData?.map((city: any) => (
                   <SelectItem key={city.id} value={city.id.toString()}>
                     {city.name}
@@ -222,50 +221,81 @@ export default function Dashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="sticky left-0 bg-white">Role</TableHead>
-                  {clustersWithOpenPositions.map((cluster: any) => (
-                    <TableHead key={cluster.id} className="text-center min-w-[120px]">
-                      {cluster.name}
-                    </TableHead>
-                  ))}
-                  <TableHead className="text-center font-semibold">Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {roleWiseOpenPositions.length > 0 ? (
-                  roleWiseOpenPositions.map((role: any) => (
-                    <TableRow key={role.roleId}>
-                      <TableCell className="font-medium sticky left-0 bg-white">
-                        {role.roleName}
-                      </TableCell>
-                      {clustersWithOpenPositions.map((cluster: any) => (
-                        <TableCell key={cluster.id} className="text-center">
-                          <span className="font-semibold text-blue-600">
-                            {role.clusterPositions[cluster.id] || "-"}
+          {selectedCity ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="sticky left-0 bg-white z-10 min-w-[200px]">Role</TableHead>
+                    {clustersWithOpenPositions.map((cluster: any) => (
+                      <TableHead key={cluster.id} className="text-center min-w-[100px] px-2">
+                        <div className="text-xs">{cluster.name}</div>
+                      </TableHead>
+                    ))}
+                    <TableHead className="text-center font-semibold bg-slate-50 min-w-[80px]">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {roleWiseOpenPositions.length > 0 ? (
+                    <>
+                      {roleWiseOpenPositions.map((role: any) => (
+                        <TableRow key={role.roleId}>
+                          <TableCell className="font-medium sticky left-0 bg-white z-10">
+                            {role.roleName}
+                          </TableCell>
+                          {clustersWithOpenPositions.map((cluster: any) => (
+                            <TableCell key={cluster.id} className="text-center">
+                              <span className="font-semibold text-blue-600">
+                                {role.clusterPositions[cluster.id] || "-"}
+                              </span>
+                            </TableCell>
+                          ))}
+                          <TableCell className="text-center bg-slate-50">
+                            <span className="font-bold text-slate-800">
+                              {role.totalPositions}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {/* Grand Total Row */}
+                      <TableRow className="border-t-2 border-slate-300 bg-slate-100">
+                        <TableCell className="font-bold sticky left-0 bg-slate-100 z-10">
+                          Grand Total
+                        </TableCell>
+                        {clustersWithOpenPositions.map((cluster: any) => {
+                          const clusterTotal = roleWiseOpenPositions.reduce((sum: number, role: any) => 
+                            sum + (role.clusterPositions[cluster.id] || 0), 0
+                          );
+                          return (
+                            <TableCell key={cluster.id} className="text-center font-bold">
+                              {clusterTotal}
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell className="text-center bg-slate-200">
+                          <span className="font-bold text-lg text-blue-700">
+                            {roleWiseOpenPositions.reduce((sum: number, role: any) => 
+                              sum + role.totalPositions, 0
+                            )}
                           </span>
                         </TableCell>
-                      ))}
-                      <TableCell className="text-center">
-                        <span className="font-bold text-slate-800">
-                          {role.totalPositions}
-                        </span>
+                      </TableRow>
+                    </>
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={clustersWithOpenPositions.length + 2} className="text-center text-slate-500">
+                        No open positions found
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={clustersWithOpenPositions.length + 2} className="text-center text-slate-500">
-                      No open positions found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-500">
+              Please select a city to view open positions
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
