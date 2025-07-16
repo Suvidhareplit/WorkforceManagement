@@ -26,6 +26,20 @@ const candidateSchema = z.object({
   vendorId: z.string().optional(),
   recruiterId: z.string().optional(),
   referralName: z.string().optional(),
+}).refine((data) => {
+  if (data.resumeSource === "vendor" && !data.vendorId) {
+    return false;
+  }
+  if (data.resumeSource === "field_recruiter" && !data.recruiterId) {
+    return false;
+  }
+  if (data.resumeSource === "referral" && !data.referralName) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Please fill all required fields based on the selected resume source",
+  path: ["resumeSource"],
 });
 
 export default function CandidateApplication() {
