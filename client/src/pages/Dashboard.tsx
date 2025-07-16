@@ -133,55 +133,6 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/hiring/create">
-              <Button
-                variant="outline"
-                className="h-24 w-full flex flex-col items-center justify-center space-y-2 border-dashed hover:border-blue-600 hover:bg-blue-50"
-              >
-                <Plus className="h-6 w-6 text-slate-400" />
-                <div className="text-center">
-                  <p className="font-medium">Create Hiring Request</p>
-                  <p className="text-sm text-slate-600">Start new recruitment process</p>
-                </div>
-              </Button>
-            </Link>
-
-            <Link href="/interviews/applications">
-              <Button
-                variant="outline"
-                className="h-24 w-full flex flex-col items-center justify-center space-y-2 border-dashed hover:border-blue-600 hover:bg-blue-50"
-              >
-                <Users className="h-6 w-6 text-slate-400" />
-                <div className="text-center">
-                  <p className="font-medium">Add New Candidate</p>
-                  <p className="text-sm text-slate-600">Register candidate application</p>
-                </div>
-              </Button>
-            </Link>
-
-            <Link href="/interviews/technical">
-              <Button
-                variant="outline"
-                className="h-24 w-full flex flex-col items-center justify-center space-y-2 border-dashed hover:border-blue-600 hover:bg-blue-50"
-              >
-                <Clock className="h-6 w-6 text-slate-400" />
-                <div className="text-center">
-                  <p className="font-medium">Schedule Interview</p>
-                  <p className="text-sm text-slate-600">Organize interview sessions</p>
-                </div>
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Hiring Requests */}
         <Card>
