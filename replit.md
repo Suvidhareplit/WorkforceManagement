@@ -9,7 +9,8 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 - **July 16, 2025**: MAJOR ARCHITECTURE CHANGE - Removed all Drizzle ORM dependencies and switched to raw SQL queries
 - **July 16, 2025**: Created new SQL-based storage implementation (server/storage-sql.ts) with complete feature parity
-- **July 16, 2025**: Migrated from @neondatabase/serverless to standard pg library for database connections
+- **July 16, 2025**: Completely removed all Drizzle packages (drizzle-orm, drizzle-zod, drizzle-kit) from dependencies
+- **July 16, 2025**: Removed @neondatabase/serverless and using standard pg library for database connections
 - **July 16, 2025**: Created raw SQL schema file (server/sql/schema.sql) for database structure
 - **July 16, 2025**: Added database initialization script (server/scripts/init-db.ts) to set up tables and indexes
 - **July 16, 2025**: Removed drizzle.config.ts, schema.ts, and all Drizzle-related configurations
@@ -108,10 +109,10 @@ Preferred communication style: Simple, everyday language.
 - **Package Management**: Standalone package.json in server directory
 
 ### Database Architecture
-- **Database**: PostgreSQL (configured for Neon serverless)
-- **Schema Management**: Drizzle Kit for migrations (server/drizzle.config.ts)
-- **Connection**: Connection pooling with @neondatabase/serverless
-- **Schema Location**: server/schema.ts (no longer shared)
+- **Database**: PostgreSQL (compatible with Neon serverless)
+- **Schema Management**: Raw SQL scripts (server/sql/schema.sql)
+- **Connection**: Standard pg library with connection pooling
+- **Storage Layer**: Pure SQL implementation (server/storage-sql.ts)
 
 ## Key Components
 
