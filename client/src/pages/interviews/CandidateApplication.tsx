@@ -379,20 +379,20 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="min-w-[1400px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Row</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>City</TableHead>
-                    <TableHead>Cluster</TableHead>
-                    <TableHead>Qualification</TableHead>
-                    <TableHead>Resume Source</TableHead>
-                    <TableHead>Source Name</TableHead>
+                    <TableHead className="w-16">Row</TableHead>
+                    <TableHead className="w-20">Status</TableHead>
+                    <TableHead className="min-w-[150px]">Name</TableHead>
+                    <TableHead className="min-w-[120px]">Phone</TableHead>
+                    <TableHead className="min-w-[200px]">Email</TableHead>
+                    <TableHead className="min-w-[180px]">Role</TableHead>
+                    <TableHead className="min-w-[120px]">City</TableHead>
+                    <TableHead className="min-w-[150px]">Cluster</TableHead>
+                    <TableHead className="min-w-[140px]">Qualification</TableHead>
+                    <TableHead className="min-w-[140px]">Resume Source</TableHead>
+                    <TableHead className="min-w-[180px]">Source Name</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -410,7 +410,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                         <Input
                           value={row.name}
                           onChange={(e) => handleUpdateRow(index, 'name', e.target.value)}
-                          className={getFieldError(row, 'name') ? "border-red-500" : ""}
+                          className={`w-full ${getFieldError(row, 'name') ? "border-red-500" : ""}`}
                         />
                         {getFieldError(row, 'name') && (
                           <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'name')?.message}</div>
@@ -420,7 +420,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                         <Input
                           value={row.phone}
                           onChange={(e) => handleUpdateRow(index, 'phone', e.target.value)}
-                          className={getFieldError(row, 'phone') ? "border-red-500" : ""}
+                          className={`w-full ${getFieldError(row, 'phone') ? "border-red-500" : ""}`}
                         />
                         {getFieldError(row, 'phone') && (
                           <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'phone')?.message}</div>
@@ -430,155 +430,167 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                         <Input
                           value={row.email}
                           onChange={(e) => handleUpdateRow(index, 'email', e.target.value)}
-                          className={getFieldError(row, 'email') ? "border-red-500" : ""}
+                          className={`w-full ${getFieldError(row, 'email') ? "border-red-500" : ""}`}
                         />
                         {getFieldError(row, 'email') && (
                           <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'email')?.message}</div>
                         )}
                       </TableCell>
                       <TableCell>
-                        <Select
-                          value={row.role}
-                          onValueChange={(value) => handleUpdateRow(index, 'role', value)}
-                        >
-                          <SelectTrigger className={getFieldError(row, 'role') ? "border-red-500" : ""}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {roles?.map((role: any) => (
-                              <SelectItem key={role.id} value={role.name}>
-                                {role.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {getFieldError(row, 'role') && (
-                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'role')?.message}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={row.city}
-                          onValueChange={(value) => handleUpdateRow(index, 'city', value)}
-                        >
-                          <SelectTrigger className={getFieldError(row, 'city') ? "border-red-500" : ""}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {cities?.map((city: any) => (
-                              <SelectItem key={city.id} value={city.name}>
-                                {city.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {getFieldError(row, 'city') && (
-                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'city')?.message}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={row.cluster}
-                          onValueChange={(value) => handleUpdateRow(index, 'cluster', value)}
-                        >
-                          <SelectTrigger className={getFieldError(row, 'cluster') ? "border-red-500" : ""}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {clusters
-                              ?.filter((cl: any) => cl.cityId === row.cityId)
-                              .map((cluster: any) => (
-                                <SelectItem key={cluster.id} value={cluster.name}>
-                                  {cluster.name}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                        {getFieldError(row, 'cluster') && (
-                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'cluster')?.message}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={row.qualification}
-                          onValueChange={(value) => handleUpdateRow(index, 'qualification', value)}
-                        >
-                          <SelectTrigger className={getFieldError(row, 'qualification') ? "border-red-500" : ""}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {qualifications.map((qual) => (
-                              <SelectItem key={qual} value={qual}>
-                                {qual}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {getFieldError(row, 'qualification') && (
-                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'qualification')?.message}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={row.resumeSource}
-                          onValueChange={(value) => handleUpdateRow(index, 'resumeSource', value)}
-                        >
-                          <SelectTrigger className={getFieldError(row, 'resumeSource') ? "border-red-500" : ""}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="vendor">Vendor</SelectItem>
-                            <SelectItem value="field_recruiter">Field Recruiter</SelectItem>
-                            <SelectItem value="referral">Referral</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {getFieldError(row, 'resumeSource') && (
-                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'resumeSource')?.message}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {row.resumeSource === 'vendor' ? (
+                        <div className="w-full">
                           <Select
-                            value={row.sourceName || ''}
-                            onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
+                            value={row.role}
+                            onValueChange={(value) => handleUpdateRow(index, 'role', value)}
                           >
-                            <SelectTrigger className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}>
+                            <SelectTrigger className={`w-full ${getFieldError(row, 'role') ? "border-red-500" : ""}`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {vendors?.map((vendor: any) => (
-                                <SelectItem key={vendor.id} value={vendor.name}>
-                                  {vendor.name}
+                              {roles?.map((role: any) => (
+                                <SelectItem key={role.id} value={role.name}>
+                                  {role.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                        ) : row.resumeSource === 'field_recruiter' ? (
+                          {getFieldError(row, 'role') && (
+                            <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'role')?.message}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="w-full">
                           <Select
-                            value={row.sourceName || ''}
-                            onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
+                            value={row.city}
+                            onValueChange={(value) => handleUpdateRow(index, 'city', value)}
                           >
-                            <SelectTrigger className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}>
+                            <SelectTrigger className={`w-full ${getFieldError(row, 'city') ? "border-red-500" : ""}`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {recruiters?.map((recruiter: any) => (
-                                <SelectItem key={recruiter.id} value={recruiter.name}>
-                                  {recruiter.name}
+                              {cities?.map((city: any) => (
+                                <SelectItem key={city.id} value={city.name}>
+                                  {city.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                        ) : (
-                          <Input
-                            value={row.sourceName || ''}
-                            onChange={(e) => handleUpdateRow(index, 'sourceName', e.target.value)}
-                            className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}
-                          />
-                        )}
-                        {getFieldError(row, 'sourceName') && (
-                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'sourceName')?.message}</div>
-                        )}
+                          {getFieldError(row, 'city') && (
+                            <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'city')?.message}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="w-full">
+                          <Select
+                            value={row.cluster}
+                            onValueChange={(value) => handleUpdateRow(index, 'cluster', value)}
+                          >
+                            <SelectTrigger className={`w-full ${getFieldError(row, 'cluster') ? "border-red-500" : ""}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {clusters
+                                ?.filter((cl: any) => cl.cityId === row.cityId)
+                                .map((cluster: any) => (
+                                  <SelectItem key={cluster.id} value={cluster.name}>
+                                    {cluster.name}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          {getFieldError(row, 'cluster') && (
+                            <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'cluster')?.message}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="w-full">
+                          <Select
+                            value={row.qualification}
+                            onValueChange={(value) => handleUpdateRow(index, 'qualification', value)}
+                          >
+                            <SelectTrigger className={`w-full ${getFieldError(row, 'qualification') ? "border-red-500" : ""}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {qualifications.map((qual) => (
+                                <SelectItem key={qual} value={qual}>
+                                  {qual}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {getFieldError(row, 'qualification') && (
+                            <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'qualification')?.message}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="w-full">
+                          <Select
+                            value={row.resumeSource}
+                            onValueChange={(value) => handleUpdateRow(index, 'resumeSource', value)}
+                          >
+                            <SelectTrigger className={`w-full ${getFieldError(row, 'resumeSource') ? "border-red-500" : ""}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="vendor">Vendor</SelectItem>
+                              <SelectItem value="field_recruiter">Field Recruiter</SelectItem>
+                              <SelectItem value="referral">Referral</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {getFieldError(row, 'resumeSource') && (
+                            <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'resumeSource')?.message}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="w-full">
+                          {row.resumeSource === 'vendor' ? (
+                            <Select
+                              value={row.sourceName || ''}
+                              onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
+                            >
+                              <SelectTrigger className={`w-full ${getFieldError(row, 'sourceName') ? "border-red-500" : ""}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {vendors?.map((vendor: any) => (
+                                  <SelectItem key={vendor.id} value={vendor.name}>
+                                    {vendor.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : row.resumeSource === 'field_recruiter' ? (
+                            <Select
+                              value={row.sourceName || ''}
+                              onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
+                            >
+                              <SelectTrigger className={`w-full ${getFieldError(row, 'sourceName') ? "border-red-500" : ""}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {recruiters?.map((recruiter: any) => (
+                                  <SelectItem key={recruiter.id} value={recruiter.name}>
+                                    {recruiter.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              value={row.sourceName || ''}
+                              onChange={(e) => handleUpdateRow(index, 'sourceName', e.target.value)}
+                              className={`w-full ${getFieldError(row, 'sourceName') ? "border-red-500" : ""}`}
+                            />
+                          )}
+                          {getFieldError(row, 'sourceName') && (
+                            <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'sourceName')?.message}</div>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
