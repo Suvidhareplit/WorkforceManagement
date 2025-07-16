@@ -110,6 +110,13 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       validRows: newValidRows,
       errorRows: newErrorRows
     });
+    
+    // Log to debug vendor/recruiter data
+    if (field === 'resumeSource') {
+      console.log('Resume source changed to:', value);
+      console.log('Available vendors:', vendors);
+      console.log('Available recruiters:', recruiters);
+    }
   };
 
   const handleValidate = async () => {
@@ -378,21 +385,21 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table className="min-w-[1400px]">
+            <div className="w-full">
+              <Table className="w-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-16">Row</TableHead>
-                    <TableHead className="w-20">Status</TableHead>
-                    <TableHead className="min-w-[150px]">Name</TableHead>
-                    <TableHead className="min-w-[120px]">Phone</TableHead>
-                    <TableHead className="min-w-[200px]">Email</TableHead>
-                    <TableHead className="min-w-[180px]">Role</TableHead>
-                    <TableHead className="min-w-[120px]">City</TableHead>
-                    <TableHead className="min-w-[150px]">Cluster</TableHead>
-                    <TableHead className="min-w-[140px]">Qualification</TableHead>
-                    <TableHead className="min-w-[140px]">Resume Source</TableHead>
-                    <TableHead className="min-w-[180px]">Source Name</TableHead>
+                    <TableHead className="w-12">Row</TableHead>
+                    <TableHead className="w-16">Status</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>City</TableHead>
+                    <TableHead>Cluster</TableHead>
+                    <TableHead>Qualification</TableHead>
+                    <TableHead>Resume Source</TableHead>
+                    <TableHead>Source Name</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -554,7 +561,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                               onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
                             >
                               <SelectTrigger className={`w-full ${getFieldError(row, 'sourceName') ? "border-red-500" : ""}`}>
-                                <SelectValue />
+                                <SelectValue placeholder="Select vendor" />
                               </SelectTrigger>
                               <SelectContent>
                                 {vendors?.map((vendor: any) => (
@@ -570,7 +577,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                               onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
                             >
                               <SelectTrigger className={`w-full ${getFieldError(row, 'sourceName') ? "border-red-500" : ""}`}>
-                                <SelectValue />
+                                <SelectValue placeholder="Select recruiter" />
                               </SelectTrigger>
                               <SelectContent>
                                 {recruiters?.map((recruiter: any) => (
@@ -624,12 +631,10 @@ export default function CandidateApplication() {
 
   const { data: vendors } = useQuery({
     queryKey: ["/api/master-data/vendor"],
-    enabled: selectedSource === "vendor",
   });
 
   const { data: recruiters } = useQuery({
     queryKey: ["/api/master-data/recruiter"],
-    enabled: selectedSource === "field_recruiter",
   });
 
   const { data: candidates, isLoading } = useQuery({
