@@ -497,10 +497,9 @@ export class SqlStorage implements IStorage {
   // Master data - Recruiters
   async getRecruiters(): Promise<Recruiter[]> {
     const result = await query(`
-      SELECT r.*, c.name as city_name, v.name as vendor_name
+      SELECT r.*, c.name as city_name
       FROM recruiters r
       LEFT JOIN cities c ON r.city_id = c.id
-      LEFT JOIN vendors v ON r.vendor_id = v.id
       ORDER BY r.name
     `);
     return result.rows;
@@ -513,18 +512,18 @@ export class SqlStorage implements IStorage {
 
   async createRecruiter(recruiter: any): Promise<Recruiter> {
     const result = await query(
-      `INSERT INTO recruiters (name, email, phone, city_id, vendor_id, management_fee)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [recruiter.name, recruiter.email, recruiter.phone, recruiter.cityId, recruiter.vendorId, recruiter.managementFee]
+      `INSERT INTO recruiters (name, email, phone, city_id, management_fee)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [recruiter.name, recruiter.email, recruiter.phone, recruiter.cityId, recruiter.managementFee]
     );
     return result.rows[0];
   }
 
   async updateRecruiter(id: number, recruiter: any): Promise<Recruiter | undefined> {
     const result = await query(
-      `UPDATE recruiters SET name = $1, email = $2, phone = $3, city_id = $4, vendor_id = $5, management_fee = $6
-       WHERE id = $7 RETURNING *`,
-      [recruiter.name, recruiter.email, recruiter.phone, recruiter.cityId, recruiter.vendorId, recruiter.managementFee, id]
+      `UPDATE recruiters SET name = $1, email = $2, phone = $3, city_id = $4, management_fee = $5
+       WHERE id = $6 RETURNING *`,
+      [recruiter.name, recruiter.email, recruiter.phone, recruiter.cityId, recruiter.managementFee, id]
     );
     return result.rows[0];
   }

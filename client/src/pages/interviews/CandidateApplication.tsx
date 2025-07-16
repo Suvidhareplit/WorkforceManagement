@@ -35,25 +35,24 @@ export default function CandidateApplication() {
   const { toast } = useToast();
 
   const { data: cities } = useQuery({
-    queryKey: ["/api/master-data/cities"],
+    queryKey: ["/api/master-data/city"],
   });
 
   const { data: clusters } = useQuery({
-    queryKey: ["/api/master-data/cities", selectedCityId, "clusters"],
-    enabled: !!selectedCityId,
+    queryKey: ["/api/master-data/cluster"],
   });
 
   const { data: roles } = useQuery({
-    queryKey: ["/api/master-data/roles"],
+    queryKey: ["/api/master-data/role"],
   });
 
   const { data: vendors } = useQuery({
-    queryKey: ["/api/master-data/vendors"],
+    queryKey: ["/api/master-data/vendor"],
     enabled: selectedSource === "vendor",
   });
 
   const { data: recruiters } = useQuery({
-    queryKey: ["/api/master-data/recruiters"],
+    queryKey: ["/api/master-data/recruiter"],
     enabled: selectedSource === "field_recruiter",
   });
 
@@ -244,7 +243,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {roles?.filter((role: any) => role.id && role.id.toString()).map((role: any) => (
+                            {(Array.isArray(roles) ? roles : []).map((role: any) => (
                               <SelectItem key={role.id} value={role.id.toString()}>
                                 {role.name}
                               </SelectItem>
@@ -275,7 +274,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {cities?.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
+                            {(Array.isArray(cities) ? cities : []).map((city: any) => (
                               <SelectItem key={city.id} value={city.id.toString()}>
                                 {city.name}
                               </SelectItem>
@@ -300,11 +299,13 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {clusters?.filter((cluster: any) => cluster.id && cluster.id.toString()).map((cluster: any) => (
-                              <SelectItem key={cluster.id} value={cluster.id.toString()}>
-                                {cluster.name}
-                              </SelectItem>
-                            ))}
+                            {(Array.isArray(clusters) ? clusters : [])
+                              .filter((cluster: any) => selectedCityId ? cluster.cityId === parseInt(selectedCityId) : true)
+                              .map((cluster: any) => (
+                                <SelectItem key={cluster.id} value={cluster.id.toString()}>
+                                  {cluster.name}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -371,7 +372,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {vendors?.filter((vendor: any) => vendor.id && vendor.id.toString()).map((vendor: any) => (
+                            {(Array.isArray(vendors) ? vendors : []).map((vendor: any) => (
                               <SelectItem key={vendor.id} value={vendor.id.toString()}>
                                 {vendor.name}
                               </SelectItem>
@@ -398,7 +399,7 @@ export default function CandidateApplication() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {recruiters?.filter((recruiter: any) => recruiter.id && recruiter.id.toString()).map((recruiter: any) => (
+                            {(Array.isArray(recruiters) ? recruiters : []).map((recruiter: any) => (
                               <SelectItem key={recruiter.id} value={recruiter.id.toString()}>
                                 {recruiter.name}
                               </SelectItem>
