@@ -28,6 +28,9 @@ interface ValidatedRow extends BulkCandidateRow {
   clusterId?: number;
   vendorId?: number;
   recruiterId?: number;
+  vendor?: string;
+  recruiter?: string;
+  referralName?: string;
   errors: ValidationError[];
 }
 
@@ -157,6 +160,7 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
               row.errors.push({ row: row.row, field: 'sourceName', value: row.sourceName, message: 'Invalid vendor. Must match existing vendors.' });
             } else {
               row.vendorId = vendor.id;
+              row.vendor = vendor.name;
             }
           }
         } else if (resumeSource === 'field_recruiter') {
@@ -168,11 +172,14 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
               row.errors.push({ row: row.row, field: 'sourceName', value: row.sourceName, message: 'Invalid recruiter. Must match existing recruiters.' });
             } else {
               row.recruiterId = recruiter.id;
+              row.recruiter = recruiter.name;
             }
           }
         } else if (resumeSource === 'referral') {
           if (!row.sourceName) {
             row.errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Referral name is required when source is referral' });
+          } else {
+            row.referralName = row.sourceName;
           }
         }
       }
@@ -214,7 +221,8 @@ export const processBulkUpload = async (req: Request, res: Response) => {
           resumeSource: candidate.resumeSource,
           sourceName: candidate.sourceName,
           vendor: candidate.vendor,
-          recruiter: candidate.recruiter
+          recruiter: candidate.recruiter,
+          referralName: candidate.referralName
         });
         
         const newCandidate = await storage.createCandidate({
@@ -226,9 +234,9 @@ export const processBulkUpload = async (req: Request, res: Response) => {
           cluster: candidate.cluster,
           qualification: candidate.qualification,
           resumeSource: candidate.resumeSource,
-          vendor: candidate.vendor || (candidate.resumeSource === 'vendor' ? candidate.sourceName : null),
-          recruiter: candidate.recruiter || (candidate.resumeSource === 'field_recruiter' ? candidate.sourceName : null),
-          referralName: candidate.resumeSource === 'referral' ? candidate.sourceName : undefined,
+          vendor: candidate.vendor,
+          recruiter: candidate.recruiter,
+          referralName: candidate.referralName,
         });
         results.push(newCandidate);
       } catch (error) {
