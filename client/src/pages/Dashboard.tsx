@@ -45,7 +45,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -58,6 +58,23 @@ export default function Dashboard() {
               </div>
               <div className="bg-blue-100 p-3 rounded-lg">
                 <Briefcase className="text-blue-600 h-6 w-6" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-600 text-sm font-medium">Closed Positions</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">
+                  {loadingHiring ? "..." : closedPositions}
+                </p>
+                <p className="text-slate-400 text-sm mt-1">Completed positions</p>
+              </div>
+              <div className="bg-green-100 p-3 rounded-lg">
+                <TrendingUp className="text-green-600 h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -104,8 +121,8 @@ export default function Dashboard() {
                 <p className="text-2xl font-bold text-slate-800 mt-1">--</p>
                 <p className="text-slate-400 text-sm mt-1">No data available</p>
               </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <TrendingUp className="text-green-600 h-6 w-6" />
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <ArrowUp className="text-purple-600 h-6 w-6" />
               </div>
             </div>
           </CardContent>
