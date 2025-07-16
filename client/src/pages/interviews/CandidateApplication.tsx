@@ -87,6 +87,31 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     }
   };
 
+  const handleUpdateRow = (index: number, field: string, value: string) => {
+    const updatedData = [...validatedData];
+    updatedData[index] = {
+      ...updatedData[index],
+      [field]: value
+    };
+    
+    // Clear existing errors for this field
+    updatedData[index].errors = updatedData[index].errors.filter(e => e.field !== field);
+    
+    // Re-validate this field
+    validateField(updatedData[index], field);
+    
+    setValidatedData(updatedData);
+    
+    // Recalculate summary
+    const newValidRows = updatedData.filter(row => row.errors.length === 0).length;
+    const newErrorRows = updatedData.filter(row => row.errors.length > 0).length;
+    setSummary({
+      totalRows: updatedData.length,
+      validRows: newValidRows,
+      errorRows: newErrorRows
+    });
+  };
+
   const handleValidate = async () => {
     if (!file) {
       toast({
@@ -151,21 +176,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     }
   };
 
-  const handleUpdateRow = (index: number, field: string, value: string) => {
-    const updatedData = [...validatedData];
-    const row = updatedData[index];
-    
-    // Update the field
-    (row as any)[field] = value;
-    
-    // Clear the error for this field
-    row.errors = row.errors.filter(e => e.field !== field);
-    
-    // Re-validate the field
-    validateField(row, field);
-    
-    setValidatedData(updatedData);
-  };
+
 
   const validateField = (row: ValidatedRow, field: string) => {
     const errors = row.errors || [];
@@ -396,235 +407,177 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                         )}
                       </TableCell>
                       <TableCell>
-                        {editingRow === index ? (
-                          <Input
-                            value={row.name}
-                            onChange={(e) => handleUpdateRow(index, 'name', e.target.value)}
-                            onBlur={() => setEditingRow(null)}
-                            className={getFieldError(row, 'name') ? "border-red-500" : ""}
-                          />
-                        ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.name}
-                            {getFieldError(row, 'name') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'name')?.message}</div>
-                            )}
-                          </div>
+                        <Input
+                          value={row.name}
+                          onChange={(e) => handleUpdateRow(index, 'name', e.target.value)}
+                          className={getFieldError(row, 'name') ? "border-red-500" : ""}
+                        />
+                        {getFieldError(row, 'name') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'name')?.message}</div>
                         )}
                       </TableCell>
                       <TableCell>
-                        {editingRow === index ? (
-                          <Input
-                            value={row.phone}
-                            onChange={(e) => handleUpdateRow(index, 'phone', e.target.value)}
-                            onBlur={() => setEditingRow(null)}
-                            className={getFieldError(row, 'phone') ? "border-red-500" : ""}
-                          />
-                        ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.phone}
-                            {getFieldError(row, 'phone') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'phone')?.message}</div>
-                            )}
-                          </div>
+                        <Input
+                          value={row.phone}
+                          onChange={(e) => handleUpdateRow(index, 'phone', e.target.value)}
+                          className={getFieldError(row, 'phone') ? "border-red-500" : ""}
+                        />
+                        {getFieldError(row, 'phone') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'phone')?.message}</div>
                         )}
                       </TableCell>
                       <TableCell>
-                        {editingRow === index ? (
-                          <Input
-                            value={row.email}
-                            onChange={(e) => handleUpdateRow(index, 'email', e.target.value)}
-                            onBlur={() => setEditingRow(null)}
-                            className={getFieldError(row, 'email') ? "border-red-500" : ""}
-                          />
-                        ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.email}
-                            {getFieldError(row, 'email') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'email')?.message}</div>
-                            )}
-                          </div>
+                        <Input
+                          value={row.email}
+                          onChange={(e) => handleUpdateRow(index, 'email', e.target.value)}
+                          className={getFieldError(row, 'email') ? "border-red-500" : ""}
+                        />
+                        {getFieldError(row, 'email') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'email')?.message}</div>
                         )}
                       </TableCell>
                       <TableCell>
-                        {editingRow === index ? (
+                        <Select
+                          value={row.role}
+                          onValueChange={(value) => handleUpdateRow(index, 'role', value)}
+                        >
+                          <SelectTrigger className={getFieldError(row, 'role') ? "border-red-500" : ""}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {roles?.map((role: any) => (
+                              <SelectItem key={role.id} value={role.name}>
+                                {role.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {getFieldError(row, 'role') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'role')?.message}</div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={row.city}
+                          onValueChange={(value) => handleUpdateRow(index, 'city', value)}
+                        >
+                          <SelectTrigger className={getFieldError(row, 'city') ? "border-red-500" : ""}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {cities?.map((city: any) => (
+                              <SelectItem key={city.id} value={city.name}>
+                                {city.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {getFieldError(row, 'city') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'city')?.message}</div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={row.cluster}
+                          onValueChange={(value) => handleUpdateRow(index, 'cluster', value)}
+                        >
+                          <SelectTrigger className={getFieldError(row, 'cluster') ? "border-red-500" : ""}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {clusters
+                              ?.filter((cl: any) => cl.cityId === row.cityId)
+                              .map((cluster: any) => (
+                                <SelectItem key={cluster.id} value={cluster.name}>
+                                  {cluster.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        {getFieldError(row, 'cluster') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'cluster')?.message}</div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={row.qualification}
+                          onValueChange={(value) => handleUpdateRow(index, 'qualification', value)}
+                        >
+                          <SelectTrigger className={getFieldError(row, 'qualification') ? "border-red-500" : ""}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {qualifications.map((qual) => (
+                              <SelectItem key={qual} value={qual}>
+                                {qual}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {getFieldError(row, 'qualification') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'qualification')?.message}</div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={row.resumeSource}
+                          onValueChange={(value) => handleUpdateRow(index, 'resumeSource', value)}
+                        >
+                          <SelectTrigger className={getFieldError(row, 'resumeSource') ? "border-red-500" : ""}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="vendor">Vendor</SelectItem>
+                            <SelectItem value="field_recruiter">Field Recruiter</SelectItem>
+                            <SelectItem value="referral">Referral</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {getFieldError(row, 'resumeSource') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'resumeSource')?.message}</div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {row.resumeSource === 'vendor' ? (
                           <Select
-                            value={row.role}
-                            onValueChange={(value) => handleUpdateRow(index, 'role', value)}
+                            value={row.sourceName || ''}
+                            onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
                           >
-                            <SelectTrigger className={getFieldError(row, 'role') ? "border-red-500" : ""}>
+                            <SelectTrigger className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {roles?.map((role: any) => (
-                                <SelectItem key={role.id} value={role.name}>
-                                  {role.name}
+                              {vendors?.map((vendor: any) => (
+                                <SelectItem key={vendor.id} value={vendor.name}>
+                                  {vendor.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : row.resumeSource === 'field_recruiter' ? (
+                          <Select
+                            value={row.sourceName || ''}
+                            onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
+                          >
+                            <SelectTrigger className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {recruiters?.map((recruiter: any) => (
+                                <SelectItem key={recruiter.id} value={recruiter.name}>
+                                  {recruiter.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.role}
-                            {getFieldError(row, 'role') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'role')?.message}</div>
-                            )}
-                          </div>
+                          <Input
+                            value={row.sourceName || ''}
+                            onChange={(e) => handleUpdateRow(index, 'sourceName', e.target.value)}
+                            className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}
+                          />
                         )}
-                      </TableCell>
-                      <TableCell>
-                        {editingRow === index ? (
-                          <Select
-                            value={row.city}
-                            onValueChange={(value) => handleUpdateRow(index, 'city', value)}
-                          >
-                            <SelectTrigger className={getFieldError(row, 'city') ? "border-red-500" : ""}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {cities?.map((city: any) => (
-                                <SelectItem key={city.id} value={city.name}>
-                                  {city.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.city}
-                            {getFieldError(row, 'city') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'city')?.message}</div>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {editingRow === index ? (
-                          <Select
-                            value={row.cluster}
-                            onValueChange={(value) => handleUpdateRow(index, 'cluster', value)}
-                          >
-                            <SelectTrigger className={getFieldError(row, 'cluster') ? "border-red-500" : ""}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {clusters
-                                ?.filter((cl: any) => cl.cityId === row.cityId)
-                                .map((cluster: any) => (
-                                  <SelectItem key={cluster.id} value={cluster.name}>
-                                    {cluster.name}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.cluster}
-                            {getFieldError(row, 'cluster') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'cluster')?.message}</div>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {editingRow === index ? (
-                          <Select
-                            value={row.qualification}
-                            onValueChange={(value) => handleUpdateRow(index, 'qualification', value)}
-                          >
-                            <SelectTrigger className={getFieldError(row, 'qualification') ? "border-red-500" : ""}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {qualifications.map((qual) => (
-                                <SelectItem key={qual} value={qual}>
-                                  {qual}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.qualification}
-                            {getFieldError(row, 'qualification') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'qualification')?.message}</div>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {editingRow === index ? (
-                          <Select
-                            value={row.resumeSource}
-                            onValueChange={(value) => handleUpdateRow(index, 'resumeSource', value)}
-                          >
-                            <SelectTrigger className={getFieldError(row, 'resumeSource') ? "border-red-500" : ""}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="vendor">Vendor</SelectItem>
-                              <SelectItem value="field_recruiter">Field Recruiter</SelectItem>
-                              <SelectItem value="referral">Referral</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.resumeSource}
-                            {getFieldError(row, 'resumeSource') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'resumeSource')?.message}</div>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {editingRow === index ? (
-                          row.resumeSource === 'vendor' ? (
-                            <Select
-                              value={row.sourceName || ''}
-                              onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
-                            >
-                              <SelectTrigger className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {vendors?.map((vendor: any) => (
-                                  <SelectItem key={vendor.id} value={vendor.name}>
-                                    {vendor.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : row.resumeSource === 'field_recruiter' ? (
-                            <Select
-                              value={row.sourceName || ''}
-                              onValueChange={(value) => handleUpdateRow(index, 'sourceName', value)}
-                            >
-                              <SelectTrigger className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {recruiters?.map((recruiter: any) => (
-                                  <SelectItem key={recruiter.id} value={recruiter.name}>
-                                    {recruiter.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <Input
-                              value={row.sourceName || ''}
-                              onChange={(e) => handleUpdateRow(index, 'sourceName', e.target.value)}
-                              onBlur={() => setEditingRow(null)}
-                              className={getFieldError(row, 'sourceName') ? "border-red-500" : ""}
-                            />
-                          )
-                        ) : (
-                          <div onClick={() => setEditingRow(index)} className="cursor-pointer">
-                            {row.sourceName}
-                            {getFieldError(row, 'sourceName') && (
-                              <div className="text-xs text-red-500">{getFieldError(row, 'sourceName')?.message}</div>
-                            )}
-                          </div>
+                        {getFieldError(row, 'sourceName') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'sourceName')?.message}</div>
                         )}
                       </TableCell>
                     </TableRow>
