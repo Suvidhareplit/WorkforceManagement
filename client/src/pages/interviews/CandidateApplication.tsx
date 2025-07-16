@@ -352,7 +352,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
               type="file"
               accept=".csv"
               onChange={handleFileChange}
-              className="max-w-sm"
+              className="w-full max-w-md"
             />
             <Button 
               onClick={handleValidate} 
@@ -377,7 +377,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       </Card>
 
       {validatedData.length > 0 && (
-        <Card>
+        <Card className="w-full mt-6">
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>Validated Data</CardTitle>
@@ -389,9 +389,8 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="w-full">
-              <Table className="w-full">
+          <CardContent className="p-0 overflow-x-auto">
+            <Table className="w-full min-w-[1200px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">Row</TableHead>
@@ -608,7 +607,6 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                   ))}
                 </TableBody>
               </Table>
-            </div>
           </CardContent>
         </Card>
       )}
@@ -790,7 +788,7 @@ export default function CandidateApplication() {
       </div>
 
       {view === 'form' ? (
-        <Tabs defaultValue="single" className="max-w-5xl">
+        <Tabs defaultValue="single" className="w-full">
           <TabsList>
             <TabsTrigger value="single">
               <UserPlus className="mr-2 h-4 w-4" />
@@ -1083,7 +1081,7 @@ export default function CandidateApplication() {
         </Card>
       </TabsContent>
       
-      <TabsContent value="bulk">
+      <TabsContent value="bulk" className="w-full">
         <BulkUploadContent 
           roles={roles}
           cities={cities}
