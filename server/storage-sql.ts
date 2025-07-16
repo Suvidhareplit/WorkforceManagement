@@ -3,7 +3,7 @@ import {
   User, Vendor, City, Cluster, Role, Recruiter, HiringRequest, 
   Candidate, TrainingSession, Employee, EmployeeAction, ExitRecord,
   VendorCityContact, UserAuditTrail
-} from './types/models';
+} from '../shared/schema';
 
 export interface IStorage {
   // User management
