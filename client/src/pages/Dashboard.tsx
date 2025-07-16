@@ -32,25 +32,52 @@ export default function Dashboard() {
     return cityMatch && req.status === 'open';
   }) || [];
 
-  // Get clusters for selected city
-  const relevantClusters = selectedCity === "all" 
+  // Get all clusters based on city selection
+  const allClusters = selectedCity === "all" 
     ? clustersData || []
     : clustersData?.filter((cluster: any) => cluster.cityId === parseInt(selectedCity)) || [];
 
-  // Calculate role-wise open positions by cluster
-  const roleWiseOpenPositions = rolesData?.map((role: any) => {
+  // First pass: identify which clusters have open positions
+  const clustersWithPositions = new Set<number>();
+  const rolePositionsMap = new Map<number, Map<number, number>>();
+
+  // Calculate positions for each role-cluster combination
+  rolesData?.forEach((role: any) => {
     const roleRequests = filteredHiringRequests.filter((req: any) => req.roleId === role.id);
+    const clusterMap = new Map<number, number>();
     
-    // Calculate positions by cluster
-    const clusterPositions: any = {};
-    let totalPositions = 0;
-    
-    relevantClusters.forEach((cluster: any) => {
+    allClusters.forEach((cluster: any) => {
       const clusterRequests = roleRequests.filter((req: any) => req.clusterId === cluster.id);
       const positions = clusterRequests.reduce((sum: number, req: any) => 
         sum + (parseInt(req.numberOfPositions) || 0), 0
       );
-      clusterPositions[cluster.id] = positions;
+      
+      if (positions > 0) {
+        clusterMap.set(cluster.id, positions);
+        clustersWithPositions.add(cluster.id);
+      }
+    });
+    
+    if (clusterMap.size > 0) {
+      rolePositionsMap.set(role.id, clusterMap);
+    }
+  });
+
+  // Get only clusters that have open positions
+  const clustersWithOpenPositions = allClusters.filter((cluster: any) => 
+    clustersWithPositions.has(cluster.id)
+  );
+
+  // Build final role-wise open positions data
+  const roleWiseOpenPositions = rolesData?.map((role: any) => {
+    const clusterMap = rolePositionsMap.get(role.id);
+    if (!clusterMap) return null;
+    
+    const clusterPositions: any = {};
+    let totalPositions = 0;
+    
+    clusterMap.forEach((positions, clusterId) => {
+      clusterPositions[clusterId] = positions;
       totalPositions += positions;
     });
     
@@ -60,7 +87,7 @@ export default function Dashboard() {
       clusterPositions,
       totalPositions
     };
-  }).filter((role: any) => role.totalPositions > 0) || [];
+  }).filter(role => role !== null) || [];
 
   // Calculate metrics from hiring requests data (data is now in camelCase from API)
   const openPositions = hiringRequestsData && Array.isArray(hiringRequestsData) 
@@ -200,7 +227,7 @@ export default function Dashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="sticky left-0 bg-white">Role</TableHead>
-                  {relevantClusters.map((cluster: any) => (
+                  {clustersWithOpenPositions.map((cluster: any) => (
                     <TableHead key={cluster.id} className="text-center min-w-[120px]">
                       {cluster.name}
                     </TableHead>
@@ -215,9 +242,9 @@ export default function Dashboard() {
                       <TableCell className="font-medium sticky left-0 bg-white">
                         {role.roleName}
                       </TableCell>
-                      {relevantClusters.map((cluster: any) => (
+                      {clustersWithOpenPositions.map((cluster: any) => (
                         <TableCell key={cluster.id} className="text-center">
-                          <span className={role.clusterPositions[cluster.id] > 0 ? "font-semibold text-blue-600" : "text-slate-300"}>
+                          <span className="font-semibold text-blue-600">
                             {role.clusterPositions[cluster.id] || "-"}
                           </span>
                         </TableCell>
@@ -231,7 +258,7 @@ export default function Dashboard() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={relevantClusters.length + 2} className="text-center text-slate-500">
+                    <TableCell colSpan={clustersWithOpenPositions.length + 2} className="text-center text-slate-500">
                       No open positions found
                     </TableCell>
                   </TableRow>
