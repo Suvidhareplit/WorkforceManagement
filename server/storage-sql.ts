@@ -730,9 +730,21 @@ export class SqlStorage implements IStorage {
     const values = [];
     let paramCounter = 1;
     
+    // Map camelCase to snake_case for database columns
+    const fieldMapping: { [key: string]: string } = {
+      prescreeningScore: 'prescreening_score',
+      prescreeningNotes: 'prescreening_notes',
+      prescreeningApproved: 'prescreening_approved',
+      sourcingChannel: 'sourcing_channel',
+      resumeSource: 'resume_source',
+      referralName: 'referral_name',
+      hiringRequestId: 'hiring_request_id'
+    };
+    
     Object.entries(candidate).forEach(([key, value]) => {
       if (key !== 'id' && value !== undefined) {
-        fields.push(`${key} = $${paramCounter}`);
+        const dbField = fieldMapping[key] || key;
+        fields.push(`${dbField} = $${paramCounter}`);
         values.push(value);
         paramCounter++;
       }

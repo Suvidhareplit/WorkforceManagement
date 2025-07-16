@@ -20,7 +20,7 @@ export default function Prescreening() {
   const { toast } = useToast();
 
   const { data: candidates, isLoading } = useQuery({
-    queryKey: ["/api/interviews/candidates", { status: "prescreening" }],
+    queryKey: ["/api/interviews/candidates?status=prescreening"],
   });
 
   const updatePrescreeningMutation = useMutation({

@@ -19,6 +19,9 @@ router.get('/candidates', interviewController.getCandidates);
 // Get candidate by ID
 router.get('/candidates/:id', interviewController.getCandidateById);
 
+// Update candidate (general update)
+router.patch('/candidates/:id', interviewController.updateCandidate);
+
 // Bulk upload routes
 router.post('/bulk-upload/validate', upload.single('file'), validateBulkUpload);
 router.post('/bulk-upload/process', processBulkUpload);

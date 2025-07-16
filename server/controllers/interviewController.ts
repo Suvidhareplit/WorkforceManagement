@@ -53,16 +53,41 @@ const getCandidateById = async (req: Request, res: Response) => {
   }
 };
 
+const updateCandidate = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const updateData = req.body;
+    
+    const candidate = await storage.updateCandidate(id, updateData);
+    
+    if (!candidate) {
+      return res.status(404).json({ message: "Candidate not found" });
+    }
+    
+    res.json(candidate);
+  } catch (error) {
+    console.error('Update candidate error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const updatePrescreening = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { approved, notes } = req.body;
+    const { approved, notes, prescreeningScore, status } = req.body;
     
     const updateData: any = {
       prescreeningApproved: approved,
       prescreeningNotes: notes,
-      status: approved ? 'prescreening' : 'rejected'
     };
+    
+    if (prescreeningScore !== undefined) {
+      updateData.prescreeningScore = prescreeningScore;
+    }
+    
+    if (status !== undefined) {
+      updateData.status = status;
+    }
     
     const candidate = await storage.updateCandidate(id, updateData);
     
@@ -178,6 +203,7 @@ export const interviewController = {
   createCandidate,
   getCandidates,
   getCandidateById,
+  updateCandidate,
   updatePrescreening,
   updateScreening,
   updateTechnical,

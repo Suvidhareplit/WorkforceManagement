@@ -58,6 +58,10 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Changed candidates table to store actual names instead of IDs for role, city, cluster, vendor, recruiter fields
 - **July 16, 2025**: Updated bulk upload to pass names directly without ID mapping
 - **July 16, 2025**: Modified storage layer to accept and store name values instead of foreign key references
+- **July 17, 2025**: Fixed bulk upload to process all valid candidates instead of just one
+- **July 17, 2025**: Added candidate selection with checkboxes and push-to-prescreening functionality
+- **July 17, 2025**: Implemented 10-point marking system in prescreening with automatic pass (≥7) or fail (<7)
+- **July 17, 2025**: Added general candidate update route (PATCH /api/interviews/candidates/:id) for status updates
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  
