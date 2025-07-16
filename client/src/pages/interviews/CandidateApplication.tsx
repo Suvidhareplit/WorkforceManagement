@@ -104,7 +104,13 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     try {
       const response = await apiRequest("POST", "/api/interviews/bulk-upload/validate", formData);
 
-      setValidatedData(response.data);
+      // Ensure each row has an errors array
+      const processedData = response.data.map((row: any) => ({
+        ...row,
+        errors: row.errors || []
+      }));
+
+      setValidatedData(processedData);
       setSummary({
         totalRows: response.totalRows,
         validRows: response.validRows,
@@ -123,10 +129,10 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           description: `All ${response.totalRows} rows are valid and ready to submit.`,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Upload failed",
-        description: "Failed to validate file. Please check the format and try again.",
+        description: error.message || "Failed to validate file. Please check the format and try again.",
         variant: "destructive",
       });
     } finally {
