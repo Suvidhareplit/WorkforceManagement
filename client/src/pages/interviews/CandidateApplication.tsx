@@ -279,6 +279,22 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           <CardTitle>Bulk Candidate Upload</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Disclaimer Section */}
+          <Alert className="border-blue-200 bg-blue-50">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-sm space-y-2">
+              <p className="font-semibold text-blue-800">Important Instructions:</p>
+              <ul className="list-disc list-inside space-y-1 text-blue-700">
+                <li>CSV file must contain all required columns: name, phone, email, role, city, cluster, qualification, resumeSource, sourceName</li>
+                <li>Qualification must be one of: 8th-10th, 11th-12th, Graduation, B.Tech, Diploma, ITI</li>
+                <li>Resume source must be: vendor, field_recruiter, or referral</li>
+                <li>For vendor/recruiter sources, the source name must match existing vendor/recruiter names exactly</li>
+                <li>City, cluster, and role names must match master data exactly (case-insensitive)</li>
+                <li>Maximum 1000 rows per upload for optimal performance</li>
+                <li>Email must be valid and phone number should be 10 digits</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
           <div className="flex items-center gap-4">
             <Button onClick={downloadTemplate} variant="outline">
               <Download className="mr-2 h-4 w-4" />
