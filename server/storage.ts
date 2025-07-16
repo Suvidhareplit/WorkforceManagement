@@ -1,15 +1,17 @@
 import { 
   users, userAuditTrail, cities, clusters, roles, vendors, recruiters, hiringRequests, candidates, 
   trainingSessions, employees, employeeActions, exitRecords, vendorInvoices, recruiterIncentives,
-  vendorCityContacts,
-  type User, type UserAuditTrail, type City, type Cluster, type Role, type Vendor, type Recruiter, 
-  type HiringRequest, type Candidate, type TrainingSession, type Employee, 
-  type EmployeeAction, type ExitRecord, type VendorCityContact,
-  type InsertUser, type InsertUserAuditTrail, type InsertCity, type InsertCluster, type InsertRole, 
-  type InsertVendor, type InsertRecruiter, type InsertHiringRequest, 
-  type InsertCandidate, type InsertTrainingSession, type InsertEmployee,
-  type InsertEmployeeAction, type InsertExitRecord, type InsertVendorCityContact
-} from "@shared/schema";
+  vendorCityContacts
+} from "./schema";
+import {
+  User, UserAuditTrail, City, Cluster, Role, Vendor, Recruiter, 
+  HiringRequest, Candidate, TrainingSession, Employee, 
+  EmployeeAction, ExitRecord, VendorCityContact,
+  InsertUser, InsertUserAuditTrail, InsertCity, InsertCluster, InsertRole, 
+  InsertVendor, InsertRecruiter, InsertHiringRequest, 
+  InsertCandidate, InsertTrainingSession, InsertEmployee,
+  InsertEmployeeAction, InsertExitRecord, InsertVendorCityContact
+} from "./types/models";
 import { db } from "./config/database";
 import { eq, and, desc, asc, like, gte, lte, count, sql } from "drizzle-orm";
 

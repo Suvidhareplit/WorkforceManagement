@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { User, InsertUser } from "@shared/schema";
+import { User, CreateUserInput } from "@/types/api";
 import { apiRequest } from "@/lib/queryClient";
 import { Users, Plus, Upload, Search, FileText } from "lucide-react";
 

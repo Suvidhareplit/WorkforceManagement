@@ -7,6 +7,13 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+- **July 16, 2025**: MAJOR REFACTORING - Completely separated frontend and backend with no shared code for independent deployment
+- **July 16, 2025**: Created separate type definitions: server/types/models.ts for backend, client/src/types/api.ts for frontend
+- **July 16, 2025**: Created independent package.json files for client/ and server/ directories
+- **July 16, 2025**: Set up separate TypeScript configurations for frontend and backend
+- **July 16, 2025**: Fixed database schema password field name from password_hash to password
+- **July 16, 2025**: Created separate Vite config for frontend and Drizzle config for backend
+- **July 16, 2025**: Added comprehensive README documentation for root, frontend, and backend
 - **July 16, 2025**: Created comprehensive Hiring Analytics module with email functionality for vendor SPOCs
 - **July 16, 2025**: Built city/role/cluster-wise hiring request analytics table with filtering and selection
 - **July 16, 2025**: Added Gmail email service integration for sending hiring requests to vendor city recruitment SPOCs
@@ -39,28 +46,39 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
+### Project Structure (SEPARATED ARCHITECTURE)
+- **Complete Separation**: Frontend and backend are now completely independent with no shared code
+- **Independent Deployment**: Can be deployed to separate repositories or servers
+- **Separate Dependencies**: Each has its own package.json and node_modules
+- **Type Safety**: Separate type definitions maintained in each codebase
+
+### Frontend Architecture (client/)
 - **Framework**: React 18 with TypeScript
 - **Styling**: Tailwind CSS with shadcn/ui component library
 - **State Management**: TanStack Query (React Query) for server state
 - **Routing**: Wouter for client-side routing
 - **Form Handling**: React Hook Form with Zod validation
 - **Build Tool**: Vite for development and production builds
+- **Type Definitions**: client/src/types/api.ts for all API interfaces
+- **Package Management**: Standalone package.json in client directory
 
-### Backend Architecture
+### Backend Architecture (server/)
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
 - **Database ORM**: Drizzle ORM for type-safe database operations
 - **Authentication**: JWT-based authentication with bcrypt for password hashing
 - **File Uploads**: Multer for handling file uploads
 - **Email Service**: Nodemailer for email notifications
-- **HTTP Client**: Axios for all API requests (frontend and backend)
+- **HTTP Client**: Axios for all API requests
 - **Project Structure**: Organized following MVC pattern with proper separation
+- **Type Definitions**: server/types/models.ts for all backend models
+- **Package Management**: Standalone package.json in server directory
 
 ### Database Architecture
 - **Database**: PostgreSQL (configured for Neon serverless)
-- **Schema Management**: Drizzle Kit for migrations
+- **Schema Management**: Drizzle Kit for migrations (server/drizzle.config.ts)
 - **Connection**: Connection pooling with @neondatabase/serverless
+- **Schema Location**: server/schema.ts (no longer shared)
 
 ## Key Components
 
@@ -161,27 +179,32 @@ Preferred communication style: Simple, everyday language.
 
 ## Deployment Strategy
 
-### Development Environment
-- **Frontend**: Vite dev server with HMR
-- **Backend**: tsx for TypeScript execution with nodemon-like functionality
-- **Database**: Local PostgreSQL or Neon development database
-- **Environment**: NODE_ENV=development with debug logging
+### Development Environment (SEPARATED)
+- **Frontend**: Vite dev server on port 3000 (cd client && npm run dev)
+- **Backend**: tsx on port 5000 (cd server && npm run dev)
+- **Database**: PostgreSQL (Neon or local)
+- **Proxy**: Frontend proxies /api requests to backend in development
 
-### Production Build
-- **Frontend**: Vite build to static assets in dist/public
-- **Backend**: esbuild bundle to dist/index.js
-- **Assets**: Static file serving from Express
-- **Database**: Production PostgreSQL with connection pooling
+### Production Build (INDEPENDENT)
+- **Frontend**: Vite build creates static assets in client/dist
+- **Backend**: esbuild creates server bundle in server/dist
+- **Deployment**: Can be deployed to separate services/repositories
 
 ### Environment Configuration
-- **Database**: DATABASE_URL for connection string
-- **JWT**: JWT_SECRET for token signing
-- **Email**: SMTP configuration for notifications
-- **File Storage**: Local filesystem with configurable upload directory
+- **Frontend Environment**: client/.env (VITE_API_URL for production)
+- **Backend Environment**: server/.env (DATABASE_URL, JWT_SECRET, email configs)
+- **Separation**: Each has its own .env.example file
 
-### Deployment Architecture
-- **Monorepo**: Single repository with frontend and backend
-- **Build Process**: Sequential build of frontend then backend
-- **Static Assets**: Frontend builds to backend's public directory
-- **API Routes**: All backend routes prefixed with /api
-- **Fallback**: SPA fallback for client-side routing
+### Deployment Options
+1. **Separate Repositories**
+   - Split client/ and server/ into independent Git repositories
+   - Deploy backend to Railway/Render/Heroku
+   - Deploy frontend to Vercel/Netlify/CloudFlare Pages
+   
+2. **Microservices Architecture**
+   - Backend as API service with CORS enabled
+   - Frontend as static site pointing to backend URL
+   
+3. **Monorepo with Independent Deployment**
+   - Keep single repository but deploy independently
+   - Use CI/CD to deploy based on changed directories
