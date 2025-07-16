@@ -26,20 +26,6 @@ const candidateSchema = z.object({
   vendorId: z.string().optional(),
   recruiterId: z.string().optional(),
   referralName: z.string().optional(),
-}).refine((data) => {
-  if (data.resumeSource === "vendor" && !data.vendorId) {
-    return false;
-  }
-  if (data.resumeSource === "field_recruiter" && !data.recruiterId) {
-    return false;
-  }
-  if (data.resumeSource === "referral" && !data.referralName) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Please fill all required fields based on the selected resume source",
-  path: ["resumeSource"],
 });
 
 export default function CandidateApplication() {
@@ -129,6 +115,32 @@ export default function CandidateApplication() {
   });
 
   const onSubmit = (data: z.infer<typeof candidateSchema>) => {
+    // Add validation based on resume source
+    if (data.resumeSource === "vendor" && !data.vendorId) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a vendor",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (data.resumeSource === "field_recruiter" && !data.recruiterId) {
+      toast({
+        title: "Validation Error", 
+        description: "Please select a recruiter",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (data.resumeSource === "referral" && !data.referralName) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter referral name",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createCandidateMutation.mutate(data);
   };
 
