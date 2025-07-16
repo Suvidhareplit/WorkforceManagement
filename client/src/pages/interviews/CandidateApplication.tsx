@@ -69,6 +69,10 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
 
   const qualifications = ['8th-10th', '11th-12th', 'Graduation', 'B.Tech', 'Diploma', 'ITI'];
   const resumeSources = ['vendor', 'field_recruiter', 'referral'];
+  
+  // Debug logging
+  console.log('BulkUploadContent - Vendors:', vendors);
+  console.log('BulkUploadContent - Recruiters:', recruiters);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -112,6 +116,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     });
     
     // Log to debug vendor/recruiter data
+    console.log('Field updated:', field, 'Value:', value);
     if (field === 'resumeSource') {
       console.log('Resume source changed to:', value);
       console.log('Available vendors:', vendors);
