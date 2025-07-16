@@ -21,11 +21,12 @@ import { useState } from "react";
 
 export default function Analytics() {
   const [dateRange, setDateRange] = useState("30");
-  const [cityFilter, setCityFilter] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
 
   const { data: hiringAnalytics, isLoading: loadingHiring } = useQuery({
-    queryKey: ["/api/analytics/hiring", { dateRange, cityFilter, roleFilter }],
+    queryKey: ["/api/analytics/hiring"],
+    retry: 1,
   });
 
   const { data: pipeline, isLoading: loadingPipeline } = useQuery({
@@ -40,20 +41,20 @@ export default function Analytics() {
     queryKey: ["/api/analytics/recruiters"],
   });
 
-  const { data: cities } = useQuery({
-    queryKey: ["/api/master-data/cities"],
+  const { data: cities = [] } = useQuery({
+    queryKey: ["/api/master-data/city"],
   });
 
-  const { data: roles } = useQuery({
-    queryKey: ["/api/master-data/roles"],
+  const { data: roles = [] } = useQuery({
+    queryKey: ["/api/master-data/role"],
   });
 
-  const { data: vendors } = useQuery({
-    queryKey: ["/api/master-data/vendors"],
+  const { data: vendors = [] } = useQuery({
+    queryKey: ["/api/master-data/vendor"],
   });
 
-  const { data: recruiters } = useQuery({
-    queryKey: ["/api/master-data/recruiters"],
+  const { data: recruiters = [] } = useQuery({
+    queryKey: ["/api/master-data/recruiter"],
   });
 
   // Mock data for demonstration - in real app this would come from API
@@ -119,8 +120,8 @@ export default function Analytics() {
                   <SelectValue placeholder="All Cities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Cities</SelectItem>
-                  {cities?.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {Array.isArray(cities) && cities.filter((city: any) => city.id && city.id.toString()).map((city: any) => (
                     <SelectItem key={city.id} value={city.id.toString()}>
                       {city.name}
                     </SelectItem>
@@ -136,8 +137,8 @@ export default function Analytics() {
                   <SelectValue placeholder="All Roles" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Roles</SelectItem>
-                  {roles?.filter((role: any) => role.id && role.id.toString()).map((role: any) => (
+                  <SelectItem value="all">All Roles</SelectItem>
+                  {Array.isArray(roles) && roles.filter((role: any) => role.id && role.id.toString()).map((role: any) => (
                     <SelectItem key={role.id} value={role.id.toString()}>
                       {role.name}
                     </SelectItem>
