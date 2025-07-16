@@ -173,6 +173,12 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           description: `Found ${response.errorRows} row(s) with errors. Please fix them before submitting.`,
           variant: "destructive",
         });
+        // Log which rows have errors for debugging
+        console.log('Rows with errors:', processedData.filter(row => row.errors.length > 0).map(row => ({
+          row: row.row,
+          name: row.name,
+          errors: row.errors
+        })));
       } else {
         toast({
           title: "Validation successful",
