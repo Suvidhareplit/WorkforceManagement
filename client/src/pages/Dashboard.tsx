@@ -9,6 +9,7 @@ import { useState } from "react";
 
 export default function Dashboard() {
   const [selectedCity, setSelectedCity] = useState<string>("3"); // Default to Bangalore
+  const [selectedPriority, setSelectedPriority] = useState<string>("all");
 
   const { data: hiringRequestsData, isLoading: loadingHiring } = useQuery({
     queryKey: ["/api/analytics/hiring"],
@@ -26,10 +27,12 @@ export default function Dashboard() {
     queryKey: ["/api/master-data/cluster"],
   });
 
-  // Filter hiring requests based on selected city
+  // Filter hiring requests based on selected city and priority
   const filteredHiringRequests = hiringRequestsData?.filter((req: any) => {
     if (!selectedCity) return false; // No city selected
-    return req.cityId === parseInt(selectedCity) && req.status === 'open';
+    const cityMatch = req.cityId === parseInt(selectedCity) && req.status === 'open';
+    const priorityMatch = selectedPriority === 'all' || req.priority === selectedPriority;
+    return cityMatch && priorityMatch;
   }) || [];
 
   // Get clusters for selected city
@@ -39,33 +42,21 @@ export default function Dashboard() {
 
   // First pass: identify which clusters have open positions
   const clustersWithPositions = new Set<number>();
-  const rolePositionsMap = new Map<number, Map<number, any>>();
+  const rolePositionsMap = new Map<number, Map<number, number>>();
 
   // Calculate positions for each role-cluster combination
   rolesData?.forEach((role: any) => {
     const roleRequests = filteredHiringRequests.filter((req: any) => req.roleId === role.id);
-    const clusterMap = new Map<number, any>();
+    const clusterMap = new Map<number, number>();
     
     allClusters.forEach((cluster: any) => {
       const clusterRequests = roleRequests.filter((req: any) => req.clusterId === cluster.id);
+      const positions = clusterRequests.reduce((sum: number, req: any) => 
+        sum + (parseInt(req.numberOfPositions) || 0), 0
+      );
       
-      // Group by priority
-      const priorityGroups: any = {};
-      clusterRequests.forEach((req: any) => {
-        const priority = req.priority || 'medium';
-        if (!priorityGroups[priority]) {
-          priorityGroups[priority] = 0;
-        }
-        priorityGroups[priority] += parseInt(req.numberOfPositions) || 0;
-      });
-      
-      const totalPositions = Object.values(priorityGroups).reduce((sum: any, count: any) => sum + count, 0);
-      
-      if (totalPositions > 0) {
-        clusterMap.set(cluster.id, {
-          total: totalPositions,
-          priorities: priorityGroups
-        });
+      if (positions > 0) {
+        clusterMap.set(cluster.id, positions);
         clustersWithPositions.add(cluster.id);
       }
     });
@@ -87,24 +78,17 @@ export default function Dashboard() {
     
     const clusterPositions: any = {};
     let totalPositions = 0;
-    const totalPriorities: any = {};
     
-    clusterMap.forEach((data, clusterId) => {
-      clusterPositions[clusterId] = data;
-      totalPositions += data.total;
-      
-      // Aggregate priorities
-      Object.entries(data.priorities).forEach(([priority, count]: [string, any]) => {
-        totalPriorities[priority] = (totalPriorities[priority] || 0) + count;
-      });
+    clusterMap.forEach((positions, clusterId) => {
+      clusterPositions[clusterId] = positions;
+      totalPositions += positions;
     });
     
     return {
       roleId: role.id,
       roleName: role.name,
       clusterPositions,
-      totalPositions,
-      totalPriorities
+      totalPositions
     };
   }).filter(role => role !== null) || [];
 
@@ -225,18 +209,32 @@ export default function Dashboard() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Open Positions - City wise_Role wise_Cluster wise</CardTitle>
-            <Select value={selectedCity} onValueChange={setSelectedCity}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select a City" />
-              </SelectTrigger>
-              <SelectContent>
-                {citiesData?.map((city: any) => (
-                  <SelectItem key={city.id} value={city.id.toString()}>
-                    {city.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-3">
+              <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select a City" />
+                </SelectTrigger>
+                <SelectContent>
+                  {citiesData?.map((city: any) => (
+                    <SelectItem key={city.id} value={city.id.toString()}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -262,54 +260,17 @@ export default function Dashboard() {
                           <TableCell className="font-medium sticky left-0 bg-white z-10 pr-6">
                             {role.roleName}
                           </TableCell>
-                          {clustersWithOpenPositions.map((cluster: any) => {
-                            const positionData = role.clusterPositions[cluster.id];
-                            if (!positionData) {
-                              return (
-                                <TableCell key={cluster.id} className="text-center px-4">
-                                  <span className="text-slate-300">-</span>
-                                </TableCell>
-                              );
-                            }
-                            
-                            return (
-                              <TableCell key={cluster.id} className="text-center px-4">
-                                <div className="space-y-1">
-                                  <div className="font-semibold text-blue-600">
-                                    {positionData.total}
-                                  </div>
-                                  {Object.entries(positionData.priorities).map(([priority, count]: [string, any]) => (
-                                    <div key={priority} className="text-xs">
-                                      <span className={
-                                        priority === 'high' ? 'text-red-600 font-medium' :
-                                        priority === 'low' ? 'text-green-600' :
-                                        'text-yellow-600'
-                                      }>
-                                        {priority}: {count}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </TableCell>
-                            );
-                          })}
+                          {clustersWithOpenPositions.map((cluster: any) => (
+                            <TableCell key={cluster.id} className="text-center px-4">
+                              <span className="font-semibold text-blue-600">
+                                {role.clusterPositions[cluster.id] || "-"}
+                              </span>
+                            </TableCell>
+                          ))}
                           <TableCell className="text-center bg-slate-50 px-4">
-                            <div className="space-y-1">
-                              <div className="font-bold text-slate-800">
-                                {role.totalPositions}
-                              </div>
-                              {Object.entries(role.totalPriorities).map(([priority, count]: [string, any]) => (
-                                <div key={priority} className="text-xs">
-                                  <span className={
-                                    priority === 'high' ? 'text-red-600 font-medium' :
-                                    priority === 'low' ? 'text-green-600' :
-                                    'text-yellow-600'
-                                  }>
-                                    {priority}: {count}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
+                            <span className="font-bold text-slate-800">
+                              {role.totalPositions}
+                            </span>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -320,66 +281,20 @@ export default function Dashboard() {
                         </TableCell>
                         {clustersWithOpenPositions.map((cluster: any) => {
                           const clusterTotal = roleWiseOpenPositions.reduce((sum: number, role: any) => 
-                            sum + (role.clusterPositions[cluster.id]?.total || 0), 0
+                            sum + (role.clusterPositions[cluster.id] || 0), 0
                           );
-                          
-                          const clusterPriorities: any = {};
-                          roleWiseOpenPositions.forEach((role: any) => {
-                            const positionData = role.clusterPositions[cluster.id];
-                            if (positionData && positionData.priorities) {
-                              Object.entries(positionData.priorities).forEach(([priority, count]: [string, any]) => {
-                                clusterPriorities[priority] = (clusterPriorities[priority] || 0) + count;
-                              });
-                            }
-                          });
-                          
                           return (
                             <TableCell key={cluster.id} className="text-center font-bold px-4">
-                              <div className="space-y-1">
-                                <div>{clusterTotal}</div>
-                                {Object.entries(clusterPriorities).map(([priority, count]: [string, any]) => (
-                                  <div key={priority} className="text-xs font-normal">
-                                    <span className={
-                                      priority === 'high' ? 'text-red-600' :
-                                      priority === 'low' ? 'text-green-600' :
-                                      'text-yellow-600'
-                                    }>
-                                      {priority}: {count}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
+                              {clusterTotal}
                             </TableCell>
                           );
                         })}
                         <TableCell className="text-center bg-slate-200 px-4">
-                          <div className="space-y-1">
-                            <div className="font-bold text-lg text-blue-700">
-                              {roleWiseOpenPositions.reduce((sum: number, role: any) => 
-                                sum + role.totalPositions, 0
-                              )}
-                            </div>
-                            {(() => {
-                              const grandTotalPriorities: any = {};
-                              roleWiseOpenPositions.forEach((role: any) => {
-                                Object.entries(role.totalPriorities).forEach(([priority, count]: [string, any]) => {
-                                  grandTotalPriorities[priority] = (grandTotalPriorities[priority] || 0) + count;
-                                });
-                              });
-                              
-                              return Object.entries(grandTotalPriorities).map(([priority, count]: [string, any]) => (
-                                <div key={priority} className="text-xs font-normal">
-                                  <span className={
-                                    priority === 'high' ? 'text-red-600' :
-                                    priority === 'low' ? 'text-green-600' :
-                                    'text-yellow-600'
-                                  }>
-                                    {priority}: {count}
-                                  </span>
-                                </div>
-                              ));
-                            })()}
-                          </div>
+                          <span className="font-bold text-lg text-blue-700">
+                            {roleWiseOpenPositions.reduce((sum: number, role: any) => 
+                              sum + role.totalPositions, 0
+                            )}
+                          </span>
                         </TableCell>
                       </TableRow>
                     </>
