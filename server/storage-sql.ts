@@ -649,18 +649,36 @@ export class SqlStorage implements IStorage {
     const count = parseInt(countResult.rows[0].count) + 1;
     const applicationId = `APP-${dateStr}-${count.toString().padStart(4, '0')}`;
     
+    // Find hiring request if exists
+    let hiringRequestId = null;
+    if (candidate.roleId && candidate.cityId && candidate.clusterId) {
+      const hiringCheck = await query(
+        `SELECT id FROM hiring_requests 
+         WHERE role_id = $1 AND city_id = $2 AND cluster_id = $3 AND status = 'open'
+         LIMIT 1`,
+        [candidate.roleId, candidate.cityId, candidate.clusterId]
+      );
+      
+      if (hiringCheck.rows.length > 0) {
+        hiringRequestId = hiringCheck.rows[0].id;
+      }
+    }
+    
     const result = await query(
       `INSERT INTO candidates (
         application_id, hiring_request_id, name, email, phone, city_id, cluster_id, role_id,
-        vendor_id, recruiter_id, sourcing_channel, qualification
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        vendor_id, recruiter_id, resume_source, qualification, referral_name
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *`,
       [
         applicationId,
-        candidate.hiringRequestId, candidate.name, candidate.email, candidate.phone,
+        hiringRequestId,
+        candidate.name, candidate.email, candidate.phone,
         candidate.cityId, candidate.clusterId, candidate.roleId,
-        candidate.vendorId, candidate.recruiterId, candidate.sourcingChannel,
-        candidate.qualification
+        candidate.vendorId, candidate.recruiterId, 
+        candidate.sourcingChannel || candidate.resumeSource,
+        candidate.qualification,
+        candidate.referralName
       ]
     );
     return result.rows[0];
@@ -673,7 +691,7 @@ export class SqlStorage implements IStorage {
         ct.name as city_name, cl.name as cluster_name, r.name as role_name,
         v.name as vendor_name, rc.name as recruiter_name
       FROM candidates c
-      JOIN hiring_requests hr ON c.hiring_request_id = hr.id
+      LEFT JOIN hiring_requests hr ON c.hiring_request_id = hr.id
       JOIN cities ct ON c.city_id = ct.id
       JOIN clusters cl ON c.cluster_id = cl.id
       JOIN roles r ON c.role_id = r.id
