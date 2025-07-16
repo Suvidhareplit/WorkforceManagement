@@ -1163,11 +1163,11 @@ export default function CandidateApplication() {
                       <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.phone}</TableCell>
-                      <TableCell>{candidate.roleName || candidate.role?.name}</TableCell>
-                      <TableCell>{candidate.cityName || candidate.city?.name}</TableCell>
-                      <TableCell>{candidate.clusterName || candidate.cluster?.name}</TableCell>
+                      <TableCell>{candidate.role || ''}</TableCell>
+                      <TableCell>{candidate.city || ''}</TableCell>
+                      <TableCell>{candidate.cluster || ''}</TableCell>
                       <TableCell className="capitalize">
-                        {candidate.resumeSource?.replace('_', ' ') || candidate.sourcingChannel?.replace('_', ' ')}
+                        {candidate.vendor || candidate.recruiter || (candidate.resumeSource === 'referral' ? 'Referral' : '') || 'N/A'}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusBadgeVariant(candidate.status)}>
