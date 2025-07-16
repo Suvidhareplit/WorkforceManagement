@@ -49,21 +49,16 @@ export const vendors = pgTable("vendors", {
   phone: varchar("phone", { length: 10 }),
   contactPerson: text("contact_person"),
   commercialTerms: text("commercial_terms"),
-  replacementPeriod: integer("replacement_period"), // in days
   
-  // Commercial terms - detailed breakdown
+  // Commercial terms - detailed breakdown (removed duplicate replacementPeriod)
   managementFees: decimal("management_fees", { precision: 5, scale: 2 }), // percentage
   sourcingFee: decimal("sourcing_fee", { precision: 5, scale: 2 }), // percentage
-  replacementDays: integer("replacement_days"),
+  replacementDays: integer("replacement_days"), // Keep only this field for replacement period
   
   // Contact details for different SPOCs
   deliveryLeadName: text("delivery_lead_name"),
   deliveryLeadEmail: text("delivery_lead_email"),
   deliveryLeadPhone: varchar("delivery_lead_phone", { length: 10 }),
-  
-  cityRecruitmentSpocName: text("city_recruitment_spoc_name"),
-  cityRecruitmentSpocEmail: text("city_recruitment_spoc_email"),
-  cityRecruitmentSpocPhone: varchar("city_recruitment_spoc_phone", { length: 10 }),
   
   businessHeadName: text("business_head_name"),
   businessHeadEmail: text("business_head_email"),
@@ -74,6 +69,17 @@ export const vendors = pgTable("vendors", {
   payrollSpocPhone: varchar("payroll_spoc_phone", { length: 10 }),
   
   isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Vendor city-specific contacts table
+export const vendorCityContacts = pgTable("vendor_city_contacts", {
+  id: serial("id").primaryKey(),
+  vendorId: integer("vendor_id").references(() => vendors.id).notNull(),
+  cityId: integer("city_id").references(() => cities.id).notNull(),
+  spocName: text("spoc_name").notNull(),
+  spocEmail: text("spoc_email").notNull(),
+  spocPhone: varchar("spoc_phone", { length: 10 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -260,6 +266,7 @@ export const citiesRelations = relations(cities, ({ many }) => ({
   clusters: many(clusters),
   hiringRequests: many(hiringRequests),
   candidates: many(candidates),
+  vendorCityContacts: many(vendorCityContacts),
 }));
 
 export const clustersRelations = relations(clusters, ({ one, many }) => ({
@@ -279,6 +286,18 @@ export const rolesRelations = relations(roles, ({ many }) => ({
 export const vendorsRelations = relations(vendors, ({ many }) => ({
   candidates: many(candidates),
   invoices: many(vendorInvoices),
+  cityContacts: many(vendorCityContacts),
+}));
+
+export const vendorCityContactsRelations = relations(vendorCityContacts, ({ one }) => ({
+  vendor: one(vendors, {
+    fields: [vendorCityContacts.vendorId],
+    references: [vendors.id],
+  }),
+  city: one(cities, {
+    fields: [vendorCityContacts.cityId],
+    references: [cities.id],
+  }),
 }));
 
 export const recruitersRelations = relations(recruiters, ({ many }) => ({
@@ -366,6 +385,7 @@ export const insertCitySchema = createInsertSchema(cities).omit({ id: true, crea
 export const insertClusterSchema = createInsertSchema(clusters).omit({ id: true, createdAt: true });
 export const insertRoleSchema = createInsertSchema(roles).omit({ id: true, createdAt: true });
 export const insertVendorSchema = createInsertSchema(vendors).omit({ id: true, createdAt: true });
+export const insertVendorCityContactSchema = createInsertSchema(vendorCityContacts).omit({ id: true, createdAt: true });
 export const insertRecruiterSchema = createInsertSchema(recruiters).omit({ id: true, createdAt: true });
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertUserAuditSchema = createInsertSchema(userAuditTrail).omit({ id: true });
@@ -381,6 +401,7 @@ export type City = typeof cities.$inferSelect;
 export type Cluster = typeof clusters.$inferSelect;
 export type Role = typeof roles.$inferSelect;
 export type Vendor = typeof vendors.$inferSelect;
+export type VendorCityContact = typeof vendorCityContacts.$inferSelect;
 export type Recruiter = typeof recruiters.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type UserAuditTrail = typeof userAuditTrail.$inferSelect;
@@ -395,6 +416,7 @@ export type InsertCity = z.infer<typeof insertCitySchema>;
 export type InsertCluster = z.infer<typeof insertClusterSchema>;
 export type InsertRole = z.infer<typeof insertRoleSchema>;
 export type InsertVendor = z.infer<typeof insertVendorSchema>;
+export type InsertVendorCityContact = z.infer<typeof insertVendorCityContactSchema>;
 export type InsertRecruiter = z.infer<typeof insertRecruiterSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertUserAuditTrail = z.infer<typeof insertUserAuditSchema>;

@@ -1,13 +1,14 @@
 import { 
   users, userAuditTrail, cities, clusters, roles, vendors, recruiters, hiringRequests, candidates, 
   trainingSessions, employees, employeeActions, exitRecords, vendorInvoices, recruiterIncentives,
+  vendorCityContacts,
   type User, type UserAuditTrail, type City, type Cluster, type Role, type Vendor, type Recruiter, 
   type HiringRequest, type Candidate, type TrainingSession, type Employee, 
-  type EmployeeAction, type ExitRecord,
+  type EmployeeAction, type ExitRecord, type VendorCityContact,
   type InsertUser, type InsertUserAuditTrail, type InsertCity, type InsertCluster, type InsertRole, 
   type InsertVendor, type InsertRecruiter, type InsertHiringRequest, 
   type InsertCandidate, type InsertTrainingSession, type InsertEmployee,
-  type InsertEmployeeAction, type InsertExitRecord
+  type InsertEmployeeAction, type InsertExitRecord, type InsertVendorCityContact
 } from "@shared/schema";
 import { db } from "./config/database";
 import { eq, and, desc, asc, like, gte, lte, count, sql } from "drizzle-orm";
@@ -47,6 +48,12 @@ export interface IStorage {
   updateRole(id: number, data: Partial<InsertRole>, changedBy: number): Promise<Role | undefined>;
   updateVendor(id: number, data: Partial<InsertVendor>, changedBy: number): Promise<Vendor | undefined>;
   updateRecruiter(id: number, data: Partial<InsertRecruiter>, changedBy: number): Promise<Recruiter | undefined>;
+  
+  // Vendor city contacts
+  createVendorCityContact(contact: InsertVendorCityContact): Promise<VendorCityContact>;
+  getVendorCityContacts(vendorId: number): Promise<VendorCityContact[]>;
+  updateVendorCityContact(id: number, contact: Partial<InsertVendorCityContact>): Promise<VendorCityContact | undefined>;
+  deleteVendorCityContact(id: number): Promise<boolean>;
   
   // Hiring requests
   createHiringRequest(request: InsertHiringRequest): Promise<HiringRequest>;

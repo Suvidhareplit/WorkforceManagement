@@ -42,9 +42,8 @@ export interface Vendor {
   phone?: string;
   contactPerson?: string;
   commercialTerms?: string;
-  replacementPeriod?: number;
   
-  // Commercial terms - detailed breakdown
+  // Commercial terms - detailed breakdown (removed duplicate replacementPeriod)
   managementFees?: number;
   sourcingFee?: number;
   replacementDays?: number;
@@ -54,10 +53,6 @@ export interface Vendor {
   deliveryLeadEmail?: string;
   deliveryLeadPhone?: string;
   
-  cityRecruitmentSpocName?: string;
-  cityRecruitmentSpocEmail?: string;
-  cityRecruitmentSpocPhone?: string;
-  
   businessHeadName?: string;
   businessHeadEmail?: string;
   businessHeadPhone?: string;
@@ -65,6 +60,17 @@ export interface Vendor {
   payrollSpocName?: string;
   payrollSpocEmail?: string;
   payrollSpocPhone?: string;
+  
+  // City-specific SPOC data
+  citySpocData?: {
+    [cityId: number]: {
+      name: string;
+      email: string;
+      phone: string;
+      cityId: number;
+      cityName: string;
+    };
+  };
   
   isActive: boolean;
 }

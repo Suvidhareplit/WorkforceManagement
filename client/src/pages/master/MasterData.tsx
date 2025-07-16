@@ -42,9 +42,6 @@ export default function MasterData() {
     deliveryLeadName: "",
     deliveryLeadEmail: "",
     deliveryLeadPhone: "",
-    cityRecruitmentSpocName: "",
-    cityRecruitmentSpocEmail: "",
-    cityRecruitmentSpocPhone: "",
     businessHeadName: "",
     businessHeadEmail: "",
     businessHeadPhone: "",
@@ -71,9 +68,6 @@ export default function MasterData() {
     deliveryLeadName: "",
     deliveryLeadEmail: "",
     deliveryLeadPhone: "",
-    cityRecruitmentSpocName: "",
-    cityRecruitmentSpocEmail: "",
-    cityRecruitmentSpocPhone: "",
     businessHeadName: "",
     businessHeadEmail: "",
     businessHeadPhone: "",
@@ -231,7 +225,7 @@ export default function MasterData() {
   });
 
   const resetForm = () => {
-    setFormData({
+    const newFormData = {
       name: "",
       code: "",
       description: "",
@@ -242,7 +236,30 @@ export default function MasterData() {
       replacementPeriod: "",
       cityId: "1",
       jobDescriptionFile: null,
+      // Commercial terms
+      managementFees: "",
+      sourcingFee: "",
+      replacementDays: "",
+      // Contact details
+      deliveryLeadName: "",
+      deliveryLeadEmail: "",
+      deliveryLeadPhone: "",
+      businessHeadName: "",
+      businessHeadEmail: "",
+      businessHeadPhone: "",
+      payrollSpocName: "",
+      payrollSpocEmail: "",
+      payrollSpocPhone: "",
+    };
+    
+    // Reset city-specific SPOC data
+    safeCities.forEach((city: City) => {
+      newFormData[`citySpoc_${city.id}_name`] = "";
+      newFormData[`citySpoc_${city.id}_email`] = "";
+      newFormData[`citySpoc_${city.id}_phone`] = "";
     });
+    
+    setFormData(newFormData);
     setSelectedCityId("");
   };
 
@@ -318,14 +335,31 @@ export default function MasterData() {
       return;
     }
 
+    // Collect city-specific SPOC data
+    const citySpocData = {};
+    safeCities.forEach((city: City) => {
+      const name = formData[`citySpoc_${city.id}_name`];
+      const email = formData[`citySpoc_${city.id}_email`];
+      const phone = formData[`citySpoc_${city.id}_phone`];
+      
+      if (name || email || phone) {
+        citySpocData[city.id] = {
+          name: name || "",
+          email: email || "",
+          phone: phone || "",
+          cityId: city.id,
+          cityName: city.name,
+        };
+      }
+    });
+
     createVendorMutation.mutate({
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       contactPerson: formData.contactPerson,
       commercialTerms: formData.commercialTerms,
-      replacementPeriod: formData.replacementPeriod ? parseInt(formData.replacementPeriod) : undefined,
-      // Commercial terms
+      // Commercial terms (removed duplicate replacementPeriod)
       managementFees: formData.managementFees ? parseFloat(formData.managementFees) : undefined,
       sourcingFee: formData.sourcingFee ? parseFloat(formData.sourcingFee) : undefined,
       replacementDays: formData.replacementDays ? parseInt(formData.replacementDays) : undefined,
@@ -333,15 +367,14 @@ export default function MasterData() {
       deliveryLeadName: formData.deliveryLeadName,
       deliveryLeadEmail: formData.deliveryLeadEmail,
       deliveryLeadPhone: formData.deliveryLeadPhone,
-      cityRecruitmentSpocName: formData.cityRecruitmentSpocName,
-      cityRecruitmentSpocEmail: formData.cityRecruitmentSpocEmail,
-      cityRecruitmentSpocPhone: formData.cityRecruitmentSpocPhone,
       businessHeadName: formData.businessHeadName,
       businessHeadEmail: formData.businessHeadEmail,
       businessHeadPhone: formData.businessHeadPhone,
       payrollSpocName: formData.payrollSpocName,
       payrollSpocEmail: formData.payrollSpocEmail,
       payrollSpocPhone: formData.payrollSpocPhone,
+      // City-specific SPOC data
+      citySpocData,
     });
   };
 
@@ -593,9 +626,7 @@ export default function MasterData() {
       deliveryLeadName: vendor.deliveryLeadName || "",
       deliveryLeadEmail: vendor.deliveryLeadEmail || "",
       deliveryLeadPhone: vendor.deliveryLeadPhone || "",
-      cityRecruitmentSpocName: vendor.cityRecruitmentSpocName || "",
-      cityRecruitmentSpocEmail: vendor.cityRecruitmentSpocEmail || "",
-      cityRecruitmentSpocPhone: vendor.cityRecruitmentSpocPhone || "",
+
       businessHeadName: vendor.businessHeadName || "",
       businessHeadEmail: vendor.businessHeadEmail || "",
       businessHeadPhone: vendor.businessHeadPhone || "",
@@ -1185,16 +1216,7 @@ export default function MasterData() {
                     rows={3}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="replacementPeriod">Replacement Period (days)</Label>
-                  <Input
-                    id="replacementPeriod"
-                    type="number"
-                    placeholder="Enter replacement period"
-                    value={formData.replacementPeriod}
-                    onChange={(e) => setFormData({ ...formData, replacementPeriod: e.target.value })}
-                  />
-                </div>
+
                 
                 {/* Commercial Terms Section */}
                 <div className="border-t pt-4">
@@ -1274,38 +1296,48 @@ export default function MasterData() {
                     </div>
                   </div>
 
-                  {/* City Recruitment SPOC */}
+                  {/* City-specific Recruitment SPOCs */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium mb-2">City Recruitment SPOC</h4>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="cityRecruitmentSpocName">Name</Label>
-                        <Input
-                          id="cityRecruitmentSpocName"
-                          placeholder="Enter name"
-                          value={formData.cityRecruitmentSpocName}
-                          onChange={(e) => setFormData({ ...formData, cityRecruitmentSpocName: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cityRecruitmentSpocEmail">Email</Label>
-                        <Input
-                          id="cityRecruitmentSpocEmail"
-                          type="email"
-                          placeholder="Enter email"
-                          value={formData.cityRecruitmentSpocEmail}
-                          onChange={(e) => setFormData({ ...formData, cityRecruitmentSpocEmail: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cityRecruitmentSpocPhone">Phone</Label>
-                        <Input
-                          id="cityRecruitmentSpocPhone"
-                          placeholder="Enter phone"
-                          value={formData.cityRecruitmentSpocPhone}
-                          onChange={(e) => setFormData({ ...formData, cityRecruitmentSpocPhone: e.target.value })}
-                        />
-                      </div>
+                    <h4 className="text-sm font-medium mb-2">City Recruitment SPOCs</h4>
+                    <div className="space-y-3">
+                      {safeCities.map((city: City) => (
+                        <div key={city.id} className="border rounded-lg p-3">
+                          <div className="flex items-center mb-2">
+                            <MapPin className="h-4 w-4 mr-2 text-blue-600" />
+                            <span className="font-medium text-sm">{city.name}</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <Label htmlFor={`citySpoc_${city.id}_name`}>Name</Label>
+                              <Input
+                                id={`citySpoc_${city.id}_name`}
+                                placeholder="Enter name"
+                                value={formData[`citySpoc_${city.id}_name`] || ""}
+                                onChange={(e) => setFormData({ ...formData, [`citySpoc_${city.id}_name`]: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`citySpoc_${city.id}_email`}>Email</Label>
+                              <Input
+                                id={`citySpoc_${city.id}_email`}
+                                type="email"
+                                placeholder="Enter email"
+                                value={formData[`citySpoc_${city.id}_email`] || ""}
+                                onChange={(e) => setFormData({ ...formData, [`citySpoc_${city.id}_email`]: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`citySpoc_${city.id}_phone`}>Phone</Label>
+                              <Input
+                                id={`citySpoc_${city.id}_phone`}
+                                placeholder="Enter phone"
+                                value={formData[`citySpoc_${city.id}_phone`] || ""}
+                                onChange={(e) => setFormData({ ...formData, [`citySpoc_${city.id}_phone`]: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -1804,7 +1836,6 @@ export default function MasterData() {
                         <TableRow className="bg-yellow-50">
                           <TableHead className="font-semibold border-r">Particulars</TableHead>
                           <TableHead className="font-semibold border-r">Delivery Lead</TableHead>
-                          <TableHead className="font-semibold border-r">CITY RECRUITMENT SPOC</TableHead>
                           <TableHead className="font-semibold border-r">Business Head</TableHead>
                           <TableHead className="font-semibold">PAYROLL SPOC</TableHead>
                         </TableRow>
@@ -1813,26 +1844,62 @@ export default function MasterData() {
                         <TableRow>
                           <TableCell className="border-r font-medium">Name</TableCell>
                           <TableCell className="border-r">{selectedVendor.deliveryLeadName || "N/A"}</TableCell>
-                          <TableCell className="border-r">{selectedVendor.cityRecruitmentSpocName || "N/A"}</TableCell>
                           <TableCell className="border-r">{selectedVendor.businessHeadName || "N/A"}</TableCell>
                           <TableCell>{selectedVendor.payrollSpocName || "N/A"}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell className="border-r font-medium">Email ID</TableCell>
                           <TableCell className="border-r">{selectedVendor.deliveryLeadEmail || "N/A"}</TableCell>
-                          <TableCell className="border-r">{selectedVendor.cityRecruitmentSpocEmail || "N/A"}</TableCell>
                           <TableCell className="border-r">{selectedVendor.businessHeadEmail || "N/A"}</TableCell>
                           <TableCell>{selectedVendor.payrollSpocEmail || "N/A"}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell className="border-r font-medium">Number</TableCell>
                           <TableCell className="border-r">{selectedVendor.deliveryLeadPhone || "N/A"}</TableCell>
-                          <TableCell className="border-r">{selectedVendor.cityRecruitmentSpocPhone || "N/A"}</TableCell>
                           <TableCell className="border-r">{selectedVendor.businessHeadPhone || "N/A"}</TableCell>
                           <TableCell>{selectedVendor.payrollSpocPhone || "N/A"}</TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* City-specific Recruitment SPOCs */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">City Recruitment SPOCs</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {safeCities.map((city: City) => (
+                      <div key={city.id} className="border rounded-lg p-4">
+                        <div className="flex items-center mb-3">
+                          <MapPin className="h-4 w-4 mr-2 text-blue-600" />
+                          <span className="font-medium">{city.name}</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <Label className="text-xs font-medium text-slate-600">Name</Label>
+                            <p className="mt-1">
+                              {selectedVendor.citySpocData?.[city.id]?.name || "Not specified"}
+                            </p>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-medium text-slate-600">Email</Label>
+                            <p className="mt-1">
+                              {selectedVendor.citySpocData?.[city.id]?.email || "Not specified"}
+                            </p>
+                          </div>
+                          <div>
+                            <Label className="text-xs font-medium text-slate-600">Phone</Label>
+                            <p className="mt-1">
+                              {selectedVendor.citySpocData?.[city.id]?.phone || "Not specified"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -1846,10 +1913,6 @@ export default function MasterData() {
                   <div>
                     <Label className="text-sm font-medium text-slate-600">Commercial Terms Notes</Label>
                     <p className="text-sm mt-1">{selectedVendor.commercialTerms || "No additional terms specified"}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-slate-600">Replacement Period</Label>
-                    <p className="text-sm mt-1">{selectedVendor.replacementPeriod ? `${selectedVendor.replacementPeriod} days` : "Not specified"}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-slate-600">Status</Label>
