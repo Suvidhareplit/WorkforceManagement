@@ -696,19 +696,26 @@ export default function CandidateApplication() {
 
   const createCandidateMutation = useMutation({
     mutationFn: async (data: any) => {
+      // Find the names based on IDs
+      const roleName = roles?.find(r => r.id === parseInt(data.roleId))?.name || '';
+      const cityName = cities?.find(c => c.id === parseInt(data.cityId))?.name || '';
+      const clusterName = clusters?.find(c => c.id === parseInt(data.clusterId))?.name || '';
+      const vendorName = data.vendorId ? vendors?.find(v => v.id === parseInt(data.vendorId))?.name : undefined;
+      const recruiterName = data.recruiterId ? recruiters?.find(r => r.id === parseInt(data.recruiterId))?.name : undefined;
+
       const payload: any = {
         name: data.name,
         phone: data.phone,
         email: data.email,
-        roleId: parseInt(data.roleId),
-        cityId: parseInt(data.cityId),
-        clusterId: parseInt(data.clusterId),
+        role: roleName,
+        city: cityName,
+        cluster: clusterName,
         qualification: data.qualification,
         resumeSource: data.resumeSource,
       };
 
-      if (data.vendorId) payload.vendorId = parseInt(data.vendorId);
-      if (data.recruiterId) payload.recruiterId = parseInt(data.recruiterId);
+      if (vendorName) payload.vendor = vendorName;
+      if (recruiterName) payload.recruiter = recruiterName;
       if (data.referralName) payload.referralName = data.referralName;
 
       return await apiRequest("POST", "/api/interviews/candidates", payload);
@@ -982,8 +989,8 @@ export default function CandidateApplication() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="8th - 10th">8th - 10th</SelectItem>
-                          <SelectItem value="11th - 12th">11th - 12th</SelectItem>
+                          <SelectItem value="8th-10th">8th-10th</SelectItem>
+                          <SelectItem value="11th-12th">11th-12th</SelectItem>
                           <SelectItem value="Graduation">Graduation</SelectItem>
                           <SelectItem value="B.Tech">B.Tech</SelectItem>
                           <SelectItem value="Diploma">Diploma</SelectItem>
@@ -1166,8 +1173,19 @@ export default function CandidateApplication() {
                       <TableCell>{candidate.role || ''}</TableCell>
                       <TableCell>{candidate.city || ''}</TableCell>
                       <TableCell>{candidate.cluster || ''}</TableCell>
-                      <TableCell className="capitalize">
-                        {candidate.vendor || candidate.recruiter || (candidate.resumeSource === 'referral' ? 'Referral' : '') || 'N/A'}
+                      <TableCell>
+                        {(() => {
+                          // Show the source based on what data we have
+                          if (candidate.vendor) {
+                            return candidate.vendor;
+                          } else if (candidate.recruiter) {
+                            return candidate.recruiter;
+                          } else if (candidate.referralName) {
+                            return `Referral: ${candidate.referralName}`;
+                          } else {
+                            return 'Direct Application';
+                          }
+                        })()}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusBadgeVariant(candidate.status)}>
