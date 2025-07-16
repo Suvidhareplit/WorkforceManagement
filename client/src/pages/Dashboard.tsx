@@ -46,10 +46,7 @@ export default function Dashboard() {
                 <p className="text-2xl font-bold text-slate-800 mt-1">
                   {loadingHiring ? "..." : hiringAnalytics?.openPositions || 0}
                 </p>
-                <p className="text-green-600 text-sm mt-1 flex items-center">
-                  <ArrowUp className="h-3 w-3 mr-1" />
-                  +12% from last month
-                </p>
+                <p className="text-slate-400 text-sm mt-1">Active positions</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-lg">
                 <Briefcase className="text-blue-600 h-6 w-6" />
@@ -67,10 +64,7 @@ export default function Dashboard() {
                   {loadingPipeline ? "..." : 
                     (pipeline?.applications + pipeline?.prescreening + pipeline?.technical) || 0}
                 </p>
-                <p className="text-green-600 text-sm mt-1 flex items-center">
-                  <ArrowUp className="h-3 w-3 mr-1" />
-                  +8% from last week
-                </p>
+                <p className="text-slate-400 text-sm mt-1">In pipeline</p>
               </div>
               <div className="bg-cyan-100 p-3 rounded-lg">
                 <Users className="text-cyan-600 h-6 w-6" />
@@ -84,11 +78,8 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-600 text-sm font-medium">Avg. Time to Hire</p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">18 days</p>
-                <p className="text-red-600 text-sm mt-1 flex items-center">
-                  <ArrowDown className="h-3 w-3 mr-1" />
-                  -2 days from target
-                </p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">--</p>
+                <p className="text-slate-400 text-sm mt-1">No data available</p>
               </div>
               <div className="bg-amber-100 p-3 rounded-lg">
                 <Clock className="text-amber-600 h-6 w-6" />
@@ -102,11 +93,8 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-600 text-sm font-medium">Success Rate</p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">84%</p>
-                <p className="text-green-600 text-sm mt-1 flex items-center">
-                  <ArrowUp className="h-3 w-3 mr-1" />
-                  +3% from last quarter
-                </p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">--</p>
+                <p className="text-slate-400 text-sm mt-1">No data available</p>
               </div>
               <div className="bg-green-100 p-3 rounded-lg">
                 <TrendingUp className="text-green-600 h-6 w-6" />
@@ -276,10 +264,10 @@ export default function Dashboard() {
                   <div className="mt-6 pt-4 border-t border-slate-200">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">Conversion Rate</span>
-                      <span className="font-bold text-green-600">15.2%</span>
+                      <span className="font-bold text-slate-400">--</span>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
-                      <div className="bg-green-600 h-2 rounded-full" style={{ width: "15.2%" }}></div>
+                      <div className="bg-slate-300 h-2 rounded-full" style={{ width: "0%" }}></div>
                     </div>
                   </div>
                 </>
