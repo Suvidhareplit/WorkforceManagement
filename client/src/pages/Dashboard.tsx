@@ -223,16 +223,16 @@ export default function Dashboard() {
         <CardContent>
           {selectedCity ? (
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="w-auto">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-white z-10 min-w-[200px]">Role</TableHead>
+                    <TableHead className="sticky left-0 bg-white z-10">Role</TableHead>
                     {clustersWithOpenPositions.map((cluster: any) => (
-                      <TableHead key={cluster.id} className="text-center min-w-[100px] px-2">
-                        <div className="text-xs">{cluster.name}</div>
+                      <TableHead key={cluster.id} className="text-center px-4">
+                        {cluster.name}
                       </TableHead>
                     ))}
-                    <TableHead className="text-center font-semibold bg-slate-50 min-w-[80px]">Total</TableHead>
+                    <TableHead className="text-center font-semibold bg-slate-50 px-4">Total</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -240,17 +240,17 @@ export default function Dashboard() {
                     <>
                       {roleWiseOpenPositions.map((role: any) => (
                         <TableRow key={role.roleId}>
-                          <TableCell className="font-medium sticky left-0 bg-white z-10">
+                          <TableCell className="font-medium sticky left-0 bg-white z-10 pr-6">
                             {role.roleName}
                           </TableCell>
                           {clustersWithOpenPositions.map((cluster: any) => (
-                            <TableCell key={cluster.id} className="text-center">
+                            <TableCell key={cluster.id} className="text-center px-4">
                               <span className="font-semibold text-blue-600">
                                 {role.clusterPositions[cluster.id] || "-"}
                               </span>
                             </TableCell>
                           ))}
-                          <TableCell className="text-center bg-slate-50">
+                          <TableCell className="text-center bg-slate-50 px-4">
                             <span className="font-bold text-slate-800">
                               {role.totalPositions}
                             </span>
@@ -259,7 +259,7 @@ export default function Dashboard() {
                       ))}
                       {/* Grand Total Row */}
                       <TableRow className="border-t-2 border-slate-300 bg-slate-100">
-                        <TableCell className="font-bold sticky left-0 bg-slate-100 z-10">
+                        <TableCell className="font-bold sticky left-0 bg-slate-100 z-10 pr-6">
                           Grand Total
                         </TableCell>
                         {clustersWithOpenPositions.map((cluster: any) => {
@@ -267,12 +267,12 @@ export default function Dashboard() {
                             sum + (role.clusterPositions[cluster.id] || 0), 0
                           );
                           return (
-                            <TableCell key={cluster.id} className="text-center font-bold">
+                            <TableCell key={cluster.id} className="text-center font-bold px-4">
                               {clusterTotal}
                             </TableCell>
                           );
                         })}
-                        <TableCell className="text-center bg-slate-200">
+                        <TableCell className="text-center bg-slate-200 px-4">
                           <span className="font-bold text-lg text-blue-700">
                             {roleWiseOpenPositions.reduce((sum: number, role: any) => 
                               sum + role.totalPositions, 0
@@ -283,7 +283,7 @@ export default function Dashboard() {
                     </>
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={clustersWithOpenPositions.length + 2} className="text-center text-slate-500">
+                      <TableCell colSpan={clustersWithOpenPositions.length + 2} className="text-center text-slate-500 py-8">
                         No open positions found
                       </TableCell>
                     </TableRow>
