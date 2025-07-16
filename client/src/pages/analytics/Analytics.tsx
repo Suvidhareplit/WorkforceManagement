@@ -57,20 +57,7 @@ export default function Analytics() {
     queryKey: ["/api/master-data/recruiter"],
   });
 
-  // Mock data for demonstration - in real app this would come from API
-  const timeToHireData = [
-    { period: "This Week", days: 18, trend: "down", change: -2 },
-    { period: "Last Week", days: 20, trend: "up", change: 1 },
-    { period: "This Month", days: 19, trend: "down", change: -1 },
-    { period: "Last Month", days: 20, trend: "up", change: 3 },
-  ];
 
-  const conversionRates = {
-    applicationToScreening: 65,
-    screeningToTechnical: 45,
-    technicalToSelected: 30,
-    selectedToJoined: 85,
-  };
 
   return (
     <div>
@@ -168,11 +155,7 @@ export default function Analytics() {
                   <div>
                     <p className="text-slate-600 text-sm font-medium">Open Positions</p>
                     <p className="text-2xl font-bold text-slate-800 mt-1">
-                      {loadingHiring ? "..." : hiringAnalytics?.openPositions || 247}
-                    </p>
-                    <p className="text-green-600 text-sm mt-1 flex items-center">
-                      <ArrowUp className="h-3 w-3 mr-1" />
-                      +12% from last month
+                      {loadingHiring ? "..." : hiringAnalytics?.openPositions || 0}
                     </p>
                   </div>
                   <div className="bg-blue-100 p-3 rounded-lg">
@@ -189,11 +172,7 @@ export default function Analytics() {
                     <p className="text-slate-600 text-sm font-medium">Active Candidates</p>
                     <p className="text-2xl font-bold text-slate-800 mt-1">
                       {loadingPipeline ? "..." : 
-                        (pipeline?.applications + pipeline?.prescreening + pipeline?.technical) || 1532}
-                    </p>
-                    <p className="text-green-600 text-sm mt-1 flex items-center">
-                      <ArrowUp className="h-3 w-3 mr-1" />
-                      +8% from last week
+                        (pipeline?.applications + pipeline?.prescreening + pipeline?.technical) || 0}
                     </p>
                   </div>
                   <div className="bg-cyan-100 p-3 rounded-lg">
@@ -207,11 +186,9 @@ export default function Analytics() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-600 text-sm font-medium">Avg. Time to Hire</p>
-                    <p className="text-2xl font-bold text-slate-800 mt-1">18 days</p>
-                    <p className="text-red-600 text-sm mt-1 flex items-center">
-                      <ArrowDown className="h-3 w-3 mr-1" />
-                      -2 days from target
+                    <p className="text-slate-600 text-sm font-medium">Closed Positions</p>
+                    <p className="text-2xl font-bold text-slate-800 mt-1">
+                      {loadingHiring ? "..." : hiringAnalytics?.closedPositions || 0}
                     </p>
                   </div>
                   <div className="bg-amber-100 p-3 rounded-lg">
@@ -225,11 +202,9 @@ export default function Analytics() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-slate-600 text-sm font-medium">Success Rate</p>
-                    <p className="text-2xl font-bold text-slate-800 mt-1">84%</p>
-                    <p className="text-green-600 text-sm mt-1 flex items-center">
-                      <ArrowUp className="h-3 w-3 mr-1" />
-                      +3% from last quarter
+                    <p className="text-slate-600 text-sm font-medium">Applications</p>
+                    <p className="text-2xl font-bold text-slate-800 mt-1">
+                      {loadingPipeline ? "..." : pipeline?.applications || 0}
                     </p>
                   </div>
                   <div className="bg-green-100 p-3 rounded-lg">
@@ -271,48 +246,28 @@ export default function Analytics() {
             </Card>
           </div>
 
-          {/* Conversion Rates */}
+          {/* Pipeline Status */}
           <Card>
             <CardHeader>
-              <CardTitle>Conversion Rates</CardTitle>
+              <CardTitle>Candidate Pipeline</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Application to Screening</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-32 bg-slate-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${conversionRates.applicationToScreening}%` }}></div>
-                    </div>
-                    <span className="text-sm font-bold">{conversionRates.applicationToScreening}%</span>
-                  </div>
+                  <span className="text-sm font-medium">Applications</span>
+                  <span className="text-lg font-bold">{loadingPipeline ? "..." : pipeline?.applications || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Screening to Technical</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-32 bg-slate-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${conversionRates.screeningToTechnical}%` }}></div>
-                    </div>
-                    <span className="text-sm font-bold">{conversionRates.screeningToTechnical}%</span>
-                  </div>
+                  <span className="text-sm font-medium">Prescreening</span>
+                  <span className="text-lg font-bold">{loadingPipeline ? "..." : pipeline?.prescreening || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Technical to Selected</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-32 bg-slate-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${conversionRates.technicalToSelected}%` }}></div>
-                    </div>
-                    <span className="text-sm font-bold">{conversionRates.technicalToSelected}%</span>
-                  </div>
+                  <span className="text-sm font-medium">Technical</span>
+                  <span className="text-lg font-bold">{loadingPipeline ? "..." : pipeline?.technical || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Selected to Joined</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-32 bg-slate-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${conversionRates.selectedToJoined}%` }}></div>
-                    </div>
-                    <span className="text-sm font-bold">{conversionRates.selectedToJoined}%</span>
-                  </div>
+                  <span className="text-sm font-medium">Selected</span>
+                  <span className="text-lg font-bold">{loadingPipeline ? "..." : pipeline?.selected || 0}</span>
                 </div>
               </div>
             </CardContent>
@@ -321,127 +276,30 @@ export default function Analytics() {
 
         <TabsContent value="hiring">
           <div className="space-y-6">
-            {/* Time to Hire Metrics */}
+            {/* Hiring Performance */}
             <Card>
               <CardHeader>
-                <CardTitle>Time to Hire Analysis</CardTitle>
+                <CardTitle>Hiring Performance</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {timeToHireData.map((item, index) => (
-                    <div key={index} className="p-4 border border-slate-200 rounded-lg">
-                      <div className="text-sm text-slate-600">{item.period}</div>
-                      <div className="text-2xl font-bold text-slate-800 mt-1">{item.days} days</div>
-                      <div className={`text-sm mt-1 flex items-center ${
-                        item.trend === 'up' ? 'text-red-600' : 'text-green-600'
-                      }`}>
-                        {item.trend === 'up' ? (
-                          <ArrowUp className="h-3 w-3 mr-1" />
-                        ) : (
-                          <ArrowDown className="h-3 w-3 mr-1" />
-                        )}
-                        {Math.abs(item.change)} days
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border border-slate-200 rounded-lg">
+                    <div className="text-sm text-slate-600">Open Positions</div>
+                    <div className="text-2xl font-bold text-slate-800 mt-1">
+                      {loadingHiring ? "..." : hiringAnalytics?.openPositions || 0}
                     </div>
-                  ))}
+                  </div>
+                  <div className="p-4 border border-slate-200 rounded-lg">
+                    <div className="text-sm text-slate-600">Closed Positions</div>
+                    <div className="text-2xl font-bold text-slate-800 mt-1">
+                      {loadingHiring ? "..." : hiringAnalytics?.closedPositions || 0}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Hiring by City/Role */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Hiring by City</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Mumbai</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-slate-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "75%" }}></div>
-                        </div>
-                        <span className="text-sm font-bold">185</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Delhi</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-slate-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "60%" }}></div>
-                        </div>
-                        <span className="text-sm font-bold">148</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Bangalore</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-slate-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "45%" }}></div>
-                        </div>
-                        <span className="text-sm font-bold">112</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Chennai</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-slate-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "30%" }}></div>
-                        </div>
-                        <span className="text-sm font-bold">74</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Hiring by Role</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Field Technician</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-slate-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "80%" }}></div>
-                        </div>
-                        <span className="text-sm font-bold">156</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Delivery Executive</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-slate-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "65%" }}></div>
-                        </div>
-                        <span className="text-sm font-bold">127</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Security Guard</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-slate-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "50%" }}></div>
-                        </div>
-                        <span className="text-sm font-bold">98</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Maintenance Worker</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-24 bg-slate-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: "35%" }}></div>
-                        </div>
-                        <span className="text-sm font-bold">68</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </TabsContent>
 
