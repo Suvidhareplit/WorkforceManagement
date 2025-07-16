@@ -34,6 +34,8 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Removed all mock data from dashboard cards, replaced with proper "No data available" indicators
 - **July 16, 2025**: Updated recruiter management: added City field mapping and removed Incentive Structure field
 - **July 16, 2025**: Modified database schema for recruiters (removed incentive_structure column, added city_id with foreign key)
+- **July 16, 2025**: Decided to continue using Neon PostgreSQL database (stable and working with all data)
+- **July 16, 2025**: Cleaned up all backup files, migration scripts, and old Drizzle configuration files
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  
