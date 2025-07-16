@@ -6,7 +6,7 @@ import { validateRequest } from "../middlewares/validation";
 import { 
   insertCitySchema, insertClusterSchema, insertRoleSchema, 
   insertVendorSchema, insertRecruiterSchema 
-} from "@shared/schema";
+} from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 // Configure multer for file uploads

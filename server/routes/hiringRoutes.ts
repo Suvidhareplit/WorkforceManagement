@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { hiringController } from "../controllers/hiringController";
 import { validateRequest } from "../middlewares/validation";
-import { insertHiringRequestSchema } from "@shared/schema";
+import { insertHiringRequestSchema } from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 const router = Router();

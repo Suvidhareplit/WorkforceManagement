@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { trainingController } from "../controllers/trainingController";
 import { validateRequest } from "../middlewares/validation";
-import { insertTrainingSessionSchema } from "@shared/schema";
+import { insertTrainingSessionSchema } from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 const router = Router();

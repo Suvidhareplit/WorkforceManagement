@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { employeeController } from "../controllers/employeeController";
 import { validateRequest } from "../middlewares/validation";
-import { insertEmployeeSchema, insertEmployeeActionSchema } from "@shared/schema";
+import { insertEmployeeSchema, insertEmployeeActionSchema } from "../schema";
 import { authenticate } from "../middlewares/auth";
 
 const router = Router();

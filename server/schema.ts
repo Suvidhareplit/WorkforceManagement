@@ -386,3 +386,63 @@ export const employeesRelations = relations(employees, ({ one, many }) => ({
   actions: many(employeeActions),
   exitRecord: many(exitRecords),
 }));
+
+// Drizzle Zod schemas for validation
+import { createInsertSchema } from "drizzle-zod";
+
+// Insert schemas for validation
+export const insertCitySchema = createInsertSchema(cities).omit({ id: true, createdAt: true });
+export const insertClusterSchema = createInsertSchema(clusters).omit({ id: true, createdAt: true });
+export const insertRoleSchema = createInsertSchema(roles).omit({ id: true, createdAt: true });
+export const insertVendorSchema = createInsertSchema(vendors).omit({ id: true, createdAt: true });
+export const insertVendorCityContactSchema = createInsertSchema(vendorCityContacts).omit({ id: true, createdAt: true });
+export const insertRecruiterSchema = createInsertSchema(recruiters).omit({ id: true, createdAt: true });
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, updatedAt: true, lastLogin: true });
+export const insertUserAuditTrailSchema = createInsertSchema(userAuditTrail).omit({ id: true, timestamp: true });
+export const insertHiringRequestSchema = createInsertSchema(hiringRequests).omit({ id: true, requestId: true, createdAt: true, updatedAt: true, requestDate: true });
+export const insertCandidateSchema = createInsertSchema(candidates).omit({ id: true, createdAt: true, updatedAt: true, applicationDate: true });
+export const insertTrainingSessionSchema = createInsertSchema(trainingSessions).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertTrainingAttendanceSchema = createInsertSchema(trainingAttendance).omit({ id: true, createdAt: true });
+export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertEmployeeActionSchema = createInsertSchema(employeeActions).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertExitRecordSchema = createInsertSchema(exitRecords).omit({ id: true, createdAt: true });
+export const insertVendorInvoiceSchema = createInsertSchema(vendorInvoices).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertRecruiterIncentiveSchema = createInsertSchema(recruiterIncentives).omit({ id: true, createdAt: true });
+
+// Type exports using $inferSelect
+export type City = typeof cities.$inferSelect;
+export type Cluster = typeof clusters.$inferSelect;
+export type Role = typeof roles.$inferSelect;
+export type Vendor = typeof vendors.$inferSelect;
+export type VendorCityContact = typeof vendorCityContacts.$inferSelect;
+export type Recruiter = typeof recruiters.$inferSelect;
+export type User = typeof users.$inferSelect;
+export type UserAuditTrail = typeof userAuditTrail.$inferSelect;
+export type HiringRequest = typeof hiringRequests.$inferSelect;
+export type Candidate = typeof candidates.$inferSelect;
+export type TrainingSession = typeof trainingSessions.$inferSelect;
+export type TrainingAttendance = typeof trainingAttendance.$inferSelect;
+export type Employee = typeof employees.$inferSelect;
+export type EmployeeAction = typeof employeeActions.$inferSelect;
+export type ExitRecord = typeof exitRecords.$inferSelect;
+export type VendorInvoice = typeof vendorInvoices.$inferSelect;
+export type RecruiterIncentive = typeof recruiterIncentives.$inferSelect;
+
+// Insert types
+export type InsertCity = typeof cities.$inferInsert;
+export type InsertCluster = typeof clusters.$inferInsert;
+export type InsertRole = typeof roles.$inferInsert;
+export type InsertVendor = typeof vendors.$inferInsert;
+export type InsertVendorCityContact = typeof vendorCityContacts.$inferInsert;
+export type InsertRecruiter = typeof recruiters.$inferInsert;
+export type InsertUser = typeof users.$inferInsert;
+export type InsertUserAuditTrail = typeof userAuditTrail.$inferInsert;
+export type InsertHiringRequest = typeof hiringRequests.$inferInsert;
+export type InsertCandidate = typeof candidates.$inferInsert;
+export type InsertTrainingSession = typeof trainingSessions.$inferInsert;
+export type InsertTrainingAttendance = typeof trainingAttendance.$inferInsert;
+export type InsertEmployee = typeof employees.$inferInsert;
+export type InsertEmployeeAction = typeof employeeActions.$inferInsert;
+export type InsertExitRecord = typeof exitRecords.$inferInsert;
+export type InsertVendorInvoice = typeof vendorInvoices.$inferInsert;
+export type InsertRecruiterIncentive = typeof recruiterIncentives.$inferInsert;

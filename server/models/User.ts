@@ -1,5 +1,5 @@
 import { db } from '../config/database';
-import { users, userAuditTrail, type User, type InsertUser, type InsertUserAuditTrail } from '@shared/schema';
+import { users, userAuditTrail, type User, type InsertUser, type InsertUserAuditTrail } from '../schema';
 import { eq } from 'drizzle-orm';
 
 export class UserModel {
