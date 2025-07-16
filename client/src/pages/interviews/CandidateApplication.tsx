@@ -43,7 +43,9 @@ interface ValidatedRow {
   resumeSource: string;
   sourceName?: string;
   errors: Array<{
+    row: number;
     field: string;
+    value: string;
     message: string;
   }>;
   roleId?: number;
@@ -155,7 +157,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       case 'role':
         const role = roles?.find((r: any) => r.name.toLowerCase() === row.role.toLowerCase());
         if (!role) {
-          errors.push({ field: 'role', message: 'Invalid role' });
+          errors.push({ row: row.row, field: 'role', value: row.role, message: 'Invalid role' });
         } else {
           row.roleId = role.id;
         }
@@ -164,7 +166,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       case 'city':
         const city = cities?.find((c: any) => c.name.toLowerCase() === row.city.toLowerCase());
         if (!city) {
-          errors.push({ field: 'city', message: 'Invalid city' });
+          errors.push({ row: row.row, field: 'city', value: row.city, message: 'Invalid city' });
         } else {
           row.cityId = city.id;
         }
@@ -176,7 +178,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           cl.cityId === cityId && cl.name.toLowerCase() === row.cluster.toLowerCase()
         );
         if (!cityCluster) {
-          errors.push({ field: 'cluster', message: 'Invalid cluster for selected city' });
+          errors.push({ row: row.row, field: 'cluster', value: row.cluster, message: 'Invalid cluster for selected city' });
         } else {
           row.clusterId = cityCluster.id;
         }
@@ -184,13 +186,13 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
         
       case 'qualification':
         if (!qualifications.includes(row.qualification)) {
-          errors.push({ field: 'qualification', message: 'Invalid qualification' });
+          errors.push({ row: row.row, field: 'qualification', value: row.qualification, message: 'Invalid qualification' });
         }
         break;
         
       case 'resumeSource':
         if (!resumeSources.includes(row.resumeSource)) {
-          errors.push({ field: 'resumeSource', message: 'Invalid resume source' });
+          errors.push({ row: row.row, field: 'resumeSource', value: row.resumeSource, message: 'Invalid resume source' });
         }
         break;
         
@@ -198,14 +200,14 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
         if (row.resumeSource === 'vendor') {
           const vendor = vendors?.find((v: any) => v.name.toLowerCase() === row.sourceName?.toLowerCase());
           if (!vendor) {
-            errors.push({ field: 'sourceName', message: 'Invalid vendor' });
+            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Invalid vendor' });
           } else {
             row.vendorId = vendor.id;
           }
         } else if (row.resumeSource === 'field_recruiter') {
           const recruiter = recruiters?.find((r: any) => r.name.toLowerCase() === row.sourceName?.toLowerCase());
           if (!recruiter) {
-            errors.push({ field: 'sourceName', message: 'Invalid recruiter' });
+            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Invalid recruiter' });
           } else {
             row.recruiterId = recruiter.id;
           }
@@ -217,7 +219,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
   };
 
   const handleSubmit = async () => {
-    const validRows = validatedData.filter(row => row.errors.length === 0);
+    const validRows = validatedData.filter(row => row.errors && row.errors.length === 0);
     
     if (validRows.length === 0) {
       toast({
@@ -269,7 +271,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
   };
 
   const getFieldError = (row: ValidatedRow, field: string) => {
-    return row.errors.find(e => e.field === field);
+    return row.errors && row.errors.find(e => e.field === field);
   };
 
   return (
@@ -338,9 +340,9 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
               <CardTitle>Validated Data</CardTitle>
               <Button 
                 onClick={handleSubmit}
-                disabled={isProcessing || summary?.errorRows > 0}
+                disabled={isProcessing || !summary || summary.errorRows > 0}
               >
-                {isProcessing ? "Processing..." : `Submit ${summary?.validRows} Valid Rows`}
+                {isProcessing ? "Processing..." : `Submit ${summary?.validRows || 0} Valid Rows`}
               </Button>
             </div>
           </CardHeader>
@@ -364,10 +366,10 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                 </TableHeader>
                 <TableBody>
                   {validatedData.map((row, index) => (
-                    <TableRow key={index} className={row.errors.length > 0 ? "bg-red-50" : "bg-green-50"}>
+                    <TableRow key={index} className={row.errors && row.errors.length > 0 ? "bg-red-50" : "bg-green-50"}>
                       <TableCell>{row.row}</TableCell>
                       <TableCell>
-                        {row.errors.length > 0 ? (
+                        {row.errors && row.errors.length > 0 ? (
                           <XCircle className="h-5 w-5 text-red-500" />
                         ) : (
                           <CheckCircle className="h-5 w-5 text-green-500" />
