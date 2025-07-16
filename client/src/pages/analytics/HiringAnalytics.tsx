@@ -363,7 +363,7 @@ export default function HiringAnalytics() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Hiring Requests</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -372,23 +372,27 @@ export default function HiringAnalytics() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Positions</CardTitle>
+            <CardTitle className="text-sm font-medium">Open Positions</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredRequests.reduce((sum: number, req: HiringRequest) => sum + req.numberOfPositions, 0)}
+              {filteredRequests
+                .filter((req: HiringRequest) => req.status === 'open')
+                .reduce((sum: number, req: HiringRequest) => sum + req.numberOfPositions, 0)}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cities Involved</CardTitle>
+            <CardTitle className="text-sm font-medium">Closed Positions</CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {new Set(filteredRequests.map((req: HiringRequest) => req.cityId)).size}
+              {filteredRequests
+                .filter((req: HiringRequest) => req.status === 'closed')
+                .reduce((sum: number, req: HiringRequest) => sum + req.numberOfPositions, 0)}
             </div>
           </CardContent>
         </Card>

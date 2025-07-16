@@ -7,6 +7,10 @@ This is a comprehensive Blue Collar HRMS (Human Resource Management System) plat
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+- **July 16, 2025**: Created comprehensive Hiring Analytics module with email functionality for vendor SPOCs
+- **July 16, 2025**: Built city/role/cluster-wise hiring request analytics table with filtering and selection
+- **July 16, 2025**: Added Gmail email service integration for sending hiring requests to vendor city recruitment SPOCs
+- **July 16, 2025**: Updated analytics summary cards to show Total Hiring Requests, Open Positions, and Closed Positions
 - **July 16, 2025**: Implemented comprehensive vendor details system with commercial terms and contact information
 - **July 16, 2025**: Added new database fields for vendors: management fees, sourcing fee, replacement days, and SPOC contacts
 - **July 16, 2025**: Created detailed vendor details dialog with commercial terms table and contact matrix
