@@ -520,15 +520,15 @@ export default function CandidateApplication() {
                       <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.phone}</TableCell>
-                      <TableCell>{candidate.role?.name}</TableCell>
+                      <TableCell>{candidate.roleName || candidate.role?.name}</TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div>{candidate.city?.name}</div>
-                          <div className="text-slate-500">{candidate.cluster?.name}</div>
+                          <div>{candidate.cityName || candidate.city?.name}</div>
+                          <div className="text-slate-500">{candidate.clusterName || candidate.cluster?.name}</div>
                         </div>
                       </TableCell>
                       <TableCell className="capitalize">
-                        {candidate.resumeSource?.replace('_', ' ')}
+                        {candidate.resumeSource?.replace('_', ' ') || candidate.sourcingChannel?.replace('_', ' ')}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusBadgeVariant(candidate.status)}>
@@ -536,7 +536,7 @@ export default function CandidateApplication() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {new Date(candidate.createdAt).toLocaleDateString()}
+                        {candidate.createdAt ? new Date(candidate.createdAt).toLocaleDateString() : 'N/A'}
                       </TableCell>
                     </TableRow>
                   ))
