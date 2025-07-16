@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 
 export default function Dashboard() {
-  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [selectedCity, setSelectedCity] = useState<string>("3"); // Default to Bangalore
 
   const { data: hiringRequestsData, isLoading: loadingHiring } = useQuery({
     queryKey: ["/api/analytics/hiring"],
