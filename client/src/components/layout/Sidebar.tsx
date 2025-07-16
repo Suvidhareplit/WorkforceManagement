@@ -16,6 +16,7 @@ import {
   UserCheck,
   LogOut,
   Database,
+  Upload,
 } from "lucide-react";
 
 const menuItems = [
@@ -56,6 +57,11 @@ const menuItems = [
         icon: UserPlus,
         label: "Candidate Applications",
         href: "/interviews/applications",
+      },
+      {
+        icon: Upload,
+        label: "Bulk Upload",
+        href: "/interviews/bulk-upload",
       },
       {
         icon: ClipboardCheck,

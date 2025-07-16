@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { interviewController } from "../controllers/interviewController";
+import { validateBulkUpload, processBulkUpload } from "../controllers/bulkUploadController";
 import { authenticate } from "../middlewares/auth";
+import multer from "multer";
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Candidate application (public endpoint)
 router.post('/candidates', interviewController.createCandidate);
@@ -15,6 +18,10 @@ router.get('/candidates', interviewController.getCandidates);
 
 // Get candidate by ID
 router.get('/candidates/:id', interviewController.getCandidateById);
+
+// Bulk upload routes
+router.post('/bulk-upload/validate', upload.single('file'), validateBulkUpload);
+router.post('/bulk-upload/process', processBulkUpload);
 
 // Update prescreening status
 router.patch('/candidates/:id/prescreening', interviewController.updatePrescreening);

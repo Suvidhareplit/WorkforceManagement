@@ -48,6 +48,10 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Added unique application ID generation for each candidate application with format APP-YYYYMMDD-XXXX
 - **July 16, 2025**: Updated database schema to include application_id column in candidates table
 - **July 16, 2025**: Display application ID in candidate list view and show it in success toast after submission
+- **July 16, 2025**: Added bulk candidate upload feature with CSV file support and inline editing capabilities
+- **July 16, 2025**: Implemented validation against master data (roles, cities, clusters, vendors, recruiters) in bulk upload
+- **July 16, 2025**: Created interactive table with error highlighting and inline editing for fixing validation errors
+- **July 16, 2025**: Added CSV template download feature with example data for bulk upload guidance
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  
