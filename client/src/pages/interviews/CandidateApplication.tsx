@@ -102,7 +102,17 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     formData.append('file', file);
 
     try {
-      const response = await apiRequest("POST", "/api/interviews/bulk-upload/validate", formData);
+      const response = await apiRequest("/api/interviews/bulk-upload/validate", {
+        method: "POST",
+        body: formData
+      });
+
+      console.log('Validation response:', response);
+
+      // Check if response has the expected structure
+      if (!response || !response.data) {
+        throw new Error('Invalid response from server');
+      }
 
       // Ensure each row has an errors array
       const processedData = response.data.map((row: any) => ({
@@ -112,9 +122,9 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
 
       setValidatedData(processedData);
       setSummary({
-        totalRows: response.totalRows,
-        validRows: response.validRows,
-        errorRows: response.errorRows,
+        totalRows: response.totalRows || 0,
+        validRows: response.validRows || 0,
+        errorRows: response.errorRows || 0,
       });
 
       if (response.errorRows > 0) {
@@ -130,6 +140,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
         });
       }
     } catch (error: any) {
+      console.error('Validation error:', error);
       toast({
         title: "Upload failed",
         description: error.message || "Failed to validate file. Please check the format and try again.",
@@ -238,7 +249,10 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
 
     setIsProcessing(true);
     try {
-      const response = await apiRequest("POST", "/api/interviews/bulk-upload/process", { candidates: validRows });
+      const response = await apiRequest("/api/interviews/bulk-upload/process", {
+        method: "POST",
+        body: { candidates: validRows }
+      });
 
       toast({
         title: "Upload successful",

@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { interviewController } from "../controllers/interviewController";
-import { validateBulkUpload, processBulkUpload } from "../controllers/bulkUploadController";
-import { authenticate } from "../middlewares/auth";
+import { interviewController } from "../controllers/interviewController.js";
+import { validateBulkUpload, processBulkUpload } from "../controllers/bulkUploadController.js";
+import { authenticate } from "../middlewares/auth.js";
 import multer from "multer";
 
 const router = Router();
