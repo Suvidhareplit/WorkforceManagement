@@ -299,7 +299,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       return newRow;
     });
     
-    const validRows = revalidatedData.filter(row => row.errors && row.errors.length === 0);
+    const validRows = revalidatedData.filter(row => !row.errors || row.errors.length === 0);
     
     // Debug: log what we're sending
     console.log('Sending candidates:', validRows);
