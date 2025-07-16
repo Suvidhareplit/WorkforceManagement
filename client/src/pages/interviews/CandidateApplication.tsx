@@ -104,6 +104,20 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     // Re-validate this field
     validateField(updatedData[index], field);
     
+    // If city changed, re-validate cluster to ensure clusterId is updated
+    if (field === 'city') {
+      updatedData[index].errors = updatedData[index].errors.filter(e => e.field !== 'cluster');
+      validateField(updatedData[index], 'cluster');
+    }
+    
+    // If resumeSource changed, clear sourceName and related IDs
+    if (field === 'resumeSource') {
+      updatedData[index].sourceName = '';
+      updatedData[index].vendorId = undefined;
+      updatedData[index].recruiterId = undefined;
+      updatedData[index].errors = updatedData[index].errors.filter(e => e.field !== 'sourceName');
+    }
+    
     setValidatedData(updatedData);
     
     // Recalculate summary
@@ -114,14 +128,6 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       validRows: newValidRows,
       errorRows: newErrorRows
     });
-    
-    // Log to debug vendor/recruiter data
-    console.log('Field updated:', field, 'Value:', value);
-    if (field === 'resumeSource') {
-      console.log('Resume source changed to:', value);
-      console.log('Available vendors:', vendors);
-      console.log('Available recruiters:', recruiters);
-    }
   };
 
   const handleValidate = async () => {
@@ -194,10 +200,28 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     const errors = row.errors || [];
     
     switch (field) {
+      case 'name':
+        if (!row.name || row.name.trim() === '') {
+          errors.push({ row: row.row, field: 'name', value: row.name, message: 'Name is required' });
+        }
+        break;
+        
+      case 'phone':
+        if (!row.phone || !/^\d{10}$/.test(row.phone)) {
+          errors.push({ row: row.row, field: 'phone', value: row.phone, message: 'Valid 10-digit phone number is required' });
+        }
+        break;
+        
+      case 'email':
+        if (!row.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
+          errors.push({ row: row.row, field: 'email', value: row.email, message: 'Valid email is required' });
+        }
+        break;
+        
       case 'role':
         const role = roles?.find((r: any) => r.name.toLowerCase() === row.role.toLowerCase());
         if (!role) {
-          errors.push({ row: row.row, field: 'role', value: row.role, message: 'Invalid role' });
+          errors.push({ row: row.row, field: 'role', value: row.role, message: 'Invalid role. Must match existing roles.' });
         } else {
           row.roleId = role.id;
         }
@@ -206,7 +230,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       case 'city':
         const city = cities?.find((c: any) => c.name.toLowerCase() === row.city.toLowerCase());
         if (!city) {
-          errors.push({ row: row.row, field: 'city', value: row.city, message: 'Invalid city' });
+          errors.push({ row: row.row, field: 'city', value: row.city, message: 'Invalid city. Must match existing cities.' });
         } else {
           row.cityId = city.id;
         }
@@ -225,32 +249,34 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
         break;
         
       case 'qualification':
-        if (!qualifications.includes(row.qualification)) {
-          errors.push({ row: row.row, field: 'qualification', value: row.qualification, message: 'Invalid qualification' });
+        if (!row.qualification || !qualifications.includes(row.qualification)) {
+          errors.push({ row: row.row, field: 'qualification', value: row.qualification, message: 'Invalid qualification. Must be one of: ' + qualifications.join(', ') });
         }
         break;
         
       case 'resumeSource':
-        if (!resumeSources.includes(row.resumeSource)) {
-          errors.push({ row: row.row, field: 'resumeSource', value: row.resumeSource, message: 'Invalid resume source' });
+        if (!row.resumeSource || !resumeSources.includes(row.resumeSource)) {
+          errors.push({ row: row.row, field: 'resumeSource', value: row.resumeSource, message: 'Invalid resume source. Must be: vendor, field_recruiter, or referral' });
         }
         break;
         
       case 'sourceName':
         if (row.resumeSource === 'vendor') {
-          const vendor = vendors?.find((v: any) => v.name.toLowerCase() === row.sourceName?.toLowerCase());
-          if (!vendor) {
-            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Invalid vendor' });
+          const vendor = vendors?.find((v: any) => v.name === row.sourceName);
+          if (!row.sourceName || !vendor) {
+            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Vendor name is required when source is vendor' });
           } else {
             row.vendorId = vendor.id;
           }
         } else if (row.resumeSource === 'field_recruiter') {
-          const recruiter = recruiters?.find((r: any) => r.name.toLowerCase() === row.sourceName?.toLowerCase());
-          if (!recruiter) {
-            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Invalid recruiter' });
+          const recruiter = recruiters?.find((r: any) => r.name === row.sourceName);
+          if (!row.sourceName || !recruiter) {
+            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Recruiter name is required when source is field_recruiter' });
           } else {
             row.recruiterId = recruiter.id;
           }
+        } else if (row.resumeSource === 'referral' && !row.sourceName) {
+          errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Referral name is required when source is referral' });
         }
         break;
     }
@@ -259,7 +285,20 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
   };
 
   const handleSubmit = async () => {
-    const validRows = validatedData.filter(row => row.errors && row.errors.length === 0);
+    // Re-validate all rows to ensure IDs are properly set
+    const revalidatedData = validatedData.map(row => {
+      const newRow = { ...row };
+      newRow.errors = [];
+      
+      // Validate all fields to ensure IDs are set
+      ['name', 'phone', 'email', 'role', 'city', 'cluster', 'qualification', 'resumeSource', 'sourceName'].forEach(field => {
+        validateField(newRow, field);
+      });
+      
+      return newRow;
+    });
+    
+    const validRows = revalidatedData.filter(row => row.errors && row.errors.length === 0);
     
     if (validRows.length === 0) {
       toast({
