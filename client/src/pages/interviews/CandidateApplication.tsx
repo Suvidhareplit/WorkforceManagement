@@ -1187,18 +1187,34 @@ export default function CandidateApplication() {
                       <TableCell>{candidate.city || ''}</TableCell>
                       <TableCell>{candidate.cluster || ''}</TableCell>
                       <TableCell>
-                        {(() => {
-                          // Show the source based on what data we have
-                          if (candidate.vendor) {
-                            return candidate.vendor;
-                          } else if (candidate.recruiter) {
-                            return candidate.recruiter;
-                          } else if (candidate.referralName) {
-                            return `Referral: ${candidate.referralName}`;
-                          } else {
-                            return 'Direct Application';
-                          }
-                        })()}
+                        <div className="space-y-1">
+                          <div className="font-medium text-sm">
+                            {(() => {
+                              if (candidate.vendor) {
+                                return 'Vendor';
+                              } else if (candidate.recruiter) {
+                                return 'Field Recruiter';
+                              } else if (candidate.referralName) {
+                                return 'Referral';
+                              } else {
+                                return 'Direct Application';
+                              }
+                            })()}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {(() => {
+                              if (candidate.vendor) {
+                                return candidate.vendor;
+                              } else if (candidate.recruiter) {
+                                return candidate.recruiter;
+                              } else if (candidate.referralName) {
+                                return candidate.referralName;
+                              } else {
+                                return '-';
+                              }
+                            })()}
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusBadgeVariant(candidate.status)}>
