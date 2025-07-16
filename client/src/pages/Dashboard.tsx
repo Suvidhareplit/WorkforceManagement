@@ -125,7 +125,7 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">Open Positions</p>
+                <p className="text-slate-600 text-sm font-medium">Pan India Open Positions</p>
                 <p className="text-2xl font-bold text-slate-800 mt-1">
                   {loadingHiring ? "..." : openPositions}
                 </p>
@@ -142,7 +142,7 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">Closed Positions</p>
+                <p className="text-slate-600 text-sm font-medium">Pan India Closed Positions</p>
                 <p className="text-2xl font-bold text-slate-800 mt-1">
                   {loadingHiring ? "..." : closedPositions}
                 </p>
