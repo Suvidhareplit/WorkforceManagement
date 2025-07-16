@@ -495,7 +495,8 @@ export default function CandidateApplication() {
                   <TableHead>Name</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Location</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Cluster</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Applied Date</TableHead>
@@ -504,13 +505,13 @@ export default function CandidateApplication() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : candidates?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={9} className="text-center py-8">
                       No candidates found
                     </TableCell>
                   </TableRow>
@@ -521,12 +522,8 @@ export default function CandidateApplication() {
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.phone}</TableCell>
                       <TableCell>{candidate.roleName || candidate.role?.name}</TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div>{candidate.cityName || candidate.city?.name}</div>
-                          <div className="text-slate-500">{candidate.clusterName || candidate.cluster?.name}</div>
-                        </div>
-                      </TableCell>
+                      <TableCell>{candidate.cityName || candidate.city?.name}</TableCell>
+                      <TableCell>{candidate.clusterName || candidate.cluster?.name}</TableCell>
                       <TableCell className="capitalize">
                         {candidate.resumeSource?.replace('_', ' ') || candidate.sourcingChannel?.replace('_', ' ')}
                       </TableCell>

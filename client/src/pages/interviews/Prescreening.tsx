@@ -82,7 +82,8 @@ export default function Prescreening() {
                 <TableHead>Phone</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Location</TableHead>
+                <TableHead>City</TableHead>
+                <TableHead>Cluster</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead>Qualification</TableHead>
                 <TableHead>Applied Date</TableHead>
@@ -92,13 +93,13 @@ export default function Prescreening() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8">
+                  <TableCell colSpan={11} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : candidates?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8">
+                  <TableCell colSpan={11} className="text-center py-8">
                     No candidates awaiting prescreening
                   </TableCell>
                 </TableRow>
@@ -109,13 +110,9 @@ export default function Prescreening() {
                     <TableCell className="font-medium">{candidate.name}</TableCell>
                     <TableCell>{candidate.phone}</TableCell>
                     <TableCell>{candidate.email || "Not provided"}</TableCell>
-                    <TableCell>{candidate.role?.name}</TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{candidate.city?.name}</div>
-                        <div className="text-slate-500">{candidate.cluster?.name}</div>
-                      </div>
-                    </TableCell>
+                    <TableCell>{candidate.roleName || candidate.role?.name}</TableCell>
+                    <TableCell>{candidate.cityName || candidate.city?.name}</TableCell>
+                    <TableCell>{candidate.clusterName || candidate.cluster?.name}</TableCell>
                     <TableCell>
                       <div className="text-sm">
                         <div className="capitalize">{candidate.resumeSource?.replace('_', ' ')}</div>
