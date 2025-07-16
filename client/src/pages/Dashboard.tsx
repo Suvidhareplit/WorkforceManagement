@@ -6,7 +6,7 @@ import { Plus, Briefcase, Users, Clock, TrendingUp, ArrowUp, ArrowDown } from "l
 import { Link } from "wouter";
 
 export default function Dashboard() {
-  const { data: hiringAnalytics, isLoading: loadingHiring } = useQuery({
+  const { data: hiringRequestsData, isLoading: loadingHiring } = useQuery({
     queryKey: ["/api/analytics/hiring"],
   });
 
@@ -17,6 +17,14 @@ export default function Dashboard() {
   const { data: hiringRequests, isLoading: loadingRequests } = useQuery({
     queryKey: ["/api/hiring"],
   });
+
+  // Calculate metrics from hiring requests data
+  const openPositions = hiringRequestsData?.filter((req: any) => req.status === 'open')
+    .reduce((sum: number, req: any) => sum + (req.numberOfPositions || 0), 0) || 0;
+  
+  const totalRequests = hiringRequestsData?.length || 0;
+  const closedPositions = hiringRequestsData?.filter((req: any) => req.status === 'closed')
+    .reduce((sum: number, req: any) => sum + (req.numberOfPositions || 0), 0) || 0;
 
   return (
     <div>
@@ -44,7 +52,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-slate-600 text-sm font-medium">Open Positions</p>
                 <p className="text-2xl font-bold text-slate-800 mt-1">
-                  {loadingHiring ? "..." : hiringAnalytics?.openPositions || 0}
+                  {loadingHiring ? "..." : openPositions}
                 </p>
                 <p className="text-slate-400 text-sm mt-1">Active positions</p>
               </div>
