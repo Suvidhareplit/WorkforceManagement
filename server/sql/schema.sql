@@ -143,6 +143,7 @@ CREATE TABLE IF NOT EXISTS hiring_requests (
 -- Candidates table
 CREATE TABLE IF NOT EXISTS candidates (
     id SERIAL PRIMARY KEY,
+    application_id TEXT NOT NULL UNIQUE,
     hiring_request_id INTEGER REFERENCES hiring_requests(id) NOT NULL,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -153,6 +154,7 @@ CREATE TABLE IF NOT EXISTS candidates (
     vendor_id INTEGER REFERENCES vendors(id),
     recruiter_id INTEGER REFERENCES recruiters(id),
     sourcing_channel TEXT,
+    qualification TEXT,
     application_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status candidate_status DEFAULT 'applied',
     prescreening_date TIMESTAMP,

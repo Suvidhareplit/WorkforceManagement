@@ -77,6 +77,7 @@ export default function Prescreening() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Application ID</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Email</TableHead>
@@ -91,19 +92,20 @@ export default function Prescreening() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={10} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : candidates?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={10} className="text-center py-8">
                     No candidates awaiting prescreening
                   </TableCell>
                 </TableRow>
               ) : (
                 candidates?.map((candidate: Candidate) => (
                   <TableRow key={candidate.id}>
+                    <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                     <TableCell className="font-medium">{candidate.name}</TableCell>
                     <TableCell>{candidate.phone}</TableCell>
                     <TableCell>{candidate.email || "Not provided"}</TableCell>

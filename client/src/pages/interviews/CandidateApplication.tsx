@@ -111,11 +111,11 @@ export default function CandidateApplication() {
 
       return await apiRequest("POST", "/api/interviews/candidates", payload);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
       toast({
         title: "Success",
-        description: "Candidate application submitted successfully",
+        description: data.message || "Candidate application submitted successfully",
       });
       form.reset();
     },
@@ -479,6 +479,7 @@ export default function CandidateApplication() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Application ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>Role</TableHead>
@@ -491,19 +492,20 @@ export default function CandidateApplication() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : candidates?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       No candidates found
                     </TableCell>
                   </TableRow>
                 ) : (
                   candidates?.map((candidate: any) => (
                     <TableRow key={candidate.id}>
+                      <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.phone}</TableCell>
                       <TableCell>{candidate.role?.name}</TableCell>

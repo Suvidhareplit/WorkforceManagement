@@ -6,12 +6,20 @@ const createCandidate = async (req: Request, res: Response) => {
   try {
     const candidateData = req.body;
     
-    const candidate = await storage.createCandidate({
+    // Map resumeSource to sourcingChannel for backward compatibility
+    const mappedData = {
       ...candidateData,
+      sourcingChannel: candidateData.resumeSource,
       status: 'applied'
-    });
+    };
     
-    res.status(201).json(candidate);
+    const candidate = await storage.createCandidate(mappedData);
+    
+    // Return the complete candidate data including application ID
+    res.status(201).json({
+      ...candidate,
+      message: `Application submitted successfully. Your Application ID is: ${candidate.application_id}`
+    });
   } catch (error) {
     console.error('Create candidate error:', error);
     res.status(500).json({ message: "Internal server error" });

@@ -143,6 +143,7 @@ export interface HiringRequest {
 
 export interface Candidate {
   id: number;
+  applicationId: string;
   hiringRequestId: number;
   name: string;
   email: string;
@@ -153,6 +154,7 @@ export interface Candidate {
   vendorId?: number;
   recruiterId?: number;
   sourcingChannel?: string;
+  qualification?: string;
   applicationDate?: string;
   status: 'applied' | 'prescreening' | 'technical' | 'selected' | 'rejected' | 'offered' | 'joined';
   prescreeningDate?: string;

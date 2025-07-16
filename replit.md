@@ -45,6 +45,9 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Simplified table display to show only position counts since priority is now a filter
 - **July 16, 2025**: Made Email ID mandatory field in candidate application form
 - **July 16, 2025**: Changed qualification field from text input to dropdown with options: 8th-10th, 11th-12th, Graduation, B.Tech, Diploma, ITI
+- **July 16, 2025**: Added unique application ID generation for each candidate application with format APP-YYYYMMDD-XXXX
+- **July 16, 2025**: Updated database schema to include application_id column in candidates table
+- **July 16, 2025**: Display application ID in candidate list view and show it in success toast after submission
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  

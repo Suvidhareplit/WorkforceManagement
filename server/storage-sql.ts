@@ -635,16 +635,32 @@ export class SqlStorage implements IStorage {
 
   // Candidates
   async createCandidate(candidate: any): Promise<Candidate> {
+    // Generate unique application ID
+    const date = new Date();
+    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+    
+    // Get count of applications for today to generate sequential number
+    const countResult = await query(
+      `SELECT COUNT(*) as count FROM candidates 
+       WHERE DATE(created_at) = CURRENT_DATE`,
+      []
+    );
+    
+    const count = parseInt(countResult.rows[0].count) + 1;
+    const applicationId = `APP-${dateStr}-${count.toString().padStart(4, '0')}`;
+    
     const result = await query(
       `INSERT INTO candidates (
-        hiring_request_id, name, email, phone, city_id, cluster_id, role_id,
-        vendor_id, recruiter_id, sourcing_channel
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        application_id, hiring_request_id, name, email, phone, city_id, cluster_id, role_id,
+        vendor_id, recruiter_id, sourcing_channel, qualification
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *`,
       [
+        applicationId,
         candidate.hiringRequestId, candidate.name, candidate.email, candidate.phone,
         candidate.cityId, candidate.clusterId, candidate.roleId,
-        candidate.vendorId, candidate.recruiterId, candidate.sourcingChannel
+        candidate.vendorId, candidate.recruiterId, candidate.sourcingChannel,
+        candidate.qualification
       ]
     );
     return result.rows[0];
