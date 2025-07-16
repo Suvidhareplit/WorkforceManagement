@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { HiringRequest } from "@/types";
+// Removed HiringRequest import since backend returns snake_case fields
 import { Link } from "wouter";
 import { Plus, Filter, Search, Download, Eye, Edit, X } from "lucide-react";
 
@@ -255,36 +255,36 @@ export default function ViewHiringRequests() {
                   </TableCell>
                 </TableRow>
               ) : (
-                Array.isArray(requests) && requests.map((request: HiringRequest) => (
+                Array.isArray(requests) && requests.map((request: any) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-mono text-sm">
-                      {request.requestId}
+                      {request.request_id || request.requestId}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {request.roleName || 'Unknown Role'}
+                      {request.role_name || request.roleName || 'Unknown Role'}
                     </TableCell>
                     <TableCell>
-                      {request.cityName || 'Unknown City'}
+                      {request.city_name || request.cityName || 'Unknown City'}
                     </TableCell>
                     <TableCell>
-                      {request.clusterName || 'Unknown Cluster'}
+                      {request.cluster_name || request.clusterName || 'Unknown Cluster'}
                     </TableCell>
-                    <TableCell>{request.numberOfPositions}</TableCell>
+                    <TableCell>{request.number_of_positions || request.numberOfPositions}</TableCell>
                     <TableCell>
                       <span className={`font-medium ${getPriorityColor(request.priority)}`}>
                         {request.priority}
                       </span>
                     </TableCell>
                     <TableCell className="capitalize">
-                      {request.requestType.replace('_', ' ')}
+                      {(request.request_type || request.requestType || '').replace('_', ' ')}
                     </TableCell>
                     <TableCell>
                       <Badge variant={getStatusBadgeVariant(request.status)}>
-                        {request.status.replace('_', ' ')}
+                        {(request.status || '').replace('_', ' ')}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {new Date(request.createdAt).toLocaleDateString()}
+                      {new Date(request.created_at || request.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">

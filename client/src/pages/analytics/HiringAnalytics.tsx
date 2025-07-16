@@ -109,24 +109,26 @@ export default function HiringAnalytics() {
   });
 
   // Filter hiring requests
-  const filteredRequests = hiringRequests.filter((request: HiringRequest) => {
+  const filteredRequests = hiringRequests.filter((request: any) => {
+    const cityId = request.city_id || request.cityId;
+    const roleId = request.role_id || request.roleId;
     return (
-      (cityFilter === "all" || request.cityId.toString() === cityFilter) &&
-      (roleFilter === "all" || request.roleId.toString() === roleFilter) &&
+      (cityFilter === "all" || (cityId && cityId.toString() === cityFilter)) &&
+      (roleFilter === "all" || (roleId && roleId.toString() === roleFilter)) &&
       (statusFilter === "all" || request.status === statusFilter)
     );
   });
 
   // Group requests by city for detailed analytics
-  const cityAnalytics = filteredRequests.reduce((acc: any, request: HiringRequest) => {
-    const cityKey = request.cityName;
-    const roleKey = request.roleName;
-    const clusterKey = request.clusterName;
+  const cityAnalytics = filteredRequests.reduce((acc: any, request: any) => {
+    const cityKey = request.city_name || request.cityName;
+    const roleKey = request.role_name || request.roleName;
+    const clusterKey = request.cluster_name || request.clusterName;
     
     if (!acc[cityKey]) {
       acc[cityKey] = {
-        cityId: request.cityId,
-        cityName: request.cityName,
+        cityId: request.city_id || request.cityId,
+        cityName: request.city_name || request.cityName,
         roles: {},
         clusters: new Set(),
         totalOpenPositions: 0,
@@ -135,8 +137,8 @@ export default function HiringAnalytics() {
     
     if (!acc[cityKey].roles[roleKey]) {
       acc[cityKey].roles[roleKey] = {
-        roleId: request.roleId,
-        roleName: request.roleName,
+        roleId: request.role_id || request.roleId,
+        roleName: request.role_name || request.roleName,
         clusters: {},
         totalOpenPositions: 0,
       };
@@ -144,8 +146,8 @@ export default function HiringAnalytics() {
     
     if (!acc[cityKey].roles[roleKey].clusters[clusterKey]) {
       acc[cityKey].roles[roleKey].clusters[clusterKey] = {
-        clusterId: request.clusterId,
-        clusterName: request.clusterName,
+        clusterId: request.cluster_id || request.clusterId,
+        clusterName: request.cluster_name || request.clusterName,
         openPositions: 0,
         totalRequests: 0,
       };
@@ -155,10 +157,11 @@ export default function HiringAnalytics() {
     acc[cityKey].clusters.add(clusterKey);
     
     // Only count open positions (not closed)
+    const numberOfPositions = request.number_of_positions || request.numberOfPositions;
     if (request.status !== 'closed') {
-      acc[cityKey].roles[roleKey].clusters[clusterKey].openPositions += request.numberOfPositions;
-      acc[cityKey].roles[roleKey].totalOpenPositions += request.numberOfPositions;
-      acc[cityKey].totalOpenPositions += request.numberOfPositions;
+      acc[cityKey].roles[roleKey].clusters[clusterKey].openPositions += numberOfPositions;
+      acc[cityKey].roles[roleKey].totalOpenPositions += numberOfPositions;
+      acc[cityKey].totalOpenPositions += numberOfPositions;
     }
     
     acc[cityKey].roles[roleKey].clusters[clusterKey].totalRequests += 1;
@@ -183,7 +186,7 @@ export default function HiringAnalytics() {
     if (selectedRequests.length === filteredRequests.length) {
       setSelectedRequests([]);
     } else {
-      setSelectedRequests(filteredRequests.map((req: HiringRequest) => req.id));
+      setSelectedRequests(filteredRequests.map((req: any) => req.id));
     }
   };
 
