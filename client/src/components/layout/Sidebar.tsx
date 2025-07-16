@@ -45,7 +45,7 @@ const menuItems = [
       {
         icon: TrendingUp,
         label: "Hiring Analytics",
-        href: "/analytics",
+        href: "/analytics/hiring",
       },
     ],
   },

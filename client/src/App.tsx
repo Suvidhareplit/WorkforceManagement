@@ -20,6 +20,7 @@ import ExitManagement from "./pages/employee/ExitManagement";
 import MasterData from "./pages/master/MasterData";
 import UserManagement from "./pages/management/UserManagement";
 import Analytics from "./pages/analytics/Analytics";
+import HiringAnalytics from "./pages/analytics/HiringAnalytics";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -41,6 +42,7 @@ function Router() {
         <Route path="/master-data" component={MasterData} />
         <Route path="/management/users" component={UserManagement} />
         <Route path="/analytics" component={Analytics} />
+        <Route path="/analytics/hiring" component={HiringAnalytics} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

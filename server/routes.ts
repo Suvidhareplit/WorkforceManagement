@@ -7,7 +7,7 @@ import { trainingRoutes } from "./routes/trainingRoutes";
 import { employeeRoutes } from "./routes/employeeRoutes";
 import { userRoutes } from "./routes/userRoutes";
 import { masterDataRoutes } from "./routes/masterDataRoutes";
-import { analyticsRoutes } from "./routes/analyticsRoutes";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register all route modules

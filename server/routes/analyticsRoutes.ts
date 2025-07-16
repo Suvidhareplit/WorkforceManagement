@@ -1,22 +1,16 @@
-import { Router } from "express";
-import { analyticsController } from "../controllers/analyticsController";
-import { authenticate } from "../middlewares/auth";
+import { Router } from 'express';
+import * as analyticsController from '../controllers/analyticsController.js';
+import { authenticate } from '../middlewares/auth.js';
 
 const router = Router();
 
-// All routes require authentication
+// Apply authentication middleware to all routes
 router.use(authenticate);
 
-// Get hiring analytics
+// GET /api/analytics/hiring - Get hiring analytics data
 router.get('/hiring', analyticsController.getHiringAnalytics);
 
-// Get candidate pipeline analytics
-router.get('/pipeline', analyticsController.getCandidatePipeline);
+// POST /api/analytics/send-email - Send hiring request email to vendor SPOC
+router.post('/send-email', analyticsController.sendHiringRequestEmail);
 
-// Get vendor performance
-router.get('/vendors', analyticsController.getVendorPerformance);
-
-// Get recruiter performance
-router.get('/recruiters', analyticsController.getRecruiterPerformance);
-
-export { router as analyticsRoutes };
+export default router;
