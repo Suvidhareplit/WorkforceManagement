@@ -291,6 +291,9 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
     
     const validRows = revalidatedData.filter(row => row.errors && row.errors.length === 0);
     
+    // Debug: log what we're sending
+    console.log('Sending candidates:', validRows);
+    
     if (validRows.length === 0) {
       toast({
         title: "No valid rows",

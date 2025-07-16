@@ -208,6 +208,15 @@ export const processBulkUpload = async (req: Request, res: Response) => {
 
     for (const candidate of validCandidates) {
       try {
+        // Debug logging
+        console.log('Processing candidate:', {
+          name: candidate.name,
+          resumeSource: candidate.resumeSource,
+          sourceName: candidate.sourceName,
+          vendor: candidate.vendor,
+          recruiter: candidate.recruiter
+        });
+        
         const newCandidate = await storage.createCandidate({
           name: candidate.name,
           phone: candidate.phone,
@@ -217,8 +226,8 @@ export const processBulkUpload = async (req: Request, res: Response) => {
           cluster: candidate.cluster,
           qualification: candidate.qualification,
           resumeSource: candidate.resumeSource,
-          vendor: candidate.resumeSource === 'vendor' ? candidate.sourceName : null,
-          recruiter: candidate.resumeSource === 'field_recruiter' ? candidate.sourceName : null,
+          vendor: candidate.vendor || (candidate.resumeSource === 'vendor' ? candidate.sourceName : null),
+          recruiter: candidate.recruiter || (candidate.resumeSource === 'field_recruiter' ? candidate.sourceName : null),
           referralName: candidate.resumeSource === 'referral' ? candidate.sourceName : undefined,
         });
         results.push(newCandidate);
