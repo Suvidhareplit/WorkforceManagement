@@ -22,11 +22,6 @@ Preferred communication style: Simple, everyday language.
 - **July 16, 2025**: Added comprehensive README documentation for root, frontend, and backend
 - **July 16, 2025**: Fixed all backend imports to use local schema references instead of @shared/schema
 - **July 16, 2025**: Successfully removed shared folder - complete separation achieved
-- **July 17, 2025**: FURTHER SEPARATION - Removed shared schema completely and set up independent servers
-- **July 17, 2025**: Backend now runs as pure API server on port 5000 with CORS enabled
-- **July 17, 2025**: Frontend runs independently on port 3000 with proxy configuration to backend
-- **July 17, 2025**: Added cors package to backend for cross-origin requests support
-- **July 17, 2025**: Removed all Vite and frontend-serving code from backend server
 - **July 16, 2025**: Created comprehensive Hiring Analytics module with email functionality for vendor SPOCs
 - **July 16, 2025**: Built city/role/cluster-wise hiring request analytics table with filtering and selection
 - **July 16, 2025**: Added Gmail email service integration for sending hiring requests to vendor city recruitment SPOCs
@@ -217,34 +212,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Deployment Strategy
 
-### Development Environment (FULLY SEPARATED)
-- **Frontend**: Vite dev server on port 3000 
-  - Run: `cd client && npm run dev`
-  - Configured with proxy to backend API
-- **Backend**: Express API server on port 5000 
-  - Run: `cd server && npm run dev`
-  - CORS enabled for frontend access
-- **Database**: PostgreSQL (Neon)
-- **Architecture**: Complete separation with API communication only
+### Development Environment (SEPARATED)
+- **Frontend**: Vite dev server on port 3000 (cd client && npm run dev)
+- **Backend**: tsx on port 5000 (cd server && npm run dev)
+- **Database**: PostgreSQL (Neon or local)
+- **Proxy**: Frontend proxies /api requests to backend in development
 
 ### Production Build (INDEPENDENT)
 - **Frontend**: Vite build creates static assets in client/dist
 - **Backend**: esbuild creates server bundle in server/dist
 - **Deployment**: Can be deployed to separate services/repositories
-
-### Deployment Options
-1. **Separate Repositories**
-   - Split client/ and server/ into independent Git repositories
-   - Deploy backend to Railway/Render/Heroku
-   - Deploy frontend to Vercel/Netlify/CloudFlare Pages
-   
-2. **Microservices Architecture**
-   - Backend as API service with CORS enabled
-   - Frontend as static site pointing to backend URL
-   
-3. **Monorepo with Independent Deployment**
-   - Keep single repository but deploy independently
-   - Use CI/CD to deploy based on changed directories
 
 ### Environment Configuration
 - **Frontend Environment**: client/.env (VITE_API_URL for production)

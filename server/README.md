@@ -1,6 +1,6 @@
-# HRMS Backend API Server
+# HRMS Backend
 
-This is the standalone backend API server for the HRMS (Human Resource Management System) platform. It runs independently from the frontend and provides REST API endpoints.
+This is the backend server for the HRMS (Human Resource Management System) platform.
 
 ## Technologies
 
@@ -37,15 +37,7 @@ Run the development server:
 npm run dev
 ```
 
-The API server will start on http://localhost:5000
-
-## CORS Configuration
-
-The server is configured with CORS to accept requests from:
-- http://localhost:3000 (Frontend dev server)
-- http://localhost:5173 (Alternative Vite port)
-
-For production, update the CORS origins in your environment variables.
+The server will start on http://localhost:5000
 
 ## API Endpoints
 

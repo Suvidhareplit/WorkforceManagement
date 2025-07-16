@@ -4,7 +4,7 @@ import { convertToCamelCase, convertToSnakeCase } from './apiUtils';
 
 // Create axios instance with default configuration
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '',
+  baseURL: '',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

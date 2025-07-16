@@ -1,6 +1,6 @@
-# HRMS Frontend Application
+# HRMS Frontend
 
-This is the standalone frontend application for the HRMS (Human Resource Management System) platform. It runs independently and communicates with the backend API server.
+This is the frontend application for the HRMS (Human Resource Management System) platform.
 
 ## Technologies
 
@@ -34,12 +34,6 @@ npm run dev
 ```
 
 The application will start on http://localhost:3000
-
-## API Configuration
-
-In development, the frontend proxies all `/api/*` requests to the backend server running on http://localhost:5000.
-
-For production deployment, set the `VITE_API_URL` environment variable to your backend API URL.
 
 ## Features
 
