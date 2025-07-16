@@ -318,8 +318,8 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
+    <div className="w-full space-y-6">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Bulk Candidate Upload</CardTitle>
         </CardHeader>
@@ -389,21 +389,22 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <Table className="w-full min-w-[1200px]">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table className="min-w-[1800px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">Row</TableHead>
-                    <TableHead className="w-16">Status</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>City</TableHead>
-                    <TableHead>Cluster</TableHead>
-                    <TableHead>Qualification</TableHead>
-                    <TableHead>Resume Source</TableHead>
-                    <TableHead>Source Name</TableHead>
+                    <TableHead className="min-w-[50px]">Row</TableHead>
+                    <TableHead className="min-w-[70px]">Status</TableHead>
+                    <TableHead className="min-w-[150px]">Name</TableHead>
+                    <TableHead className="min-w-[120px]">Phone</TableHead>
+                    <TableHead className="min-w-[200px]">Email</TableHead>
+                    <TableHead className="min-w-[150px]">Role</TableHead>
+                    <TableHead className="min-w-[120px]">City</TableHead>
+                    <TableHead className="min-w-[150px]">Cluster</TableHead>
+                    <TableHead className="min-w-[120px]">Qualification</TableHead>
+                    <TableHead className="min-w-[140px]">Resume Source</TableHead>
+                    <TableHead className="min-w-[180px]">Source Name</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -417,7 +418,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           <CheckCircle className="h-5 w-5 text-green-500" />
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[150px]">
                         <Input
                           value={row.name}
                           onChange={(e) => handleUpdateRow(index, 'name', e.target.value)}
@@ -427,7 +428,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'name')?.message}</div>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[120px]">
                         <Input
                           value={row.phone}
                           onChange={(e) => handleUpdateRow(index, 'phone', e.target.value)}
@@ -437,7 +438,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'phone')?.message}</div>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[200px]">
                         <Input
                           value={row.email}
                           onChange={(e) => handleUpdateRow(index, 'email', e.target.value)}
@@ -447,7 +448,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'email')?.message}</div>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[150px]">
                         <div className="w-full">
                           <Select
                             value={row.role}
@@ -469,7 +470,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[120px]">
                         <div className="w-full">
                           <Select
                             value={row.city}
@@ -491,7 +492,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[150px]">
                         <div className="w-full">
                           <Select
                             value={row.cluster}
@@ -515,7 +516,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[120px]">
                         <div className="w-full">
                           <Select
                             value={row.qualification}
@@ -537,7 +538,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[140px]">
                         <div className="w-full">
                           <Select
                             value={row.resumeSource}
@@ -557,7 +558,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="min-w-[180px]">
                         <div className="w-full">
                           {row.resumeSource === 'vendor' ? (
                             <Select
@@ -607,6 +608,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                   ))}
                 </TableBody>
               </Table>
+            </div>
           </CardContent>
         </Card>
       )}
