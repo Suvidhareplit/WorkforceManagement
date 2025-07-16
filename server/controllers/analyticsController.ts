@@ -12,6 +12,16 @@ export const getHiringAnalytics = async (req: Request, res: Response) => {
   }
 };
 
+export const getCandidatePipeline = async (req: Request, res: Response) => {
+  try {
+    const pipeline = await storage.getCandidatePipeline();
+    res.json(pipeline);
+  } catch (error) {
+    console.error('Get candidate pipeline error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const sendHiringRequestEmail = async (req: Request, res: Response) => {
   try {
     const { 

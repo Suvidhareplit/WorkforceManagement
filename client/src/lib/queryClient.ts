@@ -1,5 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import axios, { AxiosError } from 'axios';
+import { convertToCamelCase, convertToSnakeCase } from './apiUtils';
 
 // Create axios instance with default configuration
 const apiClient = axios.create({
@@ -19,9 +20,15 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor to handle errors and token expiration
+// Response interceptor to handle errors, token expiration, and data conversion
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Convert snake_case to camelCase for all responses
+    if (response.data) {
+      response.data = convertToCamelCase(response.data);
+    }
+    return response;
+  },
   (error: AxiosError) => {
     // Handle token expiration
     if (error.response?.status === 401) {
@@ -45,10 +52,13 @@ export async function apiRequest(
   },
 ): Promise<any> {
   const isFormData = options.body instanceof FormData;
+  // Convert camelCase to snake_case for request body (except FormData)
+  const requestData = isFormData ? options.body : convertToSnakeCase(options.body);
+  
   const response = await apiClient.request({
     url,
     method: options.method,
-    data: options.body,
+    data: requestData,
     headers: isFormData ? {
       'Content-Type': 'multipart/form-data',
     } : undefined,

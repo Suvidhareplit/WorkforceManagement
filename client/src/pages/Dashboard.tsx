@@ -18,13 +18,17 @@ export default function Dashboard() {
     queryKey: ["/api/hiring"],
   });
 
-  // Calculate metrics from hiring requests data
-  const openPositions = hiringRequestsData?.filter((req: any) => req.status === 'open')
-    .reduce((sum: number, req: any) => sum + (req.numberOfPositions || 0), 0) || 0;
+  // Calculate metrics from hiring requests data (data is now in camelCase from API)
+  const openPositions = hiringRequestsData && Array.isArray(hiringRequestsData) 
+    ? hiringRequestsData.filter((req: any) => req.status === 'open')
+        .reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)
+    : 0;
   
   const totalRequests = hiringRequestsData?.length || 0;
-  const closedPositions = hiringRequestsData?.filter((req: any) => req.status === 'closed')
-    .reduce((sum: number, req: any) => sum + (req.numberOfPositions || 0), 0) || 0;
+  const closedPositions = hiringRequestsData && Array.isArray(hiringRequestsData)
+    ? hiringRequestsData.filter((req: any) => req.status === 'closed')
+        .reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)
+    : 0;
 
   return (
     <div>
@@ -87,7 +91,7 @@ export default function Dashboard() {
                 <p className="text-slate-600 text-sm font-medium">Active Candidates</p>
                 <p className="text-2xl font-bold text-slate-800 mt-1">
                   {loadingPipeline ? "..." : 
-                    (pipeline?.applications + pipeline?.prescreening + pipeline?.technical) || 0}
+                    ((pipeline?.applications || 0) + (pipeline?.prescreening || 0) + (pipeline?.technical || 0))}
                 </p>
                 <p className="text-slate-400 text-sm mt-1">In pipeline</p>
               </div>
@@ -200,9 +204,9 @@ export default function Dashboard() {
                       <Briefcase className="text-blue-600 h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-800">{request.role?.name}</p>
+                      <p className="font-medium text-slate-800">{request.roleName || request.role?.name || 'Unknown Role'}</p>
                       <p className="text-sm text-slate-600">
-                        {request.city?.name} • {request.cluster?.name} • {request.numberOfPositions} positions
+                        {request.cityName || request.city?.name || 'Unknown City'} • {request.clusterName || request.cluster?.name || 'Unknown Cluster'} • {request.numberOfPositions || 0} positions
                       </p>
                       <p className="text-xs text-slate-500">{request.requestId}</p>
                     </div>
@@ -225,77 +229,50 @@ export default function Dashboard() {
         {/* Candidate Pipeline */}
         <Card>
           <CardHeader>
-            <CardTitle>Candidate Pipeline</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Candidate Pipeline</CardTitle>
+              <Link href="/interviews/applications">
+                <Button variant="ghost" size="sm">View All</Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {pipeline && (
+              {loadingPipeline ? (
+                <div className="text-center py-4">Loading...</div>
+              ) : pipeline ? (
                 <>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
-                      <span className="font-medium text-slate-800">Applications Received</span>
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm font-medium">Applications</span>
                     </div>
-                    <div className="text-right">
-                      <span className="font-bold text-lg text-slate-800">{pipeline.applications}</span>
-                      <p className="text-xs text-slate-500">This week</p>
-                    </div>
+                    <span className="text-sm font-semibold">{parseInt(pipeline.applications) || 0}</span>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-4 h-4 bg-cyan-600 rounded-full"></div>
-                      <span className="font-medium text-slate-800">Prescreening</span>
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                      <span className="text-sm font-medium">Prescreening</span>
                     </div>
-                    <div className="text-right">
-                      <span className="font-bold text-lg text-slate-800">{pipeline.prescreening}</span>
-                      <p className="text-xs text-slate-500">In progress</p>
-                    </div>
+                    <span className="text-sm font-semibold">{parseInt(pipeline.prescreening) || 0}</span>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-4 h-4 bg-amber-500 rounded-full"></div>
-                      <span className="font-medium text-slate-800">Technical Round</span>
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-cyan-500 rounded-full"></div>
+                      <span className="text-sm font-medium">Technical Round</span>
                     </div>
-                    <div className="text-right">
-                      <span className="font-bold text-lg text-slate-800">{pipeline.technical}</span>
-                      <p className="text-xs text-slate-500">Scheduled</p>
-                    </div>
+                    <span className="text-sm font-semibold">{parseInt(pipeline.technical) || 0}</span>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-4 h-4 bg-green-600 rounded-full"></div>
-                      <span className="font-medium text-slate-800">Selected</span>
+                  <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm font-medium">Selected</span>
                     </div>
-                    <div className="text-right">
-                      <span className="font-bold text-lg text-slate-800">{pipeline.selected}</span>
-                      <p className="text-xs text-slate-500">Awaiting offer</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
-                      <span className="font-medium text-slate-800">Onboarding</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-bold text-lg text-slate-800">{pipeline.onboarding}</span>
-                      <p className="text-xs text-slate-500">In training</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-4 border-t border-slate-200">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">Conversion Rate</span>
-                      <span className="font-bold text-slate-400">--</span>
-                    </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2 mt-2">
-                      <div className="bg-slate-300 h-2 rounded-full" style={{ width: "0%" }}></div>
-                    </div>
+                    <span className="text-sm font-semibold">{parseInt(pipeline.selected) || 0}</span>
                   </div>
                 </>
+              ) : (
+                <div className="text-center py-4 text-slate-500">No pipeline data available</div>
               )}
             </div>
           </CardContent>
