@@ -15,6 +15,7 @@ export default function TechnicalRound() {
   const [candidateStatuses, setCandidateStatuses] = useState<{[key: number]: string}>({});
   const [candidateReasons, setCandidateReasons] = useState<{[key: number]: string}>({});
   const [candidateComments, setCandidateComments] = useState<{[key: number]: string}>({});
+  const [submittedCandidates, setSubmittedCandidates] = useState<{[key: number]: boolean}>({});
   const { toast } = useToast();
 
   // Get all candidates
@@ -34,7 +35,26 @@ export default function TechnicalRound() {
         notes,
       });
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Clear state for this specific candidate
+      setCandidateStatuses(prev => {
+        const newState = { ...prev };
+        delete newState[variables.id];
+        return newState;
+      });
+      setCandidateReasons(prev => {
+        const newState = { ...prev };
+        delete newState[variables.id];
+        return newState;
+      });
+      setCandidateComments(prev => {
+        const newState = { ...prev };
+        delete newState[variables.id];
+        return newState;
+      });
+      // Mark as submitted
+      setSubmittedCandidates(prev => ({ ...prev, [variables.id]: true }));
+      
       queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
       toast({
         title: "Success",
@@ -164,6 +184,7 @@ export default function TechnicalRound() {
                         <Select
                           value={candidateStatuses[candidate.id] || ""}
                           onValueChange={(value) => handleStatusChange(candidate.id, value)}
+                          disabled={submittedCandidates[candidate.id]}
                         >
                           <SelectTrigger className="w-[150px]">
                             <SelectValue placeholder="Select status" />
@@ -175,12 +196,13 @@ export default function TechnicalRound() {
                         </Select>
                       </TableCell>
                       <TableCell>
-                        {candidateStatuses[candidate.id] === "selected" ? (
+                        {candidateStatuses[candidate.id] === "selected" || submittedCandidates[candidate.id] ? (
                           <span className="text-slate-500">N/A</span>
                         ) : candidateStatuses[candidate.id] === "not-selected" ? (
                           <Select
                             value={candidateReasons[candidate.id] || ""}
                             onValueChange={(value) => handleReasonChange(candidate.id, value)}
+                            disabled={submittedCandidates[candidate.id]}
                           >
                             <SelectTrigger className="w-[200px]">
                               <SelectValue placeholder="Select reason" />
@@ -201,17 +223,23 @@ export default function TechnicalRound() {
                           onChange={(e) => handleCommentChange(candidate.id, e.target.value)}
                           placeholder="Comments (mandatory)"
                           className="w-[200px] h-20"
-                          disabled={candidateStatuses[candidate.id] === "selected"}
+                          disabled={candidateStatuses[candidate.id] === "selected" || submittedCandidates[candidate.id]}
                         />
                       </TableCell>
                       <TableCell>
-                        <Button
-                          onClick={() => handleSubmit(candidate)}
-                          disabled={updateTechnicalMutation.isPending}
-                          size="sm"
-                        >
-                          Submit
-                        </Button>
+                        {submittedCandidates[candidate.id] ? (
+                          <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                            Submitted
+                          </Badge>
+                        ) : (
+                          <Button
+                            onClick={() => handleSubmit(candidate)}
+                            disabled={updateTechnicalMutation.isPending}
+                            size="sm"
+                          >
+                            Submit
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
