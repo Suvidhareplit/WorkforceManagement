@@ -31,8 +31,15 @@ export default function Prescreening() {
     queryKey: ["/api/master-data/city"],
   });
 
-  const { data: clusters } = useQuery({
+  const { data: allClusters } = useQuery({
     queryKey: ["/api/master-data/cluster"],
+  });
+
+  // Filter clusters based on selected city
+  const clusters = allClusters?.filter((cluster: any) => {
+    if (!cityFilter || cityFilter === "all") return true;
+    const selectedCity = cities?.find((city: any) => city.name === cityFilter);
+    return selectedCity && cluster.city_id === selectedCity.id;
   });
 
   const updatePrescreeningMutation = useMutation({
@@ -77,6 +84,7 @@ export default function Prescreening() {
       return;
     }
     
+    console.log('Submitting prescreening:', { id: candidate.id, marks: marksNum, notes });
     updatePrescreeningMutation.mutate({
       id: candidate.id,
       marks: marksNum,
@@ -88,7 +96,7 @@ export default function Prescreening() {
   const filteredCandidates = candidates?.filter((candidate: any) => {
     const isPrescreeningOrScreened = candidate.status === 'prescreening' || 
       candidate.status === 'technical' || 
-      candidate.status === 'rejected' && candidate.screeningScore !== null;
+      (candidate.status === 'rejected' && candidate.screeningScore !== null);
     
     if (!isPrescreeningOrScreened) return false;
     if (cityFilter && cityFilter !== "all" && candidate.city !== cityFilter) return false;

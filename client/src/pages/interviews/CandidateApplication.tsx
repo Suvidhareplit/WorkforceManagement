@@ -665,6 +665,9 @@ export default function CandidateApplication() {
   const [selectedCityId, setSelectedCityId] = useState<string>("");
   const [selectedSource, setSelectedSource] = useState<string>("");
   const [selectedCandidates, setSelectedCandidates] = useState<number[]>([]);
+  const [cityFilter, setCityFilter] = useState("");
+  const [clusterFilter, setClusterFilter] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const { toast } = useToast();
 
   const { data: cities } = useQuery({
@@ -1175,22 +1178,84 @@ export default function CandidateApplication() {
       </TabsContent>
     </Tabs>
   ) : (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>All Candidate Applications</CardTitle>
-              {selectedCandidates.length > 0 && (
-                <Button 
-                  onClick={() => handlePushToPrescreening()}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowRight className="h-4 w-4" />
-                  Push to Prescreening ({selectedCandidates.length})
-                </Button>
-              )}
+        <div className="space-y-4">
+          {/* Filters */}
+          <div className="flex gap-4 flex-wrap">
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="cityFilter">City</Label>
+              <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger id="cityFilter">
+                  <SelectValue placeholder="All Cities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {cities?.map((city: any) => (
+                    <SelectItem key={city.id} value={city.name}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
+            
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="clusterFilter">Cluster</Label>
+              <Select value={clusterFilter} onValueChange={setClusterFilter}>
+                <SelectTrigger id="clusterFilter">
+                  <SelectValue placeholder="All Clusters" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Clusters</SelectItem>
+                  {clusters?.filter((cluster: any) => {
+                    if (!cityFilter || cityFilter === "all") return true;
+                    const selectedCity = cities?.find((city: any) => city.name === cityFilter);
+                    return selectedCity && cluster.city_id === selectedCity.id;
+                  }).map((cluster: any) => (
+                    <SelectItem key={cluster.id} value={cluster.name}>
+                      {cluster.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="dateFrom">Date From</Label>
+              <Input
+                id="dateFrom"
+                type="date"
+                value={dateRange.from}
+                onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
+              />
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="dateTo">Date To</Label>
+              <Input
+                id="dateTo"
+                type="date"
+                value={dateRange.to}
+                onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>All Candidate Applications</CardTitle>
+                {selectedCandidates.length > 0 && (
+                  <Button 
+                    onClick={() => handlePushToPrescreening()}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                    Push to Prescreening ({selectedCandidates.length})
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -1231,7 +1296,13 @@ export default function CandidateApplication() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  candidates?.map((candidate: any) => (
+                  candidates?.filter((candidate: any) => {
+                    if (cityFilter && cityFilter !== "all" && candidate.city !== cityFilter) return false;
+                    if (clusterFilter && clusterFilter !== "all" && candidate.cluster !== clusterFilter) return false;
+                    if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;
+                    if (dateRange.to && new Date(candidate.createdAt) > new Date(dateRange.to)) return false;
+                    return true;
+                  }).map((candidate: any) => (
                     <TableRow key={candidate.id}>
                       <TableCell>
                         <Checkbox 
@@ -1297,7 +1368,8 @@ export default function CandidateApplication() {
             </Table>
           </CardContent>
         </Card>
-      )}
-    </div>
+      </div>
+    )}
+  </div>
   );
 }
