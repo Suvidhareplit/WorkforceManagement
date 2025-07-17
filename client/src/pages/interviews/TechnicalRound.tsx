@@ -53,8 +53,13 @@ export default function TechnicalRound() {
   const handleStatusChange = (candidateId: number, status: string) => {
     setCandidateStatuses(prev => ({ ...prev, [candidateId]: status }));
     if (status === "selected") {
-      // Clear reason if selecting
+      // Set N/A for reason and comments when selected
+      setCandidateReasons(prev => ({ ...prev, [candidateId]: "N/A" }));
+      setCandidateComments(prev => ({ ...prev, [candidateId]: "N/A" }));
+    } else {
+      // Clear reason and comments when changing to not-selected
       setCandidateReasons(prev => ({ ...prev, [candidateId]: "" }));
+      setCandidateComments(prev => ({ ...prev, [candidateId]: "" }));
     }
   };
 
@@ -80,7 +85,7 @@ export default function TechnicalRound() {
       return;
     }
 
-    if (!comment) {
+    if (!comment && status !== "selected") {
       toast({
         title: "Error",
         description: "Comment is mandatory",
@@ -170,7 +175,9 @@ export default function TechnicalRound() {
                         </Select>
                       </TableCell>
                       <TableCell>
-                        {candidateStatuses[candidate.id] === "not-selected" && (
+                        {candidateStatuses[candidate.id] === "selected" ? (
+                          <span className="text-slate-500">N/A</span>
+                        ) : candidateStatuses[candidate.id] === "not-selected" ? (
                           <Select
                             value={candidateReasons[candidate.id] || ""}
                             onValueChange={(value) => handleReasonChange(candidate.id, value)}
@@ -184,6 +191,8 @@ export default function TechnicalRound() {
                               <SelectItem value="Not okay with night shift">Not okay with night shift</SelectItem>
                             </SelectContent>
                           </Select>
+                        ) : (
+                          <span className="text-slate-400">-</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -192,6 +201,7 @@ export default function TechnicalRound() {
                           onChange={(e) => handleCommentChange(candidate.id, e.target.value)}
                           placeholder="Comments (mandatory)"
                           className="w-[200px] h-20"
+                          disabled={candidateStatuses[candidate.id] === "selected"}
                         />
                       </TableCell>
                       <TableCell>
