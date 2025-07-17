@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, Download, CheckCircle, XCircle, AlertCircle, UserPlus, Users, ArrowRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
 
 const candidateSchema = z.object({
   name: z.string().min(1, "Name is required"),
