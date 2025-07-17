@@ -67,6 +67,9 @@ Preferred communication style: Simple, everyday language.
 - **July 17, 2025**: Added city, cluster, and date filters to View Application page with proper filtering logic
 - **July 17, 2025**: Updated technical rounds to only show candidates who passed prescreening (benchmarkMet = true)
 - **July 17, 2025**: Enhanced technical rounds page to display prescreening score and notes from previous evaluation
+- **July 17, 2025**: CRITICAL FIX - Removed duplicate database columns (screening_score, prescreening_approved) to prevent data confusion
+- **July 17, 2025**: Standardized on using prescreening_score (integer) and benchmark_met (boolean) columns only
+- **July 17, 2025**: Fixed prescreening and technical round data capture to use correct column names in database
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  

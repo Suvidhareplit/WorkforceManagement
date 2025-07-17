@@ -735,7 +735,6 @@ export class SqlStorage implements IStorage {
       prescreeningScore: 'prescreening_score',
       prescreeningNotes: 'prescreening_notes',
       prescreeningApproved: 'prescreening_approved',
-      screeningScore: 'screening_score',
       benchmarkMet: 'benchmark_met',
       sourcingChannel: 'sourcing_channel',
       resumeSource: 'resume_source',

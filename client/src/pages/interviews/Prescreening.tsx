@@ -96,7 +96,7 @@ export default function Prescreening() {
   const filteredCandidates = candidates?.filter((candidate: any) => {
     const isPrescreeningOrScreened = candidate.status === 'prescreening' || 
       candidate.status === 'technical' || 
-      (candidate.status === 'rejected' && candidate.screeningScore !== null);
+      (candidate.status === 'rejected' && candidate.prescreeningScore !== null);
     
     if (!isPrescreeningOrScreened) return false;
     if (cityFilter && cityFilter !== "all" && candidate.city !== cityFilter) return false;
@@ -213,7 +213,7 @@ export default function Prescreening() {
                     <TableCell>{candidate.cluster}</TableCell>
                     <TableCell>{candidate.role}</TableCell>
                     <TableCell>
-                      {candidate.screeningScore !== null && candidate.screeningScore !== undefined ? (
+                      {candidate.prescreeningScore !== null && candidate.prescreeningScore !== undefined ? (
                         <Badge 
                           variant={candidate.benchmarkMet ? 'default' : 'destructive'}
                           className={candidate.benchmarkMet ? 'bg-green-500' : ''}
@@ -227,9 +227,9 @@ export default function Prescreening() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {candidate.screeningScore ? (
+                      {candidate.prescreeningScore ? (
                         <Badge variant={candidate.benchmarkMet ? 'default' : 'destructive'}>
-                          {candidate.screeningScore}/10
+                          {candidate.prescreeningScore}/10
                         </Badge>
                       ) : '-'}
                     </TableCell>
@@ -243,7 +243,7 @@ export default function Prescreening() {
                               onClick={() => {
                                 setSelectedCandidate(candidate);
                                 setNotes(candidate.prescreeningNotes || "");
-                                setMarks(candidate.screeningScore ? candidate.screeningScore.toString() : "");
+                                setMarks(candidate.prescreeningScore ? candidate.prescreeningScore.toString() : "");
                               }}
                             >
                               <Eye className="h-4 w-4" />
