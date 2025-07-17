@@ -213,13 +213,18 @@ export default function Prescreening() {
                     <TableCell>{candidate.cluster}</TableCell>
                     <TableCell>{candidate.role}</TableCell>
                     <TableCell>
-                      <Badge variant={
-                        candidate.status === 'prescreening' ? 'secondary' :
-                        candidate.status === 'technical' ? 'default' :
-                        candidate.status === 'rejected' ? 'destructive' : 'outline'
-                      }>
-                        {candidate.status}
-                      </Badge>
+                      {candidate.screeningScore !== null && candidate.screeningScore !== undefined ? (
+                        <Badge 
+                          variant={candidate.benchmarkMet ? 'default' : 'destructive'}
+                          className={candidate.benchmarkMet ? 'bg-green-500' : ''}
+                        >
+                          {candidate.benchmarkMet ? 'Passed' : 'Failed'}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">
+                          Pending
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       {candidate.screeningScore ? (
@@ -237,8 +242,8 @@ export default function Prescreening() {
                               size="sm"
                               onClick={() => {
                                 setSelectedCandidate(candidate);
-                                setNotes("");
-                                setMarks("");
+                                setNotes(candidate.prescreeningNotes || "");
+                                setMarks(candidate.screeningScore ? candidate.screeningScore.toString() : "");
                               }}
                             >
                               <Eye className="h-4 w-4" />

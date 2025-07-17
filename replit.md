@@ -62,6 +62,11 @@ Preferred communication style: Simple, everyday language.
 - **July 17, 2025**: Added candidate selection with checkboxes and push-to-prescreening functionality
 - **July 17, 2025**: Implemented 10-point marking system in prescreening with automatic pass (≥7) or fail (<7)
 - **July 17, 2025**: Added general candidate update route (PATCH /api/interviews/candidates/:id) for status updates
+- **July 17, 2025**: Updated prescreening page to display "Passed/Failed" status instead of "technical/rejected"
+- **July 17, 2025**: Made cluster filter dynamic based on city selection in both prescreening and view applications
+- **July 17, 2025**: Added city, cluster, and date filters to View Application page with proper filtering logic
+- **July 17, 2025**: Updated technical rounds to only show candidates who passed prescreening (benchmarkMet = true)
+- **July 17, 2025**: Enhanced technical rounds page to display prescreening score and notes from previous evaluation
 - **July 14, 2025**: Replaced role description text field with file upload functionality for Job Description (JD) attachments
 - **July 14, 2025**: CRITICAL FIX - Removed backend filtering of inactive items so deactivated items can be reactivated
 - **July 14, 2025**: Fixed toggle functionality - inactive items now remain visible with proper status indicators  

@@ -23,9 +23,14 @@ export default function TechnicalRounds() {
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const { toast } = useToast();
 
-  const { data: candidates, isLoading } = useQuery({
-    queryKey: ["/api/interviews/candidates?status=technical"],
+  const { data: allCandidates, isLoading } = useQuery({
+    queryKey: ["/api/interviews/candidates"],
   });
+
+  // Filter only candidates who passed prescreening (benchmarkMet = true)
+  const candidates = allCandidates?.filter((candidate: any) => 
+    candidate.status === 'technical' && candidate.benchmarkMet === true
+  );
 
   const { data: cities } = useQuery({
     queryKey: ["/api/master-data/city"],
@@ -232,10 +237,21 @@ export default function TechnicalRounds() {
                                   <div><strong>Role:</strong> {candidate.role}</div>
                                   <div><strong>City:</strong> {candidate.city}</div>
                                   <div><strong>Cluster:</strong> {candidate.cluster}</div>
-                                  <div><strong>Prescreening Score:</strong> {candidate.screeningScore}/10</div>
+                                  <div><strong>Prescreening Score:</strong> 
+                                    <Badge variant="default" className="ml-2 bg-green-600">
+                                      {candidate.screeningScore}/10 - Passed
+                                    </Badge>
+                                  </div>
                                 </div>
                               </div>
                             </div>
+
+                            {candidate.prescreeningNotes && (
+                              <div className="bg-gray-50 p-3 rounded">
+                                <h4 className="font-medium mb-1">Prescreening Notes</h4>
+                                <p className="text-sm text-gray-700">{candidate.prescreeningNotes}</p>
+                              </div>
+                            )}
 
                             <div>
                               <h4 className="font-medium mb-2">Technical Round Decision</h4>
