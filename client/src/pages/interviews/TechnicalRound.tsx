@@ -6,15 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
-import { CheckCircle, XCircle, Eye } from "lucide-react";
 
 export default function TechnicalRound() {
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-  const [technicalNotes, setTechnicalNotes] = useState("");
+  const [candidateStatuses, setCandidateStatuses] = useState<{[key: number]: string}>({});
+  const [candidateReasons, setCandidateReasons] = useState<{[key: number]: string}>({});
+  const [candidateComments, setCandidateComments] = useState<{[key: number]: string}>({});
   const { toast } = useToast();
 
   // Get all candidates
@@ -40,8 +40,6 @@ export default function TechnicalRound() {
         title: "Success",
         description: "Technical round status updated successfully",
       });
-      setSelectedCandidate(null);
-      setTechnicalNotes("");
     },
     onError: (error: any) => {
       toast({
@@ -52,19 +50,60 @@ export default function TechnicalRound() {
     },
   });
 
-  const handleTechnicalSelect = (candidate: Candidate) => {
-    updateTechnicalMutation.mutate({
-      id: candidate.id,
-      status: "selected",
-      notes: technicalNotes,
-    });
+  const handleStatusChange = (candidateId: number, status: string) => {
+    setCandidateStatuses(prev => ({ ...prev, [candidateId]: status }));
+    if (status === "selected") {
+      // Clear reason if selecting
+      setCandidateReasons(prev => ({ ...prev, [candidateId]: "" }));
+    }
   };
 
-  const handleTechnicalReject = (candidate: Candidate) => {
+  const handleReasonChange = (candidateId: number, reason: string) => {
+    setCandidateReasons(prev => ({ ...prev, [candidateId]: reason }));
+  };
+
+  const handleCommentChange = (candidateId: number, comment: string) => {
+    setCandidateComments(prev => ({ ...prev, [candidateId]: comment }));
+  };
+
+  const handleSubmit = (candidate: Candidate) => {
+    const status = candidateStatuses[candidate.id];
+    const comment = candidateComments[candidate.id];
+    const reason = candidateReasons[candidate.id];
+
+    if (!status) {
+      toast({
+        title: "Error",
+        description: "Please select a status",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!comment) {
+      toast({
+        title: "Error",
+        description: "Comment is mandatory",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (status === "not-selected" && !reason) {
+      toast({
+        title: "Error",
+        description: "Please select a reason for rejection",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const notes = status === "not-selected" ? `${reason}: ${comment}` : comment;
+
     updateTechnicalMutation.mutate({
       id: candidate.id,
-      status: "rejected",
-      notes: technicalNotes,
+      status: status === "selected" ? "selected" : "rejected",
+      notes,
     });
   };
 
@@ -81,141 +120,95 @@ export default function TechnicalRound() {
         <CardHeader>
           <CardTitle>Technical Interview</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Screening Score</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    Loading...
-                  </TableCell>
+                  <TableHead>Name</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Cluster</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Rejection Reason</TableHead>
+                  <TableHead>Comments</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ) : !technicalCandidates || technicalCandidates.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    No candidates for technical interview
-                  </TableCell>
-                </TableRow>
-              ) : (
-                technicalCandidates.map((candidate: Candidate) => (
-                  <TableRow key={candidate.id}>
-                    <TableCell className="font-medium">{candidate.name}</TableCell>
-                    <TableCell>{candidate.role}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="font-mono">
-                        {candidate.screeningScore || 'N/A'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{candidate.city}</div>
-                        <div className="text-slate-500">{candidate.cluster}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{candidate.phone}</div>
-                        <div className="text-slate-500">{candidate.email}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedCandidate(candidate);
-                              setTechnicalNotes("");
-                            }}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Interview
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Technical Interview - {candidate.name}</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <h4 className="font-medium mb-2">Candidate Details</h4>
-                                <div className="space-y-1 text-sm">
-                                  <div><strong>Name:</strong> {candidate.name}</div>
-                                  <div><strong>Role:</strong> {candidate.role}</div>
-                                  <div><strong>Qualification:</strong> {candidate.qualification}</div>
-                                  <div><strong>Screening Score:</strong> {candidate.screeningScore || 'N/A'}</div>
-                                </div>
-                              </div>
-                              <div>
-                                <h4 className="font-medium mb-2">Contact Information</h4>
-                                <div className="space-y-1 text-sm">
-                                  <div><strong>Phone:</strong> {candidate.phone}</div>
-                                  <div><strong>Email:</strong> {candidate.email}</div>
-                                  <div><strong>Location:</strong> {candidate.city}, {candidate.cluster}</div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {candidate.prescreeningNotes && (
-                              <div>
-                                <h4 className="font-medium mb-2">Prescreening Notes</h4>
-                                <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded">
-                                  {candidate.prescreeningNotes}
-                                </p>
-                              </div>
-                            )}
-
-                            <div>
-                              <Label htmlFor="notes">Interview Notes</Label>
-                              <Textarea
-                                id="notes"
-                                placeholder="Enter interview feedback and assessment..."
-                                value={technicalNotes}
-                                onChange={(e) => setTechnicalNotes(e.target.value)}
-                                rows={4}
-                              />
-                            </div>
-
-                            <div className="flex justify-end space-x-2">
-                              <Button
-                                variant="outline"
-                                onClick={() => handleTechnicalReject(candidate)}
-                                disabled={updateTechnicalMutation.isPending}
-                                className="text-red-600 border-red-600 hover:bg-red-50"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Reject
-                              </Button>
-                              <Button
-                                onClick={() => handleTechnicalSelect(candidate)}
-                                disabled={updateTechnicalMutation.isPending}
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Select
-                              </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      Loading...
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : !technicalCandidates || technicalCandidates.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      No candidates for technical interview
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  technicalCandidates.map((candidate: Candidate) => (
+                    <TableRow key={candidate.id}>
+                      <TableCell className="font-medium">{candidate.name}</TableCell>
+                      <TableCell>{candidate.city}</TableCell>
+                      <TableCell>{candidate.role}</TableCell>
+                      <TableCell>{candidate.cluster}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={candidateStatuses[candidate.id] || ""}
+                          onValueChange={(value) => handleStatusChange(candidate.id, value)}
+                        >
+                          <SelectTrigger className="w-[150px]">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="selected">Selected</SelectItem>
+                            <SelectItem value="not-selected">Not Selected</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        {candidateStatuses[candidate.id] === "not-selected" && (
+                          <Select
+                            value={candidateReasons[candidate.id] || ""}
+                            onValueChange={(value) => handleReasonChange(candidate.id, value)}
+                          >
+                            <SelectTrigger className="w-[200px]">
+                              <SelectValue placeholder="Select reason" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Poor technical knowledge">Poor technical knowledge</SelectItem>
+                              <SelectItem value="No relevant experience">No relevant experience</SelectItem>
+                              <SelectItem value="Not okay with night shift">Not okay with night shift</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Textarea
+                          value={candidateComments[candidate.id] || ""}
+                          onChange={(e) => handleCommentChange(candidate.id, e.target.value)}
+                          placeholder="Comments (mandatory)"
+                          className="w-[200px] h-20"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => handleSubmit(candidate)}
+                          disabled={updateTechnicalMutation.isPending}
+                          size="sm"
+                        >
+                          Submit
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
