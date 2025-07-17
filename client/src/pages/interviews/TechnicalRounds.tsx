@@ -193,7 +193,7 @@ export default function TechnicalRounds() {
                     <TableCell>{candidate.role}</TableCell>
                     <TableCell>
                       <Badge variant="default" className="bg-green-600">
-                        {candidate.prescreeningScore || 0}/10
+                        {candidate.screeningScore || 0}/10
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -232,7 +232,7 @@ export default function TechnicalRounds() {
                                   <div><strong>Role:</strong> {candidate.role}</div>
                                   <div><strong>City:</strong> {candidate.city}</div>
                                   <div><strong>Cluster:</strong> {candidate.cluster}</div>
-                                  <div><strong>Prescreening Score:</strong> {candidate.prescreeningScore}/10</div>
+                                  <div><strong>Prescreening Score:</strong> {candidate.screeningScore}/10</div>
                                 </div>
                               </div>
                             </div>

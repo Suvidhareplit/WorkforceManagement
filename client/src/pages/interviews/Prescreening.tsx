@@ -11,28 +11,39 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
-import { CheckCircle, XCircle, Eye, FileText } from "lucide-react";
+import { CheckCircle, XCircle, Eye, FileText, Calendar, MapPin, Building2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Prescreening() {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [notes, setNotes] = useState("");
   const [marks, setMarks] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [clusterFilter, setClusterFilter] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const { toast } = useToast();
 
   const { data: candidates, isLoading } = useQuery({
-    queryKey: ["/api/interviews/candidates?status=prescreening"],
+    queryKey: ["/api/interviews/candidates"],
+  });
+
+  const { data: cities } = useQuery({
+    queryKey: ["/api/master-data/city"],
+  });
+
+  const { data: clusters } = useQuery({
+    queryKey: ["/api/master-data/cluster"],
   });
 
   const updatePrescreeningMutation = useMutation({
     mutationFn: async ({ id, marks, notes }: { id: number; marks: number; notes: string }) => {
-      const approved = marks >= 7;
-      const status = approved ? 'technical' : 'rejected';
+      const benchmarkMet = marks >= 7;
+      const status = benchmarkMet ? 'technical' : 'rejected';
       
-      return await apiRequest("PATCH", `/api/interviews/candidates/${id}/prescreening`, {
-        approved,
+      return await apiRequest("PATCH", `/api/interviews/candidates/${id}/screening`, {
+        score: marks,
+        benchmarkMet,
         notes,
-        prescreeningScore: marks,
-        status,
       });
     },
     onSuccess: () => {
@@ -73,6 +84,20 @@ export default function Prescreening() {
     });
   };
 
+  // Filter candidates to show only prescreening status and also those who were prescreened (both passed and failed)
+  const filteredCandidates = candidates?.filter((candidate: any) => {
+    const isPrescreeningOrScreened = candidate.status === 'prescreening' || 
+      candidate.status === 'technical' || 
+      candidate.status === 'rejected' && candidate.screeningScore !== null;
+    
+    if (!isPrescreeningOrScreened) return false;
+    if (cityFilter && cityFilter !== "all" && candidate.city !== cityFilter) return false;
+    if (clusterFilter && clusterFilter !== "all" && candidate.cluster !== clusterFilter) return false;
+    if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;
+    if (dateRange.to && new Date(candidate.createdAt) > new Date(dateRange.to)) return false;
+    return true;
+  });
+
   return (
     <div>
       {/* Header */}
@@ -81,9 +106,66 @@ export default function Prescreening() {
         <p className="text-slate-600 mt-1">Review and verify candidate applications</p>
       </div>
 
+      {/* Filters */}
+      <div className="mb-6 flex gap-4 flex-wrap">
+        <div className="flex-1 min-w-[200px]">
+          <Label htmlFor="cityFilter">City</Label>
+          <Select value={cityFilter} onValueChange={setCityFilter}>
+            <SelectTrigger id="cityFilter">
+              <SelectValue placeholder="All Cities" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Cities</SelectItem>
+              {cities?.map((city: any) => (
+                <SelectItem key={city.id} value={city.name}>
+                  {city.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex-1 min-w-[200px]">
+          <Label htmlFor="clusterFilter">Cluster</Label>
+          <Select value={clusterFilter} onValueChange={setClusterFilter}>
+            <SelectTrigger id="clusterFilter">
+              <SelectValue placeholder="All Clusters" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Clusters</SelectItem>
+              {clusters?.map((cluster: any) => (
+                <SelectItem key={cluster.id} value={cluster.name}>
+                  {cluster.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1 min-w-[200px]">
+          <Label htmlFor="dateFrom">Date From</Label>
+          <Input
+            id="dateFrom"
+            type="date"
+            value={dateRange.from}
+            onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
+          />
+        </div>
+
+        <div className="flex-1 min-w-[200px]">
+          <Label htmlFor="dateTo">Date To</Label>
+          <Input
+            id="dateTo"
+            type="date"
+            value={dateRange.to}
+            onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
+          />
+        </div>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Candidates Awaiting Prescreening</CardTitle>
+          <CardTitle>Prescreening Candidates</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -95,24 +177,26 @@ export default function Prescreening() {
                 <TableHead>City</TableHead>
                 <TableHead>Cluster</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Score</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
+                  <TableCell colSpan={9} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : candidates?.length === 0 ? (
+              ) : !filteredCandidates || filteredCandidates.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    No candidates awaiting prescreening
+                  <TableCell colSpan={9} className="text-center py-8">
+                    No candidates found
                   </TableCell>
                 </TableRow>
               ) : (
-                candidates?.map((candidate: Candidate) => (
+                filteredCandidates.map((candidate: any) => (
                   <TableRow key={candidate.id}>
                     <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                     <TableCell className="font-medium">{candidate.name}</TableCell>
@@ -120,6 +204,22 @@ export default function Prescreening() {
                     <TableCell>{candidate.city}</TableCell>
                     <TableCell>{candidate.cluster}</TableCell>
                     <TableCell>{candidate.role}</TableCell>
+                    <TableCell>
+                      <Badge variant={
+                        candidate.status === 'prescreening' ? 'secondary' :
+                        candidate.status === 'technical' ? 'default' :
+                        candidate.status === 'rejected' ? 'destructive' : 'outline'
+                      }>
+                        {candidate.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {candidate.screeningScore ? (
+                        <Badge variant={candidate.benchmarkMet ? 'default' : 'destructive'}>
+                          {candidate.screeningScore}/10
+                        </Badge>
+                      ) : '-'}
+                    </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Dialog>

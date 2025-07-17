@@ -74,20 +74,13 @@ const updateCandidate = async (req: Request, res: Response) => {
 const updatePrescreening = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { approved, notes, prescreeningScore, status } = req.body;
+    const { approved, notes } = req.body;
     
     const updateData: any = {
       prescreeningApproved: approved,
       prescreeningNotes: notes,
+      status: approved ? 'technical' : 'rejected'
     };
-    
-    if (prescreeningScore !== undefined) {
-      updateData.prescreeningScore = prescreeningScore;
-    }
-    
-    if (status !== undefined) {
-      updateData.status = status;
-    }
     
     const candidate = await storage.updateCandidate(id, updateData);
     
@@ -105,11 +98,12 @@ const updatePrescreening = async (req: Request, res: Response) => {
 const updateScreening = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { score, benchmarkMet } = req.body;
+    const { score, benchmarkMet, notes } = req.body;
     
     const updateData: any = {
-      screeningScore: score.toString(),
+      screeningScore: score,
       benchmarkMet,
+      prescreeningNotes: notes,
       status: benchmarkMet ? 'technical' : 'rejected'
     };
     
@@ -136,8 +130,8 @@ const updateTechnical = async (req: Request, res: Response) => {
     }
     
     const updateData: any = {
-      technicalStatus: status,
-      technicalNotes: notes,
+      technicalRound1Status: status,
+      technicalRound1Notes: notes,
       status: status === 'selected' ? 'selected' : 'rejected'
     };
     

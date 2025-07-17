@@ -735,10 +735,16 @@ export class SqlStorage implements IStorage {
       prescreeningScore: 'prescreening_score',
       prescreeningNotes: 'prescreening_notes',
       prescreeningApproved: 'prescreening_approved',
+      screeningScore: 'screening_score',
+      benchmarkMet: 'benchmark_met',
       sourcingChannel: 'sourcing_channel',
       resumeSource: 'resume_source',
       referralName: 'referral_name',
-      hiringRequestId: 'hiring_request_id'
+      hiringRequestId: 'hiring_request_id',
+      technicalStatus: 'technical_status',
+      technicalNotes: 'technical_notes',
+      technicalRound1Status: 'technical_round1_status',
+      technicalRound1Notes: 'technical_round1_notes'
     };
     
     Object.entries(candidate).forEach(([key, value]) => {
