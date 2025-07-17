@@ -742,9 +742,7 @@ export class SqlStorage implements IStorage {
       referralName: 'referral_name',
       hiringRequestId: 'hiring_request_id',
       technicalStatus: 'technical_status',
-      technicalNotes: 'technical_notes',
-      technicalRound1Status: 'technical_round1_status',
-      technicalRound1Notes: 'technical_round1_notes'
+      technicalNotes: 'technical_notes'
     };
     
     Object.entries(candidate).forEach(([key, value]) => {

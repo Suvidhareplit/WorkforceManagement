@@ -101,7 +101,7 @@ const updateScreening = async (req: Request, res: Response) => {
     const { score, benchmarkMet, notes } = req.body;
     
     const updateData: any = {
-      screeningScore: score,
+      prescreeningScore: score,
       benchmarkMet,
       prescreeningNotes: notes,
       status: benchmarkMet ? 'technical' : 'rejected'
@@ -130,8 +130,8 @@ const updateTechnical = async (req: Request, res: Response) => {
     }
     
     const updateData: any = {
-      technicalRound1Status: status,
-      technicalRound1Notes: notes,
+      technicalStatus: status,
+      technicalNotes: notes,
       status: status === 'selected' ? 'selected' : 'rejected'
     };
     
