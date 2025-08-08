@@ -3,19 +3,20 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest3, queryClient } from "@/lib/queryClient";
 import { TrainingSession } from "@/types";
-import { HardHat, CheckCircle, XCircle, AlertTriangle, Mail, UserCheck } from "lucide-react";
+import { HardHat, AlertTriangle, Mail, UserCheck } from "lucide-react";
+import { format } from "date-fns";
 
 export default function FieldTraining() {
-  const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
   const [managerId, setManagerId] = useState("");
   const [observationComments, setObservationComments] = useState("");
   const [fteStatus, setFteStatus] = useState("");
@@ -37,7 +38,7 @@ export default function FieldTraining() {
 
   const assignFieldTrainingMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/training", data);
+      return await apiRequest3("POST", "/api/training", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/training"] });
@@ -45,7 +46,7 @@ export default function FieldTraining() {
         title: "Success",
         description: "Field training assigned and manager notified",
       });
-      setSelectedSession(null);
+
       setManagerId("");
     },
     onError: (error: any) => {
@@ -59,7 +60,7 @@ export default function FieldTraining() {
 
   const updateFieldTrainingMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return await apiRequest("PATCH", `/api/training/${id}`, data);
+      return await apiRequest3("PATCH", `/api/training/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/training"] });
@@ -67,7 +68,7 @@ export default function FieldTraining() {
         title: "Success",
         description: "Field training status updated successfully",
       });
-      setSelectedSession(null);
+
       setObservationComments("");
       setFteStatus("");
       setFteComments("");
@@ -84,7 +85,7 @@ export default function FieldTraining() {
 
   const confirmFTEMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return await apiRequest("PATCH", `/api/training/${id}/fte`, data);
+      return await apiRequest3("PATCH", `/api/training/${id}/fte`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/training"] });
@@ -93,7 +94,7 @@ export default function FieldTraining() {
         title: "Success",
         description: "FTE status confirmed successfully",
       });
-      setSelectedSession(null);
+
       setFteStatus("");
       setFteComments("");
     },
@@ -207,14 +208,14 @@ export default function FieldTraining() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : fitCandidates?.length === 0 ? (
+                ) : (fitCandidates as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8">
                       No candidates ready for field training
                     </TableCell>
                   </TableRow>
                 ) : (
-                  fitCandidates?.map((session: TrainingSession) => (
+                  (fitCandidates as any[])?.map((session: TrainingSession) => (
                     <TableRow key={session.id}>
                       <TableCell className="font-medium">
                         {session.candidate?.name}
@@ -283,7 +284,7 @@ export default function FieldTraining() {
                                     <SelectValue placeholder="Select operations manager" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {managers?.map((manager: any) => (
+                                    {(managers as any[])?.map((manager: any) => (
                                       <SelectItem key={manager.id} value={manager.id.toString()}>
                                         {manager.firstName} {manager.lastName} ({manager.username})
                                       </SelectItem>
@@ -349,14 +350,14 @@ export default function FieldTraining() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : fieldSessions?.length === 0 ? (
+                ) : (fieldSessions as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
                       No field training sessions found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  fieldSessions?.map((session: TrainingSession) => (
+                  (fieldSessions as any[])?.map((session: TrainingSession) => (
                     <TableRow key={session.id}>
                       <TableCell className="font-medium">
                         {session.candidate?.name}
@@ -417,7 +418,7 @@ export default function FieldTraining() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
-                                    setSelectedSession(session);
+    
                                     setObservationComments("");
                                   }}
                                 >
@@ -471,7 +472,7 @@ export default function FieldTraining() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
-                                    setSelectedSession(session);
+    
                                     setFteStatus("");
                                     setFteComments("");
                                     setDropoutReason("");
@@ -556,7 +557,7 @@ export default function FieldTraining() {
                                   <div className="flex justify-end space-x-2">
                                     <Button
                                       variant="outline"
-                                      onClick={() => setSelectedSession(null)}
+                                      onClick={() => {}}
                                     >
                                       Cancel
                                     </Button>

@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useLocation } from "wouter";
+import { apiRequest3, queryClient } from "@/lib/queryClient";
 import HiringRequestForm from "../forms/HiringRequestForm";
 
 interface CreateRequestModalProps {
@@ -12,20 +10,12 @@ interface CreateRequestModalProps {
 }
 
 export default function CreateRequestModal({ open, onOpenChange }: CreateRequestModalProps) {
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const createRequestMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/hiring", {
-        cityId: parseInt(data.cityId),
-        clusterId: parseInt(data.clusterId),
-        roleId: parseInt(data.roleId),
-        numberOfPositions: parseInt(data.numberOfPositions),
-        priority: data.priority,
-        requestType: data.requestType,
-        notes: data.notes,
-      });
+    mutationFn: async (formData: any) => {
+      const response = await apiRequest3("POST", "/api/hiring-requests", formData);
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hiring"] });
@@ -35,7 +25,6 @@ export default function CreateRequestModal({ open, onOpenChange }: CreateRequest
         description: "Hiring request(s) created successfully",
       });
       onOpenChange(false);
-      setLocation("/hiring/requests");
     },
     onError: (error: any) => {
       toast({

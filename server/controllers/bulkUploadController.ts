@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { parse } from 'csv-parse/sync';
-import { storage } from '../storage-sql.js';
+import { getStorage } from '../storage';
+const storage = getStorage();
 
 interface BulkCandidateRow {
   name: string;

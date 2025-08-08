@@ -8,15 +8,15 @@ const router = Router();
 router.use(authenticate);
 
 // Create hiring request
-router.post('/', hiringController.createRequest);
+router.post('/', hiringController.createHiringRequest);
 
 // Get all hiring requests
-router.get('/', hiringController.getRequests);
+router.get('/', hiringController.getHiringRequests);
 
 // Get hiring request by ID
-router.get('/:id', hiringController.getRequestById);
+router.get('/:id', hiringController.getHiringRequest);
 
 // Update hiring request status
-router.patch('/:id/status', hiringController.updateRequestStatus);
+router.patch('/:id/status', hiringController.updateHiringRequestStatus);
 
 export { router as hiringRoutes };

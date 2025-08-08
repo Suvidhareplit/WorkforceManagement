@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
       }
       return Promise.reject(error);
     }
-    const message = error.response?.data?.message || error.message;
+    const message = (error.response?.data as any)?.message || error.message;
     throw new Error(`${error.response?.status || 500}: ${message}`);
   }
 );
@@ -64,6 +64,15 @@ export async function apiRequest(
     } : undefined,
   });
   return response.data;
+}
+
+// Helper function for backward compatibility with 3-parameter apiRequest calls
+export async function apiRequest3(
+  method: string,
+  url: string,
+  body?: unknown
+): Promise<any> {
+  return apiRequest(url, { method, body });
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

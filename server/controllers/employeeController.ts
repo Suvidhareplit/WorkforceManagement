@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { storage } from "../storage";
+import { getStorage } from '../storage';
+const storage = getStorage();
 
 const createEmployee = async (req: Request, res: Response) => {
   try {

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { storage } from "../storage";
+import { getStorage } from '../storage';
+const storage = getStorage();
 import { sendEmail } from "../services/emailService";
 
 const createTrainingSession = async (req: Request, res: Response) => {
@@ -93,7 +94,7 @@ const updateFitness = async (req: Request, res: Response) => {
           await sendEmail({
             to: manager.email || '',
             subject: 'Candidate Ready for Field Training',
-            text: `Candidate has completed classroom training and is ready for field training.`
+            html: `<p>Candidate has completed classroom training and is ready for field training.</p>`
           });
         }
       } catch (emailError) {

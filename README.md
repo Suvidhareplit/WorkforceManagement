@@ -1,6 +1,17 @@
-# HRMS Platform - Separated Frontend and Backend
+# HRMS Platform - Blue Collar Workforce Management
 
-This repository contains a comprehensive Blue Collar HRMS (Human Resource Management System) platform that has been architected with complete separation between frontend and backend, allowing for independent deployment to separate repositories.
+A comprehensive Human Resource Management System designed for blue-collar workforce management with complete frontend/backend separation, running on different ports for optimal development and deployment flexibility.
+
+## 🚀 Quick Start
+
+```bash
+# Start both frontend and backend servers
+./start-dev.sh
+```
+
+**Ports:**
+- 🎨 **Frontend**: http://localhost:3000 (React + Vite)
+- 🔗 **Backend API**: http://localhost:5000 (Express + MySQL)
 
 ## Project Structure
 

@@ -9,7 +9,7 @@ interface EmailParams {
 
 // Gmail configuration using nodemailer
 const createGmailTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.GMAIL_USER,

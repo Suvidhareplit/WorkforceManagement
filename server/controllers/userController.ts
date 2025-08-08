@@ -1,209 +1,260 @@
-import { Request, Response } from "express";
-import bcrypt from "bcrypt";
-import { storage } from "../storage";
-import { UserModel } from "../models";
-import { ZodError } from "zod";
+import { Request, Response } from 'express';
+import { BaseController } from './base/BaseController';
+import * as bcrypt from 'bcrypt';
 
 interface AuthenticatedRequest extends Request {
   user?: {
+    id: number;
     userId: number;
     email: string;
     role: string;
   };
 }
 
-// Get all users
-const getUsers = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const users = await storage.getUsers();
-    
-    // Remove password from response
-    const safeUsers = users.map(({ password, ...user }) => user);
-    
-    res.json(safeUsers);
-  } catch (error) {
-    console.error('Get users error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  phone?: string;
+  cityId?: number;
+  clusterId?: number;
+  vendorId?: number;
+  recruiterId?: number;
+  isActive?: boolean;
+}
 
-// Get user by ID
-const getUserById = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const user = await storage.getUser(parseInt(id));
-    
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    
-    // Remove password from response
-    const { password, ...safeUser } = user;
-    res.json(safeUser);
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+interface UpdateUserRequest {
+  name?: string;
+  email?: string;
+  phone?: string;
+  cityId?: number;
+  clusterId?: number;
+  vendorId?: number;
+  recruiterId?: number;
+  isActive?: boolean;
+  password?: string;
+}
 
-// Create user
-const createUser = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userData = insertUserSchema.parse(req.body);
-    
-    // Check if user ID already exists
-    const existingUser = await storage.getUserByUserId(userData.userId);
-    if (existingUser) {
-      return res.status(400).json({ message: "User ID already exists" });
-    }
-    
-    // Check if email already exists
-    const existingEmail = await storage.getUserByEmail(userData.email);
-    if (existingEmail) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-    
-    // Hash password
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    
-    const user = await storage.createUser({
-      ...userData,
-      password: hashedPassword
-    }, req.user?.userId);
-    
-    // Remove password from response
-    const { password, ...safeUser } = user;
-    res.status(201).json(safeUser);
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return res.status(400).json({ 
-        message: "Validation error", 
-        errors: error.errors 
-      });
-    }
-    console.error('Create user error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+interface UpdateUserStatusRequest {
+  isActive: boolean;
+  changedBy?: number;
+}
 
-// Update user
-const updateUser = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
-    
-    // If password is being updated, hash it
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
+export class UserController extends BaseController {
+
+  // Helper method to remove password from user object
+  private sanitizeUser(user: any): Omit<any, 'passwordHash'> {
+    const { passwordHash, ...safeUser } = user;
+    return safeUser;
+  }
+
+  // Helper method to sanitize multiple users
+  private sanitizeUsers(users: any[]): Omit<any, 'passwordHash'>[] {
+    return users.map(user => this.sanitizeUser(user));
+  }
+
+  // Get all users
+  async getUsers(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const users = await this.storage.getUsers(filters);
+      const safeUsers = this.sanitizeUsers(users);
+      this.sendSuccess(res, safeUsers, 'Users retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve users');
     }
-    
-    // If userId is being updated, check for conflicts
-    if (updateData.userId) {
-      const existingUser = await storage.getUserByUserId(updateData.userId);
-      if (existingUser && existingUser.id !== parseInt(id)) {
-        return res.status(400).json({ message: "User ID already exists" });
+  }
+
+  // Get user by ID
+  async getUserById(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await this.storage.getUser(id);
+      
+      if (!user) {
+        this.sendNotFound(res, 'User');
+        return;
       }
+      
+      const safeUser = this.sanitizeUser(user);
+      this.sendSuccess(res, safeUser, 'User retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve user');
     }
-    
-    // If email is being updated, check for conflicts
-    if (updateData.email) {
-      const existingEmail = await storage.getUserByEmail(updateData.email);
-      if (existingEmail && existingEmail.id !== parseInt(id)) {
-        return res.status(400).json({ message: "Email already exists" });
+  }
+
+  // Create user
+  async createUser(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { password, ...userData } = req.body;
+      
+      if (!password) {
+        this.sendError(res, 'Password is required', 400);
+        return;
       }
+      
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 10);
+      
+      // Create user with hashed password
+      const userToCreate = {
+        ...userData,
+        passwordHash
+      };
+      
+      const userId = this.getUserId(req);
+      const user = await this.storage.createUser(userToCreate, { changedBy: userId });
+      
+      const safeUser = this.sanitizeUser(user);
+      this.sendSuccess(res, safeUser, 'User created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create user');
     }
-    
-    const user = await storage.updateUser(parseInt(id), updateData, req.user?.userId);
-    
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    
-    // Remove password from response
-    const { password, ...safeUser } = user;
-    res.json(safeUser);
-  } catch (error) {
-    console.error('Update user error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-// Bulk create users
-const bulkCreateUsers = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { users } = req.body;
-    
-    if (!Array.isArray(users) || users.length === 0) {
-      return res.status(400).json({ message: "Users array is required" });
+  // Update user
+  async updateUser(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      let updateData = { ...req.body };
+      
+      // If password is being updated, hash it
+      if (updateData.password) {
+        updateData.passwordHash = await bcrypt.hash(updateData.password, 10);
+        delete updateData.password;
+      }
+      
+      const userId = this.getUserId(req);
+      const user = await this.storage.updateUser(id, updateData, { changedBy: userId });
+      
+      if (!user) {
+        this.sendNotFound(res, 'User');
+        return;
+      }
+      
+      const safeUser = this.sanitizeUser(user);
+      this.sendSuccess(res, safeUser, 'User updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update user');
     }
-    
-    const results = [];
-    const errors = [];
-    
-    for (let i = 0; i < users.length; i++) {
-      try {
-        const userData = insertUserSchema.parse(users[i]);
-        
-        // Check for duplicates
-        const existingUser = await storage.getUserByUserId(userData.userId);
-        if (existingUser) {
-          errors.push({ index: i, error: `User ID ${userData.userId} already exists` });
-          continue;
-        }
-        
-        const existingEmail = await storage.getUserByEmail(userData.email);
-        if (existingEmail) {
-          errors.push({ index: i, error: `Email ${userData.email} already exists` });
-          continue;
-        }
-        
-        // Hash password
-        const hashedPassword = await bcrypt.hash(userData.password, 10);
-        
-        const user = await storage.createUser({
-          ...userData,
-          password: hashedPassword
-        }, req.user?.userId);
-        
-        const { password, ...safeUser } = user;
-        results.push(safeUser);
-      } catch (error) {
-        if (error instanceof ZodError) {
-          errors.push({ index: i, error: error.errors });
-        } else {
-          errors.push({ index: i, error: "Failed to create user" });
+  }
+
+  // Update user status
+  async updateUserStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const userId = this.getUserId(req);
+      const user = await this.storage.updateUserStatus(id, isActive, { changedBy: userId });
+      
+      if (!user) {
+        this.sendNotFound(res, 'User');
+        return;
+      }
+      
+      const safeUser = this.sanitizeUser(user);
+      this.sendSuccess(res, safeUser, 'User status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update user status');
+    }
+  }
+
+  // Bulk create users
+  async bulkCreateUsers(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { users } = req.body;
+      
+      if (!Array.isArray(users)) {
+        this.sendError(res, 'Users must be an array', 400);
+        return;
+      }
+      
+      const results = [];
+      const errors = [];
+      const userId = this.getUserId(req);
+      
+      for (let i = 0; i < users.length; i++) {
+        try {
+          const { password, ...userData } = users[i];
+          
+          if (!password) {
+            throw new Error('Password is required');
+          }
+          
+          // Hash password
+          const passwordHash = await bcrypt.hash(password, 10);
+          
+          // Create user with hashed password
+          const userToCreate = {
+            ...userData,
+            passwordHash
+          };
+          
+          const user = await this.storage.createUser(userToCreate, { changedBy: userId });
+          const safeUser = this.sanitizeUser(user);
+          results.push(safeUser);
+        } catch (error) {
+          errors.push({
+            index: i,
+            user: users[i],
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
         }
       }
+      
+      this.sendSuccess(res, {
+        created: results,
+        errors: errors,
+        summary: `Created ${results.length} users successfully, ${errors.length} errors`
+      }, 'Bulk user creation completed');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to bulk create users');
     }
-    
-    res.status(201).json({
-      created: results.length,
-      users: results,
-      errors: errors
-    });
-  } catch (error) {
-    console.error('Bulk create users error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-// Get user audit trail
-const getUserAuditTrail = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const auditTrail = await storage.getUserAuditTrail(parseInt(id));
-    res.json(auditTrail);
-  } catch (error) {
-    console.error('Get user audit trail error:', error);
-    res.status(500).json({ message: "Internal server error" });
+  // Get user audit trail
+  async getUserAuditTrail(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const filters = this.buildFilterOptions(req);
+      const auditTrail = await this.storage.getUserAuditTrail(id, filters);
+      this.sendSuccess(res, auditTrail, 'User audit trail retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve user audit trail');
+    }
   }
-};
 
-export const userController = {
-  getUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  bulkCreateUsers,
-  getUserAuditTrail
-};
+  // Delete user
+  async deleteUser(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const success = await this.storage.deleteUser(id, { changedBy: userId });
+      
+      if (!success) {
+        this.sendNotFound(res, 'User');
+        return;
+      }
+      
+      this.sendSuccess(res, null, 'User deleted successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to delete user');
+    }
+  }
+}
+
+// Export instance for use in routes
+export const userController = new UserController();
+
+// Export individual methods for backward compatibility
+export const getUsers = userController.getUsers.bind(userController);
+export const getUserById = userController.getUserById.bind(userController);
+export const createUser = userController.createUser.bind(userController);
+export const updateUser = userController.updateUser.bind(userController);
+export const updateUserStatus = userController.updateUserStatus.bind(userController);
+export const bulkCreateUsers = userController.bulkCreateUsers.bind(userController);
+export const getUserAuditTrail = userController.getUserAuditTrail.bind(userController);
+export const deleteUser = userController.deleteUser.bind(userController);

@@ -1,2 +1,2 @@
-// Re-export everything from the SQL implementation
-export * from './storage-sql';
+// Re-export everything from the storage index
+export * from './storage/index';

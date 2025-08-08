@@ -16,8 +16,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const initAuth = async () => {
       if (authService.isAuthenticated()) {
         try {
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
+          const data = await authService.getCurrentUser();
+          setUser({
+            id: data.user.id,
+            userId: data.user.userId,
+            email: data.user.email,
+            name: data.user.name,
+            phone: data.user.phone || '',
+            role: data.user.role,
+            createdAt: data.user.createdAt || new Date().toISOString(),
+            updatedAt: data.user.updatedAt || new Date().toISOString(),
+          });
         } catch (error) {
           console.error('Failed to get current user:', error);
           authService.logout();
@@ -34,7 +43,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     try {
       const response = await authService.login({ email, password });
-      setUser(response.user);
+      const user = response.user as any;
+      setUser({
+        id: user.id,
+        userId: user.userId,
+        email: user.email,
+        name: user.name,
+        phone: user.phone || '',
+        role: user.role as 'admin' | 'hr' | 'recruiter' | 'manager' | 'trainer',
+        createdAt: user.createdAt || new Date().toISOString(),
+        updatedAt: user.updatedAt || new Date().toISOString(),
+      });
     } catch (error) {
       throw error;
     } finally {

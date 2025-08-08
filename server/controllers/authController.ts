@@ -1,138 +1,236 @@
-import { Request, Response } from "express";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { storage } from "../storage";
-import { UserModel } from "../models";
-import { auditService } from "../services/auditService";
+import { Request, Response } from 'express';
+import { BaseController } from './base/BaseController';
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
 
-// Login
-const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
 
-    const user = await storage.getUserByEmail(email);
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    userId: number;
+    email: string;
+    role: string;
+  };
+}
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+export class AuthController extends BaseController {
 
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || "your-secret-key",
+  // Helper method to generate JWT token
+  private generateToken(user: any): string {
+    return jwt.sign(
+      { 
+        id: user.id,
+        userId: user.userId || user.id,
+        email: user.email, 
+        role: user.role 
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
+  }
 
-    // Log successful login
-    await auditService.logActivity({
-      userId: user.id,
-      action: 'LOGIN',
-      entity: 'user',
-      entityId: user.id.toString(),
-      details: `User ${user.email} logged in successfully`,
-      ipAddress: req.ip
-    });
+  // Helper method to sanitize user for response
+  private sanitizeUserForAuth(user: any): any {
+    return {
+      id: user.id,
+      userId: user.userId || user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isActive: user.isActive,
+      cityId: user.cityId,
+      clusterId: user.clusterId
+    };
+  }
 
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        userId: user.userId,
-        email: user.email,
-        name: user.name,
-        role: user.role
+  // Login
+  async login(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        this.sendError(res, 'Email and password are required', 400);
+        return;
       }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: "Internal server error" });
+
+      // Get user by email
+      const user: any = await this.storage.getUserByEmail(email);
+      if (!user) {
+        this.sendError(res, 'Invalid credentials', 401);
+        return;
+      }
+
+      // Check if user is active
+      if (!user.isActive) {
+        this.sendError(res, 'Account is deactivated', 401);
+        return;
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+      if (!isValidPassword) {
+        this.sendError(res, 'Invalid credentials', 401);
+        return;
+      }
+
+      // Generate token
+      const token = this.generateToken(user);
+
+      // Create audit trail
+      await this.storage.createUserAudit({
+        userId: user.id,
+        changedBy: user.id,
+        changeType: 'LOGIN',
+        tableName: 'users',
+        recordId: user.id,
+        newValues: JSON.stringify({ loginTime: new Date().toISOString() })
+      });
+
+      this.sendSuccess(res, {
+        token,
+        user: this.sanitizeUserForAuth(user)
+      }, 'Login successful');
+    } catch (error) {
+      this.handleError(res, error, 'Login failed');
+    }
   }
-};
 
-// Register (for initial setup)
-const register = async (req: Request, res: Response) => {
-  try {
-    const userData = req.body;
-    
-    // Check if user already exists
-    const existingUser = await storage.getUserByUserId(userData.userId);
-    if (existingUser) {
-      return res.status(400).json({ message: "User ID already exists" });
+  // Register (for initial setup or admin creation)
+  async register(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, password, name, role = 'user', ...userData } = req.body;
+      
+      if (!email || !password || !name) {
+        this.sendError(res, 'Email, password, and name are required', 400);
+        return;
+      }
+
+      // Check if user already exists
+      const existingUser = await this.storage.getUserByEmail(email);
+      if (existingUser) {
+        this.sendError(res, 'User already exists with this email', 400);
+        return;
+      }
+
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // Create user
+      const user = await this.storage.createUser({
+        email,
+        passwordHash,
+        name,
+        role,
+        isActive: true,
+        ...userData
+      });
+
+      // Generate token
+      const token = this.generateToken(user);
+
+      this.sendSuccess(res, {
+        token,
+        user: this.sanitizeUserForAuth(user)
+      }, 'Registration successful');
+    } catch (error) {
+      this.handleError(res, error, 'Registration failed');
     }
-
-    const existingEmail = await storage.getUserByEmail(userData.email);
-    if (existingEmail) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    
-    const user = await storage.createUser({
-      ...userData,
-      password: hashedPassword
-    });
-
-    // Log user registration
-    await auditService.logActivity({
-      userId: user.id,
-      action: 'CREATE',
-      entity: 'user',
-      entityId: user.id.toString(),
-      details: `New user registered: ${user.userId}`,
-      ipAddress: req.ip
-    });
-
-    res.status(201).json({
-      id: user.id,
-      userId: user.userId,
-      email: user.email,
-      name: user.name,
-      role: user.role
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-// Get current user
-const getCurrentUser = async (req: Request, res: Response) => {
-  try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+  // Get current user profile
+  async getCurrentUser(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        this.sendError(res, 'Unauthorized', 401);
+        return;
+      }
+
+      const user = await this.storage.getUser(userId);
+      if (!user) {
+        this.sendError(res, 'User not found', 404);
+        return;
+      }
+
+      this.sendSuccess(res, this.sanitizeUserForAuth(user), 'User profile retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve user profile');
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key") as any;
-    const user = await storage.getUser(decoded.userId);
-    
-    if (!user) {
-      return res.status(401).json({ message: "User not found" });
-    }
-
-    res.json({
-      id: user.id,
-      userId: user.userId,
-      email: user.email,
-      name: user.name,
-      role: user.role
-    });
-  } catch (error) {
-    console.error('Get user error:', error);
-    res.status(401).json({ message: "Invalid token" });
   }
-};
 
-export const authController = {
-  login,
-  register,
-  getCurrentUser
-};
+  // Change password
+  async changePassword(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        this.sendError(res, 'Unauthorized', 401);
+        return;
+      }
+
+      if (!currentPassword || !newPassword) {
+        this.sendError(res, 'Current password and new password are required', 400);
+        return;
+      }
+
+      // Get current user
+      const user = await this.storage.getUser(userId);
+      if (!user) {
+        this.sendError(res, 'User not found', 404);
+        return;
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isValidPassword) {
+        this.sendError(res, 'Current password is incorrect', 400);
+        return;
+      }
+
+      // Hash new password
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await this.storage.updateUser(userId, { passwordHash }, { changedBy: userId });
+
+      this.sendSuccess(res, null, 'Password changed successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to change password');
+    }
+  }
+
+  // Logout (mainly for audit trail)
+  async logout(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      
+      if (userId) {
+        // Create audit trail for logout
+        await this.storage.createUserAudit({
+          userId,
+          changedBy: userId,
+          changeType: 'LOGOUT',
+          tableName: 'users',
+          recordId: userId,
+          newValues: JSON.stringify({ logoutTime: new Date().toISOString() })
+        });
+      }
+
+      this.sendSuccess(res, null, 'Logout successful');
+    } catch (error) {
+      this.handleError(res, error, 'Logout failed');
+    }
+  }
+}
+
+// Export instance for use in routes
+export const authController = new AuthController();
+
+// Export individual methods for backward compatibility
+export const login = authController.login.bind(authController);
+export const register = authController.register.bind(authController);
+export const getCurrentUser = authController.getCurrentUser.bind(authController);
+export const changePassword = authController.changePassword.bind(authController);
+export const logout = authController.logout.bind(authController);

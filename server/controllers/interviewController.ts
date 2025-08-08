@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { storage } from "../storage";
+import { getStorage } from '../storage';
+const storage = getStorage();
 import { sendEmail } from "../services/emailService";
 
 const createCandidate = async (req: Request, res: Response) => {
@@ -171,14 +172,14 @@ const updateOffer = async (req: Request, res: Response) => {
           await sendEmail({
             to: vendor.email,
             subject: 'Candidate Selection Notification',
-            text: `Candidate ${candidate.name} has been selected with DOJ: ${dateOfJoining} and gross salary: ${grossSalary}`
+            html: `<p>Candidate ${candidate.name} has been selected with DOJ: ${dateOfJoining} and gross salary: ${grossSalary}</p>`
           });
         }
       } else {
         await sendEmail({
           to: candidate.email || '',
           subject: 'Job Offer',
-          text: `Congratulations! You have been selected. Your DOJ is ${dateOfJoining} with gross salary: ${grossSalary}`
+          html: `<p>Congratulations! You have been selected. Your DOJ is ${dateOfJoining} with gross salary: ${grossSalary}</p>`
         });
       }
     } catch (emailError) {

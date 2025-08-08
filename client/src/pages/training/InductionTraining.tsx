@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,9 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest3, queryClient } from "@/lib/queryClient";
 import { Candidate, TrainingSession } from "@/types";
-import { CalendarIcon, Play, Users, CheckCircle, FileText } from "lucide-react";
+import { CalendarIcon, Play, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -33,7 +33,7 @@ export default function InductionTraining() {
 
   const createTrainingMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/training", data);
+      return await apiRequest3("POST", "/api/training", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/training"] });
@@ -56,7 +56,7 @@ export default function InductionTraining() {
 
   const updateTrainingMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return await apiRequest("PATCH", `/api/training/${id}`, data);
+      return await apiRequest3("PATCH", `/api/training/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/training"] });
@@ -156,14 +156,14 @@ export default function InductionTraining() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : joinedCandidates?.length === 0 ? (
+                ) : (joinedCandidates as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8">
                       No new joiners awaiting induction
                     </TableCell>
                   </TableRow>
                 ) : (
-                  joinedCandidates?.map((candidate: Candidate) => (
+                  (joinedCandidates as any[])?.map((candidate: Candidate) => (
                     <TableRow key={candidate.id}>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.role?.name}</TableCell>
@@ -314,14 +314,14 @@ export default function InductionTraining() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : trainingSessions?.length === 0 ? (
+                ) : (trainingSessions as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
                       No induction sessions found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  trainingSessions?.map((session: TrainingSession) => (
+                  (trainingSessions as any[])?.map((session: TrainingSession) => (
                     <TableRow key={session.id}>
                       <TableCell className="font-medium">
                         {session.candidate?.name}

@@ -1,292 +1,331 @@
-import { Request, Response } from "express";
-import { storage } from "../storage";
+import { Request, Response } from 'express';
+import { BaseController } from './base/BaseController';
 
-const getCities = async (req: Request, res: Response) => {
-  try {
-    const cities = await storage.getCities();
-    res.json(cities);
-  } catch (error) {
-    console.error('Get cities error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+export class MasterDataController extends BaseController {
 
-const getClustersByCity = async (req: Request, res: Response) => {
-  try {
-    const cityId = parseInt(req.params.cityId);
-    const clusters = await storage.getClustersByCity(cityId);
-    res.json(clusters);
-  } catch (error) {
-    console.error('Get clusters error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const getClusters = async (req: Request, res: Response) => {
-  try {
-    const clusters = await storage.getClusters();
-    res.json(clusters);
-  } catch (error) {
-    console.error('Get all clusters error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const getRoles = async (req: Request, res: Response) => {
-  try {
-    const roles = await storage.getRoles();
-    res.json(roles);
-  } catch (error) {
-    console.error('Get roles error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const getVendors = async (req: Request, res: Response) => {
-  try {
-    const vendors = await storage.getVendors();
-    res.json(vendors);
-  } catch (error) {
-    console.error('Get vendors error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const getRecruiters = async (req: Request, res: Response) => {
-  try {
-    const recruiters = await storage.getRecruiters();
-    res.json(recruiters);
-  } catch (error) {
-    console.error('Get recruiters error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const createCity = async (req: Request, res: Response) => {
-  try {
-    const city = await storage.createCity(req.body);
-    res.status(201).json(city);
-  } catch (error) {
-    console.error('Create city error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const createCluster = async (req: Request, res: Response) => {
-  try {
-    const cluster = await storage.createCluster(req.body);
-    res.status(201).json(cluster);
-  } catch (error) {
-    console.error('Create cluster error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const createRole = async (req: Request, res: Response) => {
-  try {
-    const { name, code, description } = req.body;
-    const jobDescriptionFile = req.file ? req.file.filename : null;
-    
-    const roleData = {
-      name,
-      code,
-      description,
-      jobDescriptionFile,
-    };
-    
-    const role = await storage.createRole(roleData);
-    res.status(201).json(role);
-  } catch (error) {
-    console.error('Create role error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const createVendor = async (req: Request, res: Response) => {
-  try {
-    const vendor = await storage.createVendor(req.body);
-    res.status(201).json(vendor);
-  } catch (error) {
-    console.error('Create vendor error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const createRecruiter = async (req: Request, res: Response) => {
-  try {
-    const recruiter = await storage.createRecruiter(req.body);
-    res.status(201).json(recruiter);
-  } catch (error) {
-    console.error('Create recruiter error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const toggleCityStatus = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.toggleCityStatus(id, userId);
-    res.json({ message: "City status updated successfully", data: result });
-  } catch (error) {
-    console.error('Toggle city status error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const toggleClusterStatus = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.toggleClusterStatus(id, userId);
-    res.json({ message: "Cluster status updated successfully", data: result });
-  } catch (error) {
-    console.error('Toggle cluster status error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const toggleRoleStatus = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.toggleRoleStatus(id, userId);
-    res.json({ message: "Role status updated successfully", data: result });
-  } catch (error) {
-    console.error('Toggle role status error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const toggleVendorStatus = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.toggleVendorStatus(id, userId);
-    res.json({ message: "Vendor status updated successfully", data: result });
-  } catch (error) {
-    console.error('Toggle vendor status error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const toggleRecruiterStatus = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.toggleRecruiterStatus(id, userId);
-    res.json({ message: "Recruiter status updated successfully", data: result });
-  } catch (error) {
-    console.error('Toggle recruiter status error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const updateCity = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.updateCity(id, req.body, userId);
-    if (!result) {
-      return res.status(404).json({ message: "City not found" });
+  // Cities CRUD
+  async getCities(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const cities = await this.storage.getCities(filters);
+      this.sendSuccess(res, cities, 'Cities retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve cities');
     }
-    res.json({ message: "City updated successfully", data: result });
-  } catch (error) {
-    console.error('Update city error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-const updateCluster = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.updateCluster(id, req.body, userId);
-    if (!result) {
-      return res.status(404).json({ message: "Cluster not found" });
+  async getClustersByCity(req: Request, res: Response): Promise<void> {
+    try {
+      const cityId = parseInt(req.params.cityId);
+      const filters = this.buildFilterOptions(req);
+      const clusters = await this.storage.getClustersByCity(cityId, filters);
+      this.sendSuccess(res, clusters, 'Clusters retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve clusters');
     }
-    res.json({ message: "Cluster updated successfully", data: result });
-  } catch (error) {
-    console.error('Update cluster error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-const updateRole = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const { name, code, description } = req.body;
-    const jobDescriptionFile = req.file ? req.file.filename : null;
-    
-    const updateData = {
-      name,
-      code,
-      description,
-      ...(jobDescriptionFile && { jobDescriptionFile }),
-    };
-    
-    const result = await storage.updateRole(id, updateData, userId);
-    if (!result) {
-      return res.status(404).json({ message: "Role not found" });
+  async getClusters(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const clusters = await this.storage.getClusters(filters);
+      this.sendSuccess(res, clusters, 'All clusters retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve clusters');
     }
-    res.json({ message: "Role updated successfully", data: result });
-  } catch (error) {
-    console.error('Update role error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-const updateVendor = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.updateVendor(id, req.body, userId);
-    if (!result) {
-      return res.status(404).json({ message: "Vendor not found" });
+  async getRoles(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const roles = await this.storage.getRoles(filters);
+      this.sendSuccess(res, roles, 'Roles retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve roles');
     }
-    res.json({ message: "Vendor updated successfully", data: result });
-  } catch (error) {
-    console.error('Update vendor error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-const updateRecruiter = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = (req as any).user?.id || 1;
-    const result = await storage.updateRecruiter(id, req.body, userId);
-    if (!result) {
-      return res.status(404).json({ message: "Recruiter not found" });
+  async getVendors(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const vendors = await this.storage.getVendors(filters);
+      this.sendSuccess(res, vendors, 'Vendors retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve vendors');
     }
-    res.json({ message: "Recruiter updated successfully", data: result });
-  } catch (error) {
-    console.error('Update recruiter error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-export const masterDataController = {
-  getCities,
-  getClustersByCity,
-  getClusters,
-  getRoles,
-  getVendors,
-  getRecruiters,
-  createCity,
-  createCluster,
-  createRole,
-  createVendor,
-  createRecruiter,
-  toggleCityStatus,
-  toggleClusterStatus,
-  toggleRoleStatus,
-  toggleVendorStatus,
-  toggleRecruiterStatus,
-  updateCity,
-  updateCluster,
-  updateRole,
-  updateVendor,
-  updateRecruiter
-};
+  async getRecruiters(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const recruiters = await this.storage.getRecruiters(filters);
+      this.sendSuccess(res, recruiters, 'Recruiters retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve recruiters');
+    }
+  }
+
+  // Create operations
+  async createCity(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const city = await this.storage.createCity(req.body, { changedBy: userId });
+      this.sendSuccess(res, city, 'City created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create city');
+    }
+  }
+
+  async createCluster(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const cluster = await this.storage.createCluster(req.body, { changedBy: userId });
+      this.sendSuccess(res, cluster, 'Cluster created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create cluster');
+    }
+  }
+
+  async createRole(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const roleData = {
+        ...req.body,
+        jobDescriptionFile: (req as any).file ? (req as any).file.filename : null
+      };
+      
+      const role = await this.storage.createRole(roleData, { changedBy: userId });
+      this.sendSuccess(res, role, 'Role created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create role');
+    }
+  }
+
+  async createVendor(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const vendor = await this.storage.createVendor(req.body, { changedBy: userId });
+      this.sendSuccess(res, vendor, 'Vendor created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create vendor');
+    }
+  }
+
+  async createRecruiter(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const recruiter = await this.storage.createRecruiter(req.body, { changedBy: userId });
+      this.sendSuccess(res, recruiter, 'Recruiter created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create recruiter');
+    }
+  }
+
+  // Status toggle operations
+  async toggleCityStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const userId = this.getUserId(req);
+      
+      const city = await this.storage.updateCityStatus(id, isActive, { changedBy: userId });
+      if (!city) {
+        this.sendNotFound(res, 'City');
+        return;
+      }
+      
+      this.sendSuccess(res, city, 'City status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update city status');
+    }
+  }
+
+  async toggleClusterStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const userId = this.getUserId(req);
+      
+      const cluster = await this.storage.updateClusterStatus(id, isActive, { changedBy: userId });
+      if (!cluster) {
+        this.sendNotFound(res, 'Cluster');
+        return;
+      }
+      
+      this.sendSuccess(res, cluster, 'Cluster status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update cluster status');
+    }
+  }
+
+  async toggleRoleStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const userId = this.getUserId(req);
+      
+      const role = await this.storage.updateRoleStatus(id, isActive, { changedBy: userId });
+      if (!role) {
+        this.sendNotFound(res, 'Role');
+        return;
+      }
+      
+      this.sendSuccess(res, role, 'Role status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update role status');
+    }
+  }
+
+  async toggleVendorStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const userId = this.getUserId(req);
+      
+      const vendor = await this.storage.updateVendorStatus(id, isActive, { changedBy: userId });
+      if (!vendor) {
+        this.sendNotFound(res, 'Vendor');
+        return;
+      }
+      
+      this.sendSuccess(res, vendor, 'Vendor status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update vendor status');
+    }
+  }
+
+  async toggleRecruiterStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const userId = this.getUserId(req);
+      
+      const recruiter = await this.storage.updateRecruiterStatus(id, isActive, { changedBy: userId });
+      if (!recruiter) {
+        this.sendNotFound(res, 'Recruiter');
+        return;
+      }
+      
+      this.sendSuccess(res, recruiter, 'Recruiter status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update recruiter status');
+    }
+  }
+
+  // Update operations
+  async updateCity(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const city = await this.storage.updateCity(id, req.body, { changedBy: userId });
+      if (!city) {
+        this.sendNotFound(res, 'City');
+        return;
+      }
+      
+      this.sendSuccess(res, city, 'City updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update city');
+    }
+  }
+
+  async updateCluster(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const cluster = await this.storage.updateCluster(id, req.body, { changedBy: userId });
+      if (!cluster) {
+        this.sendNotFound(res, 'Cluster');
+        return;
+      }
+      
+      this.sendSuccess(res, cluster, 'Cluster updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update cluster');
+    }
+  }
+
+  async updateRole(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const roleData = {
+        ...req.body,
+        jobDescriptionFile: (req as any).file ? (req as any).file.filename : undefined
+      };
+      
+      const role = await this.storage.updateRole(id, roleData, { changedBy: userId });
+      if (!role) {
+        this.sendNotFound(res, 'Role');
+        return;
+      }
+      
+      this.sendSuccess(res, role, 'Role updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update role');
+    }
+  }
+
+  async updateVendor(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const vendor = await this.storage.updateVendor(id, req.body, { changedBy: userId });
+      if (!vendor) {
+        this.sendNotFound(res, 'Vendor');
+        return;
+      }
+      
+      this.sendSuccess(res, vendor, 'Vendor updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update vendor');
+    }
+  }
+
+  async updateRecruiter(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const recruiter = await this.storage.updateRecruiter(id, req.body, { changedBy: userId });
+      if (!recruiter) {
+        this.sendNotFound(res, 'Recruiter');
+        return;
+      }
+      
+      this.sendSuccess(res, recruiter, 'Recruiter updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update recruiter');
+    }
+  }
+}
+
+// Export instance for use in routes
+export const masterDataController = new MasterDataController();
+
+// Export individual methods for backward compatibility
+export const getCities = masterDataController.getCities.bind(masterDataController);
+export const getClustersByCity = masterDataController.getClustersByCity.bind(masterDataController);
+export const getClusters = masterDataController.getClusters.bind(masterDataController);
+export const getRoles = masterDataController.getRoles.bind(masterDataController);
+export const getVendors = masterDataController.getVendors.bind(masterDataController);
+export const getRecruiters = masterDataController.getRecruiters.bind(masterDataController);
+export const createCity = masterDataController.createCity.bind(masterDataController);
+export const createCluster = masterDataController.createCluster.bind(masterDataController);
+export const createRole = masterDataController.createRole.bind(masterDataController);
+export const createVendor = masterDataController.createVendor.bind(masterDataController);
+export const createRecruiter = masterDataController.createRecruiter.bind(masterDataController);
+export const toggleCityStatus = masterDataController.toggleCityStatus.bind(masterDataController);
+export const toggleClusterStatus = masterDataController.toggleClusterStatus.bind(masterDataController);
+export const toggleRoleStatus = masterDataController.toggleRoleStatus.bind(masterDataController);
+export const toggleVendorStatus = masterDataController.toggleVendorStatus.bind(masterDataController);
+export const toggleRecruiterStatus = masterDataController.toggleRecruiterStatus.bind(masterDataController);
+export const updateCity = masterDataController.updateCity.bind(masterDataController);
+export const updateCluster = masterDataController.updateCluster.bind(masterDataController);
+export const updateRole = masterDataController.updateRole.bind(masterDataController);
+export const updateVendor = masterDataController.updateVendor.bind(masterDataController);
+export const updateRecruiter = masterDataController.updateRecruiter.bind(masterDataController);

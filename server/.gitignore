@@ -10,7 +10,6 @@ node_modules/
 dist/
 *.js
 *.d.ts
-!drizzle.config.ts
 !tsconfig.json
 
 # Database

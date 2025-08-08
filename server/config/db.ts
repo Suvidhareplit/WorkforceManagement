@@ -1,46 +1,78 @@
-import pkg from 'pg';
-const { Pool } = pkg;
+import * as mysql from 'mysql2/promise';
+import * as dotenv from 'dotenv';
+import { join } from 'path';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set. Did you forget to provision a database?");
-}
+// Load environment variables from .env
+// Use process.cwd() for current working directory in Node.js
+const envPath = join(process.cwd(), '.env');
+dotenv.config({ path: envPath });
+
+// Database configuration
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'hrms_user',
+  password: process.env.DB_PASSWORD || 'hrms_password',
+  database: process.env.DB_NAME || 'hrms_db',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  namedPlaceholders: true
+};
 
 // Create a connection pool
-export const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  max: 10, // maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
-  ssl: process.env.DATABASE_URL.includes('localhost') ? false : {
-    rejectUnauthorized: false
-  }
+export const pool = mysql.createPool(dbConfig);
+
+// For debugging
+console.log('Database Config:', {
+  host: dbConfig.host,
+  database: dbConfig.database,
+  user: dbConfig.user
 });
 
-// Helper function to execute queries
-export async function query(text: string, params?: any[]) {
+// Convert PostgreSQL-style parameter placeholders ($1, $2, ...) to MySQL (? , ?)
+function convertPgPlaceholders(sql: string): string {
+  // Matches $1, $2 ... not inside quotes – simple approximation
+  return sql.replace(/\$(\d+)/g, '?');
+}
+
+// Helper function to execute queries (accepts either $n or ? placeholders)
+export async function query(text: string, params: any[] = []) {
   const start = Date.now();
+  const connection = await pool.getConnection();
   try {
-    const res = await pool.query(text, params);
+    const convertedSql = convertPgPlaceholders(text);
+    const [rows] = await connection.query(convertedSql, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
-    return res;
+    console.log('Executed query', {
+      sql: convertedSql,
+      originalSql: text,
+      duration,
+      rows: Array.isArray(rows) ? rows.length : (rows as any).affectedRows
+    });
+    return {
+      rows: Array.isArray(rows) ? rows : [],
+      rowCount: Array.isArray(rows) ? rows.length : (rows as any).affectedRows
+    };
   } catch (error) {
     console.error('Database query error:', error);
     throw error;
+  } finally {
+    connection.release();
   }
 }
 
 // Helper function for transactions
 export async function transaction(callback: (client: any) => Promise<any>) {
-  const client = await pool.connect();
+  const connection = await pool.getConnection();
   try {
-    await client.query('BEGIN');
-    const result = await callback(client);
-    await client.query('COMMIT');
+    await connection.beginTransaction();
+    const result = await callback(connection);
+    await connection.commit();
     return result;
   } catch (error) {
-    await client.query('ROLLBACK');
+    await connection.rollback();
     throw error;
   } finally {
-    client.release();
+    connection.release();
   }
 }

@@ -46,7 +46,7 @@ authApiClient.interceptors.response.use(
       authService.removeToken();
       window.location.reload(); // This will redirect to login since no token exists
     }
-    const message = error.response?.data?.message || error.message;
+    const message = (error.response?.data as any)?.message || error.message;
     throw new Error(`${error.response?.status || 500}: ${message}`);
   }
 );

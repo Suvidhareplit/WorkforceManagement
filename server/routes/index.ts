@@ -5,7 +5,7 @@ import { interviewRoutes } from "./interviewRoutes";
 import { trainingRoutes } from "./trainingRoutes";
 import { employeeRoutes } from "./employeeRoutes";
 import { masterDataRoutes } from "./masterDataRoutes";
-import { analyticsRoutes } from "./analyticsRoutes";
+import analyticsRoutes from './analyticsRoutes';
 
 const router = Router();
 

@@ -4,6 +4,9 @@ export interface User {
   phone: string;
   email: string;
   userId: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
   role: 'admin' | 'hr' | 'recruiter' | 'manager' | 'trainer';
   managerId?: number | null;
   cityId?: number | null;

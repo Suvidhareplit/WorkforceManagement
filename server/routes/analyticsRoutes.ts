@@ -13,7 +13,6 @@ router.get('/hiring', analyticsController.getHiringAnalytics);
 // GET /api/analytics/pipeline - Get candidate pipeline data
 router.get('/pipeline', analyticsController.getCandidatePipeline);
 
-// POST /api/analytics/send-email - Send hiring request email to vendor SPOC
-router.post('/send-email', analyticsController.sendHiringRequestEmail);
+// Email functionality moved to hiring controller
 
 export default router;

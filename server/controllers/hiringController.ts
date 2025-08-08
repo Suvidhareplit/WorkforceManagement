@@ -1,127 +1,252 @@
-import { Request, Response } from "express";
-import { storage } from "../storage";
-import { generateRequestId } from "../utils/helpers";
-import { auditService } from "../services/auditService";
+import { Request, Response } from 'express';
+import { BaseController } from './base/BaseController';
 
-// Create hiring request
-const createRequest = async (req: Request, res: Response) => {
-  try {
-    const requestData = req.body;
-    const userId = (req as any).user.userId;
-    
-    // Validate required fields
-    if (!requestData.cityId || !requestData.clusterId || !requestData.roleId || !requestData.numberOfPositions) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
 
-    // Generate unique request ID
-    const city = await storage.getCities().then(cities => cities.find(c => c.id === requestData.cityId));
-    const cluster = await storage.getClustersByCity(requestData.cityId).then(clusters => clusters.find(c => c.id === requestData.clusterId));
-    const role = await storage.getRoles().then(roles => roles.find(r => r.id === requestData.roleId));
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    userId: number;
+    email: string;
+    role: string;
+  };
+}
 
-    if (!city || !cluster || !role) {
-      return res.status(400).json({ message: "Invalid city, cluster, or role" });
-    }
+export class HiringController extends BaseController {
 
-    // If multiple positions, create individual requests
-    const requests = [];
-    for (let i = 0; i < requestData.numberOfPositions; i++) {
-      const requestId = generateRequestId(city.code, role.code, cluster.code, i + 1);
+  // Helper method to generate unique request ID
+  private generateRequestId(cityCode: string, roleCode: string, clusterCode: string, sequence: number): string {
+    const timestamp = Date.now().toString().slice(-6);
+    return `HR-${cityCode}-${roleCode}-${clusterCode}-${sequence.toString().padStart(3, '0')}-${timestamp}`;
+  }
+
+  // Create hiring request
+  async createHiringRequest(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const requestData = req.body;
+      const userId = this.getUserId(req);
       
-      const request = await storage.createHiringRequest({
-        ...requestData,
-        requestId,
-        numberOfPositions: 1, // Individual request per position
-        createdBy: userId
-      });
+      // Validate required fields
+      if (!requestData.cityId || !requestData.clusterId || !requestData.roleId || !requestData.numberOfPositions) {
+        this.sendError(res, 'Missing required fields: cityId, clusterId, roleId, numberOfPositions', 400);
+        return;
+      }
+
+      // Get reference data for validation and ID generation
+      const [city, cluster, role] = await Promise.all([
+        this.storage.getCity(requestData.cityId),
+        this.storage.getCluster(requestData.clusterId),
+        this.storage.getRole(requestData.roleId)
+      ]);
+
+      if (!city || !cluster || !role) {
+        this.sendError(res, 'Invalid city, cluster, or role ID', 400);
+        return;
+      }
+
+      // Create individual requests for each position
+      const requests = [];
+      for (let i = 0; i < requestData.numberOfPositions; i++) {
+        const requestId = this.generateRequestId(city.code, role.code, cluster.code, i + 1);
+        
+        const request = await this.storage.createHiringRequest({
+          ...requestData,
+          requestId,
+          numberOfPositions: 1, // Individual request per position
+          status: 'open',
+          createdBy: userId
+        }, { changedBy: userId });
+        
+        requests.push(request);
+      }
+
+      this.sendSuccess(res, requests, `Created ${requests.length} hiring request(s) successfully`);
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create hiring request');
+    }
+  }
+
+  // Get all hiring requests
+  async getHiringRequests(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const requests = await this.storage.getHiringRequests(filters);
+      this.sendSuccess(res, requests, 'Hiring requests retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve hiring requests');
+    }
+  }
+
+  // Get hiring request by ID
+  async getHiringRequest(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const request = await this.storage.getHiringRequest(id);
       
-      requests.push(request);
+      if (!request) {
+        this.sendNotFound(res, 'Hiring request');
+        return;
+      }
+      
+      // Get associated candidates if requested
+      const includeCandidates = req.query.includeCandidates === 'true';
+      let responseData: any = request;
+      
+      if (includeCandidates) {
+        const candidates = await this.storage.getCandidates({ hiringRequestId: id });
+        responseData = { ...request, candidates };
+      }
+      
+      this.sendSuccess(res, responseData, 'Hiring request retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve hiring request');
     }
-
-    // Log hiring request creation
-    await auditService.logActivity({
-      userId,
-      action: 'CREATE',
-      entity: 'hiring_request',
-      entityId: requests.map(r => r.id).join(','),
-      details: `Created ${requests.length} hiring request(s)`,
-      ipAddress: req.ip
-    });
-
-    res.status(201).json(requests);
-  } catch (error) {
-    console.error('Create hiring request error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-// Get all hiring requests
-const getRequests = async (req: Request, res: Response) => {
-  try {
-    const filters = req.query;
-    const requests = await storage.getHiringRequests(filters);
-    res.json(requests);
-  } catch (error) {
-    console.error('Get hiring requests error:', error);
-    res.status(500).json({ message: "Internal server error" });
+  // Update hiring request
+  async updateHiringRequest(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const request = await this.storage.updateHiringRequest(id, req.body, { changedBy: userId });
+      
+      if (!request) {
+        this.sendNotFound(res, 'Hiring request');
+        return;
+      }
+      
+      this.sendSuccess(res, request, 'Hiring request updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update hiring request');
+    }
   }
-};
 
-// Get hiring request by ID
-const getRequestById = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    
-    // Validate ID is a valid number
-    if (isNaN(id) || id <= 0) {
-      return res.status(400).json({ message: "Invalid hiring request ID" });
+  // Update hiring request status
+  async updateHiringRequestStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      const userId = this.getUserId(req);
+      
+      if (!status) {
+        this.sendError(res, 'Status is required', 400);
+        return;
+      }
+      
+      const request = await this.storage.updateHiringRequestStatus(id, status, { changedBy: userId });
+      
+      if (!request) {
+        this.sendNotFound(res, 'Hiring request');
+        return;
+      }
+      
+      this.sendSuccess(res, request, 'Hiring request status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update hiring request status');
     }
-    
-    const request = await storage.getHiringRequest(id);
-    
-    if (!request) {
-      return res.status(404).json({ message: "Hiring request not found" });
-    }
-    
-    res.json(request);
-  } catch (error) {
-    console.error('Get hiring request error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-// Update hiring request status
-const updateRequestStatus = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    
-    // Validate ID is a valid number
-    if (isNaN(id) || id <= 0) {
-      return res.status(400).json({ message: "Invalid hiring request ID" });
+  // Delete hiring request
+  async deleteHiringRequest(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const success = await this.storage.deleteHiringRequest(id, { changedBy: userId });
+      
+      if (!success) {
+        this.sendNotFound(res, 'Hiring request');
+        return;
+      }
+      
+      this.sendSuccess(res, null, 'Hiring request deleted successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to delete hiring request');
     }
-    
-    const { status } = req.body;
-    
-    if (!['open', 'closed', 'called_off'].includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
-    }
-    
-    const request = await storage.updateHiringRequestStatus(id, status);
-    
-    if (!request) {
-      return res.status(404).json({ message: "Hiring request not found" });
-    }
-    
-    res.json(request);
-  } catch (error) {
-    console.error('Update hiring request status error:', error);
-    res.status(500).json({ message: "Internal server error" });
   }
-};
 
-export const hiringController = {
-  createRequest,
-  getRequests,
-  getRequestById,
-  updateRequestStatus
-};
+  // Candidate management methods
+  
+  // Get candidates for a hiring request
+  async getCandidatesForRequest(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const hiringRequestId = parseInt(req.params.requestId);
+      const filters = this.buildFilterOptions(req);
+      
+      const candidates = await this.storage.getCandidates({ ...filters, hiringRequestId });
+      this.sendSuccess(res, candidates, 'Candidates retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve candidates');
+    }
+  }
+
+  // Create candidate
+  async createCandidate(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const candidate = await this.storage.createCandidate(req.body, { changedBy: userId });
+      this.sendSuccess(res, candidate, 'Candidate created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create candidate');
+    }
+  }
+
+  // Update candidate
+  async updateCandidate(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const candidate = await this.storage.updateCandidate(id, req.body, { changedBy: userId });
+      
+      if (!candidate) {
+        this.sendNotFound(res, 'Candidate');
+        return;
+      }
+      
+      this.sendSuccess(res, candidate, 'Candidate updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update candidate');
+    }
+  }
+
+  // Update candidate status
+  async updateCandidateStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      const userId = this.getUserId(req);
+      
+      if (!status) {
+        this.sendError(res, 'Status is required', 400);
+        return;
+      }
+      
+      const candidate = await this.storage.updateCandidateStatus(id, status, { changedBy: userId });
+      
+      if (!candidate) {
+        this.sendNotFound(res, 'Candidate');
+        return;
+      }
+      
+      this.sendSuccess(res, candidate, 'Candidate status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update candidate status');
+    }
+  }
+}
+
+// Export instance for use in routes
+export const hiringController = new HiringController();
+
+// Export individual methods for backward compatibility
+export const createRequest = hiringController.createHiringRequest.bind(hiringController);
+export const getRequests = hiringController.getHiringRequests.bind(hiringController);
+export const getRequestById = hiringController.getHiringRequest.bind(hiringController);
+export const updateRequestStatus = hiringController.updateHiringRequestStatus.bind(hiringController);
+export const updateRequest = hiringController.updateHiringRequest.bind(hiringController);
+export const deleteRequest = hiringController.deleteHiringRequest.bind(hiringController);
+export const getCandidatesForRequest = hiringController.getCandidatesForRequest.bind(hiringController);
+export const createCandidate = hiringController.createCandidate.bind(hiringController);
+export const updateCandidate = hiringController.updateCandidate.bind(hiringController);
+export const updateCandidateStatus = hiringController.updateCandidateStatus.bind(hiringController);

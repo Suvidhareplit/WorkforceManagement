@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Filter, Send, Users, Building, MapPin } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, apiRequest3 } from "@/lib/queryClient";
 
 interface HiringRequest {
   id: number;
@@ -58,7 +58,6 @@ export default function HiringAnalytics() {
   const [selectedCityForEmail, setSelectedCityForEmail] = useState<string>("");
   
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   // Fetch hiring requests
   const { data: hiringRequests = [], isLoading: loadingRequests } = useQuery({
@@ -82,12 +81,22 @@ export default function HiringAnalytics() {
 
   // Send email mutation
   const sendEmailMutation = useMutation({
-    mutationFn: (data: {
+    mutationFn: async (data: {
       hiringRequestIds: number[];
       vendorId: string;
       cityId: string;
       customMessage?: string;
-    }) => apiRequest("/api/analytics/send-email", "POST", data),
+    }) => {
+      const formData = new FormData();
+      formData.append('hiringRequestIds', JSON.stringify(data.hiringRequestIds));
+      formData.append('vendorId', data.vendorId);
+      formData.append('cityId', data.cityId);
+      if (data.customMessage) {
+        formData.append('customMessage', data.customMessage);
+      }
+      const response = await apiRequest3("POST", "/api/hiring-requests", formData);
+      return response;
+    },
     onSuccess: (data) => {
       toast({
         title: "Email Sent Successfully",
@@ -109,7 +118,7 @@ export default function HiringAnalytics() {
   });
 
   // Filter hiring requests
-  const filteredRequests = hiringRequests.filter((request: any) => {
+  const filteredRequests = (hiringRequests as any[])?.filter((request: any) => {
     const cityId = request.city_id || request.cityId;
     const roleId = request.role_id || request.roleId;
     return (
@@ -481,17 +490,6 @@ export default function HiringAnalytics() {
             <div className="flex-1">
               <Label>City</Label>
               <Select value={cityFilter} onValueChange={setCityFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
-                  {cities.map((city: any) => (
-                    <SelectItem key={city.id} value={city.id.toString()}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
               </Select>
             </div>
             <div className="flex-1">
@@ -502,7 +500,7 @@ export default function HiringAnalytics() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  {roles.map((role: any) => (
+                  {(roles as any[]).map((role: any) => (
                     <SelectItem key={role.id} value={role.id.toString()}>
                       {role.name}
                     </SelectItem>

@@ -28,7 +28,7 @@ export default function Dashboard() {
   });
 
   // Filter hiring requests based on selected city and priority
-  const filteredHiringRequests = hiringRequestsData?.filter((req: any) => {
+  const filteredHiringRequests = (hiringRequestsData as any[])?.filter((req: any) => {
     if (!selectedCity) return false; // No city selected
     const cityMatch = req.cityId === parseInt(selectedCity) && req.status === 'open';
     const priorityMatch = selectedPriority === 'all' || req.priority === selectedPriority;
@@ -45,7 +45,7 @@ export default function Dashboard() {
   const rolePositionsMap = new Map<number, Map<number, number>>();
 
   // Calculate positions for each role-cluster combination
-  rolesData?.forEach((role: any) => {
+  (rolesData as any[])?.forEach((role: any) => {
     const roleRequests = filteredHiringRequests.filter((req: any) => req.roleId === role.id);
     const clusterMap = new Map<number, number>();
     
@@ -72,7 +72,7 @@ export default function Dashboard() {
   );
 
   // Build final role-wise open positions data
-  const roleWiseOpenPositions = rolesData?.map((role: any) => {
+  const roleWiseOpenPositions = (rolesData as any[])?.map((role: any) => {
     const clusterMap = rolePositionsMap.get(role.id);
     if (!clusterMap) return null;
     
@@ -94,11 +94,10 @@ export default function Dashboard() {
 
   // Calculate metrics from hiring requests data (data is now in camelCase from API)
   const openPositions = hiringRequestsData && Array.isArray(hiringRequestsData) 
-    ? hiringRequestsData.filter((req: any) => req.status === 'open')
-        .reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)
+    ? hiringRequestsData.reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)
     : 0;
   
-  const totalRequests = hiringRequestsData?.length || 0;
+  const totalRequests = (hiringRequestsData as any[])?.length || 0;
   const closedPositions = hiringRequestsData && Array.isArray(hiringRequestsData)
     ? hiringRequestsData.filter((req: any) => req.status === 'closed')
         .reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)
@@ -215,7 +214,7 @@ export default function Dashboard() {
                   <SelectValue placeholder="Select a City" />
                 </SelectTrigger>
                 <SelectContent>
-                  {citiesData?.map((city: any) => (
+                  {(citiesData as any[])?.map((city: any) => (
                     <SelectItem key={city.id} value={city.id.toString()}>
                       {city.name}
                     </SelectItem>

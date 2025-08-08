@@ -5,18 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  TrendingUp, 
-  Users, 
-  Briefcase, 
-  Clock, 
-  ArrowUp, 
-  ArrowDown,
-  BarChart3,
-  PieChart,
-  Download,
-  Filter
-} from "lucide-react";
+import { TrendingUp, Users, Building, Calendar, BarChart3, Download, Filter } from "lucide-react";
 import { useState } from "react";
 
 export default function Analytics() {
@@ -34,11 +23,11 @@ export default function Analytics() {
   });
 
   const { data: vendorPerformance, isLoading: loadingVendors } = useQuery({
-    queryKey: ["/api/analytics/vendors"],
+    queryKey: ["/api/master-data/vendor"],
   });
 
   const { data: recruiterPerformance, isLoading: loadingRecruiters } = useQuery({
-    queryKey: ["/api/analytics/recruiters"],
+    queryKey: ["/api/master-data/recruiter"],
   });
 
   const { data: cities = [] } = useQuery({
@@ -155,11 +144,11 @@ export default function Analytics() {
                   <div>
                     <p className="text-slate-600 text-sm font-medium">Open Positions</p>
                     <p className="text-2xl font-bold text-slate-800 mt-1">
-                      {loadingHiring ? "..." : hiringAnalytics?.openPositions || 0}
+                      {loadingHiring ? "..." : (hiringAnalytics as any)?.openPositions || 0}
                     </p>
                   </div>
                   <div className="bg-blue-100 p-3 rounded-lg">
-                    <Briefcase className="text-blue-600 h-6 w-6" />
+                    <Building className="text-blue-600 h-6 w-6" />
                   </div>
                 </div>
               </CardContent>
@@ -172,7 +161,7 @@ export default function Analytics() {
                     <p className="text-slate-600 text-sm font-medium">Active Candidates</p>
                     <p className="text-2xl font-bold text-slate-800 mt-1">
                       {loadingPipeline ? "..." : 
-                        (pipeline?.applications + pipeline?.prescreening + pipeline?.technical) || 0}
+                        ((pipeline as any)?.applications || 0) + ((pipeline as any)?.prescreening || 0) + ((pipeline as any)?.technical || 0)}
                     </p>
                   </div>
                   <div className="bg-cyan-100 p-3 rounded-lg">
@@ -188,11 +177,11 @@ export default function Analytics() {
                   <div>
                     <p className="text-slate-600 text-sm font-medium">Closed Positions</p>
                     <p className="text-2xl font-bold text-slate-800 mt-1">
-                      {loadingHiring ? "..." : hiringAnalytics?.closedPositions || 0}
+                      {loadingHiring ? "..." : (hiringAnalytics as any)?.closedPositions || 0}
                     </p>
                   </div>
                   <div className="bg-amber-100 p-3 rounded-lg">
-                    <Clock className="text-amber-600 h-6 w-6" />
+                    <Calendar className="text-amber-600 h-6 w-6" />
                   </div>
                 </div>
               </CardContent>
@@ -204,7 +193,7 @@ export default function Analytics() {
                   <div>
                     <p className="text-slate-600 text-sm font-medium">Applications</p>
                     <p className="text-2xl font-bold text-slate-800 mt-1">
-                      {loadingPipeline ? "..." : pipeline?.applications || 0}
+                      {loadingPipeline ? "..." : (pipeline as any)?.applications || 0}
                     </p>
                   </div>
                   <div className="bg-green-100 p-3 rounded-lg">
@@ -234,7 +223,7 @@ export default function Analytics() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <PieChart className="h-5 w-5 mr-2" />
+                  <BarChart3 className="h-5 w-5 mr-2" />
                   Source Distribution
                 </CardTitle>
               </CardHeader>
@@ -255,19 +244,19 @@ export default function Analytics() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Applications</span>
-                  <span className="text-lg font-bold">{loadingPipeline ? "..." : pipeline?.applications || 0}</span>
+                  <span className="text-lg font-bold">{loadingPipeline ? "..." : (pipeline as any)?.applications || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Prescreening</span>
-                  <span className="text-lg font-bold">{loadingPipeline ? "..." : pipeline?.prescreening || 0}</span>
+                  <span className="text-lg font-bold">{loadingPipeline ? "..." : (pipeline as any)?.prescreening || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Technical</span>
-                  <span className="text-lg font-bold">{loadingPipeline ? "..." : pipeline?.technical || 0}</span>
+                  <span className="text-lg font-bold">{loadingPipeline ? "..." : (pipeline as any)?.technical || 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Selected</span>
-                  <span className="text-lg font-bold">{loadingPipeline ? "..." : pipeline?.selected || 0}</span>
+                  <span className="text-lg font-bold">{loadingPipeline ? "..." : (pipeline as any)?.selected || 0}</span>
                 </div>
               </div>
             </CardContent>
@@ -286,20 +275,18 @@ export default function Analytics() {
                   <div className="p-4 border border-slate-200 rounded-lg">
                     <div className="text-sm text-slate-600">Open Positions</div>
                     <div className="text-2xl font-bold text-slate-800 mt-1">
-                      {loadingHiring ? "..." : hiringAnalytics?.openPositions || 0}
+                      {loadingHiring ? "..." : (hiringAnalytics as any)?.openPositions || 0}
                     </div>
                   </div>
                   <div className="p-4 border border-slate-200 rounded-lg">
                     <div className="text-sm text-slate-600">Closed Positions</div>
                     <div className="text-2xl font-bold text-slate-800 mt-1">
-                      {loadingHiring ? "..." : hiringAnalytics?.closedPositions || 0}
+                      {loadingHiring ? "..." : (hiringAnalytics as any)?.closedPositions || 0}
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-
           </div>
         </TabsContent>
 
@@ -310,35 +297,35 @@ export default function Analytics() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {pipeline && (
+                {(pipeline as any) && (
                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div className="text-center">
                       <div className="bg-blue-100 p-4 rounded-lg mb-2">
-                        <div className="text-2xl font-bold text-blue-600">{pipeline.applications}</div>
+                        <div className="text-2xl font-bold">{(hiringAnalytics as any)?.openPositions || 0}</div>
                       </div>
-                      <div className="text-sm font-medium">Applications</div>
+                      <div className="text-sm text-muted-foreground">{(pipeline as any)?.applications || 0} total applications</div>
                     </div>
                     <div className="text-center">
                       <div className="bg-cyan-100 p-4 rounded-lg mb-2">
-                        <div className="text-2xl font-bold text-cyan-600">{pipeline.prescreening}</div>
+                        <div className="text-2xl font-bold text-cyan-600">{(pipeline as any)?.prescreening || 0}</div>
                       </div>
                       <div className="text-sm font-medium">Prescreening</div>
                     </div>
                     <div className="text-center">
                       <div className="bg-amber-100 p-4 rounded-lg mb-2">
-                        <div className="text-2xl font-bold text-amber-600">{pipeline.technical}</div>
+                        <div className="text-2xl font-bold text-amber-600">{(pipeline as any)?.technical || 0}</div>
                       </div>
                       <div className="text-sm font-medium">Technical</div>
                     </div>
                     <div className="text-center">
                       <div className="bg-green-100 p-4 rounded-lg mb-2">
-                        <div className="text-2xl font-bold text-green-600">{pipeline.selected}</div>
+                        <div className="text-2xl font-bold text-green-600">{(pipeline as any)?.selected || 0}</div>
                       </div>
                       <div className="text-sm font-medium">Selected</div>
                     </div>
                     <div className="text-center">
                       <div className="bg-purple-100 p-4 rounded-lg mb-2">
-                        <div className="text-2xl font-bold text-purple-600">{pipeline.onboarding}</div>
+                        <div className="text-2xl font-bold text-purple-600">{(pipeline as any)?.onboarding || 0}</div>
                       </div>
                       <div className="text-sm font-medium">Onboarding</div>
                     </div>
@@ -382,14 +369,14 @@ export default function Analytics() {
                         Loading vendor performance data...
                       </TableCell>
                     </TableRow>
-                  ) : vendors?.length === 0 ? (
+                  ) : (vendors as any[])?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
                         No vendor performance data available
                       </TableCell>
                     </TableRow>
                   ) : (
-                    vendors?.slice(0, 5).map((vendor: any) => (
+                    (vendors as any[])?.slice(0, 5).map((vendor: any) => (
                       <TableRow key={vendor.id}>
                         <TableCell className="font-medium">{vendor.name}</TableCell>
                         <TableCell>45</TableCell>
@@ -442,14 +429,14 @@ export default function Analytics() {
                         Loading recruiter performance data...
                       </TableCell>
                     </TableRow>
-                  ) : recruiters?.length === 0 ? (
+                  ) : (recruiters as any[])?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8">
                         No recruiter performance data available
                       </TableCell>
                     </TableRow>
                   ) : (
-                    recruiters?.slice(0, 5).map((recruiter: any) => (
+                    (recruiters as any[])?.slice(0, 5).map((recruiter: any) => (
                       <TableRow key={recruiter.id}>
                         <TableCell className="font-medium">{recruiter.name}</TableCell>
                         <TableCell>28</TableCell>

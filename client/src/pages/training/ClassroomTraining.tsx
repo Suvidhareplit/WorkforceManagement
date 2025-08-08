@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,9 +13,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest3, queryClient } from "@/lib/queryClient";
 import { TrainingSession } from "@/types";
-import { CalendarIcon, CheckCircle, XCircle, UserCheck, Clock, AlertTriangle } from "lucide-react";
+import { CalendarIcon, CheckCircle, UserCheck, Clock } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +39,7 @@ export default function ClassroomTraining() {
 
   const createClassroomTrainingMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/training", data);
+      return await apiRequest3("POST", "/api/training", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/training"] });
@@ -59,7 +59,7 @@ export default function ClassroomTraining() {
 
   const markAttendanceMutation = useMutation({
     mutationFn: async ({ sessionId, data }: { sessionId: number; data: any }) => {
-      return await apiRequest("POST", `/api/training/${sessionId}/attendance`, data);
+      return await apiRequest3("POST", `/api/training/${sessionId}/attendance`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/training"] });
@@ -82,7 +82,7 @@ export default function ClassroomTraining() {
 
   const updateFitnessMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return await apiRequest("PATCH", `/api/training/${id}/fitness`, data);
+      return await apiRequest3("PATCH", `/api/training/${id}/fitness`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/training"] });
@@ -210,14 +210,14 @@ export default function ClassroomTraining() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : completedInduction?.length === 0 ? (
+                ) : (completedInduction as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8">
                       No candidates ready for classroom training
                     </TableCell>
                   </TableRow>
                 ) : (
-                  completedInduction?.map((session: TrainingSession) => (
+                  (completedInduction as any[])?.map((session: TrainingSession) => (
                     <TableRow key={session.id}>
                       <TableCell className="font-medium">
                         {session.candidate?.name}
@@ -278,14 +278,14 @@ export default function ClassroomTraining() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : classroomSessions?.length === 0 ? (
+                ) : (classroomSessions as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
                       No classroom training sessions found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  classroomSessions?.map((session: TrainingSession) => (
+                  (classroomSessions as any[])?.map((session: TrainingSession) => (
                     <TableRow key={session.id}>
                       <TableCell className="font-medium">
                         {session.candidate?.name}
