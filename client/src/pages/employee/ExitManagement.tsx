@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Employee, ExitRecord } from "@/types";
-import { CalendarIcon, LogOut, FileText, DollarSign, CheckCircle, AlertTriangle, TrendingDown } from "lucide-react";
+import { CalendarIcon, LogOut, FileText, CheckCircle, AlertTriangle, TrendingDown } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -40,7 +40,7 @@ export default function ExitManagement() {
 
   const createExitMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/exit-records", data);
+      return await apiRequest("/api/exit-records", { method: "POST", body: data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/exit-records"] });
@@ -121,10 +121,10 @@ export default function ExitManagement() {
 
   // Mock analytics data - in real app this would come from API
   const exitAnalytics = {
-    totalExits: exitRecords?.length || 0,
-    voluntaryExits: exitRecords?.filter((exit: ExitRecord) => exit.exitType === 'voluntary').length || 0,
-    terminations: exitRecords?.filter((exit: ExitRecord) => exit.exitType === 'termination').length || 0,
-    absconding: exitRecords?.filter((exit: ExitRecord) => exit.exitType === 'absconding').length || 0,
+    totalExits: (exitRecords as any[])?.length || 0,
+    voluntaryExits: (exitRecords as any[])?.filter((exit: ExitRecord) => exit.exitType === 'voluntary').length || 0,
+    terminations: (exitRecords as any[])?.filter((exit: ExitRecord) => exit.exitType === 'termination').length || 0,
+    absconding: (exitRecords as any[])?.filter((exit: ExitRecord) => exit.exitType === 'absconding').length || 0,
   };
 
   return (
@@ -167,14 +167,14 @@ export default function ExitManagement() {
                         Loading...
                       </TableCell>
                     </TableRow>
-                  ) : activeEmployees?.length === 0 ? (
+                  ) : (activeEmployees as any[])?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8">
                         No active employees found
                       </TableCell>
                     </TableRow>
                   ) : (
-                    activeEmployees?.map((employee: Employee) => {
+                    (activeEmployees as any[])?.map((employee: Employee) => {
                       const tenure = employee.joinDate 
                         ? Math.floor((new Date().getTime() - new Date(employee.joinDate).getTime()) / (1000 * 60 * 60 * 24))
                         : 0;
@@ -382,14 +382,14 @@ export default function ExitManagement() {
                         Loading...
                       </TableCell>
                     </TableRow>
-                  ) : exitRecords?.length === 0 ? (
+                  ) : (exitRecords as any[])?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8">
                         No exit records found
                       </TableCell>
                     </TableRow>
                   ) : (
-                    exitRecords?.map((exit: ExitRecord) => (
+                    (exitRecords as any[])?.map((exit: ExitRecord) => (
                       <TableRow key={exit.id}>
                         <TableCell className="font-medium">
                           {/* This would need employee relation */}

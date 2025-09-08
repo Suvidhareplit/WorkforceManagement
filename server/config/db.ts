@@ -1,11 +1,8 @@
 import * as mysql from 'mysql2/promise';
 import * as dotenv from 'dotenv';
-import { join } from 'path';
 
 // Load environment variables from .env
-// Use process.cwd() for current working directory in Node.js
-const envPath = join(process.cwd(), '.env');
-dotenv.config({ path: envPath });
+dotenv.config();
 
 // Database configuration
 const dbConfig = {
@@ -16,7 +13,15 @@ const dbConfig = {
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  namedPlaceholders: true
+  namedPlaceholders: true,
+  // Connection keep-alive settings to prevent disconnections
+  acquireTimeout: 60000,
+  timeout: 60000,
+  reconnect: true,
+  idleTimeout: 300000, // 5 minutes
+  maxIdle: 10,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0
 };
 
 // Create a connection pool

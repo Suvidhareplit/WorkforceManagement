@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Filter, Send, Users, Building, MapPin } from "lucide-react";
-import { apiRequest, apiRequest3 } from "@/lib/queryClient";
+import { apiRequest3 } from "@/lib/queryClient";
 
 interface HiringRequest {
   id: number;
@@ -220,7 +220,8 @@ export default function HiringAnalytics() {
   };
 
   const handleSelectAllCityRows = (cityId: string) => {
-    const cityData = cityAnalytics[Object.keys(cityAnalytics).find(key => cityAnalytics[key].cityId.toString() === cityId)];
+    const cityKey = Object.keys(cityAnalytics as any).find(key => (cityAnalytics as any)[key].cityId.toString() === cityId);
+    const cityData = cityKey ? (cityAnalytics as any)[cityKey] : null;
     if (!cityData) return;
     
     const allRoleIds = Object.values(cityData.roles).map((role: any) => role.roleId.toString());
@@ -242,14 +243,14 @@ export default function HiringAnalytics() {
   };
 
   const getVendorsForCity = (cityId: string) => {
-    return vendors.filter((vendor: Vendor) => 
+    return (vendors as any[]).filter((vendor: any) => 
       vendor.citySpocData && vendor.citySpocData[parseInt(cityId)]
     );
   };
 
   const getAvailableVendorsForCity = () => {
-    if (!selectedCity) return vendors;
-    return vendors.filter((vendor: Vendor) => 
+    if (!selectedCity) return (vendors as any[]);
+    return (vendors as any[]).filter((vendor: any) => 
       vendor.citySpocData && vendor.citySpocData[parseInt(selectedCity)]
     );
   };
@@ -321,7 +322,7 @@ export default function HiringAnalytics() {
                         .filter((req: HiringRequest) => selectedRequests.includes(req.id))
                         .map((req: HiringRequest) => req.cityId)))
                         .map(cityId => {
-                          const city = cities.find((c: any) => c.id === cityId);
+                          const city = (cities as any[]).find((c: any) => c.id === cityId);
                           return city ? (
                             <SelectItem key={cityId} value={cityId.toString()}>
                               {city.name}
@@ -401,9 +402,9 @@ export default function HiringAnalytics() {
             <div className="p-4 bg-blue-50 rounded-lg">
               <h4 className="font-semibold text-blue-900 mb-2">Selected City:</h4>
               <p className="text-blue-800">
-                {selectedCityForEmail && Object.values(cityAnalytics).find((city: any) => 
+                {selectedCityForEmail && (Object.values(cityAnalytics as any).find((city: any) => 
                   city.cityId.toString() === selectedCityForEmail
-                )?.cityName}
+                ) as any)?.cityName}
               </p>
             </div>
 
@@ -411,16 +412,16 @@ export default function HiringAnalytics() {
               <h4 className="font-semibold text-gray-900 mb-2">Selected Roles:</h4>
               <div className="space-y-1">
                 {selectedCityForEmail && (selectedCityRows[selectedCityForEmail] || []).map((roleId: string) => {
-                  const cityData = Object.values(cityAnalytics).find((city: any) => 
+                  const cityData = Object.values(cityAnalytics as any).find((city: any) => 
                     city.cityId.toString() === selectedCityForEmail
                   );
-                  const roleData = cityData && Object.values(cityData.roles).find((role: any) => 
+                  const roleData = cityData && Object.values((cityData as any).roles).find((role: any) => 
                     role.roleId.toString() === roleId
                   );
                   return (
                     <div key={roleId} className="flex justify-between">
-                      <span>{roleData?.roleName}</span>
-                      <span className="font-semibold">{roleData?.totalOpenPositions} positions</span>
+                      <span>{(roleData as any)?.roleName}</span>
+                      <span className="font-semibold">{(roleData as any)?.totalOpenPositions} positions</span>
                     </div>
                   );
                 })}

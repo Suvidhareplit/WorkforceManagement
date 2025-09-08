@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
+
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,18 +24,21 @@ export default function TechnicalRound() {
   });
 
   // Filter only candidates who passed prescreening (benchmarkMet = true and status = 'technical')
-  const technicalCandidates = allCandidates?.filter((candidate: any) => 
+  const technicalCandidates = (allCandidates as any[])?.filter((candidate: any) => 
     candidate.status === 'technical' && candidate.benchmarkMet === true
   );
 
   const updateTechnicalMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: number; status: string; notes: string }) => {
-      return await apiRequest("PATCH", `/api/interviews/candidates/${id}/technical`, {
-        status,
-        notes,
+      return await apiRequest(`/api/interviews/candidates/${id}/technical`, {
+        method: "PATCH",
+        body: {
+          status,
+          notes,
+        }
       });
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       // Clear state for this specific candidate
       setCandidateStatuses(prev => {
         const newState = { ...prev };
@@ -177,9 +180,9 @@ export default function TechnicalRound() {
                   technicalCandidates.map((candidate: Candidate) => (
                     <TableRow key={candidate.id}>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
-                      <TableCell>{candidate.city}</TableCell>
-                      <TableCell>{candidate.role}</TableCell>
-                      <TableCell>{candidate.cluster}</TableCell>
+                      <TableCell>{(candidate as any).city?.name || candidate.city}</TableCell>
+                      <TableCell>{(candidate as any).role?.name || candidate.role}</TableCell>
+                      <TableCell>{(candidate as any).cluster?.name || candidate.cluster}</TableCell>
                       <TableCell>
                         <Select
                           value={candidateStatuses[candidate.id] || ""}

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+// import { useQuery } from "@tanstack/react-query"; // Removed - no API calls on dashboard load
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,21 +11,15 @@ export default function Dashboard() {
   const [selectedCity, setSelectedCity] = useState<string>("3"); // Default to Bangalore
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
 
-  const { data: hiringRequestsData, isLoading: loadingHiring } = useQuery({
-    queryKey: ["/api/analytics/hiring"],
-  });
+  console.log('🏠 Dashboard component rendering...');
 
-  const { data: rolesData } = useQuery({
-    queryKey: ["/api/master-data/role"],
-  });
-
-  const { data: citiesData } = useQuery({
-    queryKey: ["/api/master-data/city"],
-  });
-
-  const { data: clustersData } = useQuery({
-    queryKey: ["/api/master-data/cluster"],
-  });
+  // NO API CALLS ON DASHBOARD LOAD - Keep it simple
+  // Data will be loaded only when user navigates to specific pages
+  const citiesData: any[] = [];
+  const hiringRequestsData: any[] = [];
+  const rolesData: any[] = [];
+  const clustersData: any[] = [];
+  const loadingHiring = false;
 
   // Filter hiring requests based on selected city and priority
   const filteredHiringRequests = (hiringRequestsData as any[])?.filter((req: any) => {
@@ -37,7 +31,7 @@ export default function Dashboard() {
 
   // Get clusters for selected city
   const allClusters = selectedCity 
-    ? clustersData?.filter((cluster: any) => cluster.cityId === parseInt(selectedCity)) || []
+    ? (clustersData as any[])?.filter((cluster: any) => cluster.cityId === parseInt(selectedCity)) || []
     : [];
 
   // First pass: identify which clusters have open positions
@@ -97,7 +91,6 @@ export default function Dashboard() {
     ? hiringRequestsData.reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)
     : 0;
   
-  const totalRequests = (hiringRequestsData as any[])?.length || 0;
   const closedPositions = hiringRequestsData && Array.isArray(hiringRequestsData)
     ? hiringRequestsData.filter((req: any) => req.status === 'closed')
         .reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)

@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
-import { CheckCircle, XCircle, Eye, FileText, Calendar, MapPin, Building2 } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Prescreening() {
@@ -36,21 +36,23 @@ export default function Prescreening() {
   });
 
   // Filter clusters based on selected city
-  const clusters = allClusters?.filter((cluster: any) => {
+  const clusters = (allClusters as any[])?.filter((cluster: any) => {
     if (!cityFilter || cityFilter === "all") return true;
-    const selectedCity = cities?.find((city: any) => city.name === cityFilter);
+    const selectedCity = (cities as any[])?.find((city: any) => city.name === cityFilter);
     return selectedCity && cluster.city_id === selectedCity.id;
   });
 
   const updatePrescreeningMutation = useMutation({
     mutationFn: async ({ id, marks, notes }: { id: number; marks: number; notes: string }) => {
       const benchmarkMet = marks >= 7;
-      const status = benchmarkMet ? 'technical' : 'rejected';
       
-      return await apiRequest("PATCH", `/api/interviews/candidates/${id}/screening`, {
-        score: marks,
-        benchmarkMet,
-        notes,
+      return await apiRequest(`/api/interviews/candidates/${id}/screening`, {
+        method: "PATCH",
+        body: {
+          score: marks,
+          benchmarkMet,
+          notes,
+        }
       });
     },
     onSuccess: () => {
@@ -93,7 +95,7 @@ export default function Prescreening() {
   };
 
   // Filter candidates to show only prescreening status and also those who were prescreened (both passed and failed)
-  const filteredCandidates = candidates?.filter((candidate: any) => {
+  const filteredCandidates = (candidates as any[])?.filter((candidate: any) => {
     const isPrescreeningOrScreened = candidate.status === 'prescreening' || 
       candidate.status === 'technical' || 
       (candidate.status === 'rejected' && candidate.prescreeningScore !== null);
@@ -124,7 +126,7 @@ export default function Prescreening() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Cities</SelectItem>
-              {cities?.map((city: any) => (
+              {(cities as any[])?.map((city: any) => (
                 <SelectItem key={city.id} value={city.name}>
                   {city.name}
                 </SelectItem>

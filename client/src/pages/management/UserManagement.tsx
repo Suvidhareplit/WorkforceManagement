@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { User, CreateUserInput } from "@/types/api";
+import { User } from "@/types/api";
 import { apiRequest } from "@/lib/queryClient";
 import { Users, Plus, Upload, Search, FileText } from "lucide-react";
 
@@ -19,7 +19,7 @@ interface UserFormData {
   name: string;
   phone: string;
   email: string;
-  userId: string;
+  userId: number;
   role: string;
   managerId?: number | null;
   cityId?: number | null;
@@ -41,7 +41,7 @@ export default function UserManagement() {
     name: "",
     phone: "",
     email: "",
-    userId: "",
+    userId: 0,
     role: "hr",
     managerId: null,
     cityId: null,
@@ -120,36 +120,14 @@ export default function UserManagement() {
     },
   });
 
-  // Update user mutation
-  const updateUserMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<UserFormData> }) =>
-      apiRequest(`/api/users/${id}`, {
-        method: "PUT",
-        body: data,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
-      setSelectedUser(null);
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update user",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   const resetForm = () => {
     setFormData({
       name: "",
       phone: "",
       email: "",
-      userId: "",
+      userId: 0,
       role: "hr",
       managerId: null,
       cityId: null,
@@ -174,7 +152,7 @@ export default function UserManagement() {
       errors.push("Please enter a valid email address");
     }
     
-    if (!formData.userId || !/^\d+$/.test(formData.userId)) {
+    if (!formData.userId || !/^\d+$/.test(formData.userId.toString())) {
       errors.push("User ID must be numeric only");
     }
     
@@ -195,10 +173,9 @@ export default function UserManagement() {
       return;
     }
     
-    // Convert userId to number before sending to API
+    // userId is already a number, no conversion needed
     const userData = {
-      ...formData,
-      userId: parseInt(formData.userId, 10)
+      ...formData
     };
     createUserMutation.mutate(userData);
   };
@@ -248,7 +225,7 @@ export default function UserManagement() {
   const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.userId.toLowerCase().includes(searchTerm.toLowerCase())
+    user.userId.toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getRoleBadgeColor = (role: string) => {
@@ -375,15 +352,15 @@ export default function UserManagement() {
                   <Label htmlFor="userId">User ID (numeric)</Label>
                   <Input
                     id="userId"
-                    value={formData.userId}
+                    value={formData.userId.toString()}
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
-                      setFormData(prev => ({ ...prev, userId: value }));
+                      setFormData(prev => ({ ...prev, userId: parseInt(value) || 0 }));
                     }}
                     placeholder="12345"
                     pattern="[0-9]+"
                   />
-                  {formData.userId && !/^\d+$/.test(formData.userId) && (
+                  {formData.userId && !/^\d+$/.test(formData.userId.toString()) && (
                     <p className="text-sm text-red-500 mt-1">User ID must be numeric only</p>
                   )}
                 </div>
@@ -647,10 +624,10 @@ function UserAuditTrail({ userId }: { userId: number }) {
 
   return (
     <div className="space-y-2">
-      {auditTrail.length === 0 ? (
+      {(auditTrail as any[]).length === 0 ? (
         <p className="text-gray-500 text-center py-4">No audit trail available</p>
       ) : (
-        auditTrail.map((entry: any, index: number) => (
+        (auditTrail as any[]).map((entry: any, index: number) => (
           <div key={index} className="border rounded p-3 space-y-1">
             <div className="flex justify-between items-start">
               <span className="font-medium">{entry.action}</span>

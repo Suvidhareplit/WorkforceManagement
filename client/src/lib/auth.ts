@@ -35,6 +35,20 @@ const authApiClient = axios.create({
   },
 });
 
+// Request interceptor to add auth token
+authApiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Response interceptor for auth
 authApiClient.interceptors.response.use(
   (response) => response,
@@ -64,11 +78,14 @@ export class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await authApiClient.post("/auth/login", credentials);
     
-    if (response.data.token) {
-      this.setToken(response.data.token);
+    // Handle the nested response structure: { success: true, data: { token, user }, message }
+    const authData = response.data.data;
+    
+    if (authData.token) {
+      this.setToken(authData.token);
     }
     
-    return response.data;
+    return authData;
   }
 
   async register(userData: RegisterData): Promise<AuthResponse> {
@@ -78,12 +95,17 @@ export class AuthService {
 
   async getCurrentUser() {
     try {
-      const token = this.getToken();
-      const response = await authApiClient.get("/auth/me", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return response.data;
+      console.log('🔍 Fetching current user from API...');
+      const response = await authApiClient.get("/auth/me");
+      console.log('📡 API Response:', response.data);
+      
+      // Handle the nested response structure: { success: true, data: user, message }
+      const userData = response.data.data;
+      console.log('👤 User data extracted:', userData);
+      
+      return { user: userData };
     } catch (error) {
+      console.error('❌ getCurrentUser failed:', error);
       this.removeToken();
       throw error;
     }
@@ -107,22 +129,40 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     const token = this.getToken();
-    if (!token) return false;
+    console.log('🔐 Checking authentication, token exists:', !!token);
+    
+    if (!token) {
+      console.log('❌ No token found');
+      return false;
+    }
     
     try {
       // Check if token is expired by parsing the JWT payload
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Date.now() / 1000;
-      
-      if (payload.exp && payload.exp < currentTime) {
-        // Token is expired, remove it
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        console.log('❌ Invalid token format');
         this.removeToken();
         return false;
       }
       
+      const payload = JSON.parse(atob(parts[1]));
+      const currentTime = Date.now() / 1000;
+      
+      console.log('🕰️ Token expires at:', new Date(payload.exp * 1000).toLocaleString());
+      console.log('🕰️ Current time:', new Date().toLocaleString());
+      
+      if (payload.exp && payload.exp < currentTime) {
+        // Token is expired, remove it
+        console.log('❌ Token is expired');
+        this.removeToken();
+        return false;
+      }
+      
+      console.log('✅ Token is valid');
       return true;
     } catch (error) {
       // Invalid token format, remove it
+      console.error('❌ Token validation error:', error);
       this.removeToken();
       return false;
     }

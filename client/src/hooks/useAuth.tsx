@@ -14,26 +14,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const initAuth = async () => {
-      if (authService.isAuthenticated()) {
-        try {
-          const data = await authService.getCurrentUser();
-          setUser({
-            id: data.user.id,
-            userId: data.user.userId,
-            email: data.user.email,
-            name: data.user.name,
-            phone: data.user.phone || '',
-            role: data.user.role,
-            createdAt: data.user.createdAt || new Date().toISOString(),
-            updatedAt: data.user.updatedAt || new Date().toISOString(),
-          });
-        } catch (error) {
-          console.error('Failed to get current user:', error);
-          authService.logout();
+      console.log('🔄 Initializing auth state...');
+      
+      try {
+        // Check if we have a token first
+        const token = authService.getToken();
+        console.log('🔑 Token exists:', !!token);
+        
+        if (token && authService.isAuthenticated()) {
+          console.log('✅ Token is valid - but NOT calling /auth/me automatically');
+          // Don't automatically fetch user data - let login handle it
+          // This prevents unnecessary API calls on page load
+          setUser(null); // Will be set by login function
+        } else {
+          console.log('❌ No valid token found');
           setUser(null);
         }
+      } catch (error) {
+        console.error('❌ Auth initialization error:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+        console.log('🏁 Auth initialization complete, isLoading set to false');
       }
-      setIsLoading(false);
     };
 
     initAuth();

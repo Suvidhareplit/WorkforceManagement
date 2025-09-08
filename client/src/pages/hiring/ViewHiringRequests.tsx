@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 // Removed HiringRequest import since backend returns snake_case fields
 import { Link } from "wouter";
-import { Plus, Filter, Search, Download, Eye, Edit, X } from "lucide-react";
+import { Plus, Filter, Search, Download, Eye } from "lucide-react";
 
 export default function ViewHiringRequests() {
   const [filters, setFilters] = useState({
@@ -23,7 +23,7 @@ export default function ViewHiringRequests() {
   });
   const { toast } = useToast();
 
-  const { data: requests, isLoading, error } = useQuery({
+  const { data: requests, isLoading } = useQuery({
     queryKey: ["/api/hiring"],
     retry: 1,
   });

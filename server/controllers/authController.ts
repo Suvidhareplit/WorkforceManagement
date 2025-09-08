@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { BaseController } from './base/BaseController';
 import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 
 interface AuthenticatedRequest extends Request {
@@ -61,13 +61,13 @@ export class AuthController extends BaseController {
       }
 
       // Check if user is active
-      if (!user.isActive) {
+      if (!user.is_active) {
         this.sendError(res, 'Account is deactivated', 401);
         return;
       }
 
       // Verify password
-      const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+      const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
         this.sendError(res, 'Invalid credentials', 401);
         return;

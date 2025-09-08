@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
@@ -57,7 +57,7 @@ interface ValidatedRow {
 function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast }: any) {
   const [file, setFile] = useState<File | null>(null);
   const [validatedData, setValidatedData] = useState<ValidatedRow[]>([]);
-  const [editingRow, setEditingRow] = useState<number | null>(null);
+
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [summary, setSummary] = useState<{
@@ -176,7 +176,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           variant: "destructive",
         });
         // Log which rows have errors for debugging
-        console.log('Rows with errors:', processedData.filter(row => row.errors.length > 0).map(row => ({
+        console.log('Rows with errors:', processedData.filter((row: any) => row.errors.length > 0).map((row: any) => ({
           row: row.row,
           name: row.name,
           errors: row.errors
@@ -278,7 +278,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
           if (!row.sourceName) {
             errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Referral name is required when source is referral' });
           } else {
-            row.referralName = row.sourceName;
+            (row as any).referralName = row.sourceName;
           }
         }
         break;
@@ -548,7 +548,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                             </SelectTrigger>
                             <SelectContent>
                               {clusters
-                                ?.filter((cl: any) => cl.cityId === row.cityId)
+                                ?.filter((cl: any) => cl.cityId === (row as any).cityId)
                                 .map((cluster: any) => (
                                   <SelectItem key={cluster.id} value={cluster.name}>
                                     {cluster.name}
@@ -716,11 +716,11 @@ export default function CandidateApplication() {
   const createCandidateMutation = useMutation({
     mutationFn: async (data: any) => {
       // Find the names based on IDs
-      const roleName = roles?.find(r => r.id === parseInt(data.roleId))?.name || '';
-      const cityName = cities?.find(c => c.id === parseInt(data.cityId))?.name || '';
-      const clusterName = clusters?.find(c => c.id === parseInt(data.clusterId))?.name || '';
-      const vendorName = data.vendorId ? vendors?.find(v => v.id === parseInt(data.vendorId))?.name : undefined;
-      const recruiterName = data.recruiterId ? recruiters?.find(r => r.id === parseInt(data.recruiterId))?.name : undefined;
+      const roleName = (roles as any[])?.find((r: any) => r.id === parseInt(data.roleId))?.name || '';
+      const cityName = (cities as any[])?.find((c: any) => c.id === parseInt(data.cityId))?.name || '';
+      const clusterName = (clusters as any[])?.find((c: any) => c.id === parseInt(data.clusterId))?.name || '';
+      const vendorName = data.vendorId ? (vendors as any[])?.find((v: any) => v.id === parseInt(data.vendorId))?.name : undefined;
+      const recruiterName = data.recruiterId ? (recruiters as any[])?.find((r: any) => r.id === parseInt(data.recruiterId))?.name : undefined;
 
       const payload: any = {
         name: data.name,
@@ -737,7 +737,7 @@ export default function CandidateApplication() {
       if (recruiterName) payload.recruiter = recruiterName;
       if (data.referralName) payload.referralName = data.referralName;
 
-      return await apiRequest("POST", "/api/interviews/candidates", payload);
+      return await apiRequest("/api/interviews/candidates", { method: "POST", body: payload });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
@@ -823,8 +823,9 @@ export default function CandidateApplication() {
     try {
       // Update all selected candidates to prescreening status
       const updatePromises = selectedCandidates.map(candidateId => 
-        apiRequest("PATCH", `/api/interviews/candidates/${candidateId}`, {
-          status: 'prescreening'
+        apiRequest(`/api/interviews/candidates/${candidateId}`, {
+          method: "PATCH",
+          body: { status: 'prescreening' }
         })
       );
       
@@ -1190,7 +1191,7 @@ export default function CandidateApplication() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Cities</SelectItem>
-                  {cities?.map((city: any) => (
+                  {(cities as any[])?.map((city: any) => (
                     <SelectItem key={city.id} value={city.name}>
                       {city.name}
                     </SelectItem>
@@ -1207,9 +1208,9 @@ export default function CandidateApplication() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Clusters</SelectItem>
-                  {clusters?.filter((cluster: any) => {
+                  {(clusters as any[])?.filter((cluster: any) => {
                     if (!cityFilter || cityFilter === "all") return true;
-                    const selectedCity = cities?.find((city: any) => city.name === cityFilter);
+                    const selectedCity = (cities as any[])?.find((city: any) => city.name === cityFilter);
                     return selectedCity && cluster.city_id === selectedCity.id;
                   }).map((cluster: any) => (
                     <SelectItem key={cluster.id} value={cluster.name}>
@@ -1262,10 +1263,10 @@ export default function CandidateApplication() {
                 <TableRow>
                   <TableHead className="w-[50px]">
                     <Checkbox 
-                      checked={candidates?.length > 0 && selectedCandidates.length === candidates?.filter(c => c.status === 'applied').length}
+                      checked={(candidates as any[])?.length > 0 && selectedCandidates.length === (candidates as any[])?.filter((c: any) => c.status === 'applied').length}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setSelectedCandidates(candidates?.filter(c => c.status === 'applied').map(c => c.id) || []);
+                          setSelectedCandidates((candidates as any[])?.filter((c: any) => c.status === 'applied').map((c: any) => c.id) || []);
                         } else {
                           setSelectedCandidates([]);
                         }
@@ -1290,14 +1291,14 @@ export default function CandidateApplication() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : candidates?.length === 0 ? (
+                ) : (candidates as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center py-8">
                       No candidates found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  candidates?.filter((candidate: any) => {
+                  (candidates as any[])?.filter((candidate: any) => {
                     if (cityFilter && cityFilter !== "all" && candidate.city !== cityFilter) return false;
                     if (clusterFilter && clusterFilter !== "all" && candidate.cluster !== clusterFilter) return false;
                     if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;

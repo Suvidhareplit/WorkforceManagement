@@ -32,12 +32,12 @@ const upload = multer({
 const router = Router();
 
 // Public endpoints for dropdowns - Simplified Centralized API
-router.get('/city', masterDataController.getCities);
-router.get('/city/:cityId/clusters', masterDataController.getClustersByCity);
-router.get('/cluster', masterDataController.getClusters);
-router.get('/role', masterDataController.getRoles);
-router.get('/vendor', masterDataController.getVendors);
-router.get('/recruiter', masterDataController.getRecruiters);
+router.get('/city', masterDataController.getCities.bind(masterDataController));
+router.get('/city/:cityId/clusters', masterDataController.getClustersByCity.bind(masterDataController));
+router.get('/cluster', masterDataController.getClusters.bind(masterDataController));
+router.get('/role', masterDataController.getRoles.bind(masterDataController));
+router.get('/vendor', masterDataController.getVendors.bind(masterDataController));
+router.get('/recruiter', masterDataController.getRecruiters.bind(masterDataController));
 
 // File serving route
 router.get('/files/:filename', (req, res) => {
@@ -50,24 +50,24 @@ router.get('/files/:filename', (req, res) => {
 router.use(authenticate);
 
 // Create master data
-router.post('/city', masterDataController.createCity);
-router.post('/cluster', masterDataController.createCluster);
-router.post('/role', upload.single('jobDescriptionFile'), masterDataController.createRole);
-router.post('/vendor', masterDataController.createVendor);
-router.post('/recruiter', masterDataController.createRecruiter);
+router.post('/city', masterDataController.createCity.bind(masterDataController));
+router.post('/cluster', masterDataController.createCluster.bind(masterDataController));
+router.post('/role', upload.single('jobDescriptionFile'), masterDataController.createRole.bind(masterDataController));
+router.post('/vendor', masterDataController.createVendor.bind(masterDataController));
+router.post('/recruiter', masterDataController.createRecruiter.bind(masterDataController));
 
 // Toggle status for master data (Active/Inactive)
-router.patch('/city/:id/toggle-status', masterDataController.toggleCityStatus);
-router.patch('/cluster/:id/toggle-status', masterDataController.toggleClusterStatus);
-router.patch('/role/:id/toggle-status', masterDataController.toggleRoleStatus);
-router.patch('/vendor/:id/toggle-status', masterDataController.toggleVendorStatus);
-router.patch('/recruiter/:id/toggle-status', masterDataController.toggleRecruiterStatus);
+router.patch('/city/:id/toggle-status', masterDataController.toggleCityStatus.bind(masterDataController));
+router.patch('/cluster/:id/toggle-status', masterDataController.toggleClusterStatus.bind(masterDataController));
+router.patch('/role/:id/toggle-status', masterDataController.toggleRoleStatus.bind(masterDataController));
+router.patch('/vendor/:id/toggle-status', masterDataController.toggleVendorStatus.bind(masterDataController));
+router.patch('/recruiter/:id/toggle-status', masterDataController.toggleRecruiterStatus.bind(masterDataController));
 
 // Edit master data
-router.patch('/city/:id', masterDataController.updateCity);
-router.patch('/cluster/:id', masterDataController.updateCluster);
-router.patch('/role/:id', upload.single('jobDescriptionFile'), masterDataController.updateRole);
-router.patch('/vendor/:id', masterDataController.updateVendor);
-router.patch('/recruiter/:id', masterDataController.updateRecruiter);
+router.patch('/city/:id', masterDataController.updateCity.bind(masterDataController));
+router.patch('/cluster/:id', masterDataController.updateCluster.bind(masterDataController));
+router.patch('/role/:id', upload.single('jobDescriptionFile'), masterDataController.updateRole.bind(masterDataController));
+router.patch('/vendor/:id', masterDataController.updateVendor.bind(masterDataController));
+router.patch('/recruiter/:id', masterDataController.updateRecruiter.bind(masterDataController));
 
 export { router as masterDataRoutes };

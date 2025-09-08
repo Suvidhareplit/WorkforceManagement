@@ -16,7 +16,6 @@ import {
   UserCheck,
   LogOut,
   Database,
-  Upload,
 } from "lucide-react";
 
 const menuItems = [

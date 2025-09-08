@@ -83,7 +83,8 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     try {
       const response = await apiClient.get(queryKey.join("/") as string);
-      return response.data;
+      // Extract data from the backend envelope structure { success, data, message }
+      return response.data?.data || response.data;
     } catch (error: any) {
       if (unauthorizedBehavior === "returnNull" && error.response?.status === 401) {
         return null;

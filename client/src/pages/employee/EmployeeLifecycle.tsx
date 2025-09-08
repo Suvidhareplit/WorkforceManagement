@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,48 +19,6 @@ export default function EmployeeLifecycle() {
     queryKey: ["/api/employees/actions", { status: "pending" }],
   });
 
-  const createEmployeeMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest3("POST", "/api/employees", data);
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
-      toast({
-        title: "Success",
-        description: "Employee record created successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: "Failed to create employee record",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const createActionMutation = useMutation({
-    mutationFn: async ({ employeeId, data }: { employeeId: number; data: any }) => {
-      return await apiRequest3("POST", `/api/employees/${employeeId}/actions`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/employees/actions"] });
-      toast({
-        title: "Success",
-        description: "Employee action submitted for approval",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: "Failed to submit employee action",
-        variant: "destructive",
-      });
-    },
-  });
-
   const approveActionMutation = useMutation({
     mutationFn: async ({ actionId, status }: { actionId: number; status: string }) => {
       return await apiRequest3("PUT", `/api/employees/actions/${actionId}`, { status });
@@ -72,7 +30,7 @@ export default function EmployeeLifecycle() {
         description: "Action updated successfully",
       });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to update action",

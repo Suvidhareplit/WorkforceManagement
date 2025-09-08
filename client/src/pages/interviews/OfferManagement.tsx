@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
-import { CalendarIcon, Send, Eye, FileText } from "lucide-react";
+import { CalendarIcon, Send } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -32,9 +32,12 @@ export default function OfferManagement() {
 
   const updateOfferMutation = useMutation({
     mutationFn: async ({ id, dateOfJoining, grossSalary }: { id: number; dateOfJoining: string; grossSalary: string }) => {
-      return await apiRequest("PATCH", `/api/interviews/candidates/${id}/offer`, {
-        dateOfJoining,
-        grossSalary,
+      return await apiRequest(`/api/interviews/candidates/${id}/offer`, {
+        method: "PATCH",
+        body: {
+          dateOfJoining,
+          grossSalary,
+        }
       });
     },
     onSuccess: () => {
@@ -120,14 +123,14 @@ export default function OfferManagement() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : selectedCandidates?.length === 0 ? (
+                ) : (selectedCandidates as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
                       No selected candidates awaiting offers
                     </TableCell>
                   </TableRow>
                 ) : (
-                  selectedCandidates?.map((candidate: Candidate) => (
+                  (selectedCandidates as any[])?.map((candidate: any) => (
                     <TableRow key={candidate.id}>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.role?.name}</TableCell>
@@ -291,14 +294,14 @@ export default function OfferManagement() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : offeredCandidates?.length === 0 ? (
+                ) : (offeredCandidates as any[])?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8">
                       No offered candidates
                     </TableCell>
                   </TableRow>
                 ) : (
-                  offeredCandidates?.map((candidate: Candidate) => (
+                  (offeredCandidates as any[])?.map((candidate: any) => (
                     <TableRow key={candidate.id}>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.role?.name}</TableCell>

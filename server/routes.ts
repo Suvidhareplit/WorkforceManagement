@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import cors from 'cors';
 import { authRoutes } from "./routes/authRoutes";
 import { hiringRoutes } from "./routes/hiringRoutes";
 import { interviewRoutes } from "./routes/interviewRoutes";
@@ -10,6 +11,15 @@ import { masterDataRoutes } from "./routes/masterDataRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure CORS for authentication state persistence
+  app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Authorization']
+  }));
+
   // Register all route modules
   app.use('/api/auth', authRoutes);
   app.use('/api/hiring', hiringRoutes);

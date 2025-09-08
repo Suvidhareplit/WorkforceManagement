@@ -8,17 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { City, Cluster, Role, Vendor, Recruiter } from "@/types";
-import { Plus, MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye } from "lucide-react";
+import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye } from "lucide-react";
 
 export default function MasterData() {
-  const [selectedCityId, setSelectedCityId] = useState("");
+
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editType, setEditType] = useState<string>("");
   const [vendorDetailsOpen, setVendorDetailsOpen] = useState(false);
@@ -254,13 +254,13 @@ export default function MasterData() {
     
     // Reset city-specific SPOC data
     safeCities.forEach((city: City) => {
-      newFormData[`citySpoc_${city.id}_name`] = "";
-      newFormData[`citySpoc_${city.id}_email`] = "";
-      newFormData[`citySpoc_${city.id}_phone`] = "";
+      (newFormData as any)[`citySpoc_${city.id}_name`] = "";
+      (newFormData as any)[`citySpoc_${city.id}_email`] = "";
+      (newFormData as any)[`citySpoc_${city.id}_phone`] = "";
     });
     
     setFormData(newFormData);
-    setSelectedCityId("");
+
   };
 
   const handleCreateCity = () => {
@@ -338,12 +338,12 @@ export default function MasterData() {
     // Collect city-specific SPOC data
     const citySpocData = {};
     safeCities.forEach((city: City) => {
-      const name = formData[`citySpoc_${city.id}_name`];
-      const email = formData[`citySpoc_${city.id}_email`];
-      const phone = formData[`citySpoc_${city.id}_phone`];
+      const name = (formData as any)[`citySpoc_${city.id}_name`];
+      const email = (formData as any)[`citySpoc_${city.id}_email`];
+      const phone = (formData as any)[`citySpoc_${city.id}_phone`];
       
       if (name || email || phone) {
-        citySpocData[city.id] = {
+        (citySpocData as any)[city.id] = {
           name: name || "",
           email: email || "",
           phone: phone || "",
@@ -411,7 +411,7 @@ export default function MasterData() {
       replacementPeriod: "",
       incentiveStructure: "",
       cityId: "1",
-    });
+    } as any);
   };
 
   const handleSaveEdit = async () => {
@@ -452,9 +452,9 @@ export default function MasterData() {
             deliveryLeadName: editFormData.deliveryLeadName,
             deliveryLeadEmail: editFormData.deliveryLeadEmail,
             deliveryLeadPhone: editFormData.deliveryLeadPhone,
-            cityRecruitmentSpocName: editFormData.cityRecruitmentSpocName,
-            cityRecruitmentSpocEmail: editFormData.cityRecruitmentSpocEmail,
-            cityRecruitmentSpocPhone: editFormData.cityRecruitmentSpocPhone,
+            cityRecruitmentSpocName: (editFormData as any).cityRecruitmentSpocName,
+            cityRecruitmentSpocEmail: (editFormData as any).cityRecruitmentSpocEmail,
+            cityRecruitmentSpocPhone: (editFormData as any).cityRecruitmentSpocPhone,
             businessHeadName: editFormData.businessHeadName,
             businessHeadEmail: editFormData.businessHeadEmail,
             businessHeadPhone: editFormData.businessHeadPhone,
@@ -465,7 +465,7 @@ export default function MasterData() {
           ...(editType === 'recruiter' && { 
             email: editFormData.email,
             phone: editFormData.phone,
-            incentiveStructure: editFormData.incentiveStructure
+            incentiveStructure: (editFormData as any).incentiveStructure
           }),
           ...(editType === 'cluster' && { cityId: parseInt(editFormData.cityId) })
         };
@@ -496,7 +496,7 @@ export default function MasterData() {
         incentiveStructure: "",
         cityId: "1",
         jobDescriptionFile: null,
-      });
+      } as any);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -539,7 +539,7 @@ export default function MasterData() {
       replacementPeriod: "",
       incentiveStructure: "",
       cityId: cluster.cityId.toString(),
-    });
+    } as any);
   };
 
   const handleToggleClusterStatus = async (id: number, currentStatus: boolean) => {
@@ -576,7 +576,7 @@ export default function MasterData() {
       incentiveStructure: "",
       cityId: "1",
       jobDescriptionFile: null,
-    });
+    } as any);
   };
 
   const handleToggleRoleStatus = async (id: number, currentStatus: boolean) => {
@@ -614,7 +614,7 @@ export default function MasterData() {
       phone: vendor.phone || "",
       contactPerson: vendor.contactPerson || "",
       commercialTerms: vendor.commercialTerms || "",
-      replacementPeriod: vendor.replacementPeriod?.toString() || "",
+      replacementPeriod: (vendor as any).replacementPeriod?.toString() || "",
       incentiveStructure: "",
       cityId: "1",
       jobDescriptionFile: null,
@@ -633,7 +633,7 @@ export default function MasterData() {
       payrollSpocName: vendor.payrollSpocName || "",
       payrollSpocEmail: vendor.payrollSpocEmail || "",
       payrollSpocPhone: vendor.payrollSpocPhone || "",
-    });
+    } as any);
   };
 
   const handleToggleVendorStatus = async (id: number, currentStatus: boolean) => {
@@ -669,7 +669,7 @@ export default function MasterData() {
       replacementPeriod: "",
       cityId: recruiter.cityId?.toString() || "1",
       jobDescriptionFile: null,
-    });
+    } as any);
   };
 
   const handleToggleRecruiterStatus = async (id: number, currentStatus: boolean) => {
@@ -752,7 +752,7 @@ export default function MasterData() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {new Date(city.createdAt).toLocaleDateString()}
+                            {new Date((city as any).createdAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-3">
@@ -984,12 +984,12 @@ export default function MasterData() {
                             <TableCell className="font-medium">{role.name}</TableCell>
                             <TableCell className="font-mono">{role.code}</TableCell>
                             <TableCell>
-                              {role.jobDescriptionFile ? (
+                              {(role as any).jobDescriptionFile ? (
                                 <div className="flex items-center space-x-2">
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => window.open(`/api/master-data/files/${role.jobDescriptionFile}`, '_blank')}
+                                    onClick={() => window.open(`/api/master-data/files/${(role as any).jobDescriptionFile}`, '_blank')}
                                     className="text-blue-600 hover:text-blue-800"
                                   >
                                     Download JD
@@ -1312,7 +1312,7 @@ export default function MasterData() {
                               <Input
                                 id={`citySpoc_${city.id}_name`}
                                 placeholder="Enter name"
-                                value={formData[`citySpoc_${city.id}_name`] || ""}
+                                value={(formData as any)[`citySpoc_${city.id}_name`] || ""}
                                 onChange={(e) => setFormData({ ...formData, [`citySpoc_${city.id}_name`]: e.target.value })}
                               />
                             </div>
@@ -1322,7 +1322,7 @@ export default function MasterData() {
                                 id={`citySpoc_${city.id}_email`}
                                 type="email"
                                 placeholder="Enter email"
-                                value={formData[`citySpoc_${city.id}_email`] || ""}
+                                value={(formData as any)[`citySpoc_${city.id}_email`] || ""}
                                 onChange={(e) => setFormData({ ...formData, [`citySpoc_${city.id}_email`]: e.target.value })}
                               />
                             </div>
@@ -1331,7 +1331,7 @@ export default function MasterData() {
                               <Input
                                 id={`citySpoc_${city.id}_phone`}
                                 placeholder="Enter phone"
-                                value={formData[`citySpoc_${city.id}_phone`] || ""}
+                                value={(formData as any)[`citySpoc_${city.id}_phone`] || ""}
                                 onChange={(e) => setFormData({ ...formData, [`citySpoc_${city.id}_phone`]: e.target.value })}
                               />
                             </div>
@@ -1575,7 +1575,7 @@ export default function MasterData() {
           incentiveStructure: "",
           cityId: "1",
           jobDescriptionFile: null,
-        });
+        } as any);
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -1713,8 +1713,8 @@ export default function MasterData() {
                 <Input
                   id="editIncentiveStructure"
                   placeholder="Enter incentive structure"
-                  value={editFormData.incentiveStructure}
-                  onChange={(e) => setEditFormData({ ...editFormData, incentiveStructure: e.target.value })}
+                  value={(editFormData as any).incentiveStructure}
+                  onChange={(e) => setEditFormData({ ...editFormData, incentiveStructure: e.target.value } as any)}
                 />
               </div>
             )}
@@ -1742,7 +1742,7 @@ export default function MasterData() {
                     replacementPeriod: "",
                     incentiveStructure: "",
                     cityId: "1",
-                  });
+                  } as any);
                 }}
                 className="flex-1"
               >

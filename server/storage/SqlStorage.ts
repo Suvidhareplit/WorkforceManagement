@@ -1276,7 +1276,7 @@ export class SqlStorage implements IStorage {
         COUNT(hr.id) as totalRequests,
         SUM(CASE WHEN hr.status = 'open' THEN 1 ELSE 0 END) as openRequests,
         SUM(CASE WHEN hr.status = 'closed' THEN 1 ELSE 0 END) as closedRequests,
-        SUM(hr.positions_required) as totalPositions
+        SUM(hr.no_of_openings) as totalPositions
       FROM hiring_requests hr
       GROUP BY DATE(hr.created_at)
       ORDER BY date DESC

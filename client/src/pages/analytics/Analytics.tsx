@@ -22,11 +22,11 @@ export default function Analytics() {
     queryKey: ["/api/analytics/pipeline"],
   });
 
-  const { data: vendorPerformance, isLoading: loadingVendors } = useQuery({
+  const { isLoading: loadingVendors } = useQuery({
     queryKey: ["/api/master-data/vendor"],
   });
 
-  const { data: recruiterPerformance, isLoading: loadingRecruiters } = useQuery({
+  const { isLoading: loadingRecruiters } = useQuery({
     queryKey: ["/api/master-data/recruiter"],
   });
 

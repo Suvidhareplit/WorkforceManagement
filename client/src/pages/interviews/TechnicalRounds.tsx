@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, MapPin, Building2, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
@@ -28,7 +28,7 @@ export default function TechnicalRounds() {
   });
 
   // Filter only candidates who passed prescreening (benchmarkMet = true)
-  const candidates = allCandidates?.filter((candidate: any) => 
+  const candidates = (allCandidates as any[])?.filter((candidate: any) => 
     candidate.status === 'technical' && candidate.benchmarkMet === true
   );
 
@@ -42,9 +42,12 @@ export default function TechnicalRounds() {
 
   const updateTechnicalMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: number; status: string; notes: string }) => {
-      return await apiRequest("PATCH", `/api/interviews/candidates/${id}/technical`, {
-        status,
-        notes,
+      return await apiRequest(`/api/interviews/candidates/${id}/technical`, {
+        method: "PATCH",
+        body: {
+          status,
+          notes,
+        }
       });
     },
     onSuccess: () => {
@@ -109,7 +112,7 @@ export default function TechnicalRounds() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All Cities</SelectItem>
-              {cities?.map((city: any) => (
+              {(cities as any[])?.map((city: any) => (
                 <SelectItem key={city.id} value={city.name}>
                   {city.name}
                 </SelectItem>
@@ -126,7 +129,7 @@ export default function TechnicalRounds() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All Clusters</SelectItem>
-              {clusters?.map((cluster: any) => (
+              {(clusters as any[])?.map((cluster: any) => (
                 <SelectItem key={cluster.id} value={cluster.name}>
                   {cluster.name}
                 </SelectItem>
