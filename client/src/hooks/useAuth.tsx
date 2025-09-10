@@ -22,10 +22,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
         console.log('🔑 Token exists:', !!token);
         
         if (token && authService.isAuthenticated()) {
-          console.log('✅ Token is valid - but NOT calling /auth/me automatically');
-          // Don't automatically fetch user data - let login handle it
-          // This prevents unnecessary API calls on page load
-          setUser(null); // Will be set by login function
+          console.log('✅ Token is valid - fetching user data...');
+          // Fetch user data to restore state on page refresh
+          try {
+            const response = await authService.getCurrentUser();
+            const user = response.user as any;
+            setUser({
+              id: user.id,
+              userId: user.userId,
+              email: user.email,
+              name: user.name,
+              phone: user.phone || '',
+              role: user.role as 'admin' | 'hr' | 'recruiter' | 'manager' | 'trainer',
+              createdAt: user.createdAt || new Date().toISOString(),
+              updatedAt: user.updatedAt || new Date().toISOString(),
+            });
+            console.log('✅ User state restored from token');
+          } catch (error) {
+            console.error('❌ Failed to fetch user data, clearing token:', error);
+            authService.removeToken();
+            setUser(null);
+          }
         } else {
           console.log('❌ No valid token found');
           setUser(null);

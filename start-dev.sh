@@ -6,21 +6,25 @@
 echo "🚀 Starting HRMS Development Environment..."
 echo ""
 
-# Function to check if port is in use
-check_port() {
-    if lsof -Pi :$1 -sTCP:LISTEN -t >/dev/null ; then
-        echo "⚠️  Port $1 is already in use"
-        return 1
+# Function to check if port is in use and kill the process if needed
+check_and_kill_port() {
+    local port=$1
+    local pid=$(lsof -Pi :$port -sTCP:LISTEN -t 2>/dev/null)
+    
+    if [ -n "$pid" ]; then
+        echo "⚠️  Port $port is in use by process $pid. Killing process..."
+        kill -9 $pid 2>/dev/null
+        sleep 1
+        echo "✅ Port $port is now available"
     else
-        echo "✅ Port $1 is available"
-        return 0
+        echo "✅ Port $port is available"
     fi
 }
 
-# Check ports
-echo "📡 Checking ports..."
-check_port 3000
-check_port 5000
+# Kill any existing processes on ports 3000 and 5000
+echo "📡 Checking and freeing ports..."
+check_and_kill_port 3000
+check_and_kill_port 5000
 echo ""
 
 # Start backend
