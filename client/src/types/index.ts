@@ -28,14 +28,21 @@ export interface Cluster {
   code: string;
   cityId: number;
   isActive: boolean;
+  cityName?: string;
+  description?: string;
 }
 
 export interface Role {
-  id: number;
+  id?: number;
   name: string;
   code: string;
   description?: string;
-  isActive: boolean;
+  jobDescriptionFile?: string;
+  paygroup?: string;
+  businessUnit?: string;
+  department?: string;
+  subDepartment?: string;
+  isActive?: boolean;
 }
 
 export interface Vendor {

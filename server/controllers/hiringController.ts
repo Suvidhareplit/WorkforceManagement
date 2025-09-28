@@ -12,11 +12,14 @@ interface AuthenticatedRequest extends Request {
 }
 
 export class HiringController extends BaseController {
+  
+  constructor() {
+    super();
+  }
 
   // Helper method to generate unique request ID
   private generateRequestId(cityCode: string, roleCode: string, clusterCode: string, sequence: number): string {
-    const timestamp = Date.now().toString().slice(-6);
-    return `HR-${cityCode}-${roleCode}-${clusterCode}-${sequence.toString().padStart(3, '0')}-${timestamp}`;
+    return `${cityCode}_${roleCode}_${clusterCode}_${sequence.toString().padStart(4, '0')}`;
   }
 
   // Create hiring request
@@ -43,10 +46,13 @@ export class HiringController extends BaseController {
         return;
       }
 
+      // Get next sequence number for this role
+      const nextSequence = await this.storage.getNextHiringRequestSequence(requestData.roleId);
+      
       // Create individual requests for each position
       const requests = [];
       for (let i = 0; i < requestData.numberOfPositions; i++) {
-        const requestId = this.generateRequestId(city.code, role.code, cluster.code, i + 1);
+        const requestId = this.generateRequestId(city.code, role.code, cluster.code, nextSequence + i);
         
         const request = await this.storage.createHiringRequest({
           ...requestData,

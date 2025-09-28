@@ -21,6 +21,7 @@ const formSchema = z.object({
   numberOfPositions: z.string().min(1, "Number of positions is required"),
   priority: z.enum(["P0", "P1", "P2", "P3"]),
   requestType: z.enum(["replacement", "fresh"]),
+  requestDate: z.string().min(1, "Request date is required"),
   notes: z.string().optional(),
 });
 
@@ -58,6 +59,7 @@ export default function CreateHiringRequest() {
       numberOfPositions: "",
       priority: "P1",
       requestType: "fresh",
+      requestDate: new Date().toISOString().split('T')[0],
       notes: "",
     },
   });
@@ -73,6 +75,7 @@ export default function CreateHiringRequest() {
           numberOfPositions: parseInt(data.numberOfPositions),
           priority: data.priority,
           requestType: data.requestType,
+          requestDate: data.requestDate,
           notes: data.notes,
         }),
       });
@@ -222,7 +225,7 @@ export default function CreateHiringRequest() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
                   name="priority"
@@ -264,6 +267,24 @@ export default function CreateHiringRequest() {
                           <SelectItem value="fresh">Fresh Requirement</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="requestDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Request Date</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          min={new Date().toISOString().split('T')[0]}
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

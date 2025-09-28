@@ -1,4 +1,4 @@
-// import { useQuery } from "@tanstack/react-query"; // Removed - no API calls on dashboard load
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,32 +6,52 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Briefcase, Users, Clock, TrendingUp, ArrowUp } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import { api } from "@/lib/api";
 
 export default function Dashboard() {
-  const [selectedCity, setSelectedCity] = useState<string>("3"); // Default to Bangalore
+  const [selectedCity, setSelectedCity] = useState<string>("5"); // Default to Bangalore (ID: 5)
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
 
   console.log('🏠 Dashboard component rendering...');
 
-  // NO API CALLS ON DASHBOARD LOAD - Keep it simple
-  // Data will be loaded only when user navigates to specific pages
-  const citiesData: any[] = [];
-  const hiringRequestsData: any[] = [];
-  const rolesData: any[] = [];
-  const clustersData: any[] = [];
-  const loadingHiring = false;
+  // Fetch data from APIs
+  const { data: citiesResponse, isLoading: loadingCities } = useQuery({
+    queryKey: ['/api/master-data/city'],
+    queryFn: () => api.masterData.getCities(),
+  });
+
+  const { data: rolesResponse, isLoading: loadingRoles } = useQuery({
+    queryKey: ['/api/master-data/role'],
+    queryFn: () => api.masterData.getRoles(),
+  });
+
+  const { data: clustersResponse } = useQuery({
+    queryKey: ['/api/master-data/cluster'],
+    queryFn: () => api.masterData.getClusters(),
+  });
+
+  const { data: hiringResponse, isLoading: loadingHiring } = useQuery({
+    queryKey: ['/api/hiring'],
+    queryFn: () => api.hiring.getRequests(),
+  });
+
+  // Extract data from API responses
+  const citiesData = (citiesResponse as any)?.data || [];
+  const rolesData = (rolesResponse as any)?.data || [];
+  const clustersData = (clustersResponse as any)?.data || [];
+  const hiringRequestsData = (hiringResponse as any)?.data || [];
 
   // Filter hiring requests based on selected city and priority
   const filteredHiringRequests = (hiringRequestsData as any[])?.filter((req: any) => {
     if (!selectedCity) return false; // No city selected
-    const cityMatch = req.cityId === parseInt(selectedCity) && req.status === 'open';
+    const cityMatch = req.city_id === parseInt(selectedCity) && req.status === 'open';
     const priorityMatch = selectedPriority === 'all' || req.priority === selectedPriority;
     return cityMatch && priorityMatch;
   }) || [];
 
   // Get clusters for selected city
   const allClusters = selectedCity 
-    ? (clustersData as any[])?.filter((cluster: any) => cluster.cityId === parseInt(selectedCity)) || []
+    ? (clustersData as any[])?.filter((cluster: any) => cluster.city_id === parseInt(selectedCity)) || []
     : [];
 
   // First pass: identify which clusters have open positions
@@ -40,13 +60,13 @@ export default function Dashboard() {
 
   // Calculate positions for each role-cluster combination
   (rolesData as any[])?.forEach((role: any) => {
-    const roleRequests = filteredHiringRequests.filter((req: any) => req.roleId === role.id);
+    const roleRequests = filteredHiringRequests.filter((req: any) => req.role_id === role.id);
     const clusterMap = new Map<number, number>();
     
     allClusters.forEach((cluster: any) => {
-      const clusterRequests = roleRequests.filter((req: any) => req.clusterId === cluster.id);
+      const clusterRequests = roleRequests.filter((req: any) => req.cluster_id === cluster.id);
       const positions = clusterRequests.reduce((sum: number, req: any) => 
-        sum + (parseInt(req.numberOfPositions) || 0), 0
+        sum + (parseInt(req.no_of_openings) || 0), 0
       );
       
       if (positions > 0) {
@@ -86,14 +106,15 @@ export default function Dashboard() {
     };
   }).filter(role => role !== null) || [];
 
-  // Calculate metrics from hiring requests data (data is now in camelCase from API)
+  // Calculate metrics from hiring requests data (using correct field names)
   const openPositions = hiringRequestsData && Array.isArray(hiringRequestsData) 
-    ? hiringRequestsData.reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)
+    ? hiringRequestsData.filter((req: any) => req.status === 'open')
+        .reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
     : 0;
   
   const closedPositions = hiringRequestsData && Array.isArray(hiringRequestsData)
     ? hiringRequestsData.filter((req: any) => req.status === 'closed')
-        .reduce((sum: number, req: any) => sum + (parseInt(req.numberOfPositions) || 0), 0)
+        .reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
     : 0;
 
   return (

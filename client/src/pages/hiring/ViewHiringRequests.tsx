@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { api } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
 // Removed HiringRequest import since backend returns snake_case fields
 import { Link } from "wouter";
 import { Plus, Filter, Search, Download, Eye } from "lucide-react";
@@ -23,32 +24,39 @@ export default function ViewHiringRequests() {
   });
   const { toast } = useToast();
 
-  const { data: requests, isLoading } = useQuery({
+  const { data: requestsResponse, isLoading } = useQuery({
     queryKey: ["/api/hiring"],
+    queryFn: () => api.hiring.getRequests(),
     retry: 1,
   });
 
+  const requests = (requestsResponse as any)?.data || [];
 
 
-  const { data: cities = [] } = useQuery({
+
+  const { data: citiesResponse } = useQuery({
     queryKey: ["/api/master-data/city"],
+    queryFn: () => api.masterData.getCities(),
   });
 
-  const { data: clusters = [] } = useQuery({
+  const { data: clustersResponse } = useQuery({
     queryKey: [`/api/master-data/city/${filters.cityId}/clusters`],
+    queryFn: () => api.masterData.getClustersByCity(parseInt(filters.cityId)),
     enabled: !!filters.cityId && filters.cityId !== "all",
   });
 
-  const { data: roles = [] } = useQuery({
+  const { data: rolesResponse } = useQuery({
     queryKey: ["/api/master-data/role"],
+    queryFn: () => api.masterData.getRoles(),
   });
+
+  const cities = (citiesResponse as any)?.data || [];
+  const clusters = (clustersResponse as any)?.data || [];
+  const roles = (rolesResponse as any)?.data || [];
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      return await apiRequest(`/api/hiring/${id}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      });
+      return await api.hiring.updateRequestStatus(id, status);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hiring"] });
@@ -269,7 +277,7 @@ export default function ViewHiringRequests() {
                     <TableCell>
                       {request.cluster_name || request.clusterName || 'Unknown Cluster'}
                     </TableCell>
-                    <TableCell>{request.number_of_positions || request.numberOfPositions}</TableCell>
+                    <TableCell>{request.no_of_openings || request.numberOfPositions}</TableCell>
                     <TableCell>
                       <span className={`font-medium ${getPriorityColor(request.priority)}`}>
                         {request.priority}

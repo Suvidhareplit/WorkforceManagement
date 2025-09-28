@@ -722,6 +722,8 @@ export default function CandidateApplication() {
       const vendorName = data.vendorId ? (vendors as any[])?.find((v: any) => v.id === parseInt(data.vendorId))?.name : undefined;
       const recruiterName = data.recruiterId ? (recruiters as any[])?.find((r: any) => r.id === parseInt(data.recruiterId))?.name : undefined;
 
+      console.log('Form data before payload creation:', data);
+      
       const payload: any = {
         name: data.name,
         phone: data.phone,
@@ -732,6 +734,8 @@ export default function CandidateApplication() {
         qualification: data.qualification,
         resumeSource: data.resumeSource,
       };
+      
+      console.log('Payload being sent to API:', payload);
 
       if (vendorName) payload.vendor = vendorName;
       if (recruiterName) payload.recruiter = recruiterName;

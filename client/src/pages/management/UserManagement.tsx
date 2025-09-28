@@ -53,17 +53,28 @@ export default function UserManagement() {
   const queryClient = useQueryClient();
 
   // Fetch users
-  const { data: users = [], isLoading } = useQuery<User[]>({
+  const { data: users = [], isLoading, error } = useQuery<User[]>({
     queryKey: ["/api/users"],
+    retry: 1,
   });
+
+  // Handle error state
+  if (error) {
+    console.error("Failed to fetch users:", error);
+    toast({
+      title: "Error",
+      description: "Failed to load users. Please check your permissions.",
+      variant: "destructive",
+    });
+  }
 
   // Fetch cities and other master data
   const { data: cities = [] } = useQuery<any[]>({
-    queryKey: ["/api/master-data/cities"],
+    queryKey: ["/api/master-data/city"],
   });
 
   const { data: clusters = [] } = useQuery<any[]>({
-    queryKey: ["/api/master-data/clusters"],
+    queryKey: ["/api/master-data/cluster"],
   });
 
   // Ensure data is always an array to prevent map errors

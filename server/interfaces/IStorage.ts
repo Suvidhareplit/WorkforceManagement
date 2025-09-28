@@ -98,10 +98,11 @@ export interface IStorage {
   getHiringRequest(id: number): Promise<any>;
   createHiringRequest(requestData: any, options?: CreateOptions): Promise<any>;
   updateHiringRequest(id: number, requestData: any, options?: UpdateOptions): Promise<any>;
+  updateHiringRequestStatus(id: number, status: string, options?: UpdateOptions): Promise<any>;
   deleteHiringRequest(id: number, options?: UpdateOptions): Promise<boolean>;
-  updateHiringRequestStatus(id: number, status: string, options?: StatusUpdateOptions): Promise<any>;
+  getNextHiringRequestSequence(roleId: number): Promise<number>;
 
-  // Candidates - using any types for raw SQL approach
+  // Candidates - NEW STRUCTURE
   getCandidates(filters?: FilterOptions): Promise<any[]>;
   getCandidate(id: number): Promise<any>;
   createCandidate(candidateData: any, options?: CreateOptions): Promise<any>;

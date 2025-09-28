@@ -94,6 +94,8 @@ export class MasterDataController extends BaseController {
         jobDescriptionFile: (req as any).file ? (req as any).file.filename : null
       };
       
+      console.log('Creating role with data:', roleData);
+      
       const role = await this.storage.createRole(roleData, { changedBy: userId });
       this.sendSuccess(res, role, 'Role created successfully');
     } catch (error) {

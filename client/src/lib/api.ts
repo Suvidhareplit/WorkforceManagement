@@ -76,11 +76,12 @@ export const api = {
 
   // Master Data
   masterData: {
-    getCities: () => apiClient.get('/master-data/cities'),
+    getCities: () => apiClient.get('/master-data/city'),
+    getClusters: () => apiClient.get('/master-data/cluster'),
     getClustersByCity: (cityId: number) => apiClient.get(`/master-data/cities/${cityId}/clusters`),
-    getRoles: () => apiClient.get('/master-data/roles'),
-    getVendors: () => apiClient.get('/master-data/vendors'),
-    getRecruiters: () => apiClient.get('/master-data/recruiters'),
+    getRoles: () => apiClient.get('/master-data/role'),
+    getVendors: () => apiClient.get('/master-data/vendor'),
+    getRecruiters: () => apiClient.get('/master-data/recruiter'),
     createCity: (data: any) => apiClient.post('/master-data/cities', data),
     createCluster: (data: any) => apiClient.post('/master-data/clusters', data),
     createRole: (data: any) => apiClient.post('/master-data/roles', data),

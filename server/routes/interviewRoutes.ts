@@ -1,8 +1,7 @@
-import { Router } from "express";
-import { interviewController } from "../controllers/interviewController.js";
-import { validateBulkUpload, processBulkUpload } from "../controllers/bulkUploadController.js";
-import { authenticate } from "../middlewares/auth.js";
-import multer from "multer";
+import { Router } from 'express';
+import { authenticate } from '../middlewares/auth';
+import { interviewController } from '../controllers/interviewController';
+import multer from 'multer';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -21,10 +20,6 @@ router.get('/candidates/:id', interviewController.getCandidateById);
 
 // Update candidate (general update)
 router.patch('/candidates/:id', interviewController.updateCandidate);
-
-// Bulk upload routes
-router.post('/bulk-upload/validate', upload.single('file'), validateBulkUpload);
-router.post('/bulk-upload/process', processBulkUpload);
 
 // Update prescreening status
 router.patch('/candidates/:id/prescreening', interviewController.updatePrescreening);

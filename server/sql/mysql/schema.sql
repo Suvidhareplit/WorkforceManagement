@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS roles (
     code VARCHAR(10) NOT NULL UNIQUE,
     description TEXT,
     job_description_file TEXT,
+    paygroup TEXT,
+    business_unit TEXT,
+    department TEXT,
+    sub_department TEXT,
     is_active BOOLEAN DEFAULT true,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -53,6 +57,7 @@ CREATE TABLE IF NOT EXISTS hiring_requests (
     status ENUM('open', 'closed', 'called_off') DEFAULT 'open',
     description TEXT,
     requirements TEXT,
+    request_date DATETIME NOT NULL,
     created_by INT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

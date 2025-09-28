@@ -17,7 +17,17 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { City, Cluster, Role, Vendor, Recruiter } from "@/types";
 import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye } from "lucide-react";
 
+import { useEffect } from "react";
+
 export default function MasterData() {
+  useEffect(() => {
+    // Invalidate queries to ensure fresh data on component mount
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/city"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/cluster"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/role"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendor"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiter"] });
+  }, []);
 
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editType, setEditType] = useState<string>("");
@@ -34,6 +44,10 @@ export default function MasterData() {
     replacementPeriod: "",
     cityId: "1",
     jobDescriptionFile: null as File | null,
+    paygroup: "",
+    businessUnit: "",
+    department: "",
+    subDepartment: "",
     // Commercial terms
     managementFees: "",
     sourcingFee: "",
@@ -60,6 +74,10 @@ export default function MasterData() {
     replacementPeriod: "",
     cityId: "1", // Default to first city to avoid empty string
     jobDescriptionFile: null as File | null,
+    paygroup: "",
+    businessUnit: "",
+    department: "",
+    subDepartment: "",
     // Commercial terms
     managementFees: "",
     sourcingFee: "",
@@ -130,9 +148,15 @@ export default function MasterData() {
 
   const createClusterMutation = useMutation({
     mutationFn: async (data: any) => {
+      // Explicitly format the data to ensure proper field names
+      const formattedData = {
+        name: data.name,
+        code: data.code,
+        city_id: data.cityId // Explicitly use snake_case for backend
+      };
       return await apiRequest("/api/master-data/cluster", {
         method: "POST",
-        body: data,
+        body: formattedData,
       });
     },
     onSuccess: () => {
@@ -236,6 +260,9 @@ export default function MasterData() {
       replacementPeriod: "",
       cityId: "1",
       jobDescriptionFile: null,
+      paygroup: "",
+      businessUnit: "",
+      department: "",
       // Commercial terms
       managementFees: "",
       sourcingFee: "",
@@ -259,7 +286,7 @@ export default function MasterData() {
       (newFormData as any)[`citySpoc_${city.id}_phone`] = "";
     });
     
-    setFormData(newFormData);
+    setFormData(newFormData as any);
 
   };
 
@@ -306,17 +333,30 @@ export default function MasterData() {
       return;
     }
 
+    console.log('Creating role with form data:', formData);
+
     const roleData = new FormData();
     roleData.append('name', formData.name);
     roleData.append('code', formData.code.toUpperCase());
     roleData.append('description', formData.description);
+    roleData.append('paygroup', formData.paygroup || '');
+    roleData.append('businessUnit', formData.businessUnit || '');
+    roleData.append('department', formData.department || '');
+    roleData.append('subDepartment', formData.subDepartment || '');
     if (formData.jobDescriptionFile) {
       roleData.append('jobDescriptionFile', formData.jobDescriptionFile);
     }
     
+    console.log('FormData contents:');
+    for (let [key, value] of roleData.entries()) {
+      console.log(key, value);
+    }
+    
     try {
-      await createRoleMutation.mutateAsync(roleData);
-      setFormData({ ...formData, name: "", code: "", description: "", jobDescriptionFile: null });
+      console.log('Sending API request...');
+      const result = await createRoleMutation.mutateAsync(roleData);
+      console.log('API response:', result);
+      setFormData({ ...formData, name: "", code: "", description: "", paygroup: "", businessUnit: "", department: "", subDepartment: "", jobDescriptionFile: null });
       // Reset file input
       const fileInput = document.getElementById('roleJD') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -426,6 +466,10 @@ export default function MasterData() {
         formData.append('name', editFormData.name);
         formData.append('code', editFormData.code);
         formData.append('description', editFormData.description || '');
+        formData.append('paygroup', editFormData.paygroup || '');
+        formData.append('businessUnit', editFormData.businessUnit || '');
+        formData.append('department', editFormData.department || '');
+        formData.append('subDepartment', editFormData.subDepartment || '');
         formData.append('jobDescriptionFile', editFormData.jobDescriptionFile);
         
         await apiRequest(endpoint, {
@@ -437,7 +481,13 @@ export default function MasterData() {
         const updateData = {
           name: editFormData.name,
           code: editFormData.code,
-          ...(editType === 'role' && { description: editFormData.description }),
+          ...(editType === 'role' && { 
+            description: editFormData.description,
+            paygroup: editFormData.paygroup,
+            businessUnit: editFormData.businessUnit,
+            department: editFormData.department,
+            subDepartment: editFormData.subDepartment
+          }),
           ...(editType === 'vendor' && { 
             email: editFormData.email,
             phone: editFormData.phone,
@@ -467,7 +517,7 @@ export default function MasterData() {
             phone: editFormData.phone,
             incentiveStructure: (editFormData as any).incentiveStructure
           }),
-          ...(editType === 'cluster' && { cityId: parseInt(editFormData.cityId) })
+          ...(editType === 'cluster' && { city_id: parseInt(editFormData.cityId) }) // Use snake_case for backend
         };
 
         await apiRequest(endpoint, {
@@ -531,7 +581,7 @@ export default function MasterData() {
     setEditFormData({
       name: cluster.name,
       code: cluster.code,
-      description: "",
+      description: cluster.description || "",
       email: "",
       phone: "",
       contactPerson: "",
@@ -562,21 +612,8 @@ export default function MasterData() {
   };
 
   const handleEditRole = (role: Role) => {
-    setEditingItem(role);
-    setEditType("role");
-    setEditFormData({
-      name: role.name,
-      code: role.code,
-      description: "",
-      email: "",
-      phone: "",
-      contactPerson: "",
-      commercialTerms: "",
-      replacementPeriod: "",
-      incentiveStructure: "",
-      cityId: "1",
-      jobDescriptionFile: null,
-    } as any);
+    // Role editing functionality would be implemented here
+    console.log('Edit role:', role);
   };
 
   const handleToggleRoleStatus = async (id: number, currentStatus: boolean) => {
@@ -856,7 +893,7 @@ export default function MasterData() {
                           <TableCell className="font-medium">{cluster.name}</TableCell>
                           <TableCell className="font-mono">{cluster.code}</TableCell>
                           <TableCell>
-                            {safeCities.find((city: City) => city.id === cluster.cityId)?.name}
+                            {cluster.cityName || 'Not assigned'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={cluster.isActive ? "default" : "secondary"}>
@@ -960,6 +997,10 @@ export default function MasterData() {
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Code</TableHead>
+                        <TableHead>Business Unit</TableHead>
+                        <TableHead>Paygroup</TableHead>
+                        <TableHead>Department</TableHead>
+                        <TableHead>Sub Department</TableHead>
                         <TableHead>Job Description</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
@@ -968,13 +1009,13 @@ export default function MasterData() {
                     <TableBody>
                       {loadingRoles ? (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-8">
+                          <TableCell colSpan={9} className="text-center py-8">
                             Loading...
                           </TableCell>
                         </TableRow>
                       ) : safeRoles.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center py-8">
+                          <TableCell colSpan={9} className="text-center py-8">
                             No roles found
                           </TableCell>
                         </TableRow>
@@ -983,6 +1024,10 @@ export default function MasterData() {
                           <TableRow key={role.id}>
                             <TableCell className="font-medium">{role.name}</TableCell>
                             <TableCell className="font-mono">{role.code}</TableCell>
+                            <TableCell className="text-sm">{role.businessUnit || '-'}</TableCell>
+                            <TableCell className="text-sm">{role.paygroup || '-'}</TableCell>
+                            <TableCell className="text-sm">{role.department || '-'}</TableCell>
+                            <TableCell className="text-sm">{role.subDepartment || '-'}</TableCell>
                             <TableCell>
                               {(role as any).jobDescriptionFile ? (
                                 <div className="flex items-center space-x-2">
@@ -1019,7 +1064,7 @@ export default function MasterData() {
                                   </span>
                                   <Switch
                                     checked={role.isActive}
-                                    onCheckedChange={() => handleToggleRoleStatus(role.id, role.isActive)}
+                                    onCheckedChange={() => handleToggleRoleStatus(role.id!, role.isActive || false)}
                                   />
                                 </div>
                               </div>
@@ -1054,6 +1099,42 @@ export default function MasterData() {
                     placeholder="Enter role code"
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="rolePaygroup">Paygroup</Label>
+                  <Input
+                    id="rolePaygroup"
+                    placeholder="Enter paygroup"
+                    value={formData.paygroup}
+                    onChange={(e) => setFormData({ ...formData, paygroup: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="roleBusinessUnit">Business Unit</Label>
+                  <Input
+                    id="roleBusinessUnit"
+                    placeholder="Enter business unit"
+                    value={formData.businessUnit}
+                    onChange={(e) => setFormData({ ...formData, businessUnit: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="roleDepartment">Department</Label>
+                  <Input
+                    id="roleDepartment"
+                    placeholder="Enter department"
+                    value={formData.department}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="roleSubDepartment">Sub Department</Label>
+                  <Input
+                    id="roleSubDepartment"
+                    placeholder="Enter sub department"
+                    value={formData.subDepartment}
+                    onChange={(e) => setFormData({ ...formData, subDepartment: e.target.value })}
                   />
                 </div>
                 <div>
@@ -1605,20 +1686,57 @@ export default function MasterData() {
             )}
 
             {editType === "role" && (
-              <div>
-                <Label htmlFor="editJobDescription">Job Description (PDF/DOC)</Label>
-                <Input
-                  id="editJobDescription"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setEditFormData({ ...editFormData, jobDescriptionFile: file });
-                    }
-                  }}
-                  className="cursor-pointer"
-                />
+              <>
+                <div>
+                  <Label htmlFor="editPaygroup">Paygroup</Label>
+                  <Input
+                    id="editPaygroup"
+                    placeholder="Enter paygroup"
+                    value={editFormData.paygroup}
+                    onChange={(e) => setEditFormData({ ...editFormData, paygroup: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editBusinessUnit">Business Unit</Label>
+                  <Input
+                    id="editBusinessUnit"
+                    placeholder="Enter business unit"
+                    value={editFormData.businessUnit}
+                    onChange={(e) => setEditFormData({ ...editFormData, businessUnit: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editDepartment">Department</Label>
+                  <Input
+                    id="editDepartment"
+                    placeholder="Enter department"
+                    value={editFormData.department}
+                    onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editSubDepartment">Sub Department</Label>
+                  <Input
+                    id="editSubDepartment"
+                    placeholder="Enter sub department"
+                    value={editFormData.subDepartment}
+                    onChange={(e) => setEditFormData({ ...editFormData, subDepartment: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editJobDescription">Job Description (PDF/DOC)</Label>
+                  <Input
+                    id="editJobDescription"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setEditFormData({ ...editFormData, jobDescriptionFile: file });
+                      }
+                    }}
+                    className="cursor-pointer"
+                  />
                 <p className="text-sm text-slate-500 mt-1">
                   Upload PDF or DOC file (max 5MB)
                 </p>
@@ -1636,6 +1754,7 @@ export default function MasterData() {
                   </div>
                 )}
               </div>
+              </>
             )}
 
             {editType === "cluster" && (

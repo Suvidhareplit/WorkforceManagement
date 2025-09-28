@@ -6,24 +6,27 @@ import { sendEmail } from "../services/emailService";
 const createCandidate = async (req: Request, res: Response) => {
   try {
     const candidateData = req.body;
+    console.log('Received candidate data:', JSON.stringify(candidateData, null, 2));
     
-    // Map resumeSource to sourcingChannel for backward compatibility
+    // Map frontend camelCase fields to backend expected format
     const mappedData = {
       ...candidateData,
-      sourcingChannel: candidateData.resumeSource,
-      status: 'applied'
+      resumeSource: candidateData.resumeSource || candidateData.resume_source,
+      referralName: candidateData.referralName || candidateData.referral_name
     };
+    
+    console.log('Mapped candidate data:', JSON.stringify(mappedData, null, 2));
     
     const candidate = await storage.createCandidate(mappedData);
     
-    // Return the complete candidate data including application ID
+    // Return the complete candidate data
     res.status(201).json({
-      ...candidate,
-      message: `Application submitted successfully. Your Application ID is: ${candidate.application_id}`
+      data: candidate,
+      message: candidate.message || `Application submitted successfully. Your Application ID is: ${candidate?.id || 'N/A'}`
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Create candidate error:', error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
@@ -31,8 +34,8 @@ const getCandidates = async (req: Request, res: Response) => {
   try {
     const filters = req.query;
     const candidates = await storage.getCandidates(filters);
-    res.json(candidates);
-  } catch (error) {
+    res.json({ data: candidates });
+  } catch (error: any) {
     console.error('Get candidates error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
