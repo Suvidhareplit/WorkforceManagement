@@ -1333,24 +1333,26 @@ export default function CandidateApplication() {
                         <div className="space-y-1">
                           <div className="font-medium text-sm">
                             {(() => {
-                              if (candidate.vendor) {
+                              if (candidate.resumeSource === 'vendor') {
                                 return 'Vendor';
-                              } else if (candidate.recruiter) {
+                              } else if (candidate.resumeSource === 'field_recruiter') {
                                 return 'Field Recruiter';
-                              } else if (candidate.referralName) {
+                              } else if (candidate.resumeSource === 'referral') {
                                 return 'Referral';
-                              } else {
+                              } else if (candidate.resumeSource === 'direct') {
                                 return 'Direct Application';
+                              } else {
+                                return candidate.resumeSource || 'Unknown';
                               }
                             })()}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {(() => {
-                              if (candidate.vendor) {
-                                return candidate.vendor;
-                              } else if (candidate.recruiter) {
-                                return candidate.recruiter;
-                              } else if (candidate.referralName) {
+                              if (candidate.resumeSource === 'vendor' && candidate.vendorName) {
+                                return candidate.vendorName;
+                              } else if (candidate.resumeSource === 'field_recruiter' && candidate.recruiterName) {
+                                return candidate.recruiterName;
+                              } else if (candidate.resumeSource === 'referral' && candidate.referralName) {
                                 return candidate.referralName;
                               } else {
                                 return '-';

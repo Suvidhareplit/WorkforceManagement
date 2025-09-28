@@ -128,7 +128,9 @@ export interface Candidate {
   qualification?: string;
   resumeSource?: string;
   vendorId?: number;
+  vendorName?: string;
   recruiterId?: number;
+  recruiterName?: string;
   referralName?: string;
   status: 'applied' | 'prescreening' | 'technical' | 'selected' | 'rejected' | 'offered' | 'joined';
   prescreeningApproved?: boolean;

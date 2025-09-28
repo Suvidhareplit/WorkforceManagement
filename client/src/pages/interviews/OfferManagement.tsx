@@ -77,11 +77,11 @@ export default function OfferManagement() {
   };
 
   const getSourceDisplay = (candidate: Candidate) => {
-    if (candidate.resumeSource === 'vendor' && candidate.vendor) {
-      return `Vendor: ${candidate.vendor.name}`;
+    if (candidate.resumeSource === 'vendor' && candidate.vendorName) {
+      return `Vendor: ${candidate.vendorName}`;
     }
-    if (candidate.resumeSource === 'field_recruiter' && candidate.recruiter) {
-      return `Recruiter: ${candidate.recruiter.name}`;
+    if (candidate.resumeSource === 'field_recruiter' && candidate.recruiterName) {
+      return `Recruiter: ${candidate.recruiterName}`;
     }
     if (candidate.resumeSource === 'referral' && candidate.referralName) {
       return `Referral: ${candidate.referralName}`;
