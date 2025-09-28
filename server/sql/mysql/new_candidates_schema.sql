@@ -5,20 +5,21 @@ CREATE TABLE IF NOT EXISTS candidates (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
     -- Basic Information
-    name VARCHAR(255) NOT NULL,
     phone VARCHAR(15) NOT NULL,
     email VARCHAR(255),
     
     -- Location & Role (using IDs for referential integrity)
     role_id INT NOT NULL,
+    role_name VARCHAR(255) NULL,
     city_id INT NOT NULL,
+    city_name VARCHAR(255) NULL,
     cluster_id INT NOT NULL,
+    cluster_name VARCHAR(255) NULL,
     
     -- Additional Details
     qualification ENUM('8th-10th', '11th-12th', 'Graduation', 'B.Tech', 'Diploma', 'ITI'),
     
     -- Source Information
-    resume_source ENUM('vendor', 'field_recruiter', 'referral', 'direct') NOT NULL,
     vendor_id INT NULL,
     vendor_name VARCHAR(255) NULL,
     recruiter_id INT NULL,

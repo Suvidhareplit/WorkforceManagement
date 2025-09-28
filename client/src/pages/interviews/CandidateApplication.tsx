@@ -1326,9 +1326,9 @@ export default function CandidateApplication() {
                       <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.phone}</TableCell>
-                      <TableCell>{candidate.role || ''}</TableCell>
-                      <TableCell>{candidate.city || ''}</TableCell>
-                      <TableCell>{candidate.cluster || ''}</TableCell>
+                      <TableCell>{candidate.roleName || ''}</TableCell>
+                      <TableCell>{candidate.cityName || ''}</TableCell>
+                      <TableCell>{candidate.clusterName || ''}</TableCell>
                       <TableCell>
                         <div className="space-y-1">
                           <div className="font-medium text-sm">

@@ -123,8 +123,11 @@ export interface Candidate {
   phone: string;
   email?: string;
   roleId: number;
+  roleName?: string;
   cityId: number;
+  cityName?: string;
   clusterId: number;
+  clusterName?: string;
   qualification?: string;
   resumeSource?: string;
   vendorId?: number;

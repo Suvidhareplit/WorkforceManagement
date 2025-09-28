@@ -754,15 +754,7 @@ export class SqlStorage implements IStorage {
     }
     
     const result = await query(`
-      SELECT 
-        c.*,
-        r.name as role_name,
-        ci.name as city_name,
-        cl.name as cluster_name
-      FROM candidates c
-      LEFT JOIN roles r ON c.role_id = r.id
-      LEFT JOIN cities ci ON c.city_id = ci.id
-      LEFT JOIN clusters cl ON c.cluster_id = cl.id
+      SELECT * FROM candidates c
       ${whereClause} 
       ${orderClause || 'ORDER BY c.created_at DESC'} 
       ${limitClause}
@@ -773,16 +765,7 @@ export class SqlStorage implements IStorage {
   async getCandidate(id: number): Promise<any> {
     console.log('Getting candidate with ID:', id);
     const result = await query(`
-      SELECT 
-        c.*,
-        r.name as role_name,
-        ci.name as city_name,
-        cl.name as cluster_name
-      FROM candidates c
-      LEFT JOIN roles r ON c.role_id = r.id
-      LEFT JOIN cities ci ON c.city_id = ci.id
-      LEFT JOIN clusters cl ON c.cluster_id = cl.id
-      WHERE c.id = ?
+      SELECT * FROM candidates WHERE id = ?
     `, [id]);
     
     console.log('getCandidate query result:', JSON.stringify(result, null, 2));
@@ -849,12 +832,12 @@ export class SqlStorage implements IStorage {
 
     const insertResult = await query(`
       INSERT INTO candidates (
-        name, phone, email, role_id, city_id, cluster_id,
+        name, phone, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
         qualification, resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
     `, [
-      name, phone, email, roleId, cityId, clusterId,
+      name, phone, email, roleId, role, cityId, city, clusterId, cluster,
       qualification, resumeSource, vendorId, vendorName, recruiterId, recruiterName, referralName
     ]);
     

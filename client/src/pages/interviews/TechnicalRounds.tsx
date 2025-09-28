@@ -196,9 +196,9 @@ export default function TechnicalRounds() {
                     <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                     <TableCell className="font-medium">{candidate.name}</TableCell>
                     <TableCell>{candidate.phone}</TableCell>
-                    <TableCell>{candidate.city}</TableCell>
-                    <TableCell>{candidate.cluster}</TableCell>
-                    <TableCell>{candidate.role}</TableCell>
+                    <TableCell>{candidate.cityName}</TableCell>
+                    <TableCell>{candidate.clusterName}</TableCell>
+                    <TableCell>{candidate.roleName}</TableCell>
                     <TableCell>
                       <Badge variant="default" className="bg-green-600">
                         {candidate.screeningScore || 0}/10
@@ -237,9 +237,9 @@ export default function TechnicalRounds() {
                               <div>
                                 <h4 className="font-medium mb-2">Job Details</h4>
                                 <div className="space-y-1 text-sm">
-                                  <div><strong>Role:</strong> {candidate.role}</div>
-                                  <div><strong>City:</strong> {candidate.city}</div>
-                                  <div><strong>Cluster:</strong> {candidate.cluster}</div>
+                                  <div><strong>Role:</strong> {candidate.roleName}</div>
+                                  <div><strong>City:</strong> {candidate.cityName}</div>
+                                  <div><strong>Cluster:</strong> {candidate.clusterName}</div>
                                   <div><strong>Prescreening Score:</strong> 
                                     <Badge variant="default" className="ml-2 bg-green-600">
                                       {candidate.screeningScore}/10 - Passed
