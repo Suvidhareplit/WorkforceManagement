@@ -166,15 +166,15 @@ export default function TechnicalRounds() {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Application ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>Cluster</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Prescreening Score</TableHead>
-                <TableHead>Actions</TableHead>
+              <TableRow className="bg-slate-50">
+                <TableHead className="font-semibold text-slate-700">Application ID</TableHead>
+                <TableHead className="font-semibold text-slate-700">Name</TableHead>
+                <TableHead className="font-semibold text-slate-700">Phone</TableHead>
+                <TableHead className="font-semibold text-slate-700">City</TableHead>
+                <TableHead className="font-semibold text-slate-700">Cluster</TableHead>
+                <TableHead className="font-semibold text-slate-700">Role</TableHead>
+                <TableHead className="font-semibold text-slate-700">Prescreening Score</TableHead>
+                <TableHead className="font-semibold text-slate-700">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -193,12 +193,12 @@ export default function TechnicalRounds() {
               ) : (
                 filteredCandidates.map((candidate: any) => (
                   <TableRow key={candidate.id}>
-                    <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
-                    <TableCell className="font-medium">{candidate.name}</TableCell>
-                    <TableCell>{candidate.phone}</TableCell>
-                    <TableCell>{candidate.cityName}</TableCell>
-                    <TableCell>{candidate.clusterName}</TableCell>
-                    <TableCell>{candidate.roleName}</TableCell>
+                    <TableCell className="font-mono text-sm text-slate-600">{candidate.applicationId || 'N/A'}</TableCell>
+                    <TableCell className="font-medium text-slate-900">{candidate.name}</TableCell>
+                    <TableCell className="text-slate-700">{candidate.phone}</TableCell>
+                    <TableCell className="text-slate-700">{candidate.cityName}</TableCell>
+                    <TableCell className="text-slate-700">{candidate.clusterName}</TableCell>
+                    <TableCell className="text-slate-700">{candidate.roleName}</TableCell>
                     <TableCell>
                       <Badge variant="default" className="bg-green-600">
                         {candidate.screeningScore || 0}/10

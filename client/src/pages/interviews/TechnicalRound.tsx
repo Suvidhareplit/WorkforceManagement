@@ -152,15 +152,15 @@ export default function TechnicalRound() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>City</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Cluster</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Rejection Reason</TableHead>
-                  <TableHead>Comments</TableHead>
-                  <TableHead>Actions</TableHead>
+                <TableRow className="bg-slate-50">
+                  <TableHead className="font-semibold text-slate-700">Name</TableHead>
+                  <TableHead className="font-semibold text-slate-700">City</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Role</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Cluster</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Status</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Rejection Reason</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Comments</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -179,10 +179,10 @@ export default function TechnicalRound() {
                 ) : (
                   technicalCandidates.map((candidate: Candidate) => (
                     <TableRow key={candidate.id}>
-                      <TableCell className="font-medium">{candidate.name}</TableCell>
-                      <TableCell>{(candidate as any).city?.name || candidate.city}</TableCell>
-                      <TableCell>{(candidate as any).role?.name || candidate.role}</TableCell>
-                      <TableCell>{(candidate as any).cluster?.name || candidate.cluster}</TableCell>
+                      <TableCell className="font-medium text-slate-900">{candidate.name}</TableCell>
+                      <TableCell className="text-slate-700">{(candidate as any).cityName}</TableCell>
+                      <TableCell className="text-slate-700">{(candidate as any).roleName}</TableCell>
+                      <TableCell className="text-slate-700">{(candidate as any).clusterName}</TableCell>
                       <TableCell>
                         <Select
                           value={candidateStatuses[candidate.id] || ""}
