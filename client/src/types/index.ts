@@ -96,22 +96,15 @@ export interface Recruiter {
 
 export interface HiringRequest {
   id: number;
-  requestId: string;
   cityId: number;
   clusterId: number;
   roleId: number;
   numberOfPositions: number;
   priority: 'P0' | 'P1' | 'P2' | 'P3';
-  requestType: 'replacement' | 'fresh';
+  requestType: 'backfill' | 'fresh' | 'training_attrition';
   status: 'open' | 'closed' | 'called_off';
   notes?: string;
   createdBy: number;
-  createdAt: string;
-  updatedAt: string;
-  cityName?: string;
-  clusterName?: string;
-  roleName?: string;
-  city?: City;
   cluster?: Cluster;
   role?: Role;
   createdByUser?: User;

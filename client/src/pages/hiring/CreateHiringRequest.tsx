@@ -20,7 +20,7 @@ const formSchema = z.object({
   roleId: z.string().min(1, "Role is required"),
   numberOfPositions: z.string().min(1, "Number of positions is required"),
   priority: z.enum(["P0", "P1", "P2", "P3"]),
-  requestType: z.enum(["replacement", "fresh"]),
+  requestType: z.enum(["backfill", "fresh", "training_attrition"]),
   requestDate: z.string().min(1, "Request date is required"),
   notes: z.string().optional(),
 });
@@ -263,8 +263,9 @@ export default function CreateHiringRequest() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="replacement">Replacement</SelectItem>
+                          <SelectItem value="backfill">Backfill</SelectItem>
                           <SelectItem value="fresh">Fresh Requirement</SelectItem>
+                          <SelectItem value="training_attrition">Training Attrition</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

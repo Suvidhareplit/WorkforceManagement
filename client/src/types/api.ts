@@ -125,7 +125,7 @@ export interface HiringRequest {
   numberOfPositions: number;
   requestDate: string;
   priority: 'P0' | 'P1' | 'P2' | 'P3';
-  requestType: 'replacement' | 'fresh';
+  requestType: 'backfill' | 'fresh' | 'training_attrition';
   replacementReason?: string;
   status: 'open' | 'closed' | 'called_off';
   notes?: string;
@@ -312,7 +312,7 @@ export interface CreateHiringRequestInput {
   numberOfPositions: number;
   requestDate?: string;
   priority: 'P0' | 'P1' | 'P2' | 'P3';
-  requestType: 'replacement' | 'fresh';
+  requestType: 'backfill' | 'fresh' | 'training_attrition';
   replacementReason?: string;
   notes?: string;
 }

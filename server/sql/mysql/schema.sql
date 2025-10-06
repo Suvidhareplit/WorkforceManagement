@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS hiring_requests (
     role_id INT,
     position_title TEXT NOT NULL,
     no_of_openings INT NOT NULL,
-    request_type ENUM('replacement', 'fresh') NOT NULL,
+    request_type ENUM('backfill', 'fresh', 'training_attrition') NOT NULL,
     priority ENUM('P0', 'P1', 'P2', 'P3') NOT NULL,
     status ENUM('open', 'closed', 'called_off') DEFAULT 'open',
     description TEXT,
