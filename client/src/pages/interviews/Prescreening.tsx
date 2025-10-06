@@ -94,11 +94,10 @@ export default function Prescreening() {
     });
   };
 
-  // Filter candidates to show only prescreening status and also those who were prescreened (both passed and failed)
+  // Filter candidates to show only prescreening status (not yet screened or rejected after screening)
   const filteredCandidates = (candidates as any[])?.filter((candidate: any) => {
     const isPrescreeningOrScreened = candidate.status === 'prescreening' || 
-      candidate.status === 'technical' || 
-      (candidate.status === 'rejected' && candidate.prescreeningScore !== null);
+      (candidate.status === 'rejected' && candidate.screeningScore !== null);
     
     if (!isPrescreeningOrScreened) return false;
     if (cityFilter && cityFilter !== "all" && candidate.city !== cityFilter) return false;
@@ -215,7 +214,7 @@ export default function Prescreening() {
                     <TableCell>{candidate.clusterName}</TableCell>
                     <TableCell>{candidate.roleName}</TableCell>
                     <TableCell>
-                      {candidate.prescreeningScore !== null && candidate.prescreeningScore !== undefined ? (
+                      {candidate.screeningScore !== null && candidate.screeningScore !== undefined ? (
                         <Badge 
                           variant={candidate.benchmarkMet ? 'default' : 'destructive'}
                           className={candidate.benchmarkMet ? 'bg-green-500' : ''}
@@ -229,9 +228,9 @@ export default function Prescreening() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {candidate.prescreeningScore ? (
+                      {candidate.screeningScore ? (
                         <Badge variant={candidate.benchmarkMet ? 'default' : 'destructive'}>
-                          {candidate.prescreeningScore}/10
+                          {candidate.screeningScore}/10
                         </Badge>
                       ) : '-'}
                     </TableCell>
