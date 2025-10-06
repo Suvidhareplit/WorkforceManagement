@@ -16,6 +16,8 @@ export default function TechnicalRound() {
   const [candidateReasons, setCandidateReasons] = useState<{[key: number]: string}>({});
   const [candidateComments, setCandidateComments] = useState<{[key: number]: string}>({});
   const [submittedCandidates, setSubmittedCandidates] = useState<{[key: number]: boolean}>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
   const { toast } = useToast();
 
   // Get all candidates
@@ -23,9 +25,18 @@ export default function TechnicalRound() {
     queryKey: ["/api/interviews/candidates"],
   });
 
-  // Filter only candidates who passed prescreening (benchmarkMet = true/1 and status = 'technical')
-  const technicalCandidates = (allCandidates as any[])?.filter((candidate: any) => 
-    candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)
+  // Filter candidates who went through technical interview (pending, selected, rejected)
+  const technicalCandidates = (allCandidates as any[])?.filter((candidate: any) => {
+    // Show candidates in technical status OR those who were evaluated (selected/rejected with technical notes)
+    return (candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)) ||
+           ((candidate.status === 'selected' || candidate.status === 'rejected') && candidate.technicalNotes);
+  });
+
+  // Pagination
+  const totalPages = Math.ceil((technicalCandidates?.length || 0) / itemsPerPage);
+  const paginatedCandidates = technicalCandidates?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const updateTechnicalMutation = useMutation({
@@ -170,36 +181,47 @@ export default function TechnicalRound() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : !technicalCandidates || technicalCandidates.length === 0 ? (
+                ) : !paginatedCandidates || paginatedCandidates.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8">
                       No candidates for technical interview
                     </TableCell>
                   </TableRow>
                 ) : (
-                  technicalCandidates.map((candidate: Candidate) => (
+                  paginatedCandidates.map((candidate: Candidate) => (
                     <TableRow key={candidate.id}>
                       <TableCell className="font-medium text-slate-900">{candidate.name}</TableCell>
                       <TableCell className="text-slate-700">{(candidate as any).cityName}</TableCell>
                       <TableCell className="text-slate-700">{(candidate as any).roleName}</TableCell>
                       <TableCell className="text-slate-700">{(candidate as any).clusterName}</TableCell>
                       <TableCell>
-                        <Select
-                          value={candidateStatuses[candidate.id] || ""}
-                          onValueChange={(value) => handleStatusChange(candidate.id, value)}
-                          disabled={submittedCandidates[candidate.id]}
-                        >
-                          <SelectTrigger className="w-[150px]">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="selected">Selected</SelectItem>
-                            <SelectItem value="not-selected">Not Selected</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {(candidate as any).technicalNotes ? (
+                          <Badge 
+                            variant={(candidate as any).status === 'selected' ? 'default' : 'destructive'}
+                            className={(candidate as any).status === 'selected' ? 'bg-green-500' : ''}
+                          >
+                            {(candidate as any).status === 'selected' ? 'Selected' : 'Rejected'}
+                          </Badge>
+                        ) : (
+                          <Select
+                            value={candidateStatuses[candidate.id] || ""}
+                            onValueChange={(value) => handleStatusChange(candidate.id, value)}
+                            disabled={submittedCandidates[candidate.id]}
+                          >
+                            <SelectTrigger className="w-[150px]">
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="selected">Selected</SelectItem>
+                              <SelectItem value="not-selected">Not Selected</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </TableCell>
                       <TableCell>
-                        {candidateStatuses[candidate.id] === "selected" || submittedCandidates[candidate.id] ? (
+                        {(candidate as any).technicalNotes && (candidate as any).status === 'rejected' ? (
+                          <span className="text-slate-700">{(candidate as any).technicalNotes.split(':')[0]}</span>
+                        ) : candidateStatuses[candidate.id] === "selected" || submittedCandidates[candidate.id] ? (
                           <span className="text-slate-500">N/A</span>
                         ) : candidateStatuses[candidate.id] === "not-selected" ? (
                           <Select
@@ -223,16 +245,24 @@ export default function TechnicalRound() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Textarea
-                          value={candidateComments[candidate.id] || ""}
-                          onChange={(e) => handleCommentChange(candidate.id, e.target.value)}
-                          placeholder="Comments (mandatory)"
-                          className="w-[200px] h-20"
-                          disabled={candidateStatuses[candidate.id] === "selected" || submittedCandidates[candidate.id]}
-                        />
+                        {(candidate as any).technicalNotes ? (
+                          <span className="text-slate-700 text-sm">{(candidate as any).technicalNotes.split(':').slice(1).join(':').trim()}</span>
+                        ) : (
+                          <Textarea
+                            value={candidateComments[candidate.id] || ""}
+                            onChange={(e) => handleCommentChange(candidate.id, e.target.value)}
+                            placeholder="Comments (mandatory)"
+                            className="w-[200px] h-20"
+                            disabled={candidateStatuses[candidate.id] === "selected" || submittedCandidates[candidate.id]}
+                          />
+                        )}
                       </TableCell>
                       <TableCell>
-                        {submittedCandidates[candidate.id] ? (
+                        {(candidate as any).technicalNotes ? (
+                          <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-300">
+                            Evaluated
+                          </Badge>
+                        ) : submittedCandidates[candidate.id] ? (
                           <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
                             Submitted
                           </Badge>
@@ -240,7 +270,7 @@ export default function TechnicalRound() {
                           <Button
                             onClick={() => handleSubmit(candidate)}
                             disabled={updateTechnicalMutation.isPending}
-                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
                           >
                             Submit
                           </Button>
@@ -254,6 +284,46 @@ export default function TechnicalRound() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-slate-600">
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, technicalCandidates?.length || 0)} of {technicalCandidates?.length || 0} candidates
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className={currentPage === page ? "bg-blue-600 hover:bg-blue-700" : ""}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
