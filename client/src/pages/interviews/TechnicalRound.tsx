@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,6 +17,10 @@ export default function TechnicalRound() {
   const [candidateReasons, setCandidateReasons] = useState<{[key: number]: string}>({});
   const [candidateComments, setCandidateComments] = useState<{[key: number]: string}>({});
   const [submittedCandidates, setSubmittedCandidates] = useState<{[key: number]: boolean}>({});
+  const [cityFilter, setCityFilter] = useState("");
+  const [clusterFilter, setClusterFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
   const { toast } = useToast();
@@ -25,16 +30,46 @@ export default function TechnicalRound() {
     queryKey: ["/api/interviews/candidates"],
   });
 
+  const { data: cities } = useQuery({
+    queryKey: ["/api/master-data/city"],
+  });
+
+  const { data: allClusters } = useQuery({
+    queryKey: ["/api/master-data/cluster"],
+  });
+
+  // Filter clusters based on selected city
+  const clusters = (allClusters as any[])?.filter((cluster: any) => {
+    if (!cityFilter || cityFilter === "all") return true;
+    const selectedCity = (cities as any[])?.find((city: any) => city.name === cityFilter);
+    return selectedCity && cluster.cityId === selectedCity.id;
+  });
+
   // Filter candidates who went through technical interview (pending, selected, rejected)
-  const technicalCandidates = (allCandidates as any[])?.filter((candidate: any) => {
+  const filteredCandidates = (allCandidates as any[])?.filter((candidate: any) => {
     // Show candidates in technical status OR those who were evaluated (selected/rejected with technical notes)
-    return (candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)) ||
+    const isTechnicalRelated = (candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)) ||
            ((candidate.status === 'selected' || candidate.status === 'rejected') && candidate.technicalNotes);
+    
+    if (!isTechnicalRelated) return false;
+    
+    // Status filter (pending, selected, rejected)
+    if (statusFilter && statusFilter !== "all") {
+      if (statusFilter === "pending" && candidate.technicalNotes) return false;
+      if (statusFilter === "selected" && candidate.status !== 'selected') return false;
+      if (statusFilter === "rejected" && candidate.status !== 'rejected') return false;
+    }
+    
+    if (cityFilter && cityFilter !== "all" && candidate.cityName !== cityFilter) return false;
+    if (clusterFilter && clusterFilter !== "all" && candidate.clusterName !== clusterFilter) return false;
+    if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;
+    if (dateRange.to && new Date(candidate.createdAt) > new Date(dateRange.to)) return false;
+    return true;
   });
 
   // Pagination
-  const totalPages = Math.ceil((technicalCandidates?.length || 0) / itemsPerPage);
-  const paginatedCandidates = technicalCandidates?.slice(
+  const totalPages = Math.ceil((filteredCandidates?.length || 0) / itemsPerPage);
+  const paginatedCandidates = filteredCandidates?.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -153,6 +188,85 @@ export default function TechnicalRound() {
         <h1 className="text-3xl font-bold text-slate-900">Technical Interview Assessment</h1>
         <p className="text-slate-600 mt-2">Evaluate technical competencies and determine candidate suitability for final selection</p>
       </div>
+
+      {/* Filters */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Filter Candidates</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 flex-wrap">
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="cityFilter" className="text-sm font-medium text-slate-700">City</Label>
+              <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger id="cityFilter">
+                  <SelectValue placeholder="All Cities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {(cities as any[])?.map((city: any) => (
+                    <SelectItem key={city.id} value={city.name}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="clusterFilter" className="text-sm font-medium text-slate-700">Cluster</Label>
+              <Select value={clusterFilter} onValueChange={setClusterFilter}>
+                <SelectTrigger id="clusterFilter">
+                  <SelectValue placeholder="All Clusters" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Clusters</SelectItem>
+                  {clusters?.map((cluster: any) => (
+                    <SelectItem key={cluster.id} value={cluster.name}>
+                      {cluster.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="statusFilter" className="text-sm font-medium text-slate-700">Interview Status</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger id="statusFilter">
+                  <SelectValue placeholder="All Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="selected">Selected</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="dateFrom" className="text-sm font-medium text-slate-700">Application Date From</Label>
+              <Input
+                id="dateFrom"
+                type="date"
+                value={dateRange.from}
+                onChange={(e) => setDateRange({ ...dateRange, from: e.target.value })}
+              />
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="dateTo" className="text-sm font-medium text-slate-700">Application Date To</Label>
+              <Input
+                id="dateTo"
+                type="date"
+                value={dateRange.to}
+                onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Technical Interview */}
       <Card>
@@ -289,7 +403,7 @@ export default function TechnicalRound() {
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between">
           <div className="text-sm text-slate-600">
-            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, technicalCandidates?.length || 0)} of {technicalCandidates?.length || 0} candidates
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredCandidates?.length || 0)} of {filteredCandidates?.length || 0} candidates
           </div>
           <div className="flex gap-2">
             <Button
