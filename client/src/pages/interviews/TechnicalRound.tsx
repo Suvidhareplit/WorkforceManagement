@@ -23,9 +23,9 @@ export default function TechnicalRound() {
     queryKey: ["/api/interviews/candidates"],
   });
 
-  // Filter only candidates who passed prescreening (benchmarkMet = true and status = 'technical')
+  // Filter only candidates who passed prescreening (benchmarkMet = true/1 and status = 'technical')
   const technicalCandidates = (allCandidates as any[])?.filter((candidate: any) => 
-    candidate.status === 'technical' && candidate.benchmarkMet === true
+    candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)
   );
 
   const updateTechnicalMutation = useMutation({

@@ -27,9 +27,9 @@ export default function TechnicalRounds() {
     queryKey: ["/api/interviews/candidates"],
   });
 
-  // Filter only candidates who passed prescreening (benchmarkMet = true)
+  // Filter only candidates who passed prescreening (benchmarkMet = true or 1)
   const candidates = (allCandidates as any[])?.filter((candidate: any) => 
-    candidate.status === 'technical' && candidate.benchmarkMet === true
+    candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)
   );
 
   const { data: cities } = useQuery({
