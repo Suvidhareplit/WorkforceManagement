@@ -210,6 +210,7 @@ export default function Prescreening() {
             onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
           />
         </div>
+      </div>
         </CardContent>
       </Card>
 
