@@ -214,6 +214,8 @@ export default function TechnicalRound() {
                               <SelectItem value="Poor technical knowledge">Poor technical knowledge</SelectItem>
                               <SelectItem value="No relevant experience">No relevant experience</SelectItem>
                               <SelectItem value="Not okay with night shift">Not okay with night shift</SelectItem>
+                              <SelectItem value="Basic English (Reading and Understanding)">Basic English (Reading and Understanding)</SelectItem>
+                              <SelectItem value="Others">Others</SelectItem>
                             </SelectContent>
                           </Select>
                         ) : (
