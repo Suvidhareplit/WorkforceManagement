@@ -130,15 +130,20 @@ export default function Prescreening() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">Prescreening</h2>
-        <p className="text-slate-600 mt-1">Review and verify candidate applications</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Candidate Prescreening</h1>
+        <p className="text-slate-600 mt-2">Evaluate and assess candidate qualifications for technical interview progression</p>
       </div>
 
       {/* Filters */}
-      <div className="mb-6 flex gap-4 flex-wrap">
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Filter Candidates</CardTitle>
+        </CardHeader>
+        <CardContent>
+      <div className="flex gap-4 flex-wrap">
         <div className="flex-1 min-w-[200px]">
-          <Label htmlFor="cityFilter">City</Label>
+          <Label htmlFor="cityFilter" className="text-sm font-medium text-slate-700">City</Label>
           <Select value={cityFilter} onValueChange={setCityFilter}>
             <SelectTrigger id="cityFilter">
               <SelectValue placeholder="All Cities" />
@@ -155,7 +160,7 @@ export default function Prescreening() {
         </div>
         
         <div className="flex-1 min-w-[200px]">
-          <Label htmlFor="clusterFilter">Cluster</Label>
+          <Label htmlFor="clusterFilter" className="text-sm font-medium text-slate-700">Cluster</Label>
           <Select value={clusterFilter} onValueChange={setClusterFilter}>
             <SelectTrigger id="clusterFilter">
               <SelectValue placeholder="All Clusters" />
@@ -172,7 +177,7 @@ export default function Prescreening() {
         </div>
 
         <div className="flex-1 min-w-[200px]">
-          <Label htmlFor="statusFilter">Status</Label>
+          <Label htmlFor="statusFilter" className="text-sm font-medium text-slate-700">Screening Status</Label>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger id="statusFilter">
               <SelectValue placeholder="All Status" />
@@ -187,7 +192,7 @@ export default function Prescreening() {
         </div>
 
         <div className="flex-1 min-w-[200px]">
-          <Label htmlFor="dateFrom">Date From</Label>
+          <Label htmlFor="dateFrom" className="text-sm font-medium text-slate-700">Application Date From</Label>
           <Input
             id="dateFrom"
             type="date"
@@ -197,7 +202,7 @@ export default function Prescreening() {
         </div>
 
         <div className="flex-1 min-w-[200px]">
-          <Label htmlFor="dateTo">Date To</Label>
+          <Label htmlFor="dateTo" className="text-sm font-medium text-slate-700">Application Date To</Label>
           <Input
             id="dateTo"
             type="date"
@@ -205,25 +210,26 @@ export default function Prescreening() {
             onChange={(e) => setDateRange({ ...dateRange, to: e.target.value })}
           />
         </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Prescreening Candidates</CardTitle>
+          <CardTitle className="text-lg">Candidate Evaluation Results</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Application ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>City</TableHead>
-                <TableHead>Cluster</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead>Actions</TableHead>
+              <TableRow className="bg-slate-50">
+                <TableHead className="font-semibold text-slate-700">Application ID</TableHead>
+                <TableHead className="font-semibold text-slate-700">Candidate Name</TableHead>
+                <TableHead className="font-semibold text-slate-700">Contact Number</TableHead>
+                <TableHead className="font-semibold text-slate-700">Location</TableHead>
+                <TableHead className="font-semibold text-slate-700">Cluster</TableHead>
+                <TableHead className="font-semibold text-slate-700">Position</TableHead>
+                <TableHead className="font-semibold text-slate-700">Evaluation Status</TableHead>
+                <TableHead className="font-semibold text-slate-700">Assessment Score</TableHead>
+                <TableHead className="font-semibold text-slate-700">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -242,12 +248,12 @@ export default function Prescreening() {
               ) : (
                 paginatedCandidates.map((candidate: any) => (
                   <TableRow key={candidate.id}>
-                    <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
-                    <TableCell className="font-medium">{candidate.name}</TableCell>
-                    <TableCell>{candidate.phone}</TableCell>
-                    <TableCell>{candidate.cityName}</TableCell>
-                    <TableCell>{candidate.clusterName}</TableCell>
-                    <TableCell>{candidate.roleName}</TableCell>
+                    <TableCell className="font-mono text-sm text-slate-600">{candidate.applicationId || 'N/A'}</TableCell>
+                    <TableCell className="font-medium text-slate-900">{candidate.name}</TableCell>
+                    <TableCell className="text-slate-700">{candidate.phone}</TableCell>
+                    <TableCell className="text-slate-700">{candidate.cityName}</TableCell>
+                    <TableCell className="text-slate-700">{candidate.clusterName}</TableCell>
+                    <TableCell className="text-slate-700">{candidate.roleName}</TableCell>
                     <TableCell>
                       {candidate.screeningScore !== null && candidate.screeningScore !== undefined ? (
                         <Badge 

@@ -138,28 +138,28 @@ export default function TechnicalRound() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">Technical Round</h2>
-        <p className="text-slate-600 mt-1">Conduct technical interviews for candidates who passed prescreening</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900">Technical Interview Assessment</h1>
+        <p className="text-slate-600 mt-2">Evaluate technical competencies and determine candidate suitability for final selection</p>
       </div>
 
       {/* Technical Interview */}
       <Card>
         <CardHeader>
-          <CardTitle>Technical Interview</CardTitle>
+          <CardTitle className="text-lg">Technical Evaluation Panel</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50">
-                  <TableHead className="font-semibold text-slate-700">Name</TableHead>
-                  <TableHead className="font-semibold text-slate-700">City</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Role</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Candidate Name</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Location</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Position</TableHead>
                   <TableHead className="font-semibold text-slate-700">Cluster</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Status</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Interview Result</TableHead>
                   <TableHead className="font-semibold text-slate-700">Rejection Reason</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Comments</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Interviewer Comments</TableHead>
                   <TableHead className="font-semibold text-slate-700">Actions</TableHead>
                 </TableRow>
               </TableHeader>
