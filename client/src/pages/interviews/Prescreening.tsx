@@ -20,7 +20,10 @@ export default function Prescreening() {
   const [marks, setMarks] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [clusterFilter, setClusterFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
   const { toast } = useToast();
 
   const { data: candidates, isLoading } = useQuery({
@@ -94,18 +97,35 @@ export default function Prescreening() {
     });
   };
 
-  // Filter candidates to show only prescreening status (not yet screened or rejected after screening)
+  // Filter candidates to show prescreening history (pending, passed, rejected)
   const filteredCandidates = (candidates as any[])?.filter((candidate: any) => {
-    const isPrescreeningOrScreened = candidate.status === 'prescreening' || 
+    // Show candidates who are in prescreening, passed to technical, or rejected after screening
+    const isPrescreeningRelated = candidate.status === 'prescreening' || 
+      candidate.status === 'technical' ||
       (candidate.status === 'rejected' && candidate.screeningScore !== null);
     
-    if (!isPrescreeningOrScreened) return false;
-    if (cityFilter && cityFilter !== "all" && candidate.city !== cityFilter) return false;
-    if (clusterFilter && clusterFilter !== "all" && candidate.cluster !== clusterFilter) return false;
+    if (!isPrescreeningRelated) return false;
+    
+    // Status filter (pending, passed, rejected)
+    if (statusFilter && statusFilter !== "all") {
+      if (statusFilter === "pending" && candidate.screeningScore !== null) return false;
+      if (statusFilter === "passed" && candidate.status !== 'technical') return false;
+      if (statusFilter === "rejected" && candidate.status !== 'rejected') return false;
+    }
+    
+    if (cityFilter && cityFilter !== "all" && candidate.cityName !== cityFilter) return false;
+    if (clusterFilter && clusterFilter !== "all" && candidate.clusterName !== clusterFilter) return false;
     if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;
     if (dateRange.to && new Date(candidate.createdAt) > new Date(dateRange.to)) return false;
     return true;
   });
+
+  // Pagination
+  const totalPages = Math.ceil((filteredCandidates?.length || 0) / itemsPerPage);
+  const paginatedCandidates = filteredCandidates?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div>
@@ -147,6 +167,21 @@ export default function Prescreening() {
                   {cluster.name}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1 min-w-[200px]">
+          <Label htmlFor="statusFilter">Status</Label>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger id="statusFilter">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="passed">Passed</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -198,14 +233,14 @@ export default function Prescreening() {
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : !filteredCandidates || filteredCandidates.length === 0 ? (
+              ) : !paginatedCandidates || paginatedCandidates.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-8">
                     No candidates found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredCandidates.map((candidate: any) => (
+                paginatedCandidates.map((candidate: any) => (
                   <TableRow key={candidate.id}>
                     <TableCell className="font-mono text-sm">{candidate.applicationId || 'N/A'}</TableCell>
                     <TableCell className="font-medium">{candidate.name}</TableCell>
@@ -331,6 +366,46 @@ export default function Prescreening() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-slate-600">
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredCandidates?.length || 0)} of {filteredCandidates?.length || 0} candidates
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className={currentPage === page ? "bg-blue-600 hover:bg-blue-700" : ""}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
