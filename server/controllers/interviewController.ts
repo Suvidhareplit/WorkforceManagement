@@ -102,13 +102,15 @@ const updatePrescreening = async (req: Request, res: Response) => {
 const updateScreening = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { score, benchmarkMet, notes } = req.body;
+    // Frontend sends snake_case, so we need to handle both
+    const { score, benchmark_met, benchmarkMet, notes } = req.body;
+    const actualBenchmarkMet = benchmark_met !== undefined ? benchmark_met : benchmarkMet;
     
     const updateData: any = {
       screeningScore: score,
-      benchmarkMet,
+      benchmarkMet: actualBenchmarkMet,
       prescreeningNotes: notes,
-      status: benchmarkMet ? 'technical' : 'rejected'
+      status: actualBenchmarkMet ? 'technical' : 'rejected'
     };
     
     const candidate = await storage.updateCandidate(id, updateData);
