@@ -26,17 +26,22 @@ export default function Prescreening() {
   const itemsPerPage = 15;
   const { toast } = useToast();
 
-  const { data: candidates, isLoading } = useQuery({
+  const { data: candidates, isLoading: candidatesLoading } = useQuery({
     queryKey: ["/api/interviews/candidates"],
+    refetchOnMount: true,
   });
 
-  const { data: cities } = useQuery({
+  const { data: cities, isLoading: citiesLoading } = useQuery({
     queryKey: ["/api/master-data/city"],
+    refetchOnMount: true,
   });
 
-  const { data: allClusters } = useQuery({
+  const { data: allClusters, isLoading: clustersLoading } = useQuery({
     queryKey: ["/api/master-data/cluster"],
+    refetchOnMount: true,
   });
+
+  const isLoading = candidatesLoading || citiesLoading || clustersLoading;
 
   // Filter clusters based on selected city
   const clusters = (allClusters as any[])?.filter((cluster: any) => {
@@ -126,6 +131,18 @@ export default function Prescreening() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Show loading state on initial load
+  if (isLoading && !candidates) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading candidates...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
