@@ -26,29 +26,35 @@ export default function Prescreening() {
   const itemsPerPage = 15;
   const { toast } = useToast();
 
-  const { data: candidates, isLoading: candidatesLoading } = useQuery({
+  const { data: candidates, isLoading: candidatesLoading, refetch: refetchCandidates } = useQuery({
     queryKey: ["/api/interviews/candidates"],
-    refetchOnMount: true,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
   });
 
-  const { data: cities, isLoading: citiesLoading } = useQuery({
+  const { data: cities, isLoading: citiesLoading, refetch: refetchCities } = useQuery({
     queryKey: ["/api/master-data/city"],
-    refetchOnMount: true,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
   });
 
-  const { data: allClusters, isLoading: clustersLoading } = useQuery({
+  const { data: allClusters, isLoading: clustersLoading, refetch: refetchClusters } = useQuery({
     queryKey: ["/api/master-data/cluster"],
-    refetchOnMount: true,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
   });
 
   const isLoading = candidatesLoading || citiesLoading || clustersLoading;
 
-  // Force refetch on component mount to ensure fresh data
+  // Force refetch on component mount
   useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/master-data/city"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/master-data/cluster"] });
-  }, []);
+    refetchCandidates();
+    refetchCities();
+    refetchClusters();
+  }, [refetchCandidates, refetchCities, refetchClusters]);
 
   // Filter clusters based on selected city
   const clusters = (allClusters as any[])?.filter((cluster: any) => {
