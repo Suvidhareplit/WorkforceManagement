@@ -26,12 +26,19 @@ export default function Prescreening() {
   const itemsPerPage = 15;
   const { toast } = useToast();
 
-  const { data: candidates, isLoading: candidatesLoading, refetch: refetchCandidates } = useQuery({
+  const { data: candidates, isLoading: candidatesLoading, refetch: refetchCandidates, error: candidatesError } = useQuery({
     queryKey: ["/api/interviews/candidates"],
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Prescreening - Candidates:', candidates);
+    console.log('Prescreening - Loading:', candidatesLoading);
+    console.log('Prescreening - Error:', candidatesError);
+  }, [candidates, candidatesLoading, candidatesError]);
 
   const { data: cities, isLoading: citiesLoading, refetch: refetchCities } = useQuery({
     queryKey: ["/api/master-data/city"],
