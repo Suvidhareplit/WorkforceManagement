@@ -57,14 +57,14 @@ export default function TechnicalRound() {
   }, [refetchCandidates, refetchCities, refetchClusters]);
 
   // Filter clusters based on selected city
-  const clusters = (allClusters as any[])?.filter((cluster: any) => {
+  const clusters = Array.isArray(allClusters) ? allClusters.filter((cluster: any) => {
     if (!cityFilter || cityFilter === "all") return true;
-    const selectedCity = (cities as any[])?.find((city: any) => city.name === cityFilter);
+    const selectedCity = Array.isArray(cities) ? cities.find((city: any) => city.name === cityFilter) : null;
     return selectedCity && cluster.cityId === selectedCity.id;
-  });
+  }) : [];
 
   // Filter candidates who went through technical interview (pending, selected, rejected)
-  const filteredCandidates = (allCandidates as any[])?.filter((candidate: any) => {
+  const filteredCandidates = Array.isArray(allCandidates) ? allCandidates.filter((candidate: any) => {
     // Show candidates in technical status OR those who were evaluated (selected/rejected with technical notes)
     const isTechnicalRelated = (candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)) ||
            ((candidate.status === 'selected' || candidate.status === 'rejected') && candidate.technicalNotes);
@@ -83,7 +83,7 @@ export default function TechnicalRound() {
     if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;
     if (dateRange.to && new Date(candidate.createdAt) > new Date(dateRange.to)) return false;
     return true;
-  });
+  }) : [];
 
   // Pagination
   const totalPages = Math.ceil((filteredCandidates?.length || 0) / itemsPerPage);

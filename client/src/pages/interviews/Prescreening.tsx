@@ -64,11 +64,11 @@ export default function Prescreening() {
   }, [refetchCandidates, refetchCities, refetchClusters]);
 
   // Filter clusters based on selected city
-  const clusters = (allClusters as any[])?.filter((cluster: any) => {
+  const clusters = Array.isArray(allClusters) ? allClusters.filter((cluster: any) => {
     if (!cityFilter || cityFilter === "all") return true;
-    const selectedCity = (cities as any[])?.find((city: any) => city.name === cityFilter);
+    const selectedCity = Array.isArray(cities) ? cities.find((city: any) => city.name === cityFilter) : null;
     return selectedCity && cluster.city_id === selectedCity.id;
-  });
+  }) : [];
 
   const updatePrescreeningMutation = useMutation({
     mutationFn: async ({ id, marks, notes }: { id: number; marks: number; notes: string }) => {
@@ -123,7 +123,7 @@ export default function Prescreening() {
   };
 
   // Filter candidates to show prescreening history (pending, passed, rejected)
-  const filteredCandidates = (candidates as any[])?.filter((candidate: any) => {
+  const filteredCandidates = Array.isArray(candidates) ? candidates.filter((candidate: any) => {
     // Show candidates who are in prescreening, passed to technical, or rejected after screening
     const isPrescreeningRelated = candidate.status === 'prescreening' || 
       candidate.status === 'technical' ||
@@ -143,7 +143,7 @@ export default function Prescreening() {
     if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;
     if (dateRange.to && new Date(candidate.createdAt) > new Date(dateRange.to)) return false;
     return true;
-  });
+  }) : [];
 
   // Pagination
   const totalPages = Math.ceil((filteredCandidates?.length || 0) / itemsPerPage);
