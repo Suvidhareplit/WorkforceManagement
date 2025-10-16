@@ -146,8 +146,8 @@ export default function Prescreening() {
   }) : [];
 
   // Pagination
-  const totalPages = Math.ceil((filteredCandidates?.length || 0) / itemsPerPage);
-  const paginatedCandidates = filteredCandidates?.slice(
+  const totalPages = Math.ceil((filteredCandidates.length || 0) / itemsPerPage);
+  const paginatedCandidates = filteredCandidates.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -277,14 +277,14 @@ export default function Prescreening() {
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : !paginatedCandidates || paginatedCandidates.length === 0 ? (
+              ) : !Array.isArray(paginatedCandidates) || paginatedCandidates.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-8">
                     No candidates found
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedCandidates.map((candidate: any) => (
+                Array.isArray(paginatedCandidates) && paginatedCandidates.map((candidate: any) => (
                   <TableRow key={candidate.id}>
                     <TableCell className="font-mono text-sm text-slate-600">{candidate.applicationId || 'N/A'}</TableCell>
                     <TableCell className="font-medium text-slate-900">{candidate.name}</TableCell>
