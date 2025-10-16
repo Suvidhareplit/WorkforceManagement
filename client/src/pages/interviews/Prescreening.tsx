@@ -135,8 +135,8 @@ export default function Prescreening() {
     // Status filter (pending, passed, rejected)
     if (statusFilter && statusFilter !== "all") {
       if (statusFilter === "pending" && candidate.screeningScore !== null) return false;
-      if (statusFilter === "passed" && candidate.status !== 'technical') return false;
-      if (statusFilter === "rejected" && candidate.status !== 'rejected') return false;
+      if (statusFilter === "passed" && !(candidate.status === 'technical' || candidate.benchmarkMet === true || candidate.benchmarkMet === 1)) return false;
+      if (statusFilter === "rejected" && !(candidate.status === 'rejected' || candidate.benchmarkMet === false || candidate.benchmarkMet === 0)) return false;
     }
     
     if (cityFilter && cityFilter !== "all" && candidate.cityName !== cityFilter) return false;
