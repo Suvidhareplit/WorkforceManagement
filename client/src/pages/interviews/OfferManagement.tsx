@@ -236,7 +236,7 @@ export default function OfferManagement() {
                                 </div>
 
                                 <div>
-                                  <Label htmlFor="salary" className="text-base font-medium">Gross Salary (Annual) <span className="text-red-500">*</span></Label>
+                                  <Label htmlFor="salary" className="text-base font-medium">Gross Salary (Monthly) <span className="text-red-500">*</span></Label>
                                   <div className="relative mt-2">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 font-medium">
                                       Gross Rs.
@@ -246,17 +246,17 @@ export default function OfferManagement() {
                                       type="text"
                                       value={grossSalary}
                                       onChange={(e) => {
-                                        // Only allow numbers and format with commas
+                                        // Only allow numbers
                                         const value = e.target.value.replace(/[^0-9]/g, '');
                                         setGrossSalary(value);
                                       }}
-                                      placeholder="Enter amount in thousands (e.g., 500000)"
+                                      placeholder="Enter monthly amount (e.g., 25000)"
                                       className="pl-24"
                                     />
                                   </div>
                                   {grossSalary && (
                                     <p className="text-sm text-slate-600 mt-1">
-                                      Amount: ₹{parseInt(grossSalary).toLocaleString('en-IN')} per annum
+                                      Monthly: ₹{parseInt(grossSalary).toLocaleString('en-IN')} | Annual: ₹{(parseInt(grossSalary) * 12).toLocaleString('en-IN')}
                                     </p>
                                   )}
                                 </div>
