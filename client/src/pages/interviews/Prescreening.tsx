@@ -132,11 +132,24 @@ export default function Prescreening() {
     
     if (!isPrescreeningRelated) return false;
     
-    // Status filter (pending, passed, rejected)
+    // Status filter (pending, passed, rejected) - Based on PRESCREENING results
     if (statusFilter && statusFilter !== "all") {
+      // Pending: Not yet evaluated in prescreening (no screening score)
       if (statusFilter === "pending" && candidate.screeningScore !== null) return false;
-      if (statusFilter === "passed" && !(candidate.status === 'technical' || candidate.benchmarkMet === true || candidate.benchmarkMet === 1)) return false;
-      if (statusFilter === "rejected" && !(candidate.status === 'rejected' || candidate.benchmarkMet === false || candidate.benchmarkMet === 0)) return false;
+      
+      // Passed: Passed prescreening benchmark (moved to technical or benchmarkMet = true)
+      if (statusFilter === "passed") {
+        const passedPrescreening = (candidate.benchmarkMet === true || candidate.benchmarkMet === 1) && candidate.screeningScore !== null;
+        if (!passedPrescreening) return false;
+      }
+      
+      // Rejected: Failed prescreening benchmark (rejected at prescreening stage)
+      if (statusFilter === "rejected") {
+        const rejectedAtPrescreening = (candidate.benchmarkMet === false || candidate.benchmarkMet === 0) && 
+                                        candidate.screeningScore !== null &&
+                                        candidate.status === 'rejected';
+        if (!rejectedAtPrescreening) return false;
+      }
     }
     
     if (cityFilter && cityFilter !== "all" && candidate.cityName !== cityFilter) return false;
