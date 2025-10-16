@@ -22,12 +22,31 @@ export default function OfferManagement() {
   const [grossSalary, setGrossSalary] = useState("");
   const { toast } = useToast();
 
-  const { data: selectedCandidates, isLoading: loadingSelected } = useQuery({
+  const { data: selectedCandidatesResponse, isLoading: loadingSelected } = useQuery({
     queryKey: ["/api/interviews/candidates", { status: "selected" }],
+    queryFn: async () => {
+      const response = await apiRequest("/api/interviews/candidates?status=selected", { method: "GET" });
+      return response;
+    },
   });
 
-  const { data: offeredCandidates, isLoading: loadingOffered } = useQuery({
+  const { data: offeredCandidatesResponse, isLoading: loadingOffered } = useQuery({
     queryKey: ["/api/interviews/candidates", { status: "offered" }],
+    queryFn: async () => {
+      const response = await apiRequest("/api/interviews/candidates?status=offered", { method: "GET" });
+      return response;
+    },
+  });
+
+  // Extract data from API responses
+  const selectedCandidates = (selectedCandidatesResponse as any)?.data || [];
+  const offeredCandidates = (offeredCandidatesResponse as any)?.data || [];
+
+  console.log('📋 Offer Management Data:', {
+    selectedCount: selectedCandidates.length,
+    offeredCount: offeredCandidates.length,
+    selectedCandidates: selectedCandidates.slice(0, 2),
+    offeredCandidates: offeredCandidates.slice(0, 2)
   });
 
   const updateOfferMutation = useMutation({
