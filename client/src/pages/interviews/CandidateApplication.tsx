@@ -22,6 +22,10 @@ import { Label } from "@/components/ui/label";
 const candidateSchema = z.object({
   name: z.string().min(1, "Name is required"),
   phone: z.string().min(10, "Valid phone number is required"),
+  aadharNumber: z.string()
+    .regex(/^\d{12}$/, "Aadhar number must be exactly 12 digits")
+    .optional()
+    .or(z.literal("")),
   email: z.string().email("Valid email is required"),
   roleId: z.string().min(1, "Role is required"),
   cityId: z.string().min(1, "City is required"),
@@ -735,6 +739,11 @@ export default function CandidateApplication() {
         resumeSource: data.resumeSource,
       };
       
+      // Add aadharNumber if provided
+      if (data.aadharNumber && data.aadharNumber.trim() !== '') {
+        payload.aadharNumber = data.aadharNumber;
+      }
+      
       console.log('Payload being sent to API:', payload);
 
       if (vendorName) payload.vendor = vendorName;
@@ -922,6 +931,29 @@ export default function CandidateApplication() {
                         <FormLabel>Phone Number</FormLabel>
                         <FormControl>
                           <Input placeholder="10-digit phone number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="aadharNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Aadhar Number (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="12-digit Aadhar number" 
+                            maxLength={12}
+                            {...field} 
+                            onChange={(e) => {
+                              // Only allow digits
+                              const value = e.target.value.replace(/\D/g, '');
+                              field.onChange(value);
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

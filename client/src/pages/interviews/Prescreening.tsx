@@ -262,6 +262,7 @@ export default function Prescreening() {
                 <TableHead className="font-semibold text-slate-700">Application ID</TableHead>
                 <TableHead className="font-semibold text-slate-700">Candidate Name</TableHead>
                 <TableHead className="font-semibold text-slate-700">Contact Number</TableHead>
+                <TableHead className="font-semibold text-slate-700">Aadhar Number</TableHead>
                 <TableHead className="font-semibold text-slate-700">Location</TableHead>
                 <TableHead className="font-semibold text-slate-700">Cluster</TableHead>
                 <TableHead className="font-semibold text-slate-700">Position</TableHead>
@@ -273,13 +274,13 @@ export default function Prescreening() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={10} className="text-center py-8">
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : !Array.isArray(paginatedCandidates) || paginatedCandidates.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8">
+                  <TableCell colSpan={10} className="text-center py-8">
                     No candidates found
                   </TableCell>
                 </TableRow>
@@ -289,6 +290,7 @@ export default function Prescreening() {
                     <TableCell className="font-mono text-sm text-slate-600">{candidate.applicationId || 'N/A'}</TableCell>
                     <TableCell className="font-medium text-slate-900">{candidate.name}</TableCell>
                     <TableCell className="text-slate-700">{candidate.phone}</TableCell>
+                    <TableCell className="font-mono text-sm text-slate-600">{candidate.aadharNumber || 'N/A'}</TableCell>
                     <TableCell className="text-slate-700">{candidate.cityName}</TableCell>
                     <TableCell className="text-slate-700">{candidate.clusterName}</TableCell>
                     <TableCell className="text-slate-700">{candidate.roleName}</TableCell>

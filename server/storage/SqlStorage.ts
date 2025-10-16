@@ -780,6 +780,7 @@ export class SqlStorage implements IStorage {
     const {
       name,
       phone,
+      aadharNumber,
       email,
       role,
       city,
@@ -794,6 +795,21 @@ export class SqlStorage implements IStorage {
     // Validate required fields
     if (!resumeSource) {
       throw new Error('Resume source is required');
+    }
+    
+    // Validate Aadhar Number (must be exactly 12 digits)
+    if (aadharNumber) {
+      const aadharRegex = /^\d{12}$/;
+      if (!aadharRegex.test(aadharNumber)) {
+        throw new Error('Aadhar number must be exactly 12 digits');
+      }
+      
+      // Check for duplicate Aadhar number
+      const duplicateCheck = await query('SELECT id, name, status FROM candidates WHERE aadhar_number = ?', [aadharNumber]);
+      if (duplicateCheck.rows.length > 0) {
+        const existingCandidate = duplicateCheck.rows[0] as any;
+        throw new Error(`Duplicate Aadhar Number! This Aadhar is already registered for candidate: ${existingCandidate.name} (Status: ${existingCandidate.status}). This may be a rejoiner.`);
+      }
     }
     
     // Get IDs and codes from names
@@ -855,12 +871,12 @@ export class SqlStorage implements IStorage {
 
     const insertResult = await query(`
       INSERT INTO candidates (
-        application_id, name, phone, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
+        application_id, name, phone, aadhar_number, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
         qualification, resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
     `, [
-      applicationId, name, phone, email, roleId, role, cityId, city, clusterId, cluster,
+      applicationId, name, phone, aadharNumber, email, roleId, role, cityId, city, clusterId, cluster,
       qualification, resumeSource, vendorId, vendorName, recruiterId, recruiterName, referralName
     ]);
     
