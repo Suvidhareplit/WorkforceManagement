@@ -22,7 +22,7 @@ interface HiringRequest {
   clusterName: string;
   roleId: number;
   roleName: string;
-  numberOfPositions: number;
+  noOfOpenings: number;
   priority: string;
   requestType: string;
   status: string;
@@ -179,7 +179,7 @@ export default function HiringAnalytics() {
     acc[cityKey].clusters.add(clusterKey);
     
     // Only count open positions (not closed)
-    const numberOfPositions = request.number_of_positions || request.numberOfPositions;
+    const numberOfPositions = request.no_of_openings || request.noOfOpenings;
     if (request.status !== 'closed') {
       acc[cityKey].roles[roleKey].clusters[clusterKey].openPositions += numberOfPositions;
       acc[cityKey].roles[roleKey].totalOpenPositions += numberOfPositions;
@@ -571,7 +571,7 @@ export default function HiringAnalytics() {
             <div className="text-2xl font-bold">
               {filteredRequests
                 .filter((req: HiringRequest) => req.status !== 'closed')
-                .reduce((sum: number, req: HiringRequest) => sum + (req.numberOfPositions || 0), 0)}
+                .reduce((sum: number, req: HiringRequest) => sum + (req.noOfOpenings || 0), 0)}
             </div>
           </CardContent>
         </Card>
@@ -584,7 +584,7 @@ export default function HiringAnalytics() {
             <div className="text-2xl font-bold">
               {filteredRequests
                 .filter((req: HiringRequest) => req.status === 'closed')
-                .reduce((sum: number, req: HiringRequest) => sum + (req.numberOfPositions || 0), 0)}
+                .reduce((sum: number, req: HiringRequest) => sum + (req.noOfOpenings || 0), 0)}
             </div>
           </CardContent>
         </Card>
@@ -742,7 +742,7 @@ export default function HiringAnalytics() {
                   <TableCell>{request.cityName}</TableCell>
                   <TableCell>{request.clusterName}</TableCell>
                   <TableCell>{request.roleName}</TableCell>
-                  <TableCell>{request.numberOfPositions}</TableCell>
+                  <TableCell>{request.noOfOpenings}</TableCell>
                   <TableCell>
                     <Badge className={getPriorityColor(request.priority)}>
                       {request.priority}
