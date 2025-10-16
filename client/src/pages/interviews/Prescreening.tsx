@@ -122,10 +122,11 @@ export default function Prescreening() {
     });
   };
 
-  // Filter candidates to show prescreening history (pending, passed, rejected)
+  // Filter candidates to show prescreening history (applied, pending, passed, rejected)
   const filteredCandidates = Array.isArray(candidates) ? candidates.filter((candidate: any) => {
-    // Show candidates who are in prescreening, passed to technical, or rejected after screening
-    const isPrescreeningRelated = candidate.status === 'prescreening' || 
+    // Show candidates who need prescreening (applied) or have been screened
+    const isPrescreeningRelated = candidate.status === 'applied' ||
+      candidate.status === 'prescreening' || 
       candidate.status === 'technical' ||
       (candidate.status === 'rejected' && candidate.screeningScore !== null);
     
