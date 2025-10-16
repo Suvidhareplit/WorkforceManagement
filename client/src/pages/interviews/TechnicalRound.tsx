@@ -93,8 +93,8 @@ export default function TechnicalRound() {
   }) : [];
 
   // Pagination
-  const totalPages = Math.ceil((filteredCandidates?.length || 0) / itemsPerPage);
-  const paginatedCandidates = filteredCandidates?.slice(
+  const totalPages = Math.ceil((filteredCandidates.length || 0) / itemsPerPage);
+  const paginatedCandidates = filteredCandidates.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -332,14 +332,14 @@ export default function TechnicalRound() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : !paginatedCandidates || paginatedCandidates.length === 0 ? (
+                ) : !Array.isArray(paginatedCandidates) || paginatedCandidates.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8">
                       No candidates for technical interview
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedCandidates.map((candidate: Candidate) => (
+                  Array.isArray(paginatedCandidates) && paginatedCandidates.map((candidate: Candidate) => (
                     <TableRow key={candidate.id}>
                       <TableCell className="font-medium text-slate-900">{candidate.name}</TableCell>
                       <TableCell className="text-slate-700">{(candidate as any).cityName}</TableCell>
