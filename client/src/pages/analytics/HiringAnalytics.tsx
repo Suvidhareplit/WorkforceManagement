@@ -300,9 +300,9 @@ export default function HiringAnalytics() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Hiring Analytics</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Open Mandates Overview</h1>
           <p className="text-muted-foreground">
-            Analyze hiring requests by city, role, and cluster with vendor email functionality
+            Monitor open hiring mandates by city, role, and cluster with vendor email functionality
           </p>
         </div>
         <div className="flex gap-2">
@@ -504,6 +504,17 @@ export default function HiringAnalytics() {
             <div className="flex-1">
               <Label>City</Label>
               <Select value={cityFilter} onValueChange={setCityFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {(cities as any[]).map((city: any) => (
+                    <SelectItem key={city.id} value={city.id.toString()}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div className="flex-1">
@@ -559,8 +570,8 @@ export default function HiringAnalytics() {
           <CardContent>
             <div className="text-2xl font-bold">
               {filteredRequests
-                .filter((req: HiringRequest) => req.status === 'open')
-                .reduce((sum: number, req: HiringRequest) => sum + req.numberOfPositions, 0)}
+                .filter((req: HiringRequest) => req.status !== 'closed')
+                .reduce((sum: number, req: HiringRequest) => sum + (req.numberOfPositions || 0), 0)}
             </div>
           </CardContent>
         </Card>
@@ -573,7 +584,7 @@ export default function HiringAnalytics() {
             <div className="text-2xl font-bold">
               {filteredRequests
                 .filter((req: HiringRequest) => req.status === 'closed')
-                .reduce((sum: number, req: HiringRequest) => sum + req.numberOfPositions, 0)}
+                .reduce((sum: number, req: HiringRequest) => sum + (req.numberOfPositions || 0), 0)}
             </div>
           </CardContent>
         </Card>
