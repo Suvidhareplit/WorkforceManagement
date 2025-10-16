@@ -23,9 +23,8 @@ const candidateSchema = z.object({
   name: z.string().min(1, "Name is required"),
   phone: z.string().min(10, "Valid phone number is required"),
   aadharNumber: z.string()
-    .regex(/^\d{12}$/, "Aadhar number must be exactly 12 digits")
-    .optional()
-    .or(z.literal("")),
+    .min(12, "Aadhar number is required")
+    .regex(/^\d{12}$/, "Aadhar number must be exactly 12 digits"),
   email: z.string().email("Valid email is required"),
   roleId: z.string().min(1, "Role is required"),
   cityId: z.string().min(1, "City is required"),
@@ -739,10 +738,8 @@ export default function CandidateApplication() {
         resumeSource: data.resumeSource,
       };
       
-      // Add aadharNumber if provided
-      if (data.aadharNumber && data.aadharNumber.trim() !== '') {
-        payload.aadharNumber = data.aadharNumber;
-      }
+      // Add aadharNumber (mandatory)
+      payload.aadharNumber = data.aadharNumber;
       
       console.log('Payload being sent to API:', payload);
 
@@ -942,10 +939,10 @@ export default function CandidateApplication() {
                     name="aadharNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Aadhar Number (Optional)</FormLabel>
+                        <FormLabel>Aadhar Number <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="12-digit Aadhar number" 
+                            placeholder="12-digit Aadhar number (Required)" 
                             maxLength={12}
                             {...field} 
                             onChange={(e) => {

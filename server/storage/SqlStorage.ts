@@ -797,19 +797,21 @@ export class SqlStorage implements IStorage {
       throw new Error('Resume source is required');
     }
     
-    // Validate Aadhar Number (must be exactly 12 digits)
-    if (aadharNumber) {
-      const aadharRegex = /^\d{12}$/;
-      if (!aadharRegex.test(aadharNumber)) {
-        throw new Error('Aadhar number must be exactly 12 digits');
-      }
-      
-      // Check for duplicate Aadhar number
-      const duplicateCheck = await query('SELECT id, name, status FROM candidates WHERE aadhar_number = ?', [aadharNumber]);
-      if (duplicateCheck.rows.length > 0) {
-        const existingCandidate = duplicateCheck.rows[0] as any;
-        throw new Error(`Duplicate Aadhar Number! This Aadhar is already registered for candidate: ${existingCandidate.name} (Status: ${existingCandidate.status}). This may be a rejoiner.`);
-      }
+    // Validate Aadhar Number (MANDATORY - must be exactly 12 digits)
+    if (!aadharNumber) {
+      throw new Error('Aadhar number is required');
+    }
+    
+    const aadharRegex = /^\d{12}$/;
+    if (!aadharRegex.test(aadharNumber)) {
+      throw new Error('Aadhar number must be exactly 12 digits');
+    }
+    
+    // Check for duplicate Aadhar number
+    const duplicateCheck = await query('SELECT id, name, status FROM candidates WHERE aadhar_number = ?', [aadharNumber]);
+    if (duplicateCheck.rows.length > 0) {
+      const existingCandidate = duplicateCheck.rows[0] as any;
+      throw new Error(`Duplicate Aadhar Number! This Aadhar is already registered for candidate: ${existingCandidate.name} (Status: ${existingCandidate.status}). This may be a rejoiner.`);
     }
     
     // Get IDs and codes from names
