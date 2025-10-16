@@ -26,12 +26,19 @@ export default function TechnicalRound() {
   const { toast } = useToast();
 
   // Get all candidates
-  const { data: allCandidates, isLoading: candidatesLoading, refetch: refetchCandidates } = useQuery({
+  const { data: allCandidates, isLoading: candidatesLoading, refetch: refetchCandidates, error: candidatesError } = useQuery({
     queryKey: ["/api/interviews/candidates"],
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('TechnicalRound - Candidates:', allCandidates);
+    console.log('TechnicalRound - Loading:', candidatesLoading);
+    console.log('TechnicalRound - Error:', candidatesError);
+  }, [allCandidates, candidatesLoading, candidatesError]);
 
   const { data: cities, isLoading: citiesLoading, refetch: refetchCities } = useQuery({
     queryKey: ["/api/master-data/city"],
