@@ -14,25 +14,34 @@ export default function Dashboard() {
 
   console.log('🏠 Dashboard component rendering...');
 
-  // Fetch data from APIs
+  // Fetch data from APIs with refetch on window focus
   const { data: citiesResponse, isLoading: loadingCities } = useQuery({
     queryKey: ['/api/master-data/city'],
     queryFn: () => api.masterData.getCities(),
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always refetch when component mounts
   });
 
   const { data: rolesResponse, isLoading: loadingRoles } = useQuery({
     queryKey: ['/api/master-data/role'],
     queryFn: () => api.masterData.getRoles(),
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   const { data: clustersResponse } = useQuery({
     queryKey: ['/api/master-data/cluster'],
     queryFn: () => api.masterData.getClusters(),
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   const { data: hiringResponse, isLoading: loadingHiring } = useQuery({
     queryKey: ['/api/hiring'],
     queryFn: () => api.hiring.getRequests(),
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0, // Always fetch fresh data
   });
 
   // Extract data from API responses
@@ -40,6 +49,16 @@ export default function Dashboard() {
   const rolesData = (rolesResponse as any)?.data || [];
   const clustersData = (clustersResponse as any)?.data || [];
   const hiringRequestsData = (hiringResponse as any)?.data || [];
+
+  console.log('📊 Dashboard Data:', {
+    citiesCount: citiesData.length,
+    rolesCount: rolesData.length,
+    clustersCount: clustersData.length,
+    hiringRequestsCount: hiringRequestsData.length,
+    selectedCity,
+    citiesData: citiesData.slice(0, 3),
+    hiringRequestsData: hiringRequestsData.slice(0, 3)
+  });
 
   // Filter hiring requests based on selected city and priority
   const filteredHiringRequests = (hiringRequestsData as any[])?.filter((req: any) => {
