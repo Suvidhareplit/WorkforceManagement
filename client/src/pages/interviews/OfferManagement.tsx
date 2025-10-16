@@ -127,24 +127,25 @@ export default function OfferManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Cluster</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Location</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Source</TableHead>
-                  <TableHead>Technical Score</TableHead>
+                  <TableHead>Interview Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loadingSelected ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : (selectedCandidates as any[])?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       No selected candidates awaiting offers
                     </TableCell>
                   </TableRow>
@@ -152,13 +153,9 @@ export default function OfferManagement() {
                   (selectedCandidates as any[])?.map((candidate: any) => (
                     <TableRow key={candidate.id}>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
-                      <TableCell>{candidate.role?.name}</TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div>{candidate.city?.name}</div>
-                          <div className="text-slate-500">{candidate.cluster?.name}</div>
-                        </div>
-                      </TableCell>
+                      <TableCell>{candidate.cityName || candidate.city?.name || '-'}</TableCell>
+                      <TableCell>{candidate.clusterName || candidate.cluster?.name || '-'}</TableCell>
+                      <TableCell>{candidate.roleName || candidate.role?.name || '-'}</TableCell>
                       <TableCell>
                         <div className="text-sm">
                           <div>{candidate.phone}</div>
@@ -169,8 +166,8 @@ export default function OfferManagement() {
                         {getSourceDisplay(candidate)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="font-mono">
-                          {candidate.screeningScore}%
+                        <Badge variant="default" className="bg-green-600">
+                          Selected
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -194,43 +191,37 @@ export default function OfferManagement() {
                               <DialogTitle>Send Job Offer - {candidate.name}</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <h4 className="font-medium mb-2">Candidate Details</h4>
-                                  <div className="space-y-1 text-sm">
-                                    <div><strong>Name:</strong> {candidate.name}</div>
-                                    <div><strong>Role:</strong> {candidate.role?.name}</div>
-                                    <div><strong>Phone:</strong> {candidate.phone}</div>
-                                    <div><strong>Email:</strong> {candidate.email}</div>
-                                  </div>
-                                </div>
-                                <div>
-                                  <h4 className="font-medium mb-2">Assessment Results</h4>
-                                  <div className="space-y-1 text-sm">
-                                    <div><strong>Screening Score:</strong> {candidate.screeningScore}%</div>
-                                    <div><strong>Technical Status:</strong> {candidate.technicalStatus}</div>
-                                    <div><strong>Source:</strong> {getSourceDisplay(candidate)}</div>
-                                  </div>
+                              <div className="bg-slate-50 p-4 rounded-lg mb-4">
+                                <h4 className="font-medium mb-3">Candidate Details</h4>
+                                <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                                  <div><strong>Name:</strong> {candidate.name}</div>
+                                  <div><strong>City:</strong> {candidate.cityName || candidate.city?.name}</div>
+                                  <div><strong>Cluster:</strong> {candidate.clusterName || candidate.cluster?.name}</div>
+                                  <div><strong>Role:</strong> {candidate.roleName || candidate.role?.name}</div>
+                                  <div><strong>Phone:</strong> {candidate.phone}</div>
+                                  <div><strong>Email:</strong> {candidate.email}</div>
+                                  <div><strong>Source:</strong> {getSourceDisplay(candidate)}</div>
+                                  <div><strong>Interview Status:</strong> <Badge variant="default" className="bg-green-600">Selected</Badge></div>
                                 </div>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-4">
                                 <div>
-                                  <Label>Date of Joining</Label>
+                                  <Label className="text-base font-medium">Date of Joining (DOJ) <span className="text-red-500">*</span></Label>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <Button
                                         variant="outline"
                                         className={cn(
-                                          "w-full justify-start text-left font-normal",
+                                          "w-full justify-start text-left font-normal mt-2",
                                           !dateOfJoining && "text-muted-foreground"
                                         )}
                                       >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {dateOfJoining ? format(dateOfJoining, "PPP") : "Pick a date"}
+                                        {dateOfJoining ? format(dateOfJoining, "PPP") : "Select date of joining"}
                                       </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
+                                    <PopoverContent className="w-auto p-0" align="start">
                                       <Calendar
                                         mode="single"
                                         selected={dateOfJoining}
@@ -245,14 +236,29 @@ export default function OfferManagement() {
                                 </div>
 
                                 <div>
-                                  <Label htmlFor="salary">Gross Salary (Annual)</Label>
-                                  <Input
-                                    id="salary"
-                                    type="number"
-                                    value={grossSalary}
-                                    onChange={(e) => setGrossSalary(e.target.value)}
-                                    placeholder="Enter salary amount"
-                                  />
+                                  <Label htmlFor="salary" className="text-base font-medium">Gross Salary (Annual) <span className="text-red-500">*</span></Label>
+                                  <div className="relative mt-2">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 font-medium">
+                                      Gross Rs.
+                                    </span>
+                                    <Input
+                                      id="salary"
+                                      type="text"
+                                      value={grossSalary}
+                                      onChange={(e) => {
+                                        // Only allow numbers and format with commas
+                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                        setGrossSalary(value);
+                                      }}
+                                      placeholder="Enter amount in thousands (e.g., 500000)"
+                                      className="pl-24"
+                                    />
+                                  </div>
+                                  {grossSalary && (
+                                    <p className="text-sm text-slate-600 mt-1">
+                                      Amount: ₹{parseInt(grossSalary).toLocaleString('en-IN')} per annum
+                                    </p>
+                                  )}
                                 </div>
                               </div>
 
