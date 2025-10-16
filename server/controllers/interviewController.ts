@@ -22,7 +22,7 @@ const createCandidate = async (req: Request, res: Response) => {
     // Return the complete candidate data
     res.status(201).json({
       data: candidate,
-      message: candidate.message || `Application submitted successfully. Your Application ID is: ${candidate?.id || 'N/A'}`
+      message: candidate.message || `Application submitted successfully. Your Application ID is: ${candidate?.applicationId || 'N/A'}`
     });
   } catch (error: any) {
     console.error('Create candidate error:', error);

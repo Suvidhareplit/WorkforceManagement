@@ -796,18 +796,41 @@ export class SqlStorage implements IStorage {
       throw new Error('Resume source is required');
     }
     
-    // Get IDs from names
-    const roleResult = await query('SELECT id FROM roles WHERE name = ?', [role]);
-    const cityResult = await query('SELECT id FROM cities WHERE name = ?', [city]);
-    const clusterResult = await query('SELECT id FROM clusters WHERE name = ?', [cluster]);
+    // Get IDs and codes from names
+    const roleResult = await query('SELECT id, code FROM roles WHERE name = ?', [role]);
+    const cityResult = await query('SELECT id, code FROM cities WHERE name = ?', [city]);
+    const clusterResult = await query('SELECT id, code FROM clusters WHERE name = ?', [cluster]);
     
     if (!roleResult.rows[0] || !cityResult.rows[0] || !clusterResult.rows[0]) {
       throw new Error('Invalid role, city, or cluster');
     }
     
     const roleId = (roleResult.rows[0] as any).id;
+    const roleCode = (roleResult.rows[0] as any).code;
     const cityId = (cityResult.rows[0] as any).id;
+    const cityCode = (cityResult.rows[0] as any).code;
     const clusterId = (clusterResult.rows[0] as any).id;
+    const clusterCode = (clusterResult.rows[0] as any).code;
+    
+    // Generate Application ID: CITY_CLUSTER_ROLE_FIRST3LETTERS_SEQUENCE
+    const namePrefix = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
+    const basePattern = `${cityCode}_${clusterCode}_${roleCode}_${namePrefix}_%`;
+    
+    // Get the next sequence number for this pattern
+    const seqResult = await query(`
+      SELECT application_id FROM candidates 
+      WHERE application_id LIKE ? 
+      ORDER BY application_id DESC LIMIT 1
+    `, [basePattern]);
+    
+    let nextSeq = 1;
+    if (seqResult.rows[0]) {
+      const lastId = (seqResult.rows[0] as any).application_id;
+      const lastSeqStr = lastId.split('_').pop();
+      nextSeq = parseInt(lastSeqStr) + 1;
+    }
+    
+    const applicationId = `${cityCode}_${clusterCode}_${roleCode}_${namePrefix}_${String(nextSeq).padStart(4, '0')}`;
     
     let vendorId = null;
     let vendorName = null;
@@ -832,18 +855,19 @@ export class SqlStorage implements IStorage {
 
     const insertResult = await query(`
       INSERT INTO candidates (
-        name, phone, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
+        application_id, name, phone, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
         qualification, resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
     `, [
-      name, phone, email, roleId, role, cityId, city, clusterId, cluster,
+      applicationId, name, phone, email, roleId, role, cityId, city, clusterId, cluster,
       qualification, resumeSource, vendorId, vendorName, recruiterId, recruiterName, referralName
     ]);
     
-    // Return a simple success response without trying to fetch the created record
+    // Return success response with application ID
     return {
       id: 'pending',
+      applicationId,
       name,
       phone,
       email,
@@ -856,7 +880,7 @@ export class SqlStorage implements IStorage {
       recruiterName,
       referralName,
       status: 'applied',
-      message: 'Candidate application submitted successfully'
+      message: `Candidate application submitted successfully. Your Application ID is: ${applicationId}`
     };
   }
 
