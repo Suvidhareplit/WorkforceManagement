@@ -6,6 +6,7 @@ const storage = getStorage();
 interface BulkCandidateRow {
   name: string;
   phone: string;
+  aadharNumber: string;
   email: string;
   role: string;
   city: string;
@@ -83,12 +84,16 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
     const validQualifications = ['8th-10th', '11th-12th', 'Graduation', 'B.Tech', 'Diploma', 'ITI'];
     const validResumeSources = ['vendor', 'field_recruiter', 'referral'];
 
+    // Track Aadhar numbers to check for duplicates within the file
+    const aadharNumbersInFile = new Map<string, number>();
+
     // Validate each row
     const validatedRows: ValidatedRow[] = records.map((record, index) => {
       const row: ValidatedRow = {
         row: index + 2, // Account for header row
         name: record.name || '',
         phone: record.phone || '',
+        aadharNumber: record.aadharNumber || record.aadhar_number || '',
         email: record.email || '',
         role: record.role || '',
         city: record.city || '',
@@ -106,6 +111,25 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
 
       if (!row.phone || row.phone.length < 10) {
         row.errors.push({ row: row.row, field: 'phone', value: row.phone, message: 'Valid phone number is required' });
+      }
+
+      // Validate Aadhar Number (MANDATORY)
+      if (!row.aadharNumber) {
+        row.errors.push({ row: row.row, field: 'aadharNumber', value: row.aadharNumber, message: 'Aadhar number is required' });
+      } else if (!/^\d{12}$/.test(row.aadharNumber)) {
+        row.errors.push({ row: row.row, field: 'aadharNumber', value: row.aadharNumber, message: 'Aadhar number must be exactly 12 digits' });
+      } else {
+        // Check for duplicates within the file
+        if (aadharNumbersInFile.has(row.aadharNumber)) {
+          row.errors.push({ 
+            row: row.row, 
+            field: 'aadharNumber', 
+            value: row.aadharNumber, 
+            message: `Duplicate Aadhar in file (also in row ${aadharNumbersInFile.get(row.aadharNumber)})` 
+          });
+        } else {
+          aadharNumbersInFile.set(row.aadharNumber, row.row);
+        }
       }
 
       if (!row.email || !row.email.includes('@')) {
@@ -233,6 +257,7 @@ export const processBulkUpload = async (req: Request, res: Response) => {
         const newCandidate = await storage.createCandidate({
           name: candidate.name,
           phone: candidate.phone,
+          aadharNumber: candidate.aadharNumber || candidate.aadhar_number,
           email: candidate.email,
           role: candidate.role,
           city: candidate.city,

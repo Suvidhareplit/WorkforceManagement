@@ -40,6 +40,7 @@ interface ValidatedRow {
   row: number;
   name: string;
   phone: string;
+  aadharNumber: string;
   email: string;
   role: string;
   city: string;
@@ -217,6 +218,14 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       case 'phone':
         if (!row.phone || !/^\d{10}$/.test(row.phone)) {
           errors.push({ row: row.row, field: 'phone', value: row.phone, message: 'Valid 10-digit phone number is required' });
+        }
+        break;
+        
+      case 'aadharNumber':
+        if (!row.aadharNumber) {
+          errors.push({ row: row.row, field: 'aadharNumber', value: row.aadharNumber, message: 'Aadhar number is required' });
+        } else if (!/^\d{12}$/.test(row.aadharNumber)) {
+          errors.push({ row: row.row, field: 'aadharNumber', value: row.aadharNumber, message: 'Aadhar number must be exactly 12 digits' });
         }
         break;
         
@@ -446,6 +455,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                     <TableHead className="min-w-[70px]">Status</TableHead>
                     <TableHead className="min-w-[150px]">Name</TableHead>
                     <TableHead className="min-w-[120px]">Phone</TableHead>
+                    <TableHead className="min-w-[140px]">Aadhar Number</TableHead>
                     <TableHead className="min-w-[200px]">Email</TableHead>
                     <TableHead className="min-w-[150px]">Role</TableHead>
                     <TableHead className="min-w-[120px]">City</TableHead>
@@ -484,6 +494,21 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                         />
                         {getFieldError(row, 'phone') && (
                           <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'phone')?.message}</div>
+                        )}
+                      </TableCell>
+                      <TableCell className="min-w-[140px]">
+                        <Input
+                          value={row.aadharNumber}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            handleUpdateRow(index, 'aadharNumber', value);
+                          }}
+                          maxLength={12}
+                          placeholder="12 digits"
+                          className={`w-full ${getFieldError(row, 'aadharNumber') ? "border-red-500" : ""}`}
+                        />
+                        {getFieldError(row, 'aadharNumber') && (
+                          <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'aadharNumber')?.message}</div>
                         )}
                       </TableCell>
                       <TableCell className="min-w-[200px]">
