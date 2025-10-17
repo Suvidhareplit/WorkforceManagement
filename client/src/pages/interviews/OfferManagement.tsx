@@ -32,6 +32,8 @@ export default function OfferManagement() {
       const response = await apiRequest("/api/interviews/candidates?status=selected", { method: "GET" });
       return response;
     },
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   const { data: offeredCandidatesResponse, isLoading: loadingOffered } = useQuery({
@@ -40,6 +42,8 @@ export default function OfferManagement() {
       const response = await apiRequest("/api/interviews/candidates?status=offered", { method: "GET" });
       return response;
     },
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   // Extract data from API responses
@@ -226,13 +230,20 @@ export default function OfferManagement() {
                           </Popover>
                         ) : (
                           <div 
-                            className="cursor-pointer hover:bg-slate-100 p-2 rounded"
+                            className="cursor-pointer hover:bg-slate-100 p-2 rounded flex items-center gap-2"
                             onClick={() => {
                               setEditingDOJ(candidate.id);
                               setTempDOJ(candidate.dateOfJoining ? new Date(candidate.dateOfJoining) : undefined);
                             }}
                           >
-                            {candidate.dateOfJoining ? format(new Date(candidate.dateOfJoining), 'dd-MMM-yyyy') : 'Click to set'}
+                            {candidate.dateOfJoining ? (
+                              <>
+                                <span>{format(new Date(candidate.dateOfJoining), 'dd-MMM-yyyy')}</span>
+                                <span className="text-xs text-slate-400">(click to edit)</span>
+                              </>
+                            ) : (
+                              <span className="text-slate-400">Click to set</span>
+                            )}
                           </div>
                         )}
                       </TableCell>
@@ -263,13 +274,20 @@ export default function OfferManagement() {
                           </div>
                         ) : (
                           <div 
-                            className="cursor-pointer hover:bg-slate-100 p-2 rounded"
+                            className="cursor-pointer hover:bg-slate-100 p-2 rounded flex items-center gap-2"
                             onClick={() => {
                               setEditingGross(candidate.id);
                               setTempGross(candidate.grossSalary || '');
                             }}
                           >
-                            {candidate.grossSalary ? `₹${parseInt(candidate.grossSalary).toLocaleString('en-IN')}` : 'Click to set'}
+                            {candidate.grossSalary ? (
+                              <>
+                                <span>₹{parseInt(candidate.grossSalary).toLocaleString('en-IN')}</span>
+                                <span className="text-xs text-slate-400">(click to edit)</span>
+                              </>
+                            ) : (
+                              <span className="text-slate-400">Click to set</span>
+                            )}
                           </div>
                         )}
                       </TableCell>
@@ -281,8 +299,9 @@ export default function OfferManagement() {
                               size="sm"
                               onClick={() => {
                                 setSelectedCandidate(candidate);
-                                setDateOfJoining(undefined);
-                                setGrossSalary("");
+                                // Pre-populate with existing values
+                                setDateOfJoining(candidate.dateOfJoining ? new Date(candidate.dateOfJoining) : undefined);
+                                setGrossSalary(candidate.grossSalary || "");
                               }}
                             >
                               <Send className="h-4 w-4 mr-2" />
