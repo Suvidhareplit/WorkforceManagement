@@ -17,7 +17,6 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 export default function OfferManagement() {
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [dateOfJoining, setDateOfJoining] = useState<Date>();
   const [grossSalary, setGrossSalary] = useState("");
   const [editingDOJ, setEditingDOJ] = useState<number | null>(null);
@@ -67,24 +66,19 @@ export default function OfferManagement() {
         }
       });
     },
-    onSuccess: async () => {
-      // Invalidate all candidate queries
-      await queryClient.invalidateQueries({ 
-        queryKey: ["/api/interviews/candidates"],
-        refetchType: 'all'
+    onSuccess: () => {
+      // Just invalidate - let React Query handle the refetch
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return typeof key === 'string' && key.includes('/api/interviews/candidates');
+        }
       });
-      // Force refetch
-      await queryClient.refetchQueries({ 
-        queryKey: ["/api/interviews/candidates"],
-        type: 'all'
-      });
+      
       toast({
         title: "Success",
         description: "Offer details updated successfully",
       });
-      setSelectedCandidate(null);
-      setDateOfJoining(undefined);
-      setGrossSalary("");
       setEditingDOJ(null);
       setEditingGross(null);
     },
@@ -348,7 +342,6 @@ export default function OfferManagement() {
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                setSelectedCandidate(candidate);
                                 // Pre-populate with existing values
                                 setDateOfJoining(candidate.dateOfJoining ? new Date(candidate.dateOfJoining) : undefined);
                                 setGrossSalary(candidate.grossSalary || "");
