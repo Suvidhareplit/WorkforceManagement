@@ -67,8 +67,17 @@ export default function OfferManagement() {
         }
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
+    onSuccess: async () => {
+      // Invalidate all candidate queries
+      await queryClient.invalidateQueries({ 
+        queryKey: ["/api/interviews/candidates"],
+        refetchType: 'all'
+      });
+      // Force refetch
+      await queryClient.refetchQueries({ 
+        queryKey: ["/api/interviews/candidates"],
+        type: 'all'
+      });
       toast({
         title: "Success",
         description: "Offer details updated successfully",
