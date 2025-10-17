@@ -211,32 +211,52 @@ export default function OfferManagement() {
                       </TableCell>
                       <TableCell className="text-sm">
                         {editingDOJ === candidate.id ? (
-                          <Popover open={true} onOpenChange={(open) => !open && setEditingDOJ(null)}>
-                            <PopoverTrigger asChild>
+                          <div className="space-y-2">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full justify-start text-left font-normal"
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {tempDOJ ? format(tempDOJ, 'dd-MMM-yyyy') : 'Select date'}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={tempDOJ}
+                                  onSelect={setTempDOJ}
+                                  disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <div className="flex gap-2">
                               <Button
-                                variant="outline"
                                 size="sm"
-                                className="w-full justify-start text-left font-normal"
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {tempDOJ ? format(tempDOJ, 'dd-MMM-yyyy') : 'Select date'}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={tempDOJ}
-                                onSelect={(date) => {
-                                  setTempDOJ(date);
-                                  if (date) {
-                                    handleUpdateDOJ(candidate.id, date);
+                                onClick={() => {
+                                  if (tempDOJ) {
+                                    handleUpdateDOJ(candidate.id, tempDOJ);
                                   }
                                 }}
-                                disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
+                                disabled={!tempDOJ}
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingDOJ(null);
+                                  setTempDOJ(undefined);
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
                         ) : (
                           <div 
                             className="cursor-pointer hover:bg-slate-100 p-2 rounded flex items-center gap-2"
@@ -258,28 +278,49 @@ export default function OfferManagement() {
                       </TableCell>
                       <TableCell className="text-sm font-medium">
                         {editingGross === candidate.id ? (
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="text"
-                              value={tempGross}
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/[^0-9]/g, '');
-                                setTempGross(value);
-                              }}
-                              onBlur={() => {
-                                handleUpdateGross(candidate.id, tempGross);
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  handleUpdateGross(candidate.id, tempGross);
-                                } else if (e.key === 'Escape') {
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">₹</span>
+                              <Input
+                                type="text"
+                                value={tempGross}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/[^0-9]/g, '');
+                                  setTempGross(value);
+                                }}
+                                placeholder="Enter amount"
+                                className="w-32"
+                                autoFocus
+                              />
+                            </div>
+                            {tempGross && (
+                              <p className="text-xs text-slate-600">
+                                ₹{parseInt(tempGross).toLocaleString('en-IN')}/month
+                              </p>
+                            )}
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  if (tempGross) {
+                                    handleUpdateGross(candidate.id, tempGross);
+                                  }
+                                }}
+                                disabled={!tempGross}
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
                                   setEditingGross(null);
-                                }
-                              }}
-                              placeholder="Enter amount"
-                              className="w-32"
-                              autoFocus
-                            />
+                                  setTempGross('');
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
                           </div>
                         ) : (
                           <div 
