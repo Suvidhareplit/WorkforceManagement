@@ -206,7 +206,7 @@ const updateOffer = async (req: Request, res: Response) => {
       }
     }
     
-    res.json(candidate);
+    res.json({ data: candidate });
   } catch (error) {
     console.error('Update offer error:', error);
     res.status(500).json({ message: "Internal server error", error: error instanceof Error ? error.message : 'Unknown error' });
