@@ -157,32 +157,50 @@ const updateTechnical = async (req: Request, res: Response) => {
 const updateOffer = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { dateOfJoining, grossSalary } = req.body;
+    const { dateOfJoining, grossSalary, date_of_joining, gross_salary } = req.body;
+    
+    console.log('🔍 updateOffer called with:', {
+      id,
+      body: req.body,
+      dateOfJoining,
+      grossSalary,
+      date_of_joining,
+      gross_salary
+    });
     
     // Build update object with only provided fields
+    // Handle both camelCase and snake_case (from axios conversion)
     const updateData: any = {};
     
-    if (dateOfJoining) {
-      updateData.dateOfJoining = new Date(dateOfJoining);
+    const doj = dateOfJoining || date_of_joining;
+    const salary = grossSalary || gross_salary;
+    
+    if (doj) {
+      updateData.dateOfJoining = new Date(doj);
+      console.log('✅ Setting DOJ:', updateData.dateOfJoining);
     }
     
-    if (grossSalary) {
-      updateData.grossSalary = grossSalary.toString();
+    if (salary) {
+      updateData.grossSalary = salary.toString();
+      console.log('✅ Setting Gross:', updateData.grossSalary);
     }
     
     // Only change status to 'offered' if both DOJ and Gross are provided
-    if (dateOfJoining && grossSalary) {
+    if (doj && salary) {
       updateData.status = 'offered';
+      console.log('✅ Setting status to offered');
     }
     
+    console.log('📝 Calling updateCandidate with:', updateData);
     const candidate = await storage.updateCandidate(id, updateData);
+    console.log('✅ Updated candidate:', candidate);
     
     if (!candidate) {
       return res.status(404).json({ message: "Candidate not found" });
     }
     
     // Send offer email only when both DOJ and Gross are set (status changes to 'offered')
-    if (dateOfJoining && grossSalary) {
+    if (doj && salary) {
       try {
         if (candidate.resumeSource === 'vendor' && candidate.vendorId) {
           const vendor = await storage.getVendors().then(vendors => vendors.find(v => v.id === candidate.vendorId));
@@ -190,14 +208,14 @@ const updateOffer = async (req: Request, res: Response) => {
             await sendEmail({
               to: vendor.email,
               subject: 'Candidate Selection Notification',
-              html: `<p>Candidate ${candidate.name} has been selected with DOJ: ${dateOfJoining} and gross salary: ${grossSalary}</p>`
+              html: `<p>Candidate ${candidate.name} has been selected with DOJ: ${doj} and gross salary: ${salary}</p>`
             });
           }
         } else {
           await sendEmail({
             to: candidate.email || '',
             subject: 'Job Offer',
-            html: `<p>Congratulations! You have been selected. Your DOJ is ${dateOfJoining} with gross salary: ${grossSalary}</p>`
+            html: `<p>Congratulations! You have been selected. Your DOJ is ${doj} with gross salary: ${salary}</p>`
           });
         }
       } catch (emailError) {
