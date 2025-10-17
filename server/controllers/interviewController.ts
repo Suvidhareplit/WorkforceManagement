@@ -159,43 +159,57 @@ const updateOffer = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     const { dateOfJoining, grossSalary } = req.body;
     
-    const candidate = await storage.updateCandidate(id, {
-      dateOfJoining: new Date(dateOfJoining),
-      grossSalary: grossSalary.toString(),
-      status: 'offered'
-    });
+    // Build update object with only provided fields
+    const updateData: any = {};
+    
+    if (dateOfJoining) {
+      updateData.dateOfJoining = new Date(dateOfJoining);
+    }
+    
+    if (grossSalary) {
+      updateData.grossSalary = grossSalary.toString();
+    }
+    
+    // Only change status to 'offered' if both DOJ and Gross are provided
+    if (dateOfJoining && grossSalary) {
+      updateData.status = 'offered';
+    }
+    
+    const candidate = await storage.updateCandidate(id, updateData);
     
     if (!candidate) {
       return res.status(404).json({ message: "Candidate not found" });
     }
     
-    // Send offer email based on source
-    try {
-      if (candidate.resumeSource === 'vendor' && candidate.vendorId) {
-        const vendor = await storage.getVendors().then(vendors => vendors.find(v => v.id === candidate.vendorId));
-        if (vendor) {
+    // Send offer email only when both DOJ and Gross are set (status changes to 'offered')
+    if (dateOfJoining && grossSalary) {
+      try {
+        if (candidate.resumeSource === 'vendor' && candidate.vendorId) {
+          const vendor = await storage.getVendors().then(vendors => vendors.find(v => v.id === candidate.vendorId));
+          if (vendor) {
+            await sendEmail({
+              to: vendor.email,
+              subject: 'Candidate Selection Notification',
+              html: `<p>Candidate ${candidate.name} has been selected with DOJ: ${dateOfJoining} and gross salary: ${grossSalary}</p>`
+            });
+          }
+        } else {
           await sendEmail({
-            to: vendor.email,
-            subject: 'Candidate Selection Notification',
-            html: `<p>Candidate ${candidate.name} has been selected with DOJ: ${dateOfJoining} and gross salary: ${grossSalary}</p>`
+            to: candidate.email || '',
+            subject: 'Job Offer',
+            html: `<p>Congratulations! You have been selected. Your DOJ is ${dateOfJoining} with gross salary: ${grossSalary}</p>`
           });
         }
-      } else {
-        await sendEmail({
-          to: candidate.email || '',
-          subject: 'Job Offer',
-          html: `<p>Congratulations! You have been selected. Your DOJ is ${dateOfJoining} with gross salary: ${grossSalary}</p>`
-        });
+      } catch (emailError) {
+        console.error('Email sending error:', emailError);
+        // Don't fail the request if email fails
       }
-    } catch (emailError) {
-      console.error('Email sending error:', emailError);
-      // Don't fail the request if email fails
     }
     
     res.json(candidate);
   } catch (error) {
     console.error('Update offer error:', error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error", error: error instanceof Error ? error.message : 'Unknown error' });
   }
 };
 
