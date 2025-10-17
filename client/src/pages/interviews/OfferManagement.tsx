@@ -67,12 +67,10 @@ export default function OfferManagement() {
       });
     },
     onSuccess: () => {
-      // Just invalidate - let React Query handle the refetch
+      // Only invalidate the selected candidates query (not offered)
       queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey[0];
-          return typeof key === 'string' && key.includes('/api/interviews/candidates');
-        }
+        queryKey: ["/api/interviews/candidates", { status: "selected" }],
+        exact: true
       });
       
       toast({
