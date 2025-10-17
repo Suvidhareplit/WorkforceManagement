@@ -909,7 +909,9 @@ export class SqlStorage implements IStorage {
     for (const [key, value] of Object.entries(candidateData)) {
       if (value !== undefined) {
         // Convert camelCase to snake_case for database columns
-        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        // Remove leading underscore if present (happens when first letter is capital)
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+        console.log(`Converting field: ${key} → ${dbKey} = ${value}`);
         fields.push(`${dbKey} = ?`);
         values.push(value);
       }
