@@ -915,6 +915,12 @@ export class SqlStorage implements IStorage {
       }
     }
     
+    // If no fields to update, return current candidate
+    if (fields.length === 0) {
+      const result = await query('SELECT * FROM candidates WHERE id = ?', [id]);
+      return result.rows[0] as any || null;
+    }
+    
     values.push(id);
     await query(`UPDATE candidates SET ${fields.join(', ')} WHERE id = ?`, values);
     
