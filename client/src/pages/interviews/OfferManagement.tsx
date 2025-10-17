@@ -133,19 +133,21 @@ export default function OfferManagement() {
                   <TableHead>Contact</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Interview Status</TableHead>
+                  <TableHead>DOJ</TableHead>
+                  <TableHead>Gross (Monthly)</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loadingSelected ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={10} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : (selectedCandidates as any[])?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={10} className="text-center py-8">
                       No selected candidates awaiting offers
                     </TableCell>
                   </TableRow>
@@ -169,6 +171,12 @@ export default function OfferManagement() {
                         <Badge variant="default" className="bg-green-600">
                           Selected
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {candidate.dateOfJoining ? format(new Date(candidate.dateOfJoining), 'dd-MMM-yyyy') : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm font-medium">
+                        {candidate.grossSalary ? `₹${parseInt(candidate.grossSalary).toLocaleString('en-IN')}` : '-'}
                       </TableCell>
                       <TableCell>
                         <Dialog>
