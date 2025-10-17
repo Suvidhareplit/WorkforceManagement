@@ -20,6 +20,10 @@ export default function OfferManagement() {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [dateOfJoining, setDateOfJoining] = useState<Date>();
   const [grossSalary, setGrossSalary] = useState("");
+  const [editingDOJ, setEditingDOJ] = useState<number | null>(null);
+  const [editingGross, setEditingGross] = useState<number | null>(null);
+  const [tempDOJ, setTempDOJ] = useState<Date | undefined>();
+  const [tempGross, setTempGross] = useState("");
   const { toast } = useToast();
 
   const { data: selectedCandidatesResponse, isLoading: loadingSelected } = useQuery({
@@ -50,7 +54,7 @@ export default function OfferManagement() {
   });
 
   const updateOfferMutation = useMutation({
-    mutationFn: async ({ id, dateOfJoining, grossSalary }: { id: number; dateOfJoining: string; grossSalary: string }) => {
+    mutationFn: async ({ id, dateOfJoining, grossSalary }: { id: number; dateOfJoining?: string; grossSalary?: string }) => {
       return await apiRequest(`/api/interviews/candidates/${id}/offer`, {
         method: "PATCH",
         body: {
@@ -63,20 +67,40 @@ export default function OfferManagement() {
       queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
       toast({
         title: "Success",
-        description: "Offer sent successfully",
+        description: "Offer details updated successfully",
       });
       setSelectedCandidate(null);
       setDateOfJoining(undefined);
       setGrossSalary("");
+      setEditingDOJ(null);
+      setEditingGross(null);
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to send offer",
+        description: error.message || "Failed to update offer details",
         variant: "destructive",
       });
     },
   });
+
+  const handleUpdateDOJ = (candidateId: number, date: Date | undefined) => {
+    if (!date) return;
+    updateOfferMutation.mutate({
+      id: candidateId,
+      dateOfJoining: date.toISOString(),
+    });
+    setEditingDOJ(null);
+  };
+
+  const handleUpdateGross = (candidateId: number, salary: string) => {
+    if (!salary || salary.trim() === '') return;
+    updateOfferMutation.mutate({
+      id: candidateId,
+      grossSalary: salary,
+    });
+    setEditingGross(null);
+  };
 
   const handleSendOffer = (candidate: Candidate) => {
     if (!dateOfJoining || !grossSalary) {
@@ -173,10 +197,81 @@ export default function OfferManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm">
-                        {candidate.dateOfJoining ? format(new Date(candidate.dateOfJoining), 'dd-MMM-yyyy') : '-'}
+                        {editingDOJ === candidate.id ? (
+                          <Popover open={true} onOpenChange={(open) => !open && setEditingDOJ(null)}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full justify-start text-left font-normal"
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {tempDOJ ? format(tempDOJ, 'dd-MMM-yyyy') : 'Select date'}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={tempDOJ}
+                                onSelect={(date) => {
+                                  setTempDOJ(date);
+                                  if (date) {
+                                    handleUpdateDOJ(candidate.id, date);
+                                  }
+                                }}
+                                disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        ) : (
+                          <div 
+                            className="cursor-pointer hover:bg-slate-100 p-2 rounded"
+                            onClick={() => {
+                              setEditingDOJ(candidate.id);
+                              setTempDOJ(candidate.dateOfJoining ? new Date(candidate.dateOfJoining) : undefined);
+                            }}
+                          >
+                            {candidate.dateOfJoining ? format(new Date(candidate.dateOfJoining), 'dd-MMM-yyyy') : 'Click to set'}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-sm font-medium">
-                        {candidate.grossSalary ? `₹${parseInt(candidate.grossSalary).toLocaleString('en-IN')}` : '-'}
+                        {editingGross === candidate.id ? (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="text"
+                              value={tempGross}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                setTempGross(value);
+                              }}
+                              onBlur={() => {
+                                handleUpdateGross(candidate.id, tempGross);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleUpdateGross(candidate.id, tempGross);
+                                } else if (e.key === 'Escape') {
+                                  setEditingGross(null);
+                                }
+                              }}
+                              placeholder="Enter amount"
+                              className="w-32"
+                              autoFocus
+                            />
+                          </div>
+                        ) : (
+                          <div 
+                            className="cursor-pointer hover:bg-slate-100 p-2 rounded"
+                            onClick={() => {
+                              setEditingGross(candidate.id);
+                              setTempGross(candidate.grossSalary || '');
+                            }}
+                          >
+                            {candidate.grossSalary ? `₹${parseInt(candidate.grossSalary).toLocaleString('en-IN')}` : 'Click to set'}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Dialog>
