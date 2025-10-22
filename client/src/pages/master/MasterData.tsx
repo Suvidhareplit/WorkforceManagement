@@ -1468,12 +1468,22 @@ export default function MasterData() {
                         return;
                       }
                       
+                      const businessUnitId = parseInt(formData.businessUnit);
+                      if (isNaN(businessUnitId)) {
+                        toast({
+                          title: "Validation Error",
+                          description: "Please select a valid Business Unit",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
                       await apiRequest("/api/master-data/department", {
                         method: "POST",
                         body: {
                           name: formData.name,
                           code: formData.code,
-                          businessUnitId: parseInt(formData.businessUnit),
+                          businessUnitId: businessUnitId,
                         },
                       });
                       queryClient.invalidateQueries({ queryKey: ["/api/master-data/department"] });
@@ -1647,12 +1657,22 @@ export default function MasterData() {
                         return;
                       }
                       
+                      const departmentId = parseInt(formData.department);
+                      if (isNaN(departmentId)) {
+                        toast({
+                          title: "Validation Error",
+                          description: "Please select a valid Department",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
                       await apiRequest("/api/master-data/sub-department", {
                         method: "POST",
                         body: {
                           name: formData.name,
                           code: formData.code,
-                          departmentId: parseInt(formData.department),
+                          departmentId: departmentId,
                         },
                       });
                       queryClient.invalidateQueries({ queryKey: ["/api/master-data/sub-department"] });
