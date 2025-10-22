@@ -1442,12 +1442,7 @@ export default function MasterData() {
                   <Label htmlFor="businessUnitSelect">Business Unit</Label>
                   <Select
                     value={formData.businessUnit || ""}
-                    onValueChange={(value) => {
-                      console.log('Business Unit Select changed to:', value);
-                      const newFormData = { ...formData, businessUnit: value };
-                      setFormData(newFormData);
-                      console.log('Updated formData:', newFormData);
-                    }}
+                    onValueChange={(value) => setFormData({ ...formData, businessUnit: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select business unit" />
@@ -1464,35 +1459,12 @@ export default function MasterData() {
                 <Button
                   onClick={async () => {
                     try {
-                      console.log('=== DEPARTMENT CREATE ===');
-                      console.log('formData:', formData);
-                      console.log('formData.businessUnit:', formData.businessUnit);
-                      
-                      if (!formData.name || !formData.code || !formData.businessUnit) {
-                        toast({
-                          title: "Validation Error",
-                          description: "Please fill in all fields including Business Unit",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-                      
-                      const businessUnitId = parseInt(formData.businessUnit);
-                      if (isNaN(businessUnitId)) {
-                        toast({
-                          title: "Validation Error",
-                          description: "Please select a valid Business Unit",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-                      
                       await apiRequest("/api/master-data/department", {
                         method: "POST",
                         body: {
                           name: formData.name,
                           code: formData.code,
-                          businessUnitId: businessUnitId,
+                          businessUnitId: formData.businessUnit ? parseInt(formData.businessUnit) : null,
                         },
                       });
                       queryClient.invalidateQueries({ queryKey: ["/api/master-data/department"] });
@@ -1640,12 +1612,7 @@ export default function MasterData() {
                   <Label htmlFor="departmentSelect">Department</Label>
                   <Select
                     value={formData.department || ""}
-                    onValueChange={(value) => {
-                      console.log('Department Select changed to:', value);
-                      const newFormData = { ...formData, department: value };
-                      setFormData(newFormData);
-                      console.log('Updated formData:', newFormData);
-                    }}
+                    onValueChange={(value) => setFormData({ ...formData, department: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select department" />
@@ -1662,39 +1629,12 @@ export default function MasterData() {
                 <Button
                   onClick={async () => {
                     try {
-                      console.log('=== SUB DEPARTMENT CREATE ===');
-                      console.log('formData:', formData);
-                      console.log('formData.department:', formData.department);
-                      
-                      if (!formData.name || !formData.code || !formData.department) {
-                        toast({
-                          title: "Validation Error",
-                          description: "Please fill in all fields including Department",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-                      
-                      const departmentId = parseInt(formData.department);
-                      console.log('Parsed departmentId:', departmentId);
-                      
-                      if (isNaN(departmentId)) {
-                        toast({
-                          title: "Validation Error",
-                          description: "Please select a valid Department",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-                      
-                      console.log('Sending to API:', { name: formData.name, code: formData.code, departmentId });
-                      
                       await apiRequest("/api/master-data/sub-department", {
                         method: "POST",
                         body: {
                           name: formData.name,
                           code: formData.code,
-                          departmentId: departmentId,
+                          departmentId: formData.department ? parseInt(formData.department) : null,
                         },
                       });
                       queryClient.invalidateQueries({ queryKey: ["/api/master-data/sub-department"] });
