@@ -1008,6 +1008,694 @@ export default function MasterData() {
           </div>
         </TabsContent>
 
+        {/* PAYGROUPS TAB */}
+        <TabsContent value="paygroups">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <DollarSign className="h-5 w-5 mr-2" />
+                  Paygroups
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingPaygroups ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          Loading...
+                        </TableCell>
+                      </TableRow>
+                    ) : safePaygroups.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          No paygroups found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      safePaygroups.map((paygroup: Paygroup) => (
+                        <TableRow key={paygroup.id}>
+                          <TableCell className="font-medium">{paygroup.name}</TableCell>
+                          <TableCell className="font-mono">{paygroup.code}</TableCell>
+                          <TableCell className="text-sm">{paygroup.description || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant={paygroup.isActive ? "default" : "secondary"}>
+                              {paygroup.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingItem(paygroup);
+                                  setEditType("paygroup");
+                                  setEditFormData({
+                                    ...editFormData,
+                                    name: paygroup.name,
+                                    code: paygroup.code,
+                                    description: paygroup.description || "",
+                                  });
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Switch
+                                checked={paygroup.isActive}
+                                onCheckedChange={async () => {
+                                  try {
+                                    await apiRequest(`/api/master-data/paygroup/${paygroup.id}`, {
+                                      method: "PATCH",
+                                      body: { isActive: !paygroup.isActive },
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/master-data/paygroup"] });
+                                    toast({
+                                      title: "Success",
+                                      description: `Paygroup ${!paygroup.isActive ? "activated" : "deactivated"} successfully`,
+                                    });
+                                  } catch (error: any) {
+                                    toast({
+                                      title: "Error",
+                                      description: error.message || "Failed to update paygroup status",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Paygroup</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="paygroupName">Paygroup Name</Label>
+                  <Input
+                    id="paygroupName"
+                    placeholder="Enter paygroup name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="paygroupCode">Paygroup Code</Label>
+                  <Input
+                    id="paygroupCode"
+                    placeholder="Enter paygroup code"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="paygroupDescription">Description</Label>
+                  <Input
+                    id="paygroupDescription"
+                    placeholder="Enter description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await apiRequest("/api/master-data/paygroup", {
+                        method: "POST",
+                        body: {
+                          name: formData.name,
+                          code: formData.code,
+                          description: formData.description,
+                        },
+                      });
+                      queryClient.invalidateQueries({ queryKey: ["/api/master-data/paygroup"] });
+                      setFormData({ ...formData, name: "", code: "", description: "" });
+                      toast({
+                        title: "Success",
+                        description: "Paygroup created successfully",
+                      });
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to create paygroup",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  Create Paygroup
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* BUSINESS UNITS TAB */}
+        <TabsContent value="business-units">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Building className="h-5 w-5 mr-2" />
+                  Business Units
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingBusinessUnits ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          Loading...
+                        </TableCell>
+                      </TableRow>
+                    ) : safeBusinessUnits.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          No business units found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      safeBusinessUnits.map((businessUnit: BusinessUnit) => (
+                        <TableRow key={businessUnit.id}>
+                          <TableCell className="font-medium">{businessUnit.name}</TableCell>
+                          <TableCell className="font-mono">{businessUnit.code}</TableCell>
+                          <TableCell className="text-sm">{businessUnit.description || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant={businessUnit.isActive ? "default" : "secondary"}>
+                              {businessUnit.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingItem(businessUnit);
+                                  setEditType("business-unit");
+                                  setEditFormData({
+                                    ...editFormData,
+                                    name: businessUnit.name,
+                                    code: businessUnit.code,
+                                    description: businessUnit.description || "",
+                                  });
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Switch
+                                checked={businessUnit.isActive}
+                                onCheckedChange={async () => {
+                                  try {
+                                    await apiRequest(`/api/master-data/business-unit/${businessUnit.id}`, {
+                                      method: "PATCH",
+                                      body: { isActive: !businessUnit.isActive },
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/master-data/business-unit"] });
+                                    toast({
+                                      title: "Success",
+                                      description: `Business unit ${!businessUnit.isActive ? "activated" : "deactivated"} successfully`,
+                                    });
+                                  } catch (error: any) {
+                                    toast({
+                                      title: "Error",
+                                      description: error.message || "Failed to update business unit status",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Business Unit</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="businessUnitName">Business Unit Name</Label>
+                  <Input
+                    id="businessUnitName"
+                    placeholder="Enter business unit name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="businessUnitCode">Business Unit Code</Label>
+                  <Input
+                    id="businessUnitCode"
+                    placeholder="Enter business unit code"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="businessUnitDescription">Description</Label>
+                  <Input
+                    id="businessUnitDescription"
+                    placeholder="Enter description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await apiRequest("/api/master-data/business-unit", {
+                        method: "POST",
+                        body: {
+                          name: formData.name,
+                          code: formData.code,
+                          description: formData.description,
+                        },
+                      });
+                      queryClient.invalidateQueries({ queryKey: ["/api/master-data/business-unit"] });
+                      setFormData({ ...formData, name: "", code: "", description: "" });
+                      toast({
+                        title: "Success",
+                        description: "Business unit created successfully",
+                      });
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to create business unit",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  Create Business Unit
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* DEPARTMENTS TAB */}
+        <TabsContent value="departments">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Layers className="h-5 w-5 mr-2" />
+                  Departments
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Business Unit</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingDepartments ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          Loading...
+                        </TableCell>
+                      </TableRow>
+                    ) : safeDepartments.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          No departments found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      safeDepartments.map((department: Department) => (
+                        <TableRow key={department.id}>
+                          <TableCell className="font-medium">{department.name}</TableCell>
+                          <TableCell className="font-mono">{department.code}</TableCell>
+                          <TableCell className="text-sm">{department.businessUnitName || '-'}</TableCell>
+                          <TableCell className="text-sm">{department.description || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant={department.isActive ? "default" : "secondary"}>
+                              {department.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingItem(department);
+                                  setEditType("department");
+                                  setEditFormData({
+                                    ...editFormData,
+                                    name: department.name,
+                                    code: department.code,
+                                    description: department.description || "",
+                                    businessUnit: department.businessUnitId?.toString() || "",
+                                  });
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Switch
+                                checked={department.isActive}
+                                onCheckedChange={async () => {
+                                  try {
+                                    await apiRequest(`/api/master-data/department/${department.id}`, {
+                                      method: "PATCH",
+                                      body: { isActive: !department.isActive },
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/master-data/department"] });
+                                    toast({
+                                      title: "Success",
+                                      description: `Department ${!department.isActive ? "activated" : "deactivated"} successfully`,
+                                    });
+                                  } catch (error: any) {
+                                    toast({
+                                      title: "Error",
+                                      description: error.message || "Failed to update department status",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Department</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="departmentName">Department Name</Label>
+                  <Input
+                    id="departmentName"
+                    placeholder="Enter department name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="departmentCode">Department Code</Label>
+                  <Input
+                    id="departmentCode"
+                    placeholder="Enter department code"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="businessUnitSelect">Business Unit</Label>
+                  <Select
+                    value={formData.businessUnit}
+                    onValueChange={(value) => setFormData({ ...formData, businessUnit: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select business unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeBusinessUnits.map((bu: BusinessUnit) => (
+                        <SelectItem key={bu.id} value={bu.id.toString()}>
+                          {bu.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="departmentDescription">Description</Label>
+                  <Input
+                    id="departmentDescription"
+                    placeholder="Enter description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await apiRequest("/api/master-data/department", {
+                        method: "POST",
+                        body: {
+                          name: formData.name,
+                          code: formData.code,
+                          businessUnitId: parseInt(formData.businessUnit),
+                          description: formData.description,
+                        },
+                      });
+                      queryClient.invalidateQueries({ queryKey: ["/api/master-data/department"] });
+                      setFormData({ ...formData, name: "", code: "", description: "", businessUnit: "" });
+                      toast({
+                        title: "Success",
+                        description: "Department created successfully",
+                      });
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to create department",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  Create Department
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* SUB DEPARTMENTS TAB */}
+        <TabsContent value="sub-departments">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FolderTree className="h-5 w-5 mr-2" />
+                  Sub Departments
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingSubDepartments ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          Loading...
+                        </TableCell>
+                      </TableRow>
+                    ) : safeSubDepartments.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          No sub departments found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      safeSubDepartments.map((subDepartment: SubDepartment) => (
+                        <TableRow key={subDepartment.id}>
+                          <TableCell className="font-medium">{subDepartment.name}</TableCell>
+                          <TableCell className="font-mono">{subDepartment.code}</TableCell>
+                          <TableCell className="text-sm">{subDepartment.departmentName || '-'}</TableCell>
+                          <TableCell className="text-sm">{subDepartment.description || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant={subDepartment.isActive ? "default" : "secondary"}>
+                              {subDepartment.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingItem(subDepartment);
+                                  setEditType("sub-department");
+                                  setEditFormData({
+                                    ...editFormData,
+                                    name: subDepartment.name,
+                                    code: subDepartment.code,
+                                    description: subDepartment.description || "",
+                                    department: subDepartment.departmentId?.toString() || "",
+                                  });
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Switch
+                                checked={subDepartment.isActive}
+                                onCheckedChange={async () => {
+                                  try {
+                                    await apiRequest(`/api/master-data/sub-department/${subDepartment.id}`, {
+                                      method: "PATCH",
+                                      body: { isActive: !subDepartment.isActive },
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/master-data/sub-department"] });
+                                    toast({
+                                      title: "Success",
+                                      description: `Sub department ${!subDepartment.isActive ? "activated" : "deactivated"} successfully`,
+                                    });
+                                  } catch (error: any) {
+                                    toast({
+                                      title: "Error",
+                                      description: error.message || "Failed to update sub department status",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Sub Department</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="subDepartmentName">Sub Department Name</Label>
+                  <Input
+                    id="subDepartmentName"
+                    placeholder="Enter sub department name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="subDepartmentCode">Sub Department Code</Label>
+                  <Input
+                    id="subDepartmentCode"
+                    placeholder="Enter sub department code"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="departmentSelect">Department</Label>
+                  <Select
+                    value={formData.department}
+                    onValueChange={(value) => setFormData({ ...formData, department: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeDepartments.map((dept: Department) => (
+                        <SelectItem key={dept.id} value={dept.id.toString()}>
+                          {dept.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="subDepartmentDescription">Description</Label>
+                  <Input
+                    id="subDepartmentDescription"
+                    placeholder="Enter description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await apiRequest("/api/master-data/sub-department", {
+                        method: "POST",
+                        body: {
+                          name: formData.name,
+                          code: formData.code,
+                          departmentId: parseInt(formData.department),
+                          description: formData.description,
+                        },
+                      });
+                      queryClient.invalidateQueries({ queryKey: ["/api/master-data/sub-department"] });
+                      setFormData({ ...formData, name: "", code: "", description: "", department: "" });
+                      toast({
+                        title: "Success",
+                        description: "Sub department created successfully",
+                      });
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to create sub department",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  Create Sub Department
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
         <TabsContent value="roles">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
