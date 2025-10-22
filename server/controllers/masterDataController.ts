@@ -390,24 +390,6 @@ export class MasterDataController extends BaseController {
 
   async createDepartment(req: Request, res: Response): Promise<void> {
     try {
-      console.log('createDepartment - Full request body:', JSON.stringify(req.body));
-      const { name, code, businessUnitId } = req.body;
-      
-      console.log('createDepartment received:', { name, code, businessUnitId });
-      
-      // Backend validation - TEMPORARILY DISABLED FOR DEBUGGING
-      // if (!name || !code) {
-      //   this.sendError(res, 'Name and Code are required', 400);
-      //   return;
-      // }
-      // 
-      // const parsedBusinessUnitId = parseInt(businessUnitId);
-      // if (businessUnitId === undefined || businessUnitId === null || isNaN(parsedBusinessUnitId)) {
-      //   console.log('Business Unit validation failed:', { businessUnitId, parsedBusinessUnitId });
-      //   this.sendError(res, 'Valid Business Unit selection is required', 400);
-      //   return;
-      // }
-      
       const userId = this.getUserId(req);
       const department = await this.storage.createDepartment(req.body, { changedBy: userId });
       this.sendSuccess(res, department, 'Department created successfully');
@@ -444,24 +426,6 @@ export class MasterDataController extends BaseController {
 
   async createSubDepartment(req: Request, res: Response): Promise<void> {
     try {
-      console.log('createSubDepartment - Full request body:', JSON.stringify(req.body));
-      const { name, code, departmentId } = req.body;
-      
-      console.log('createSubDepartment received:', { name, code, departmentId });
-      
-      // Backend validation - TEMPORARILY DISABLED FOR DEBUGGING
-      // if (!name || !code) {
-      //   this.sendError(res, 'Name and Code are required', 400);
-      //   return;
-      // }
-      // 
-      // const parsedDepartmentId = parseInt(departmentId);
-      // if (departmentId === undefined || departmentId === null || isNaN(parsedDepartmentId)) {
-      //   console.log('Department validation failed:', { departmentId, parsedDepartmentId });
-      //   this.sendError(res, 'Valid Department selection is required', 400);
-      //   return;
-      // }
-      
       const userId = this.getUserId(req);
       const subDepartment = await this.storage.createSubDepartment(req.body, { changedBy: userId });
       this.sendSuccess(res, subDepartment, 'Sub department created successfully');
