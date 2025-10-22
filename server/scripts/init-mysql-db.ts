@@ -12,6 +12,7 @@ dotenv.config({ path: envPath });
 
 import { pool } from '../config/db';
 
+
 // Function to execute SQL statements in batches
 async function executeStatements(connection: any, statements: string[], batchName: string) {
   console.log(`\n--- Executing ${batchName} ---`);
