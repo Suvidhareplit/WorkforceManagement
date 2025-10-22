@@ -26,42 +26,41 @@ export default function Prescreening() {
   const itemsPerPage = 15;
   const { toast } = useToast();
 
-  const { data: candidates, isLoading: candidatesLoading, refetch: refetchCandidates, error: candidatesError } = useQuery({
+  const { data: candidatesResponse, isLoading: candidatesLoading, error: candidatesError } = useQuery({
     queryKey: ["/api/interviews/candidates"],
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
   });
 
-  // Debug logging
-  useEffect(() => {
-    console.log('Prescreening - Candidates:', candidates);
-    console.log('Prescreening - Loading:', candidatesLoading);
-    console.log('Prescreening - Error:', candidatesError);
-  }, [candidates, candidatesLoading, candidatesError]);
-
-  const { data: cities, isLoading: citiesLoading, refetch: refetchCities } = useQuery({
+  const { data: citiesResponse, isLoading: citiesLoading } = useQuery({
     queryKey: ["/api/master-data/city"],
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
   });
 
-  const { data: allClusters, isLoading: clustersLoading, refetch: refetchClusters } = useQuery({
+  const { data: clustersResponse, isLoading: clustersLoading } = useQuery({
     queryKey: ["/api/master-data/cluster"],
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
   });
 
+  // Extract data from API responses
+  const candidates = (candidatesResponse as any)?.data || [];
+  const cities = (citiesResponse as any)?.data || [];
+  const allClusters = (clustersResponse as any)?.data || [];
+
   const isLoading = candidatesLoading || citiesLoading || clustersLoading;
 
-  // Force refetch on component mount
+  // Debug logging
   useEffect(() => {
-    refetchCandidates();
-    refetchCities();
-    refetchClusters();
-  }, [refetchCandidates, refetchCities, refetchClusters]);
+    console.log('Prescreening - Raw Response:', candidatesResponse);
+    console.log('Prescreening - Extracted Candidates:', candidates);
+    console.log('Prescreening - Loading:', candidatesLoading);
+    console.log('Prescreening - Error:', candidatesError);
+  }, [candidatesResponse, candidates, candidatesLoading, candidatesError]);
 
   // Filter clusters based on selected city
   const clusters = Array.isArray(allClusters) ? allClusters.filter((cluster: any) => {
