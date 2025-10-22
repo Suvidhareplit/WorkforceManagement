@@ -1631,7 +1631,10 @@ export default function MasterData() {
                   <Label htmlFor="departmentSelect">Department</Label>
                   <Select
                     value={formData.department}
-                    onValueChange={(value) => setFormData({ ...formData, department: value })}
+                    onValueChange={(value) => {
+                      console.log('Department Select changed to:', value);
+                      setFormData({ ...formData, department: value });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select department" />
@@ -1648,6 +1651,10 @@ export default function MasterData() {
                 <Button
                   onClick={async () => {
                     try {
+                      console.log('=== SUB DEPARTMENT CREATE ===');
+                      console.log('formData:', formData);
+                      console.log('formData.department:', formData.department);
+                      
                       if (!formData.name || !formData.code || !formData.department) {
                         toast({
                           title: "Validation Error",
@@ -1658,6 +1665,8 @@ export default function MasterData() {
                       }
                       
                       const departmentId = parseInt(formData.department);
+                      console.log('Parsed departmentId:', departmentId);
+                      
                       if (isNaN(departmentId)) {
                         toast({
                           title: "Validation Error",
@@ -1666,6 +1675,8 @@ export default function MasterData() {
                         });
                         return;
                       }
+                      
+                      console.log('Sending to API:', { name: formData.name, code: formData.code, departmentId });
                       
                       await apiRequest("/api/master-data/sub-department", {
                         method: "POST",

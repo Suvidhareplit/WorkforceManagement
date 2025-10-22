@@ -390,6 +390,19 @@ export class MasterDataController extends BaseController {
 
   async createDepartment(req: Request, res: Response): Promise<void> {
     try {
+      const { name, code, businessUnitId } = req.body;
+      
+      // Backend validation
+      if (!name || !code) {
+        this.sendError(res, 'Name and Code are required', 400);
+        return;
+      }
+      
+      if (!businessUnitId || isNaN(parseInt(businessUnitId))) {
+        this.sendError(res, 'Valid Business Unit selection is required', 400);
+        return;
+      }
+      
       const userId = this.getUserId(req);
       const department = await this.storage.createDepartment(req.body, { changedBy: userId });
       this.sendSuccess(res, department, 'Department created successfully');
@@ -426,6 +439,19 @@ export class MasterDataController extends BaseController {
 
   async createSubDepartment(req: Request, res: Response): Promise<void> {
     try {
+      const { name, code, departmentId } = req.body;
+      
+      // Backend validation
+      if (!name || !code) {
+        this.sendError(res, 'Name and Code are required', 400);
+        return;
+      }
+      
+      if (!departmentId || isNaN(parseInt(departmentId))) {
+        this.sendError(res, 'Valid Department selection is required', 400);
+        return;
+      }
+      
       const userId = this.getUserId(req);
       const subDepartment = await this.storage.createSubDepartment(req.body, { changedBy: userId });
       this.sendSuccess(res, subDepartment, 'Sub department created successfully');
