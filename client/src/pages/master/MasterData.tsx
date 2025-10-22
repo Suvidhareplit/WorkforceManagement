@@ -1259,46 +1259,7 @@ export default function MasterData() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="vendorEmail">Email</Label>
-                  <Input
-                    id="vendorEmail"
-                    type="email"
-                    placeholder="Enter email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="vendorPhone">Phone</Label>
-                  <Input
-                    id="vendorPhone"
-                    placeholder="Enter phone number"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="contactPerson">Contact Person</Label>
-                  <Input
-                    id="contactPerson"
-                    placeholder="Enter contact person name"
-                    value={formData.contactPerson}
-                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="commercialTerms">Commercial Terms</Label>
-                  <Textarea
-                    id="commercialTerms"
-                    placeholder="Enter commercial terms"
-                    value={formData.commercialTerms}
-                    onChange={(e) => setFormData({ ...formData, commercialTerms: e.target.value })}
-                    rows={3}
-                  />
-                </div>
 
-                
                 {/* Commercial Terms Section */}
                 <div className="border-t pt-4">
                   <h3 className="font-medium mb-3">Commercial Terms</h3>
