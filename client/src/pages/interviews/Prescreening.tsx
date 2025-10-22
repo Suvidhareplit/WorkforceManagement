@@ -26,21 +26,22 @@ export default function Prescreening() {
   const itemsPerPage = 15;
   const { toast } = useToast();
 
-  const { data: candidatesResponse, isLoading: candidatesLoading, error: candidatesError } = useQuery({
+  const { data: candidatesResponse, isLoading: candidatesLoading, refetch: refetchCandidates, error: candidatesError } = useQuery({
     queryKey: ["/api/interviews/candidates"],
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
-  const { data: citiesResponse, isLoading: citiesLoading } = useQuery({
+  const { data: citiesResponse, isLoading: citiesLoading, refetch: refetchCities } = useQuery({
     queryKey: ["/api/master-data/city"],
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
   });
 
-  const { data: clustersResponse, isLoading: clustersLoading } = useQuery({
+  const { data: clustersResponse, isLoading: clustersLoading, refetch: refetchClusters } = useQuery({
     queryKey: ["/api/master-data/cluster"],
     staleTime: 0,
     gcTime: 0,
@@ -54,10 +55,19 @@ export default function Prescreening() {
 
   const isLoading = candidatesLoading || citiesLoading || clustersLoading;
 
+  // Force refetch on component mount
+  useEffect(() => {
+    refetchCandidates();
+    refetchCities();
+    refetchClusters();
+  }, []);
+
   // Debug logging
   useEffect(() => {
     console.log('Prescreening - Raw Response:', candidatesResponse);
     console.log('Prescreening - Extracted Candidates:', candidates);
+    console.log('Prescreening - Filtered Logic - Has screeningScore:', 
+      candidates.filter((c: any) => c.screeningScore !== null && c.screeningScore !== undefined).length);
     console.log('Prescreening - Loading:', candidatesLoading);
     console.log('Prescreening - Error:', candidatesError);
   }, [candidatesResponse, candidates, candidatesLoading, candidatesError]);
@@ -84,6 +94,7 @@ export default function Prescreening() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
+      refetchCandidates(); // Force immediate refetch
       toast({
         title: "Success",
         description: "Prescreening completed successfully",
