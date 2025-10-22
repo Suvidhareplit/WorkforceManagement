@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS paygroups (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
     code VARCHAR(10) NOT NULL UNIQUE,
-    description TEXT,
     is_active BOOLEAN DEFAULT true,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -29,7 +28,6 @@ CREATE TABLE IF NOT EXISTS business_units (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
     code VARCHAR(10) NOT NULL UNIQUE,
-    description TEXT,
     is_active BOOLEAN DEFAULT true,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -39,7 +37,6 @@ CREATE TABLE IF NOT EXISTS departments (
     name TEXT NOT NULL,
     code VARCHAR(10) NOT NULL UNIQUE,
     business_unit_id INT,
-    description TEXT,
     is_active BOOLEAN DEFAULT true,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (business_unit_id) REFERENCES business_units(id) ON DELETE SET NULL
@@ -50,7 +47,6 @@ CREATE TABLE IF NOT EXISTS sub_departments (
     name TEXT NOT NULL,
     code VARCHAR(10) NOT NULL UNIQUE,
     department_id INT,
-    description TEXT,
     is_active BOOLEAN DEFAULT true,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL

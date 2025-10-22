@@ -36,7 +36,6 @@ export interface Paygroup {
   id: number;
   name: string;
   code: string;
-  description?: string;
   isActive: boolean;
 }
 
@@ -44,7 +43,6 @@ export interface BusinessUnit {
   id: number;
   name: string;
   code: string;
-  description?: string;
   isActive: boolean;
 }
 
@@ -54,7 +52,6 @@ export interface Department {
   code: string;
   businessUnitId?: number;
   businessUnitName?: string;
-  description?: string;
   isActive: boolean;
 }
 
@@ -64,7 +61,6 @@ export interface SubDepartment {
   code: string;
   departmentId?: number;
   departmentName?: string;
-  description?: string;
   isActive: boolean;
 }
 

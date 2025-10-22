@@ -479,11 +479,11 @@ export class SqlStorage implements IStorage {
   }
 
   async createPaygroup(data: any, options?: CreateOptions): Promise<any> {
-    const { name, code, description, isActive = true } = data;
+    const { name, code, isActive = true } = data;
     const insertResult = await query(`
-      INSERT INTO paygroups (name, code, description, is_active, created_at)
-      VALUES (?, ?, ?, ?, NOW())
-    `, [name, code, description, isActive]);
+      INSERT INTO paygroups (name, code, is_active, created_at)
+      VALUES (?, ?, ?, NOW())
+    `, [name, code, isActive]);
     const paygroupId = (insertResult.rows as any).insertId;
     return await this.getPaygroup(paygroupId);
   }
@@ -528,11 +528,11 @@ export class SqlStorage implements IStorage {
   }
 
   async createBusinessUnit(data: any, options?: CreateOptions): Promise<any> {
-    const { name, code, description, isActive = true } = data;
+    const { name, code, isActive = true } = data;
     const insertResult = await query(`
-      INSERT INTO business_units (name, code, description, is_active, created_at)
-      VALUES (?, ?, ?, ?, NOW())
-    `, [name, code, description, isActive]);
+      INSERT INTO business_units (name, code, is_active, created_at)
+      VALUES (?, ?, ?, NOW())
+    `, [name, code, isActive]);
     const businessUnitId = (insertResult.rows as any).insertId;
     return await this.getBusinessUnit(businessUnitId);
   }
@@ -584,11 +584,11 @@ export class SqlStorage implements IStorage {
   }
 
   async createDepartment(data: any, options?: CreateOptions): Promise<any> {
-    const { name, code, businessUnitId, description, isActive = true } = data;
+    const { name, code, businessUnitId, isActive = true } = data;
     const insertResult = await query(`
-      INSERT INTO departments (name, code, business_unit_id, description, is_active, created_at)
-      VALUES (?, ?, ?, ?, ?, NOW())
-    `, [name, code, businessUnitId, description, isActive]);
+      INSERT INTO departments (name, code, business_unit_id, is_active, created_at)
+      VALUES (?, ?, ?, ?, NOW())
+    `, [name, code, businessUnitId, isActive]);
     const departmentId = (insertResult.rows as any).insertId;
     return await this.getDepartment(departmentId);
   }
@@ -640,11 +640,11 @@ export class SqlStorage implements IStorage {
   }
 
   async createSubDepartment(data: any, options?: CreateOptions): Promise<any> {
-    const { name, code, departmentId, description, isActive = true } = data;
+    const { name, code, departmentId, isActive = true } = data;
     const insertResult = await query(`
-      INSERT INTO sub_departments (name, code, department_id, description, is_active, created_at)
-      VALUES (?, ?, ?, ?, ?, NOW())
-    `, [name, code, departmentId, description, isActive]);
+      INSERT INTO sub_departments (name, code, department_id, is_active, created_at)
+      VALUES (?, ?, ?, ?, NOW())
+    `, [name, code, departmentId, isActive]);
     const subDepartmentId = (insertResult.rows as any).insertId;
     return await this.getSubDepartment(subDepartmentId);
   }

@@ -1024,7 +1024,6 @@ export default function MasterData() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Code</TableHead>
-                      <TableHead>Description</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -1032,13 +1031,13 @@ export default function MasterData() {
                   <TableBody>
                     {loadingPaygroups ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
+                        <TableCell colSpan={4} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : safePaygroups.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
+                        <TableCell colSpan={4} className="text-center py-8">
                           No paygroups found
                         </TableCell>
                       </TableRow>
@@ -1047,7 +1046,6 @@ export default function MasterData() {
                         <TableRow key={paygroup.id}>
                           <TableCell className="font-medium">{paygroup.name}</TableCell>
                           <TableCell className="font-mono">{paygroup.code}</TableCell>
-                          <TableCell className="text-sm">{paygroup.description || '-'}</TableCell>
                           <TableCell>
                             <Badge variant={paygroup.isActive ? "default" : "secondary"}>
                               {paygroup.isActive ? "Active" : "Inactive"}
@@ -1065,7 +1063,6 @@ export default function MasterData() {
                                     ...editFormData,
                                     name: paygroup.name,
                                     code: paygroup.code,
-                                    description: paygroup.description || "",
                                   });
                                 }}
                               >
@@ -1126,15 +1123,6 @@ export default function MasterData() {
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="paygroupDescription">Description</Label>
-                  <Input
-                    id="paygroupDescription"
-                    placeholder="Enter description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
                 <Button
                   onClick={async () => {
                     try {
@@ -1143,11 +1131,10 @@ export default function MasterData() {
                         body: {
                           name: formData.name,
                           code: formData.code,
-                          description: formData.description,
                         },
                       });
                       queryClient.invalidateQueries({ queryKey: ["/api/master-data/paygroup"] });
-                      setFormData({ ...formData, name: "", code: "", description: "" });
+                      setFormData({ ...formData, name: "", code: "" });
                       toast({
                         title: "Success",
                         description: "Paygroup created successfully",
@@ -1185,7 +1172,6 @@ export default function MasterData() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Code</TableHead>
-                      <TableHead>Description</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -1193,13 +1179,13 @@ export default function MasterData() {
                   <TableBody>
                     {loadingBusinessUnits ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
+                        <TableCell colSpan={4} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : safeBusinessUnits.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
+                        <TableCell colSpan={4} className="text-center py-8">
                           No business units found
                         </TableCell>
                       </TableRow>
@@ -1208,7 +1194,6 @@ export default function MasterData() {
                         <TableRow key={businessUnit.id}>
                           <TableCell className="font-medium">{businessUnit.name}</TableCell>
                           <TableCell className="font-mono">{businessUnit.code}</TableCell>
-                          <TableCell className="text-sm">{businessUnit.description || '-'}</TableCell>
                           <TableCell>
                             <Badge variant={businessUnit.isActive ? "default" : "secondary"}>
                               {businessUnit.isActive ? "Active" : "Inactive"}
@@ -1226,7 +1211,6 @@ export default function MasterData() {
                                     ...editFormData,
                                     name: businessUnit.name,
                                     code: businessUnit.code,
-                                    description: businessUnit.description || "",
                                   });
                                 }}
                               >
@@ -1284,16 +1268,7 @@ export default function MasterData() {
                     id="businessUnitCode"
                     placeholder="Enter business unit code"
                     value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="businessUnitDescription">Description</Label>
-                  <Input
-                    id="businessUnitDescription"
-                    placeholder="Enter description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                   />
                 </div>
                 <Button
@@ -1303,12 +1278,11 @@ export default function MasterData() {
                         method: "POST",
                         body: {
                           name: formData.name,
-                          code: formData.code,
-                          description: formData.description,
+                          code: formData.code.toUpperCase(),
                         },
                       });
                       queryClient.invalidateQueries({ queryKey: ["/api/master-data/business-unit"] });
-                      setFormData({ ...formData, name: "", code: "", description: "" });
+                      setFormData({ ...formData, name: "", code: "" });
                       toast({
                         title: "Success",
                         description: "Business unit created successfully",
@@ -1347,7 +1321,6 @@ export default function MasterData() {
                       <TableHead>Name</TableHead>
                       <TableHead>Code</TableHead>
                       <TableHead>Business Unit</TableHead>
-                      <TableHead>Description</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -1355,13 +1328,13 @@ export default function MasterData() {
                   <TableBody>
                     {loadingDepartments ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : safeDepartments.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           No departments found
                         </TableCell>
                       </TableRow>
@@ -1371,7 +1344,6 @@ export default function MasterData() {
                           <TableCell className="font-medium">{department.name}</TableCell>
                           <TableCell className="font-mono">{department.code}</TableCell>
                           <TableCell className="text-sm">{department.businessUnitName || '-'}</TableCell>
-                          <TableCell className="text-sm">{department.description || '-'}</TableCell>
                           <TableCell>
                             <Badge variant={department.isActive ? "default" : "secondary"}>
                               {department.isActive ? "Active" : "Inactive"}
@@ -1389,7 +1361,6 @@ export default function MasterData() {
                                     ...editFormData,
                                     name: department.name,
                                     code: department.code,
-                                    description: department.description || "",
                                     businessUnit: department.businessUnitId?.toString() || "",
                                   });
                                 }}
@@ -1469,15 +1440,6 @@ export default function MasterData() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="departmentDescription">Description</Label>
-                  <Input
-                    id="departmentDescription"
-                    placeholder="Enter description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
                 <Button
                   onClick={async () => {
                     try {
@@ -1487,11 +1449,10 @@ export default function MasterData() {
                           name: formData.name,
                           code: formData.code,
                           businessUnitId: parseInt(formData.businessUnit),
-                          description: formData.description,
                         },
                       });
                       queryClient.invalidateQueries({ queryKey: ["/api/master-data/department"] });
-                      setFormData({ ...formData, name: "", code: "", description: "", businessUnit: "" });
+                      setFormData({ ...formData, name: "", code: "", businessUnit: "" });
                       toast({
                         title: "Success",
                         description: "Department created successfully",
@@ -1530,7 +1491,6 @@ export default function MasterData() {
                       <TableHead>Name</TableHead>
                       <TableHead>Code</TableHead>
                       <TableHead>Department</TableHead>
-                      <TableHead>Description</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -1538,13 +1498,13 @@ export default function MasterData() {
                   <TableBody>
                     {loadingSubDepartments ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : safeSubDepartments.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           No sub departments found
                         </TableCell>
                       </TableRow>
@@ -1554,7 +1514,6 @@ export default function MasterData() {
                           <TableCell className="font-medium">{subDepartment.name}</TableCell>
                           <TableCell className="font-mono">{subDepartment.code}</TableCell>
                           <TableCell className="text-sm">{subDepartment.departmentName || '-'}</TableCell>
-                          <TableCell className="text-sm">{subDepartment.description || '-'}</TableCell>
                           <TableCell>
                             <Badge variant={subDepartment.isActive ? "default" : "secondary"}>
                               {subDepartment.isActive ? "Active" : "Inactive"}
@@ -1572,7 +1531,6 @@ export default function MasterData() {
                                     ...editFormData,
                                     name: subDepartment.name,
                                     code: subDepartment.code,
-                                    description: subDepartment.description || "",
                                     department: subDepartment.departmentId?.toString() || "",
                                   });
                                 }}
@@ -1652,15 +1610,6 @@ export default function MasterData() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="subDepartmentDescription">Description</Label>
-                  <Input
-                    id="subDepartmentDescription"
-                    placeholder="Enter description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
                 <Button
                   onClick={async () => {
                     try {
@@ -1670,11 +1619,10 @@ export default function MasterData() {
                           name: formData.name,
                           code: formData.code,
                           departmentId: parseInt(formData.department),
-                          description: formData.description,
                         },
                       });
                       queryClient.invalidateQueries({ queryKey: ["/api/master-data/sub-department"] });
-                      setFormData({ ...formData, name: "", code: "", description: "", department: "" });
+                      setFormData({ ...formData, name: "", code: "", department: "" });
                       toast({
                         title: "Success",
                         description: "Sub department created successfully",
