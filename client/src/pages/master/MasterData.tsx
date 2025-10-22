@@ -13,8 +13,8 @@ import { Switch } from "@/components/ui/switch";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { City, Cluster, Role, Vendor, Recruiter } from "@/types";
-import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye } from "lucide-react";
+import { City, Cluster, Role, Vendor, Recruiter, Paygroup, BusinessUnit, Department, SubDepartment } from "@/types";
+import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye, DollarSign, Building, Layers, FolderTree } from "lucide-react";
 
 import { useEffect } from "react";
 
@@ -23,6 +23,10 @@ export default function MasterData() {
     // Invalidate queries to ensure fresh data on component mount
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/city"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/cluster"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/paygroup"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/business-unit"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/department"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/sub-department"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/role"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendor"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiter"] });
@@ -102,6 +106,22 @@ export default function MasterData() {
     queryKey: ["/api/master-data/cluster"],
   });
 
+  const { data: paygroups = [], isLoading: loadingPaygroups } = useQuery({
+    queryKey: ["/api/master-data/paygroup"],
+  });
+
+  const { data: businessUnits = [], isLoading: loadingBusinessUnits } = useQuery({
+    queryKey: ["/api/master-data/business-unit"],
+  });
+
+  const { data: departments = [], isLoading: loadingDepartments } = useQuery({
+    queryKey: ["/api/master-data/department"],
+  });
+
+  const { data: subDepartments = [], isLoading: loadingSubDepartments } = useQuery({
+    queryKey: ["/api/master-data/sub-department"],
+  });
+
   const { data: roles = [], isLoading: loadingRoles } = useQuery({
     queryKey: ["/api/master-data/role"],
   });
@@ -117,6 +137,10 @@ export default function MasterData() {
   // Ensure data is always an array to prevent map errors - SHOW ALL ITEMS INCLUDING INACTIVE
   const safeCities = Array.isArray(cities) ? cities : [];
   const safeClusters = Array.isArray(clusters) ? clusters : [];
+  const safePaygroups = Array.isArray(paygroups) ? paygroups : [];
+  const safeBusinessUnits = Array.isArray(businessUnits) ? businessUnits : [];
+  const safeDepartments = Array.isArray(departments) ? departments : [];
+  const safeSubDepartments = Array.isArray(subDepartments) ? subDepartments : [];
   const safeRoles = Array.isArray(roles) ? roles : [];
   const safeVendors = Array.isArray(vendors) ? vendors : [];
   const safeRecruiters = Array.isArray(recruiters) ? recruiters : [];
@@ -736,9 +760,13 @@ export default function MasterData() {
       </div>
 
       <Tabs defaultValue="cities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-9 gap-1">
           <TabsTrigger value="cities">Cities</TabsTrigger>
           <TabsTrigger value="clusters">Clusters</TabsTrigger>
+          <TabsTrigger value="paygroups">Paygroups</TabsTrigger>
+          <TabsTrigger value="business-units">Business Units</TabsTrigger>
+          <TabsTrigger value="departments">Departments</TabsTrigger>
+          <TabsTrigger value="sub-departments">Sub Depts</TabsTrigger>
           <TabsTrigger value="roles">Roles</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
           <TabsTrigger value="recruiters">Recruiters</TabsTrigger>
@@ -1023,10 +1051,10 @@ export default function MasterData() {
                           <TableRow key={role.id}>
                             <TableCell className="font-medium">{role.name}</TableCell>
                             <TableCell className="font-mono">{role.code}</TableCell>
-                            <TableCell className="text-sm">{role.businessUnit || '-'}</TableCell>
-                            <TableCell className="text-sm">{role.paygroup || '-'}</TableCell>
-                            <TableCell className="text-sm">{role.department || '-'}</TableCell>
-                            <TableCell className="text-sm">{role.subDepartment || '-'}</TableCell>
+                            <TableCell className="text-sm">{role.businessUnitName || '-'}</TableCell>
+                            <TableCell className="text-sm">{role.paygroupName || '-'}</TableCell>
+                            <TableCell className="text-sm">{role.departmentName || '-'}</TableCell>
+                            <TableCell className="text-sm">{role.subDepartmentName || '-'}</TableCell>
                             <TableCell>
                               {(role as any).jobDescriptionFile ? (
                                 <div className="flex items-center space-x-2">
