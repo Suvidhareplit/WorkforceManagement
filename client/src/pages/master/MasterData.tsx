@@ -1441,8 +1441,13 @@ export default function MasterData() {
                 <div>
                   <Label htmlFor="businessUnitSelect">Business Unit</Label>
                   <Select
-                    value={formData.businessUnit}
-                    onValueChange={(value) => setFormData({ ...formData, businessUnit: value })}
+                    value={formData.businessUnit || ""}
+                    onValueChange={(value) => {
+                      console.log('Business Unit Select changed to:', value);
+                      const newFormData = { ...formData, businessUnit: value };
+                      setFormData(newFormData);
+                      console.log('Updated formData:', newFormData);
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select business unit" />
@@ -1459,6 +1464,10 @@ export default function MasterData() {
                 <Button
                   onClick={async () => {
                     try {
+                      console.log('=== DEPARTMENT CREATE ===');
+                      console.log('formData:', formData);
+                      console.log('formData.businessUnit:', formData.businessUnit);
+                      
                       if (!formData.name || !formData.code || !formData.businessUnit) {
                         toast({
                           title: "Validation Error",
@@ -1630,10 +1639,12 @@ export default function MasterData() {
                 <div>
                   <Label htmlFor="departmentSelect">Department</Label>
                   <Select
-                    value={formData.department}
+                    value={formData.department || ""}
                     onValueChange={(value) => {
                       console.log('Department Select changed to:', value);
-                      setFormData({ ...formData, department: value });
+                      const newFormData = { ...formData, department: value };
+                      setFormData(newFormData);
+                      console.log('Updated formData:', newFormData);
                     }}
                   >
                     <SelectTrigger>
