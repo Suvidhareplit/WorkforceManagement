@@ -15,7 +15,6 @@ import { Eye } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Prescreening() {
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [notes, setNotes] = useState("");
   const [marks, setMarks] = useState("");
   const [cityFilter, setCityFilter] = useState("");
@@ -100,7 +99,6 @@ export default function Prescreening() {
         title: "Success",
         description: "Prescreening completed successfully",
       });
-      setSelectedCandidate(null);
       setNotes("");
       setMarks("");
     },
@@ -348,7 +346,6 @@ export default function Prescreening() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                setSelectedCandidate(candidate);
                                 setNotes(candidate.prescreeningNotes || "");
                                 setMarks(candidate.prescreeningScore ? candidate.prescreeningScore.toString() : "");
                               }}

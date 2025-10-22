@@ -33,15 +33,43 @@ CREATE TABLE IF NOT EXISTS roles (
 CREATE TABLE IF NOT EXISTS vendors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    phone VARCHAR(10),
+    email TEXT,
+    phone VARCHAR(15),
     contact_person TEXT,
     address TEXT,
-    pan_number VARCHAR(20),
-    gst_number VARCHAR(20),
+    -- Commercial Terms
+    management_fees DECIMAL(5,2),
+    sourcing_fee DECIMAL(5,2),
+    replacement_days INT,
+    -- Contact Details - Delivery Lead
+    delivery_lead_name TEXT,
+    delivery_lead_email TEXT,
+    delivery_lead_phone VARCHAR(15),
+    -- Contact Details - Business Head
+    business_head_name TEXT,
+    business_head_email TEXT,
+    business_head_phone VARCHAR(15),
+    -- Contact Details - Payroll SPOC
+    payroll_spoc_name TEXT,
+    payroll_spoc_email TEXT,
+    payroll_spoc_phone VARCHAR(15),
     is_active BOOLEAN DEFAULT true,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_vendor_email (email(255))
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS vendor_city_spocs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    vendor_id INT NOT NULL,
+    city_id INT NOT NULL,
+    spoc_name TEXT,
+    spoc_email TEXT,
+    spoc_phone VARCHAR(15),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_vendor_city (vendor_id, city_id),
+    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE,
+    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS hiring_requests (

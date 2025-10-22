@@ -475,7 +475,15 @@ export class SqlStorage implements IStorage {
   
   async getVendor(id: number): Promise<any> {
     const result = await query('SELECT * FROM vendors WHERE id = ?', [id]);
-    return result.rows[0] as any || null;
+    const vendor = result.rows[0] as any || null;
+    
+    if (vendor) {
+      // Get city SPOCs for this vendor
+      const spocsResult = await query('SELECT * FROM vendor_city_spocs WHERE vendor_id = ?', [id]);
+      vendor.citySpocs = spocsResult.rows || [];
+    }
+    
+    return vendor;
   }
   
   async createVendor(vendorData: any, options?: CreateOptions): Promise<any> {
@@ -484,7 +492,7 @@ export class SqlStorage implements IStorage {
       email, 
       phone, 
       contactPerson, 
-      commercialTerms,
+      address,
       managementFees,
       sourcingFee,
       replacementDays,
@@ -494,44 +502,108 @@ export class SqlStorage implements IStorage {
       businessHeadName,
       businessHeadEmail,
       businessHeadPhone,
+      payrollSpocName,
+      payrollSpocEmail,
+      payrollSpocPhone,
+      citySpocs = {},
       isActive = true 
     } = vendorData;
     
+    console.log('🔍 createVendor called with:', vendorData);
+    
     const insertResult = await query(`
       INSERT INTO vendors (
-        name, email, phone, contact_person, commercial_terms, management_fees,
-        sourcing_fee, replacement_days, delivery_lead_name, delivery_lead_email,
-        delivery_lead_phone, business_head_name, business_head_email, business_head_phone,
+        name, email, phone, contact_person, address,
+        management_fees, sourcing_fee, replacement_days,
+        delivery_lead_name, delivery_lead_email, delivery_lead_phone,
+        business_head_name, business_head_email, business_head_phone,
+        payroll_spoc_name, payroll_spoc_email, payroll_spoc_phone,
         is_active, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
-      name, email, phone, contactPerson, commercialTerms, managementFees,
-      sourcingFee, replacementDays, deliveryLeadName, deliveryLeadEmail,
-      deliveryLeadPhone, businessHeadName, businessHeadEmail, businessHeadPhone,
+      name, email, phone, contactPerson, address,
+      managementFees, sourcingFee, replacementDays,
+      deliveryLeadName, deliveryLeadEmail, deliveryLeadPhone,
+      businessHeadName, businessHeadEmail, businessHeadPhone,
+      payrollSpocName, payrollSpocEmail, payrollSpocPhone,
       isActive
     ]);
     
     const vendorId = (insertResult.rows as any).insertId;
+    console.log('✅ Vendor created with ID:', vendorId);
+    
+    // Insert city SPOCs if provided
+    for (const [key, value] of Object.entries(citySpocs)) {
+      if (key.startsWith('citySpoc_')) {
+        const cityId = parseInt(key.split('_')[1]);
+        const field = key.split('_')[2]; // name, email, or phone
+        
+        if (field === 'name' && value) {
+          const spocName = value;
+          const spocEmail = citySpocs[`citySpoc_${cityId}_email`] || null;
+          const spocPhone = citySpocs[`citySpoc_${cityId}_phone`] || null;
+          
+          await query(`
+            INSERT INTO vendor_city_spocs (vendor_id, city_id, spoc_name, spoc_email, spoc_phone)
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE spoc_name = ?, spoc_email = ?, spoc_phone = ?
+          `, [vendorId, cityId, spocName, spocEmail, spocPhone, spocName, spocEmail, spocPhone]);
+          
+          console.log(`✅ City SPOC created for city ${cityId}`);
+        }
+      }
+    }
+    
     return await this.getVendor(vendorId) as any;
   }
   
   async updateVendor(id: number, vendorData: any, options?: UpdateOptions): Promise<any> {
+    console.log('🔍 updateVendor called with:', { id, vendorData });
+    
+    const { citySpocs, ...mainVendorData } = vendorData;
     const fields: string[] = [];
     const values: any[] = [];
     
-    Object.entries(vendorData).forEach(([key, value]) => {
-      if (key !== 'id' && value !== undefined) {
-        fields.push(`${key} = ?`);
+    // Convert camelCase to snake_case for database columns
+    Object.entries(mainVendorData).forEach(([key, value]) => {
+      if (key !== 'id' && value !== undefined && !key.startsWith('citySpoc_')) {
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+        fields.push(`${dbKey} = ?`);
         values.push(value);
       }
     });
     
-    if (fields.length === 0) {
-      return await this.getVendor(id);
+    if (fields.length > 0) {
+      values.push(id);
+      await query(`UPDATE vendors SET ${fields.join(', ')} WHERE id = ?`, values);
+      console.log('✅ Vendor main data updated');
     }
     
-    values.push(id);
-    await query(`UPDATE vendors SET ${fields.join(', ')} WHERE id = ?`, values);
+    // Update city SPOCs if provided
+    if (citySpocs || Object.keys(vendorData).some(k => k.startsWith('citySpoc_'))) {
+      const spocData = citySpocs || vendorData;
+      
+      for (const [key, value] of Object.entries(spocData)) {
+        if (key.startsWith('citySpoc_')) {
+          const cityId = parseInt(key.split('_')[1]);
+          const field = key.split('_')[2]; // name, email, or phone
+          
+          if (field === 'name' && value) {
+            const spocName = value;
+            const spocEmail = spocData[`citySpoc_${cityId}_email`] || null;
+            const spocPhone = spocData[`citySpoc_${cityId}_phone`] || null;
+            
+            await query(`
+              INSERT INTO vendor_city_spocs (vendor_id, city_id, spoc_name, spoc_email, spoc_phone)
+              VALUES (?, ?, ?, ?, ?)
+              ON DUPLICATE KEY UPDATE spoc_name = ?, spoc_email = ?, spoc_phone = ?
+            `, [id, cityId, spocName, spocEmail, spocPhone, spocName, spocEmail, spocPhone]);
+            
+            console.log(`✅ City SPOC updated for city ${cityId}`);
+          }
+        }
+      }
+    }
     
     return await this.getVendor(id);
   }

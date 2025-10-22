@@ -15,7 +15,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
 
 export default function TechnicalRounds() {
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [technicalStatus, setTechnicalStatus] = useState("");
   const [technicalNotes, setTechnicalNotes] = useState("");
   const [cityFilter, setCityFilter] = useState("");
@@ -56,7 +55,6 @@ export default function TechnicalRounds() {
         title: "Success",
         description: "Technical round result updated successfully",
       });
-      setSelectedCandidate(null);
       setTechnicalStatus("");
       setTechnicalNotes("");
     },
@@ -211,7 +209,6 @@ export default function TechnicalRounds() {
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              setSelectedCandidate(candidate);
                               setTechnicalStatus("");
                               setTechnicalNotes("");
                             }}
