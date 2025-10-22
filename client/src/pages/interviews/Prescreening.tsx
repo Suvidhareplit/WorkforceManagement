@@ -49,9 +49,10 @@ export default function Prescreening() {
   });
 
   // Extract data from API responses
-  const candidates = (candidatesResponse as any)?.data || [];
-  const cities = (citiesResponse as any)?.data || [];
-  const allClusters = (clustersResponse as any)?.data || [];
+  // The axios interceptor already extracts .data, so candidatesResponse IS the array
+  const candidates = Array.isArray(candidatesResponse) ? candidatesResponse : ((candidatesResponse as any)?.data || []);
+  const cities = Array.isArray(citiesResponse) ? citiesResponse : ((citiesResponse as any)?.data || []);
+  const allClusters = Array.isArray(clustersResponse) ? clustersResponse : ((clustersResponse as any)?.data || []);
 
   const isLoading = candidatesLoading || citiesLoading || clustersLoading;
 
