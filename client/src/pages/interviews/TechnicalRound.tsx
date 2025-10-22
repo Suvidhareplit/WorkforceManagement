@@ -376,7 +376,7 @@ export default function TechnicalRound() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {(candidate as any).technicalNotes && (candidate as any).status === 'rejected' ? (
+                        {(candidate as any).technicalNotes && ((candidate as any).status === 'rejected' || (candidate as any).technicalStatus === 'rejected') ? (
                           <span className="text-slate-700">{(candidate as any).technicalNotes.split(':')[0]}</span>
                         ) : candidateStatuses[candidate.id] === "selected" || submittedCandidates[candidate.id] ? (
                           <span className="text-slate-500">N/A</span>

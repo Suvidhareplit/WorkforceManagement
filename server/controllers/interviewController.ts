@@ -129,25 +129,37 @@ const updateScreening = async (req: Request, res: Response) => {
 const updateTechnical = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { status, notes } = req.body;
+    const { status, notes, technical_status, technical_notes } = req.body;
     
-    if (!['selected', 'rejected'].includes(status)) {
+    const techStatus = status || technical_status;
+    const techNotes = notes || technical_notes;
+    
+    console.log('🔍 updateTechnical called with:', {
+      id,
+      body: req.body,
+      techStatus,
+      techNotes
+    });
+    
+    if (!['selected', 'rejected'].includes(techStatus)) {
       return res.status(400).json({ message: "Invalid status" });
     }
     
     const updateData: any = {
-      technicalStatus: status,
-      technicalNotes: notes,
-      status: status === 'selected' ? 'selected' : 'rejected'
+      technicalStatus: techStatus,
+      technicalNotes: techNotes,
+      status: techStatus === 'selected' ? 'selected' : 'rejected'
     };
     
+    console.log('📝 Calling updateCandidate with:', updateData);
     const candidate = await storage.updateCandidate(id, updateData);
+    console.log('✅ Updated candidate:', candidate);
     
     if (!candidate) {
       return res.status(404).json({ message: "Candidate not found" });
     }
     
-    res.json(candidate);
+    res.json({ data: candidate });
   } catch (error) {
     console.error('Update technical round error:', error);
     res.status(500).json({ message: "Internal server error" });
