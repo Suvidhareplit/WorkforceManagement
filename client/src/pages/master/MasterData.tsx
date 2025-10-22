@@ -1449,6 +1449,15 @@ export default function MasterData() {
                 <Button
                   onClick={async () => {
                     try {
+                      if (!formData.name || !formData.code || !formData.businessUnit) {
+                        toast({
+                          title: "Validation Error",
+                          description: "Please fill in all fields including Business Unit",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
                       await apiRequest("/api/master-data/department", {
                         method: "POST",
                         body: {
@@ -1619,6 +1628,15 @@ export default function MasterData() {
                 <Button
                   onClick={async () => {
                     try {
+                      if (!formData.name || !formData.code || !formData.department) {
+                        toast({
+                          title: "Validation Error",
+                          description: "Please fill in all fields including Department",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
                       await apiRequest("/api/master-data/sub-department", {
                         method: "POST",
                         body: {
