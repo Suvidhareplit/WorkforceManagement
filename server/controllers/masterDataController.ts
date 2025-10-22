@@ -304,6 +304,150 @@ export class MasterDataController extends BaseController {
       this.handleError(res, error, 'Failed to update recruiter');
     }
   }
+
+  // Paygroups
+  async getPaygroups(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const paygroups = await this.storage.getPaygroups(filters);
+      this.sendSuccess(res, paygroups, 'Paygroups retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve paygroups');
+    }
+  }
+
+  async createPaygroup(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const paygroup = await this.storage.createPaygroup(req.body, { changedBy: userId });
+      this.sendSuccess(res, paygroup, 'Paygroup created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create paygroup');
+    }
+  }
+
+  async updatePaygroup(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      const paygroup = await this.storage.updatePaygroup(id, req.body, { changedBy: userId });
+      if (!paygroup) {
+        this.sendNotFound(res, 'Paygroup');
+        return;
+      }
+      this.sendSuccess(res, paygroup, 'Paygroup updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update paygroup');
+    }
+  }
+
+  // Business Units
+  async getBusinessUnits(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const businessUnits = await this.storage.getBusinessUnits(filters);
+      this.sendSuccess(res, businessUnits, 'Business units retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve business units');
+    }
+  }
+
+  async createBusinessUnit(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const businessUnit = await this.storage.createBusinessUnit(req.body, { changedBy: userId });
+      this.sendSuccess(res, businessUnit, 'Business unit created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create business unit');
+    }
+  }
+
+  async updateBusinessUnit(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      const businessUnit = await this.storage.updateBusinessUnit(id, req.body, { changedBy: userId });
+      if (!businessUnit) {
+        this.sendNotFound(res, 'Business unit');
+        return;
+      }
+      this.sendSuccess(res, businessUnit, 'Business unit updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update business unit');
+    }
+  }
+
+  // Departments
+  async getDepartments(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const departments = await this.storage.getDepartments(filters);
+      this.sendSuccess(res, departments, 'Departments retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve departments');
+    }
+  }
+
+  async createDepartment(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const department = await this.storage.createDepartment(req.body, { changedBy: userId });
+      this.sendSuccess(res, department, 'Department created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create department');
+    }
+  }
+
+  async updateDepartment(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      const department = await this.storage.updateDepartment(id, req.body, { changedBy: userId });
+      if (!department) {
+        this.sendNotFound(res, 'Department');
+        return;
+      }
+      this.sendSuccess(res, department, 'Department updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update department');
+    }
+  }
+
+  // Sub Departments
+  async getSubDepartments(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const subDepartments = await this.storage.getSubDepartments(filters);
+      this.sendSuccess(res, subDepartments, 'Sub departments retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve sub departments');
+    }
+  }
+
+  async createSubDepartment(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const subDepartment = await this.storage.createSubDepartment(req.body, { changedBy: userId });
+      this.sendSuccess(res, subDepartment, 'Sub department created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create sub department');
+    }
+  }
+
+  async updateSubDepartment(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      const subDepartment = await this.storage.updateSubDepartment(id, req.body, { changedBy: userId });
+      if (!subDepartment) {
+        this.sendNotFound(res, 'Sub department');
+        return;
+      }
+      this.sendSuccess(res, subDepartment, 'Sub department updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update sub department');
+    }
+  }
 }
 
 // Export instance for use in routes

@@ -461,6 +461,216 @@ export class SqlStorage implements IStorage {
     return this.updateRole(id, { isActive }, options);
   }
 
+  // Paygroups - production-ready CRUD
+  async getPaygroups(filters?: FilterOptions): Promise<any[]> {
+    const { orderClause, limitClause } = this.buildFilterClause(filters);
+    const result = await query(`
+      SELECT * FROM paygroups 
+      WHERE 1=1 
+      ${orderClause || 'ORDER BY name ASC'} 
+      ${limitClause}
+    `);
+    return result.rows as any[];
+  }
+
+  async getPaygroup(id: number): Promise<any> {
+    const result = await query('SELECT * FROM paygroups WHERE id = ?', [id]);
+    return result.rows[0] as any || null;
+  }
+
+  async createPaygroup(data: any, options?: CreateOptions): Promise<any> {
+    const { name, code, description, isActive = true } = data;
+    const insertResult = await query(`
+      INSERT INTO paygroups (name, code, description, is_active, created_at)
+      VALUES (?, ?, ?, ?, NOW())
+    `, [name, code, description, isActive]);
+    const paygroupId = (insertResult.rows as any).insertId;
+    return await this.getPaygroup(paygroupId);
+  }
+
+  async updatePaygroup(id: number, data: any, options?: UpdateOptions): Promise<any> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== 'id' && value !== undefined) {
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        fields.push(`${dbKey} = ?`);
+        values.push(value);
+      }
+    });
+    if (fields.length > 0) {
+      values.push(id);
+      await query(`UPDATE paygroups SET ${fields.join(', ')} WHERE id = ?`, values);
+    }
+    return await this.getPaygroup(id);
+  }
+
+  async deletePaygroup(id: number, options?: UpdateOptions): Promise<any> {
+    const result = await query('DELETE FROM paygroups WHERE id = ?', [id]);
+    return result.rowCount > 0;
+  }
+
+  // Business Units - production-ready CRUD
+  async getBusinessUnits(filters?: FilterOptions): Promise<any[]> {
+    const { orderClause, limitClause } = this.buildFilterClause(filters);
+    const result = await query(`
+      SELECT * FROM business_units 
+      WHERE 1=1 
+      ${orderClause || 'ORDER BY name ASC'} 
+      ${limitClause}
+    `);
+    return result.rows as any[];
+  }
+
+  async getBusinessUnit(id: number): Promise<any> {
+    const result = await query('SELECT * FROM business_units WHERE id = ?', [id]);
+    return result.rows[0] as any || null;
+  }
+
+  async createBusinessUnit(data: any, options?: CreateOptions): Promise<any> {
+    const { name, code, description, isActive = true } = data;
+    const insertResult = await query(`
+      INSERT INTO business_units (name, code, description, is_active, created_at)
+      VALUES (?, ?, ?, ?, NOW())
+    `, [name, code, description, isActive]);
+    const businessUnitId = (insertResult.rows as any).insertId;
+    return await this.getBusinessUnit(businessUnitId);
+  }
+
+  async updateBusinessUnit(id: number, data: any, options?: UpdateOptions): Promise<any> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== 'id' && value !== undefined) {
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        fields.push(`${dbKey} = ?`);
+        values.push(value);
+      }
+    });
+    if (fields.length > 0) {
+      values.push(id);
+      await query(`UPDATE business_units SET ${fields.join(', ')} WHERE id = ?`, values);
+    }
+    return await this.getBusinessUnit(id);
+  }
+
+  async deleteBusinessUnit(id: number, options?: UpdateOptions): Promise<any> {
+    const result = await query('DELETE FROM business_units WHERE id = ?', [id]);
+    return result.rowCount > 0;
+  }
+
+  // Departments - production-ready CRUD
+  async getDepartments(filters?: FilterOptions): Promise<any[]> {
+    const { orderClause, limitClause } = this.buildFilterClause(filters);
+    const result = await query(`
+      SELECT d.*, bu.name as business_unit_name
+      FROM departments d
+      LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+      WHERE 1=1 
+      ${orderClause || 'ORDER BY d.name ASC'} 
+      ${limitClause}
+    `);
+    return result.rows as any[];
+  }
+
+  async getDepartment(id: number): Promise<any> {
+    const result = await query(`
+      SELECT d.*, bu.name as business_unit_name
+      FROM departments d
+      LEFT JOIN business_units bu ON d.business_unit_id = bu.id
+      WHERE d.id = ?
+    `, [id]);
+    return result.rows[0] as any || null;
+  }
+
+  async createDepartment(data: any, options?: CreateOptions): Promise<any> {
+    const { name, code, businessUnitId, description, isActive = true } = data;
+    const insertResult = await query(`
+      INSERT INTO departments (name, code, business_unit_id, description, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, NOW())
+    `, [name, code, businessUnitId, description, isActive]);
+    const departmentId = (insertResult.rows as any).insertId;
+    return await this.getDepartment(departmentId);
+  }
+
+  async updateDepartment(id: number, data: any, options?: UpdateOptions): Promise<any> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== 'id' && value !== undefined) {
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        fields.push(`${dbKey} = ?`);
+        values.push(value);
+      }
+    });
+    if (fields.length > 0) {
+      values.push(id);
+      await query(`UPDATE departments SET ${fields.join(', ')} WHERE id = ?`, values);
+    }
+    return await this.getDepartment(id);
+  }
+
+  async deleteDepartment(id: number, options?: UpdateOptions): Promise<any> {
+    const result = await query('DELETE FROM departments WHERE id = ?', [id]);
+    return result.rowCount > 0;
+  }
+
+  // Sub Departments - production-ready CRUD
+  async getSubDepartments(filters?: FilterOptions): Promise<any[]> {
+    const { orderClause, limitClause } = this.buildFilterClause(filters);
+    const result = await query(`
+      SELECT sd.*, d.name as department_name
+      FROM sub_departments sd
+      LEFT JOIN departments d ON sd.department_id = d.id
+      WHERE 1=1 
+      ${orderClause || 'ORDER BY sd.name ASC'} 
+      ${limitClause}
+    `);
+    return result.rows as any[];
+  }
+
+  async getSubDepartment(id: number): Promise<any> {
+    const result = await query(`
+      SELECT sd.*, d.name as department_name
+      FROM sub_departments sd
+      LEFT JOIN departments d ON sd.department_id = d.id
+      WHERE sd.id = ?
+    `, [id]);
+    return result.rows[0] as any || null;
+  }
+
+  async createSubDepartment(data: any, options?: CreateOptions): Promise<any> {
+    const { name, code, departmentId, description, isActive = true } = data;
+    const insertResult = await query(`
+      INSERT INTO sub_departments (name, code, department_id, description, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, NOW())
+    `, [name, code, departmentId, description, isActive]);
+    const subDepartmentId = (insertResult.rows as any).insertId;
+    return await this.getSubDepartment(subDepartmentId);
+  }
+
+  async updateSubDepartment(id: number, data: any, options?: UpdateOptions): Promise<any> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== 'id' && value !== undefined) {
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        fields.push(`${dbKey} = ?`);
+        values.push(value);
+      }
+    });
+    if (fields.length > 0) {
+      values.push(id);
+      await query(`UPDATE sub_departments SET ${fields.join(', ')} WHERE id = ?`, values);
+    }
+    return await this.getSubDepartment(id);
+  }
+
+  async deleteSubDepartment(id: number, options?: UpdateOptions): Promise<any> {
+    const result = await query('DELETE FROM sub_departments WHERE id = ?', [id]);
+    return result.rowCount > 0;
+  }
+
   // Vendors - production-ready CRUD
   async getVendors(filters?: FilterOptions): Promise<any[]> {
     const { orderClause, limitClause } = this.buildFilterClause(filters);

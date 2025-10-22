@@ -32,16 +32,56 @@ export interface Cluster {
   description?: string;
 }
 
+export interface Paygroup {
+  id: number;
+  name: string;
+  code: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface BusinessUnit {
+  id: number;
+  name: string;
+  code: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface Department {
+  id: number;
+  name: string;
+  code: string;
+  businessUnitId?: number;
+  businessUnitName?: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface SubDepartment {
+  id: number;
+  name: string;
+  code: string;
+  departmentId?: number;
+  departmentName?: string;
+  description?: string;
+  isActive: boolean;
+}
+
 export interface Role {
   id?: number;
   name: string;
   code: string;
   description?: string;
   jobDescriptionFile?: string;
-  paygroup?: string;
-  businessUnit?: string;
-  department?: string;
-  subDepartment?: string;
+  paygroupId?: number;
+  paygroupName?: string;
+  businessUnitId?: number;
+  businessUnitName?: string;
+  departmentId?: number;
+  departmentName?: string;
+  subDepartmentId?: number;
+  subDepartmentName?: string;
   isActive?: boolean;
 }
 

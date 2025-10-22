@@ -35,6 +35,10 @@ const router = Router();
 router.get('/city', masterDataController.getCities.bind(masterDataController));
 router.get('/city/:cityId/clusters', masterDataController.getClustersByCity.bind(masterDataController));
 router.get('/cluster', masterDataController.getClusters.bind(masterDataController));
+router.get('/paygroup', masterDataController.getPaygroups.bind(masterDataController));
+router.get('/business-unit', masterDataController.getBusinessUnits.bind(masterDataController));
+router.get('/department', masterDataController.getDepartments.bind(masterDataController));
+router.get('/sub-department', masterDataController.getSubDepartments.bind(masterDataController));
 router.get('/role', masterDataController.getRoles.bind(masterDataController));
 router.get('/vendor', masterDataController.getVendors.bind(masterDataController));
 router.get('/recruiter', masterDataController.getRecruiters.bind(masterDataController));
@@ -52,6 +56,10 @@ router.use(authenticate);
 // Create master data
 router.post('/city', masterDataController.createCity.bind(masterDataController));
 router.post('/cluster', masterDataController.createCluster.bind(masterDataController));
+router.post('/paygroup', masterDataController.createPaygroup.bind(masterDataController));
+router.post('/business-unit', masterDataController.createBusinessUnit.bind(masterDataController));
+router.post('/department', masterDataController.createDepartment.bind(masterDataController));
+router.post('/sub-department', masterDataController.createSubDepartment.bind(masterDataController));
 router.post('/role', upload.single('jobDescriptionFile'), masterDataController.createRole.bind(masterDataController));
 router.post('/vendor', masterDataController.createVendor.bind(masterDataController));
 router.post('/recruiter', masterDataController.createRecruiter.bind(masterDataController));
@@ -66,6 +74,10 @@ router.patch('/recruiter/:id/toggle-status', masterDataController.toggleRecruite
 // Edit master data
 router.patch('/city/:id', masterDataController.updateCity.bind(masterDataController));
 router.patch('/cluster/:id', masterDataController.updateCluster.bind(masterDataController));
+router.patch('/paygroup/:id', masterDataController.updatePaygroup.bind(masterDataController));
+router.patch('/business-unit/:id', masterDataController.updateBusinessUnit.bind(masterDataController));
+router.patch('/department/:id', masterDataController.updateDepartment.bind(masterDataController));
+router.patch('/sub-department/:id', masterDataController.updateSubDepartment.bind(masterDataController));
 router.patch('/role/:id', upload.single('jobDescriptionFile'), masterDataController.updateRole.bind(masterDataController));
 router.patch('/vendor/:id', masterDataController.updateVendor.bind(masterDataController));
 router.patch('/recruiter/:id', masterDataController.updateRecruiter.bind(masterDataController));

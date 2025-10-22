@@ -63,6 +63,34 @@ export interface IStorage {
   deleteCluster(id: number, options?: UpdateOptions): Promise<boolean>;
   updateClusterStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any>;
 
+  // Paygroups - using any types for raw SQL approach
+  getPaygroups(filters?: FilterOptions): Promise<any[]>;
+  getPaygroup(id: number): Promise<any>;
+  createPaygroup(paygroupData: any, options?: CreateOptions): Promise<any>;
+  updatePaygroup(id: number, paygroupData: any, options?: UpdateOptions): Promise<any>;
+  deletePaygroup(id: number, options?: UpdateOptions): Promise<boolean>;
+
+  // Business Units - using any types for raw SQL approach
+  getBusinessUnits(filters?: FilterOptions): Promise<any[]>;
+  getBusinessUnit(id: number): Promise<any>;
+  createBusinessUnit(businessUnitData: any, options?: CreateOptions): Promise<any>;
+  updateBusinessUnit(id: number, businessUnitData: any, options?: UpdateOptions): Promise<any>;
+  deleteBusinessUnit(id: number, options?: UpdateOptions): Promise<boolean>;
+
+  // Departments - using any types for raw SQL approach
+  getDepartments(filters?: FilterOptions): Promise<any[]>;
+  getDepartment(id: number): Promise<any>;
+  createDepartment(departmentData: any, options?: CreateOptions): Promise<any>;
+  updateDepartment(id: number, departmentData: any, options?: UpdateOptions): Promise<any>;
+  deleteDepartment(id: number, options?: UpdateOptions): Promise<boolean>;
+
+  // Sub Departments - using any types for raw SQL approach
+  getSubDepartments(filters?: FilterOptions): Promise<any[]>;
+  getSubDepartment(id: number): Promise<any>;
+  createSubDepartment(subDepartmentData: any, options?: CreateOptions): Promise<any>;
+  updateSubDepartment(id: number, subDepartmentData: any, options?: UpdateOptions): Promise<any>;
+  deleteSubDepartment(id: number, options?: UpdateOptions): Promise<boolean>;
+
   // Roles - using any types for raw SQL approach
   getRoles(filters?: FilterOptions): Promise<any[]>;
   getRole(id: number): Promise<any>;

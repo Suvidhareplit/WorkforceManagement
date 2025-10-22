@@ -16,18 +16,62 @@ CREATE TABLE IF NOT EXISTS clusters (
     FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS paygroups (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name TEXT NOT NULL,
+    code VARCHAR(10) NOT NULL UNIQUE,
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS business_units (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name TEXT NOT NULL,
+    code VARCHAR(10) NOT NULL UNIQUE,
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS departments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name TEXT NOT NULL,
+    code VARCHAR(10) NOT NULL UNIQUE,
+    business_unit_id INT,
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (business_unit_id) REFERENCES business_units(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS sub_departments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name TEXT NOT NULL,
+    code VARCHAR(10) NOT NULL UNIQUE,
+    department_id INT,
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
     code VARCHAR(10) NOT NULL UNIQUE,
     description TEXT,
     job_description_file TEXT,
-    paygroup TEXT,
-    business_unit TEXT,
-    department TEXT,
-    sub_department TEXT,
+    paygroup_id INT,
+    business_unit_id INT,
+    department_id INT,
+    sub_department_id INT,
     is_active BOOLEAN DEFAULT true,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (paygroup_id) REFERENCES paygroups(id) ON DELETE SET NULL,
+    FOREIGN KEY (business_unit_id) REFERENCES business_units(id) ON DELETE SET NULL,
+    FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
+    FOREIGN KEY (sub_department_id) REFERENCES sub_departments(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS vendors (
