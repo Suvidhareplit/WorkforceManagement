@@ -424,19 +424,28 @@ export class SqlStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     
+    // Map of camelCase/snake_case to database column names
+    const fieldMap: Record<string, string> = {
+      'name': 'name',
+      'code': 'code',
+      'description': 'description',
+      'paygroup_id': 'paygroup_id',
+      'paygroupId': 'paygroup_id',
+      'business_unit_id': 'business_unit_id',
+      'businessUnitId': 'business_unit_id',
+      'department_id': 'department_id',
+      'departmentId': 'department_id',
+      'sub_department_id': 'sub_department_id',
+      'subDepartmentId': 'sub_department_id',
+      'job_description_file': 'job_description_file',
+      'jobDescriptionFile': 'job_description_file',
+      'is_active': 'is_active',
+      'isActive': 'is_active'
+    };
+    
     Object.entries(roleData).forEach(([key, value]) => {
       if (key !== 'id' && value !== undefined) {
-        // Map camelCase to snake_case for database fields
-        let dbField = key;
-        if (key === 'jobDescriptionFile') {
-          dbField = 'job_description_file';
-        } else if (key === 'businessUnit') {
-          dbField = 'business_unit';
-        } else if (key === 'subDepartment') {
-          dbField = 'sub_department';
-        } else if (key === 'isActive') {
-          dbField = 'is_active';
-        }
+        const dbField = fieldMap[key] || key;
         fields.push(`${dbField} = ?`);
         values.push(value);
       }
@@ -584,7 +593,9 @@ export class SqlStorage implements IStorage {
   }
 
   async createDepartment(data: any, options?: CreateOptions): Promise<any> {
-    const { name, code, businessUnitId, isActive = true } = data;
+    const { name, code, business_unit_id, is_active = true } = data;
+    const businessUnitId = business_unit_id;
+    const isActive = is_active;
     const insertResult = await query(`
       INSERT INTO departments (name, code, business_unit_id, is_active, created_at)
       VALUES (?, ?, ?, ?, NOW())
@@ -640,7 +651,9 @@ export class SqlStorage implements IStorage {
   }
 
   async createSubDepartment(data: any, options?: CreateOptions): Promise<any> {
-    const { name, code, departmentId, isActive = true } = data;
+    const { name, code, department_id, is_active = true } = data;
+    const departmentId = department_id;
+    const isActive = is_active;
     const insertResult = await query(`
       INSERT INTO sub_departments (name, code, department_id, is_active, created_at)
       VALUES (?, ?, ?, ?, NOW())

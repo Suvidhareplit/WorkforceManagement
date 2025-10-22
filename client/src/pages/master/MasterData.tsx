@@ -488,7 +488,6 @@ export default function MasterData() {
         const formData = new FormData();
         formData.append('name', editFormData.name);
         formData.append('code', editFormData.code);
-        formData.append('description', editFormData.description || '');
         if (editFormData.paygroup) formData.append('paygroupId', editFormData.paygroup);
         if (editFormData.businessUnit) formData.append('businessUnitId', editFormData.businessUnit);
         if (editFormData.department) formData.append('departmentId', editFormData.department);
@@ -505,7 +504,6 @@ export default function MasterData() {
           name: editFormData.name,
           code: editFormData.code,
           ...(editType === 'role' && { 
-            description: editFormData.description,
             paygroupId: editFormData.paygroup ? parseInt(editFormData.paygroup) : undefined,
             businessUnitId: editFormData.businessUnit ? parseInt(editFormData.businessUnit) : undefined,
             departmentId: editFormData.department ? parseInt(editFormData.department) : undefined,
@@ -2327,15 +2325,6 @@ export default function MasterData() {
 
             {editType === "role" && (
               <>
-                <div>
-                  <Label htmlFor="editDescription">Description</Label>
-                  <Input
-                    id="editDescription"
-                    placeholder="Enter description"
-                    value={editFormData.description}
-                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                  />
-                </div>
                 <div>
                   <Label htmlFor="editPaygroup">Paygroup</Label>
                   <Select
