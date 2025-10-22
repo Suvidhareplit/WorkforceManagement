@@ -392,13 +392,17 @@ export class MasterDataController extends BaseController {
     try {
       const { name, code, businessUnitId } = req.body;
       
+      console.log('createDepartment received:', { name, code, businessUnitId });
+      
       // Backend validation
       if (!name || !code) {
         this.sendError(res, 'Name and Code are required', 400);
         return;
       }
       
-      if (!businessUnitId || isNaN(parseInt(businessUnitId))) {
+      const parsedBusinessUnitId = parseInt(businessUnitId);
+      if (businessUnitId === undefined || businessUnitId === null || isNaN(parsedBusinessUnitId)) {
+        console.log('Business Unit validation failed:', { businessUnitId, parsedBusinessUnitId });
         this.sendError(res, 'Valid Business Unit selection is required', 400);
         return;
       }
@@ -441,13 +445,17 @@ export class MasterDataController extends BaseController {
     try {
       const { name, code, departmentId } = req.body;
       
+      console.log('createSubDepartment received:', { name, code, departmentId });
+      
       // Backend validation
       if (!name || !code) {
         this.sendError(res, 'Name and Code are required', 400);
         return;
       }
       
-      if (!departmentId || isNaN(parseInt(departmentId))) {
+      const parsedDepartmentId = parseInt(departmentId);
+      if (departmentId === undefined || departmentId === null || isNaN(parsedDepartmentId)) {
+        console.log('Department validation failed:', { departmentId, parsedDepartmentId });
         this.sendError(res, 'Valid Department selection is required', 400);
         return;
       }
