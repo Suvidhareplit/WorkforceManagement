@@ -79,15 +79,16 @@ export default function TechnicalRound() {
   const filteredCandidates = Array.isArray(allCandidates) ? allCandidates.filter((candidate: any) => {
     // Show candidates in technical status OR those who were evaluated (selected/rejected with technical notes)
     const isTechnicalRelated = (candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)) ||
-           ((candidate.status === 'selected' || candidate.status === 'rejected') && candidate.technicalNotes);
+           ((candidate.status === 'selected' || candidate.status === 'rejected' || candidate.technicalStatus === 'selected' || candidate.technicalStatus === 'rejected') && candidate.technicalNotes);
     
     if (!isTechnicalRelated) return false;
     
     // Status filter (pending, selected, rejected)
+    // Check both status and technicalStatus fields
     if (statusFilter && statusFilter !== "all") {
       if (statusFilter === "pending" && candidate.technicalNotes) return false;
-      if (statusFilter === "selected" && candidate.status !== 'selected') return false;
-      if (statusFilter === "rejected" && candidate.status !== 'rejected') return false;
+      if (statusFilter === "selected" && candidate.status !== 'selected' && candidate.technicalStatus !== 'selected') return false;
+      if (statusFilter === "rejected" && candidate.status !== 'rejected' && candidate.technicalStatus !== 'rejected') return false;
     }
     
     if (cityFilter && cityFilter !== "all" && candidate.cityName !== cityFilter) return false;
