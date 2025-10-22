@@ -940,53 +940,6 @@ export class SqlStorage implements IStorage {
     return this.updateCandidate(id, { status }, options);
   }
 
-  // Vendor City Contacts - basic implementation
-  async getVendorCityContacts(vendorId: number, filters?: FilterOptions): Promise<any[]> {
-    const result = await query('SELECT * FROM vendor_city_contacts WHERE vendor_id = ?', [vendorId]);
-    return result.rows as any[];
-  }
-
-  async createVendorCityContact(contactData: any, options?: CreateOptions): Promise<any> {
-    const { vendorId, cityId, recruitmentSpocName, recruitmentSpocEmail, recruitmentSpocPhone } = contactData;
-    
-    const insertResult = await query(`
-      INSERT INTO vendor_city_contacts (vendor_id, city_id, recruitment_spoc_name, recruitment_spoc_email, recruitment_spoc_phone, created_at)
-      VALUES (?, ?, ?, ?, ?, NOW())
-    `, [vendorId, cityId, recruitmentSpocName, recruitmentSpocEmail, recruitmentSpocPhone]);
-    
-    const contactId = (insertResult.rows as any).insertId;
-    const result = await query('SELECT * FROM vendor_city_contacts WHERE id = ?', [contactId]);
-    return result.rows[0] as any;
-  }
-
-  async updateVendorCityContact(id: number, contactData: any, options?: UpdateOptions): Promise<any> {
-    const fields: string[] = [];
-    const values: any[] = [];
-    
-    Object.entries(contactData).forEach(([key, value]) => {
-      if (key !== 'id' && value !== undefined) {
-        fields.push(`${key} = ?`);
-        values.push(value);
-      }
-    });
-    
-    if (fields.length === 0) {
-      const result = await query('SELECT * FROM vendor_city_contacts WHERE id = ?', [id]);
-      return result.rows[0] as any || null;
-    }
-    
-    values.push(id);
-    await query(`UPDATE vendor_city_contacts SET ${fields.join(', ')} WHERE id = ?`, values);
-    
-    const result = await query('SELECT * FROM vendor_city_contacts WHERE id = ?', [id]);
-    return result.rows[0] as any || null;
-  }
-
-  async deleteVendorCityContact(id: number, options?: UpdateOptions): Promise<any> {
-    const result = await query('DELETE FROM vendor_city_contacts WHERE id = ?', [id]);
-    return result.rowCount > 0;
-  }
-
 
   async getTrainingSessions(filters?: FilterOptions): Promise<any[]> {
     const { orderClause, limitClause } = this.buildFilterClause(filters);
@@ -1280,60 +1233,6 @@ export class SqlStorage implements IStorage {
 
   async deleteExitRecord(id: number, options?: UpdateOptions): Promise<any> {
     const result = await query('DELETE FROM exit_records WHERE id = ?', [id]);
-    return result.rowCount > 0;
-  }
-
-  async getVendorInvoices(filters?: FilterOptions): Promise<any[]> {
-    const { orderClause, limitClause } = this.buildFilterClause(filters);
-    const result = await query(`
-      SELECT * FROM vendor_invoices 
-      WHERE 1=1 
-      ${orderClause || 'ORDER BY invoice_date DESC'} 
-      ${limitClause}
-    `);
-    return result.rows as any[];
-  }
-
-  async getVendorInvoice(id: number): Promise<any> {
-    const result = await query('SELECT * FROM vendor_invoices WHERE id = ?', [id]);
-    return result.rows[0] as any || null;
-  }
-
-  async createVendorInvoice(invoiceData: any, options?: CreateOptions): Promise<any> {
-    const { vendorId, invoiceNumber, invoiceDate, amount, status = 'pending' } = invoiceData;
-    
-    const insertResult = await query(`
-      INSERT INTO vendor_invoices (vendor_id, invoice_number, invoice_date, amount, status, created_at)
-      VALUES (?, ?, ?, ?, ?, NOW())
-    `, [vendorId, invoiceNumber, invoiceDate, amount, status]);
-    
-    const invoiceId = (insertResult.rows as any).insertId;
-    return await this.getVendorInvoice(invoiceId) as any;
-  }
-
-  async updateVendorInvoice(id: number, invoiceData: any, options?: UpdateOptions): Promise<any> {
-    const fields: string[] = [];
-    const values: any[] = [];
-    
-    Object.entries(invoiceData).forEach(([key, value]) => {
-      if (key !== 'id' && value !== undefined) {
-        fields.push(`${key} = ?`);
-        values.push(value);
-      }
-    });
-    
-    if (fields.length === 0) {
-      return await this.getVendorInvoice(id);
-    }
-    
-    values.push(id);
-    await query(`UPDATE vendor_invoices SET ${fields.join(', ')} WHERE id = ?`, values);
-    
-    return await this.getVendorInvoice(id);
-  }
-
-  async deleteVendorInvoice(id: number, options?: UpdateOptions): Promise<any> {
-    const result = await query('DELETE FROM vendor_invoices WHERE id = ?', [id]);
     return result.rowCount > 0;
   }
 

@@ -79,12 +79,6 @@ export interface IStorage {
   deleteVendor(id: number, options?: UpdateOptions): Promise<boolean>;
   updateVendorStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any>;
 
-  // Vendor city contacts
-  getVendorCityContacts(vendorId: number, filters?: FilterOptions): Promise<any[]>;
-  createVendorCityContact(contactData: any, options?: CreateOptions): Promise<any>;
-  updateVendorCityContact(id: number, contactData: any, options?: UpdateOptions): Promise<any>;
-  deleteVendorCityContact(id: number, options?: UpdateOptions): Promise<boolean>;
-
   // Recruiters - using any types for raw SQL approach
   getRecruiters(filters?: FilterOptions): Promise<any[]>;
   getRecruiter(id: number): Promise<any>;

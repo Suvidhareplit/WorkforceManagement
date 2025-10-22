@@ -97,20 +97,6 @@ CREATE INDEX idx_candidates_hiring_request_id ON candidates(hiring_request_id);
 CREATE INDEX idx_candidates_status ON candidates(status);
 
 
-CREATE TABLE IF NOT EXISTS vendor_city_contacts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    vendor_id INT,
-    city_id INT,
-    recruitment_spoc_name TEXT NOT NULL,
-    recruitment_spoc_email TEXT NOT NULL,
-    recruitment_spoc_phone VARCHAR(10),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_vendor_city (vendor_id, city_id),
-    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE,
-    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
 CREATE TABLE IF NOT EXISTS recruiters (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -249,19 +235,6 @@ CREATE TABLE IF NOT EXISTS exit_records (
     remarks TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
-CREATE TABLE IF NOT EXISTS vendor_invoices (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    vendor_id INT,
-    invoice_number VARCHAR(50) NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    invoice_date DATE NOT NULL,
-    due_date DATE,
-    status ENUM('pending', 'paid', 'overdue') DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
