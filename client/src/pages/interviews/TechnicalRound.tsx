@@ -26,19 +26,24 @@ export default function TechnicalRound() {
   const { toast } = useToast();
 
   // Get all candidates
-  const { data: allCandidates, isLoading: candidatesLoading, refetch: refetchCandidates, error: candidatesError } = useQuery({
+  const { data: allCandidatesResponse, isLoading: candidatesLoading, refetch: refetchCandidates, error: candidatesError } = useQuery({
     queryKey: ["/api/interviews/candidates"],
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
+
+  // Extract data - handle both array and object response
+  const allCandidates = Array.isArray(allCandidatesResponse) ? allCandidatesResponse : ((allCandidatesResponse as any)?.data || []);
 
   // Debug logging
   useEffect(() => {
-    console.log('TechnicalRound - Candidates:', allCandidates);
+    console.log('TechnicalRound - Raw Response:', allCandidatesResponse);
+    console.log('TechnicalRound - Extracted Candidates:', allCandidates);
     console.log('TechnicalRound - Loading:', candidatesLoading);
     console.log('TechnicalRound - Error:', candidatesError);
-  }, [allCandidates, candidatesLoading, candidatesError]);
+  }, [allCandidatesResponse, allCandidates, candidatesLoading, candidatesError]);
 
   const { data: cities, isLoading: citiesLoading, refetch: refetchCities } = useQuery({
     queryKey: ["/api/master-data/city"],
@@ -130,6 +135,7 @@ export default function TechnicalRound() {
       setSubmittedCandidates(prev => ({ ...prev, [variables.id]: true }));
       
       queryClient.invalidateQueries({ queryKey: ["/api/interviews/candidates"] });
+      refetchCandidates(); // Force immediate refetch
       toast({
         title: "Success",
         description: "Technical round status updated successfully",
