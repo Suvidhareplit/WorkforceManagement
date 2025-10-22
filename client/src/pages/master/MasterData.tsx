@@ -489,10 +489,10 @@ export default function MasterData() {
         formData.append('name', editFormData.name);
         formData.append('code', editFormData.code);
         formData.append('description', editFormData.description || '');
-        formData.append('paygroup', editFormData.paygroup || '');
-        formData.append('businessUnit', editFormData.businessUnit || '');
-        formData.append('department', editFormData.department || '');
-        formData.append('subDepartment', editFormData.subDepartment || '');
+        if (editFormData.paygroup) formData.append('paygroupId', editFormData.paygroup);
+        if (editFormData.businessUnit) formData.append('businessUnitId', editFormData.businessUnit);
+        if (editFormData.department) formData.append('departmentId', editFormData.department);
+        if (editFormData.subDepartment) formData.append('subDepartmentId', editFormData.subDepartment);
         formData.append('jobDescriptionFile', editFormData.jobDescriptionFile);
         
         await apiRequest(endpoint, {
@@ -506,10 +506,10 @@ export default function MasterData() {
           code: editFormData.code,
           ...(editType === 'role' && { 
             description: editFormData.description,
-            paygroup: editFormData.paygroup,
-            businessUnit: editFormData.businessUnit,
-            department: editFormData.department,
-            subDepartment: editFormData.subDepartment
+            paygroupId: editFormData.paygroup ? parseInt(editFormData.paygroup) : undefined,
+            businessUnitId: editFormData.businessUnit ? parseInt(editFormData.businessUnit) : undefined,
+            departmentId: editFormData.department ? parseInt(editFormData.department) : undefined,
+            subDepartmentId: editFormData.subDepartment ? parseInt(editFormData.subDepartment) : undefined
           }),
           ...(editType === 'vendor' && { 
             email: editFormData.email,
@@ -641,8 +641,18 @@ export default function MasterData() {
   };
 
   const handleEditRole = (role: Role) => {
-    // Role editing functionality would be implemented here
-    console.log('Edit role:', role);
+    setEditingItem(role);
+    setEditType("role");
+    setEditFormData({
+      ...editFormData,
+      name: role.name,
+      code: role.code,
+      description: role.description || "",
+      paygroup: role.paygroupId?.toString() || "",
+      businessUnit: role.businessUnitId?.toString() || "",
+      department: role.departmentId?.toString() || "",
+      subDepartment: role.subDepartmentId?.toString() || "",
+    });
   };
 
   const handleToggleRoleStatus = async (id: number, currentStatus: boolean) => {
@@ -2336,40 +2346,85 @@ export default function MasterData() {
             {editType === "role" && (
               <>
                 <div>
-                  <Label htmlFor="editPaygroup">Paygroup</Label>
+                  <Label htmlFor="editDescription">Description</Label>
                   <Input
-                    id="editPaygroup"
-                    placeholder="Enter paygroup"
-                    value={editFormData.paygroup}
-                    onChange={(e) => setEditFormData({ ...editFormData, paygroup: e.target.value })}
+                    id="editDescription"
+                    placeholder="Enter description"
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                   />
+                </div>
+                <div>
+                  <Label htmlFor="editPaygroup">Paygroup</Label>
+                  <Select
+                    value={editFormData.paygroup}
+                    onValueChange={(value) => setEditFormData({ ...editFormData, paygroup: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select paygroup" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safePaygroups.map((pg: Paygroup) => (
+                        <SelectItem key={pg.id} value={pg.id.toString()}>
+                          {pg.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="editBusinessUnit">Business Unit</Label>
-                  <Input
-                    id="editBusinessUnit"
-                    placeholder="Enter business unit"
+                  <Select
                     value={editFormData.businessUnit}
-                    onChange={(e) => setEditFormData({ ...editFormData, businessUnit: e.target.value })}
-                  />
+                    onValueChange={(value) => setEditFormData({ ...editFormData, businessUnit: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select business unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeBusinessUnits.map((bu: BusinessUnit) => (
+                        <SelectItem key={bu.id} value={bu.id.toString()}>
+                          {bu.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="editDepartment">Department</Label>
-                  <Input
-                    id="editDepartment"
-                    placeholder="Enter department"
+                  <Select
                     value={editFormData.department}
-                    onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
-                  />
+                    onValueChange={(value) => setEditFormData({ ...editFormData, department: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeDepartments.map((dept: Department) => (
+                        <SelectItem key={dept.id} value={dept.id.toString()}>
+                          {dept.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="editSubDepartment">Sub Department</Label>
-                  <Input
-                    id="editSubDepartment"
-                    placeholder="Enter sub department"
+                  <Select
                     value={editFormData.subDepartment}
-                    onChange={(e) => setEditFormData({ ...editFormData, subDepartment: e.target.value })}
-                  />
+                    onValueChange={(value) => setEditFormData({ ...editFormData, subDepartment: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sub department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeSubDepartments.map((sd: SubDepartment) => (
+                        <SelectItem key={sd.id} value={sd.id.toString()}>
+                          {sd.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="editJobDescription">Job Description (PDF/DOC)</Label>
