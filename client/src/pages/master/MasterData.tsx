@@ -540,7 +540,13 @@ export default function MasterData() {
             phone: editFormData.phone,
             incentiveStructure: (editFormData as any).incentiveStructure
           }),
-          ...(editType === 'cluster' && { city_id: parseInt(editFormData.cityId) }) // Use snake_case for backend
+          ...(editType === 'cluster' && { city_id: parseInt(editFormData.cityId) }), // Use snake_case for backend
+          ...(editType === 'department' && { 
+            businessUnitId: editFormData.businessUnit ? parseInt(editFormData.businessUnit) : undefined
+          }),
+          ...(editType === 'sub-department' && { 
+            departmentId: editFormData.department ? parseInt(editFormData.department) : undefined
+          })
         };
 
         await apiRequest(endpoint, {
@@ -2395,6 +2401,48 @@ export default function MasterData() {
                     {safeCities.map((city: City) => (
                       <SelectItem key={city.id} value={city.id.toString()}>
                         {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {editType === "department" && (
+              <div>
+                <Label htmlFor="editDepartmentBusinessUnit">Business Unit</Label>
+                <Select
+                  value={editFormData.businessUnit}
+                  onValueChange={(value) => setEditFormData({ ...editFormData, businessUnit: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select business unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {safeBusinessUnits.map((bu: BusinessUnit) => (
+                      <SelectItem key={bu.id} value={bu.id.toString()}>
+                        {bu.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {editType === "sub-department" && (
+              <div>
+                <Label htmlFor="editSubDepartmentDepartment">Department</Label>
+                <Select
+                  value={editFormData.department}
+                  onValueChange={(value) => setEditFormData({ ...editFormData, department: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {safeDepartments.map((dept: Department) => (
+                      <SelectItem key={dept.id} value={dept.id.toString()}>
+                        {dept.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
