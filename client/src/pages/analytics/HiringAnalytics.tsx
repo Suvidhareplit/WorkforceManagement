@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Filter, Send, Users, Building, MapPin } from "lucide-react";
 import { api } from "@/lib/api";
@@ -196,21 +195,6 @@ export default function HiringAnalytics() {
     cityAnalytics[cityKey].clustersArray = Array.from(cityAnalytics[cityKey].clusters).sort();
   });
 
-  const handleSelectRequest = (requestId: number) => {
-    setSelectedRequests(prev => 
-      prev.includes(requestId) 
-        ? prev.filter(id => id !== requestId)
-        : [...prev, requestId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedRequests.length === filteredRequests.length) {
-      setSelectedRequests([]);
-    } else {
-      setSelectedRequests(filteredRequests.map((req: any) => req.id));
-    }
-  };
 
   const handleSelectCityRow = (cityId: string, roleId: string) => {
     setSelectedCityRows(prev => {
@@ -266,24 +250,6 @@ export default function HiringAnalytics() {
     return (vendors as any[]).filter((vendor: any) => 
       vendor.citySpocData && vendor.citySpocData[parseInt(selectedCity)]
     );
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-orange-100 text-orange-800';
-      case 'closed': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
   };
 
   if (loadingRequests || loadingVendors) {

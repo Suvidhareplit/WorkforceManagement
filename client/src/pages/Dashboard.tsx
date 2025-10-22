@@ -15,14 +15,14 @@ export default function Dashboard() {
   console.log('🏠 Dashboard component rendering...');
 
   // Fetch data from APIs with refetch on window focus
-  const { data: citiesResponse, isLoading: loadingCities } = useQuery({
+  const { data: citiesResponse } = useQuery({
     queryKey: ['/api/master-data/city'],
     queryFn: () => api.masterData.getCities(),
     refetchOnWindowFocus: true,
     staleTime: 0, // Always refetch when component mounts
   });
 
-  const { data: rolesResponse, isLoading: loadingRoles } = useQuery({
+  const { data: rolesResponse } = useQuery({
     queryKey: ['/api/master-data/role'],
     queryFn: () => api.masterData.getRoles(),
     refetchOnWindowFocus: true,
