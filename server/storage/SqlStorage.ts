@@ -755,23 +755,22 @@ export class SqlStorage implements IStorage {
   }
   
   async createVendor(vendorData: any, options?: CreateOptions): Promise<any> {
-    const { 
-      name,
-      managementFees,
-      sourcingFee,
-      replacementDays,
-      deliveryLeadName,
-      deliveryLeadEmail,
-      deliveryLeadPhone,
-      businessHeadName,
-      businessHeadEmail,
-      businessHeadPhone,
-      payrollSpocName,
-      payrollSpocEmail,
-      payrollSpocPhone,
-      citySpocs = {},
-      isActive = true 
-    } = vendorData;
+    // Handle both camelCase and snake_case
+    const name = vendorData.name;
+    const managementFees = vendorData.management_fees || vendorData.managementFees;
+    const sourcingFee = vendorData.sourcing_fee || vendorData.sourcingFee;
+    const replacementDays = vendorData.replacement_days || vendorData.replacementDays;
+    const deliveryLeadName = vendorData.delivery_lead_name || vendorData.deliveryLeadName;
+    const deliveryLeadEmail = vendorData.delivery_lead_email || vendorData.deliveryLeadEmail;
+    const deliveryLeadPhone = vendorData.delivery_lead_phone || vendorData.deliveryLeadPhone;
+    const businessHeadName = vendorData.business_head_name || vendorData.businessHeadName;
+    const businessHeadEmail = vendorData.business_head_email || vendorData.businessHeadEmail;
+    const businessHeadPhone = vendorData.business_head_phone || vendorData.businessHeadPhone;
+    const payrollSpocName = vendorData.payroll_spoc_name || vendorData.payrollSpocName;
+    const payrollSpocEmail = vendorData.payroll_spoc_email || vendorData.payrollSpocEmail;
+    const payrollSpocPhone = vendorData.payroll_spoc_phone || vendorData.payrollSpocPhone;
+    const citySpocs = vendorData.city_spocs || vendorData.citySpocs || {};
+    const isActive = vendorData.is_active !== undefined ? vendorData.is_active : (vendorData.isActive !== undefined ? vendorData.isActive : true);
     
     console.log('🔍 createVendor called with:', vendorData);
     console.log('🔍 Extracted values:', {

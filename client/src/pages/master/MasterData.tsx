@@ -670,6 +670,15 @@ export default function MasterData() {
   const handleEditVendor = (vendor: Vendor) => {
     setEditingItem(vendor);
     setEditType("vendor");
+    
+    // Prepare city SPOC data from vendor.citySpocs
+    const citySpocFields: any = {};
+    if (vendor.citySpocs) {
+      Object.entries(vendor.citySpocs).forEach(([key, value]) => {
+        citySpocFields[key] = value;
+      });
+    }
+    
     setEditFormData({
       name: vendor.name,
       code: "",
@@ -692,6 +701,8 @@ export default function MasterData() {
       payrollSpocName: vendor.payrollSpocName || "",
       payrollSpocEmail: vendor.payrollSpocEmail || "",
       payrollSpocPhone: vendor.payrollSpocPhone || "",
+      // City SPOCs
+      ...citySpocFields,
     } as any);
   };
 
@@ -2646,6 +2657,48 @@ export default function MasterData() {
                       onChange={(e) => setEditFormData({ ...editFormData, payrollSpocPhone: e.target.value })}
                     />
                   </div>
+                </div>
+
+                <h4 className="font-medium text-sm mt-4">City Recruitment SPOCs</h4>
+                <div className="space-y-3">
+                  {safeCities.map((city: City) => (
+                    <div key={city.id} className="border rounded-lg p-3">
+                      <div className="flex items-center mb-2">
+                        <MapPin className="h-4 w-4 mr-2 text-blue-600" />
+                        <span className="font-medium text-sm">{city.name}</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor={`editCitySpoc_${city.id}_name`}>Name</Label>
+                          <Input
+                            id={`editCitySpoc_${city.id}_name`}
+                            placeholder="Enter name or N/A"
+                            value={(editFormData as any)[`citySpoc_${city.id}_name`] || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, [`citySpoc_${city.id}_name`]: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`editCitySpoc_${city.id}_email`}>Email</Label>
+                          <Input
+                            id={`editCitySpoc_${city.id}_email`}
+                            type="email"
+                            placeholder="Enter email"
+                            value={(editFormData as any)[`citySpoc_${city.id}_email`] || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, [`citySpoc_${city.id}_email`]: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`editCitySpoc_${city.id}_phone`}>Phone</Label>
+                          <Input
+                            id={`editCitySpoc_${city.id}_phone`}
+                            placeholder="Enter phone"
+                            value={(editFormData as any)[`editCitySpoc_${city.id}_phone`] || ""}
+                            onChange={(e) => setEditFormData({ ...editFormData, [`citySpoc_${city.id}_phone`]: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </>
             )}
