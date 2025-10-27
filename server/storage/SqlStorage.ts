@@ -407,7 +407,16 @@ export class SqlStorage implements IStorage {
 
   async createRole(roleData: any, options?: CreateOptions): Promise<any> {
     console.log('SqlStorage.createRole called with:', roleData);
-    const { name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, is_active = true } = roleData;
+    
+    // Handle both camelCase (from FormData) and snake_case (from JSON)
+    const name = roleData.name;
+    const code = roleData.code;
+    const job_description_file = roleData.job_description_file || roleData.jobDescriptionFile;
+    const paygroup_id = roleData.paygroup_id || roleData.paygroupId;
+    const business_unit_id = roleData.business_unit_id || roleData.businessUnitId;
+    const department_id = roleData.department_id || roleData.departmentId;
+    const sub_department_id = roleData.sub_department_id || roleData.subDepartmentId;
+    const is_active = roleData.is_active !== undefined ? roleData.is_active : (roleData.isActive !== undefined ? roleData.isActive : true);
     
     console.log('Prepared values for insertion:', {
       name, code, job_description_file, paygroup_id, 

@@ -358,10 +358,10 @@ export default function MasterData() {
     const roleData = new FormData();
     roleData.append('name', formData.name);
     roleData.append('code', formData.code.toUpperCase());
-    roleData.append('paygroup', formData.paygroup || '');
-    roleData.append('businessUnit', formData.businessUnit || '');
-    roleData.append('department', formData.department || '');
-    roleData.append('subDepartment', formData.subDepartment || '');
+    if (formData.paygroup) roleData.append('paygroupId', formData.paygroup);
+    if (formData.businessUnit) roleData.append('businessUnitId', formData.businessUnit);
+    if (formData.department) roleData.append('departmentId', formData.department);
+    if (formData.subDepartment) roleData.append('subDepartmentId', formData.subDepartment);
     if (formData.jobDescriptionFile) {
       roleData.append('jobDescriptionFile', formData.jobDescriptionFile);
     }
