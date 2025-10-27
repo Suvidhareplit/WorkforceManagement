@@ -774,6 +774,21 @@ export class SqlStorage implements IStorage {
     } = vendorData;
     
     console.log('🔍 createVendor called with:', vendorData);
+    console.log('🔍 Extracted values:', {
+      name,
+      managementFees,
+      sourcingFee,
+      replacementDays,
+      deliveryLeadName,
+      deliveryLeadEmail,
+      deliveryLeadPhone,
+      businessHeadName,
+      businessHeadEmail,
+      businessHeadPhone,
+      payrollSpocName,
+      payrollSpocEmail,
+      payrollSpocPhone
+    });
     
     // Convert citySpocs object to JSON format for storage
     const citySpocJson = Object.keys(citySpocs).length > 0 ? JSON.stringify(citySpocs) : null;
