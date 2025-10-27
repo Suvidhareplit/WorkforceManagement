@@ -385,12 +385,16 @@ export default function MasterData() {
   };
 
   const handleCreateVendor = () => {
-    console.log('Creating vendor with formData:', { name: formData.name, email: formData.email });
+    console.log('Creating vendor with formData:', { 
+      name: formData.name, 
+      deliveryLeadName: formData.deliveryLeadName,
+      deliveryLeadEmail: formData.deliveryLeadEmail 
+    });
     
-    if (!formData.name || !formData.email) {
+    if (!formData.name || !formData.deliveryLeadName || !formData.deliveryLeadEmail) {
       toast({
         title: "Error",
-        description: "Please fill in Vendor Name and Vendor Email (required fields at the top of the form)",
+        description: "Please fill in Vendor Name, Delivery Lead Name, and Delivery Lead Email (required fields)",
         variant: "destructive",
       });
       return;
@@ -413,10 +417,8 @@ export default function MasterData() {
 
     createVendorMutation.mutate({
       name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      contactPerson: formData.contactPerson,
-      commercialTerms: formData.commercialTerms,
+      // Use delivery lead email as vendor email for database
+      email: formData.deliveryLeadEmail,
       // Commercial terms
       managementFees: formData.managementFees ? parseFloat(formData.managementFees) : undefined,
       sourcingFee: formData.sourcingFee ? parseFloat(formData.sourcingFee) : undefined,
@@ -1962,37 +1964,6 @@ export default function MasterData() {
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="vendorEmail">Vendor Email *</Label>
-                  <Input
-                    id="vendorEmail"
-                    type="email"
-                    placeholder="Enter vendor email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="vendorPhone">Vendor Phone</Label>
-                  <Input
-                    id="vendorPhone"
-                    placeholder="Enter vendor phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="vendorContactPerson">Contact Person</Label>
-                  <Input
-                    id="vendorContactPerson"
-                    placeholder="Enter contact person name"
-                    value={formData.contactPerson}
-                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                  />
-                </div>
-
                 {/* Commercial Terms Section */}
                 <div className="border-t pt-4">
                   <h3 className="font-medium mb-3">Commercial Terms</h3>
@@ -2038,10 +2009,10 @@ export default function MasterData() {
                   
                   {/* Delivery Lead */}
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium mb-2">Delivery Lead</h4>
+                    <h4 className="text-sm font-medium mb-2">Delivery Lead *</h4>
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <Label htmlFor="deliveryLeadName">Name</Label>
+                        <Label htmlFor="deliveryLeadName">Name *</Label>
                         <Input
                           id="deliveryLeadName"
                           placeholder="Enter name"
@@ -2050,7 +2021,7 @@ export default function MasterData() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="deliveryLeadEmail">Email</Label>
+                        <Label htmlFor="deliveryLeadEmail">Email *</Label>
                         <Input
                           id="deliveryLeadEmail"
                           type="email"
