@@ -712,21 +712,43 @@ export class SqlStorage implements IStorage {
     const { orderClause, limitClause } = this.buildFilterClause(filters);
     const result = await query(`
       SELECT * FROM vendors 
-      WHERE 1=1 
+      WHERE 1=1
       ${orderClause || 'ORDER BY name ASC'} 
       ${limitClause}
     `);
-    return result.rows as any[];
+    const vendors = result.rows as any[];
+    
+    // Parse JSON city_spocs for each vendor
+    vendors.forEach(vendor => {
+      if (vendor.city_spocs) {
+        try {
+          vendor.citySpocs = typeof vendor.city_spocs === 'string' 
+            ? JSON.parse(vendor.city_spocs) 
+            : vendor.city_spocs;
+        } catch (e) {
+          vendor.citySpocs = {};
+        }
+        delete vendor.city_spocs;
+      }
+    });
+    
+    return vendors;
   }
   
   async getVendor(id: number): Promise<any> {
     const result = await query('SELECT * FROM vendors WHERE id = ?', [id]);
     const vendor = result.rows[0] as any || null;
     
-    if (vendor) {
-      // Get city SPOCs for this vendor
-      const spocsResult = await query('SELECT * FROM vendor_city_spocs WHERE vendor_id = ?', [id]);
-      vendor.citySpocs = spocsResult.rows || [];
+    if (vendor && vendor.city_spocs) {
+      // Parse JSON city_spocs
+      try {
+        vendor.citySpocs = typeof vendor.city_spocs === 'string' 
+          ? JSON.parse(vendor.city_spocs) 
+          : vendor.city_spocs;
+      } catch (e) {
+        vendor.citySpocs = {};
+      }
+      delete vendor.city_spocs; // Remove snake_case version
     }
     
     return vendor;
@@ -753,6 +775,9 @@ export class SqlStorage implements IStorage {
     
     console.log('🔍 createVendor called with:', vendorData);
     
+    // Convert citySpocs object to JSON format for storage
+    const citySpocJson = Object.keys(citySpocs).length > 0 ? JSON.stringify(citySpocs) : null;
+    
     const insertResult = await query(`
       INSERT INTO vendors (
         name,
@@ -760,41 +785,21 @@ export class SqlStorage implements IStorage {
         delivery_lead_name, delivery_lead_email, delivery_lead_phone,
         business_head_name, business_head_email, business_head_phone,
         payroll_spoc_name, payroll_spoc_email, payroll_spoc_phone,
+        city_spocs,
         is_active, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
       name,
       managementFees, sourcingFee, replacementDays,
       deliveryLeadName, deliveryLeadEmail, deliveryLeadPhone,
       businessHeadName, businessHeadEmail, businessHeadPhone,
       payrollSpocName, payrollSpocEmail, payrollSpocPhone,
+      citySpocJson,
       isActive
     ]);
     
     const vendorId = (insertResult.rows as any).insertId;
     console.log('✅ Vendor created with ID:', vendorId);
-    
-    // Insert city SPOCs if provided
-    for (const [key, value] of Object.entries(citySpocs)) {
-      if (key.startsWith('citySpoc_')) {
-        const cityId = parseInt(key.split('_')[1]);
-        const field = key.split('_')[2]; // name, email, or phone
-        
-        if (field === 'name' && value) {
-          const spocName = value;
-          const spocEmail = citySpocs[`citySpoc_${cityId}_email`] || null;
-          const spocPhone = citySpocs[`citySpoc_${cityId}_phone`] || null;
-          
-          await query(`
-            INSERT INTO vendor_city_spocs (vendor_id, city_id, spoc_name, spoc_email, spoc_phone)
-            VALUES (?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE spoc_name = ?, spoc_email = ?, spoc_phone = ?
-          `, [vendorId, cityId, spocName, spocEmail, spocPhone, spocName, spocEmail, spocPhone]);
-          
-          console.log(`✅ City SPOC created for city ${cityId}`);
-        }
-      }
-    }
     
     return await this.getVendor(vendorId) as any;
   }
@@ -815,39 +820,19 @@ export class SqlStorage implements IStorage {
       }
     });
     
+    // Handle city_spocs JSON update
+    if (citySpocs && Object.keys(citySpocs).length > 0) {
+      fields.push('city_spocs = ?');
+      values.push(JSON.stringify(citySpocs));
+    }
+    
     if (fields.length > 0) {
       values.push(id);
       await query(`UPDATE vendors SET ${fields.join(', ')} WHERE id = ?`, values);
-      console.log('✅ Vendor main data updated');
+      console.log('✅ Vendor updated');
     }
     
-    // Update city SPOCs if provided
-    if (citySpocs || Object.keys(vendorData).some(k => k.startsWith('citySpoc_'))) {
-      const spocData = citySpocs || vendorData;
-      
-      for (const [key, value] of Object.entries(spocData)) {
-        if (key.startsWith('citySpoc_')) {
-          const cityId = parseInt(key.split('_')[1]);
-          const field = key.split('_')[2]; // name, email, or phone
-          
-          if (field === 'name' && value) {
-            const spocName = value;
-            const spocEmail = spocData[`citySpoc_${cityId}_email`] || null;
-            const spocPhone = spocData[`citySpoc_${cityId}_phone`] || null;
-            
-            await query(`
-              INSERT INTO vendor_city_spocs (vendor_id, city_id, spoc_name, spoc_email, spoc_phone)
-              VALUES (?, ?, ?, ?, ?)
-              ON DUPLICATE KEY UPDATE spoc_name = ?, spoc_email = ?, spoc_phone = ?
-            `, [id, cityId, spocName, spocEmail, spocPhone, spocName, spocEmail, spocPhone]);
-            
-            console.log(`✅ City SPOC updated for city ${cityId}`);
-          }
-        }
-      }
-    }
-    
-    return await this.getVendor(id);
+    return await this.getVendor(id) as any;
   }
   
   async deleteVendor(id: number, options?: UpdateOptions): Promise<any> {

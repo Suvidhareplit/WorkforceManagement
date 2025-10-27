@@ -2316,7 +2316,7 @@ export default function MasterData() {
           jobDescriptionFile: null,
         } as any);
       }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className={editType === "vendor" ? "max-w-4xl max-h-[90vh] overflow-y-auto" : "max-w-md"}>
           <DialogHeader>
             <DialogTitle>Edit {editType?.charAt(0).toUpperCase()}{editType?.slice(1)}</DialogTitle>
           </DialogHeader>
@@ -2514,49 +2514,161 @@ export default function MasterData() {
               </div>
             )}
 
-            {(editType === "vendor" || editType === "recruiter") && (
-              <div>
-                <Label htmlFor="editEmail">Email</Label>
-                <Input
-                  id="editEmail"
-                  type="email"
-                  placeholder="Enter email"
-                  value={editFormData.email}
-                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                />
-              </div>
-            )}
-
-            {(editType === "vendor" || editType === "recruiter") && (
-              <div>
-                <Label htmlFor="editPhone">Phone</Label>
-                <Input
-                  id="editPhone"
-                  placeholder="Enter phone"
-                  value={editFormData.phone}
-                  onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                />
-              </div>
-            )}
-
             {editType === "vendor" && (
               <>
+                <h4 className="font-medium text-sm mt-4">Commercial Terms</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="editManagementFees">Management Fees (%)</Label>
+                    <Input
+                      id="editManagementFees"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={editFormData.managementFees}
+                      onChange={(e) => setEditFormData({ ...editFormData, managementFees: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editSourcingFee">Sourcing Fee (₹)</Label>
+                    <Input
+                      id="editSourcingFee"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={editFormData.sourcingFee}
+                      onChange={(e) => setEditFormData({ ...editFormData, sourcingFee: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editReplacementDays">Replacement Days</Label>
+                    <Input
+                      id="editReplacementDays"
+                      type="number"
+                      placeholder="0"
+                      value={editFormData.replacementDays}
+                      onChange={(e) => setEditFormData({ ...editFormData, replacementDays: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <h4 className="font-medium text-sm mt-4">Delivery Lead *</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="editDeliveryLeadName">Name *</Label>
+                    <Input
+                      id="editDeliveryLeadName"
+                      placeholder="Enter name"
+                      value={editFormData.deliveryLeadName}
+                      onChange={(e) => setEditFormData({ ...editFormData, deliveryLeadName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editDeliveryLeadEmail">Email *</Label>
+                    <Input
+                      id="editDeliveryLeadEmail"
+                      type="email"
+                      placeholder="Enter email"
+                      value={editFormData.deliveryLeadEmail}
+                      onChange={(e) => setEditFormData({ ...editFormData, deliveryLeadEmail: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editDeliveryLeadPhone">Phone</Label>
+                    <Input
+                      id="editDeliveryLeadPhone"
+                      placeholder="Enter phone"
+                      value={editFormData.deliveryLeadPhone}
+                      onChange={(e) => setEditFormData({ ...editFormData, deliveryLeadPhone: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <h4 className="font-medium text-sm mt-4">Business Head</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="editBusinessHeadName">Name</Label>
+                    <Input
+                      id="editBusinessHeadName"
+                      placeholder="Enter name"
+                      value={editFormData.businessHeadName}
+                      onChange={(e) => setEditFormData({ ...editFormData, businessHeadName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editBusinessHeadEmail">Email</Label>
+                    <Input
+                      id="editBusinessHeadEmail"
+                      type="email"
+                      placeholder="Enter email"
+                      value={editFormData.businessHeadEmail}
+                      onChange={(e) => setEditFormData({ ...editFormData, businessHeadEmail: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editBusinessHeadPhone">Phone</Label>
+                    <Input
+                      id="editBusinessHeadPhone"
+                      placeholder="Enter phone"
+                      value={editFormData.businessHeadPhone}
+                      onChange={(e) => setEditFormData({ ...editFormData, businessHeadPhone: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <h4 className="font-medium text-sm mt-4">Payroll SPOC</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="editPayrollSpocName">Name</Label>
+                    <Input
+                      id="editPayrollSpocName"
+                      placeholder="Enter name"
+                      value={editFormData.payrollSpocName}
+                      onChange={(e) => setEditFormData({ ...editFormData, payrollSpocName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editPayrollSpocEmail">Email</Label>
+                    <Input
+                      id="editPayrollSpocEmail"
+                      type="email"
+                      placeholder="Enter email"
+                      value={editFormData.payrollSpocEmail}
+                      onChange={(e) => setEditFormData({ ...editFormData, payrollSpocEmail: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editPayrollSpocPhone">Phone</Label>
+                    <Input
+                      id="editPayrollSpocPhone"
+                      placeholder="Enter phone"
+                      value={editFormData.payrollSpocPhone}
+                      onChange={(e) => setEditFormData({ ...editFormData, payrollSpocPhone: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {editType === "recruiter" && (
+              <>
                 <div>
-                  <Label htmlFor="editContactPerson">Contact Person</Label>
+                  <Label htmlFor="editEmail">Email</Label>
                   <Input
-                    id="editContactPerson"
-                    placeholder="Enter contact person"
-                    value={editFormData.contactPerson}
-                    onChange={(e) => setEditFormData({ ...editFormData, contactPerson: e.target.value })}
+                    id="editEmail"
+                    type="email"
+                    placeholder="Enter email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="editCommercialTerms">Commercial Terms</Label>
+                  <Label htmlFor="editPhone">Phone</Label>
                   <Input
-                    id="editCommercialTerms"
-                    placeholder="Enter commercial terms"
-                    value={editFormData.commercialTerms}
-                    onChange={(e) => setEditFormData({ ...editFormData, commercialTerms: e.target.value })}
+                    id="editPhone"
+                    placeholder="Enter phone"
+                    value={editFormData.phone}
+                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
                   />
                 </div>
               </>

@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS vendors (
     name TEXT NOT NULL,
     -- Commercial Terms
     management_fees DECIMAL(5,2),
-    sourcing_fee DECIMAL(5,2),
+    sourcing_fee DECIMAL(10,2),
     replacement_days INT,
     -- Contact Details - Delivery Lead
     delivery_lead_name TEXT,
@@ -88,23 +88,11 @@ CREATE TABLE IF NOT EXISTS vendors (
     payroll_spoc_name TEXT,
     payroll_spoc_email TEXT,
     payroll_spoc_phone VARCHAR(15),
+    -- City SPOCs stored as JSON
+    city_spocs JSON,
     is_active BOOLEAN DEFAULT true,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS vendor_city_spocs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    vendor_id INT NOT NULL,
-    city_id INT NOT NULL,
-    spoc_name TEXT,
-    spoc_email TEXT,
-    spoc_phone VARCHAR(15),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_vendor_city (vendor_id, city_id),
-    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE,
-    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS hiring_requests (
