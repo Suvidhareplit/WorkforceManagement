@@ -645,7 +645,6 @@ export default function MasterData() {
       ...editFormData,
       name: role.name,
       code: role.code,
-      description: role.description || "",
       paygroup: role.paygroupId?.toString() || "",
       businessUnit: role.businessUnitId?.toString() || "",
       department: role.departmentId?.toString() || "",
