@@ -394,21 +394,18 @@ export default function MasterData() {
       return;
     }
 
-    // Collect city-specific SPOC data
-    const citySpocData = {};
+    // Collect city-specific SPOC data in the format backend expects
+    const citySpocs: any = {};
     safeCities.forEach((city: City) => {
       const name = (formData as any)[`citySpoc_${city.id}_name`];
       const email = (formData as any)[`citySpoc_${city.id}_email`];
       const phone = (formData as any)[`citySpoc_${city.id}_phone`];
       
-      if (name || email || phone) {
-        (citySpocData as any)[city.id] = {
-          name: name || "",
-          email: email || "",
-          phone: phone || "",
-          cityId: city.id,
-          cityName: city.name,
-        };
+      // Only include if at least one field is filled and not "N/A"
+      if (name && name.trim() !== '' && name.toUpperCase() !== 'N/A') {
+        citySpocs[`citySpoc_${city.id}_name`] = name;
+        citySpocs[`citySpoc_${city.id}_email`] = email || '';
+        citySpocs[`citySpoc_${city.id}_phone`] = phone || '';
       }
     });
 
@@ -418,7 +415,7 @@ export default function MasterData() {
       phone: formData.phone,
       contactPerson: formData.contactPerson,
       commercialTerms: formData.commercialTerms,
-      // Commercial terms (removed duplicate replacementPeriod)
+      // Commercial terms
       managementFees: formData.managementFees ? parseFloat(formData.managementFees) : undefined,
       sourcingFee: formData.sourcingFee ? parseFloat(formData.sourcingFee) : undefined,
       replacementDays: formData.replacementDays ? parseInt(formData.replacementDays) : undefined,
@@ -433,7 +430,7 @@ export default function MasterData() {
       payrollSpocEmail: formData.payrollSpocEmail,
       payrollSpocPhone: formData.payrollSpocPhone,
       // City-specific SPOC data
-      citySpocData,
+      citySpocs,
     });
   };
 
