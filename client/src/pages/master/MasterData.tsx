@@ -385,10 +385,12 @@ export default function MasterData() {
   };
 
   const handleCreateVendor = () => {
+    console.log('Creating vendor with formData:', { name: formData.name, email: formData.email });
+    
     if (!formData.name || !formData.email) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Please fill in Vendor Name and Vendor Email (required fields at the top of the form)",
         variant: "destructive",
       });
       return;
