@@ -385,11 +385,7 @@ export default function MasterData() {
   };
 
   const handleCreateVendor = () => {
-    console.log('Creating vendor with formData:', { 
-      name: formData.name, 
-      deliveryLeadName: formData.deliveryLeadName,
-      deliveryLeadEmail: formData.deliveryLeadEmail 
-    });
+    console.log('Creating vendor with ALL formData:', formData);
     
     if (!formData.name || !formData.deliveryLeadName || !formData.deliveryLeadEmail) {
       toast({
@@ -415,27 +411,28 @@ export default function MasterData() {
       }
     });
 
-    createVendorMutation.mutate({
+    const vendorPayload = {
       name: formData.name,
-      // Use delivery lead email as vendor email for database
-      email: formData.deliveryLeadEmail,
       // Commercial terms
       managementFees: formData.managementFees ? parseFloat(formData.managementFees) : undefined,
       sourcingFee: formData.sourcingFee ? parseFloat(formData.sourcingFee) : undefined,
       replacementDays: formData.replacementDays ? parseInt(formData.replacementDays) : undefined,
       // Contact details
-      deliveryLeadName: formData.deliveryLeadName,
-      deliveryLeadEmail: formData.deliveryLeadEmail,
-      deliveryLeadPhone: formData.deliveryLeadPhone,
-      businessHeadName: formData.businessHeadName,
-      businessHeadEmail: formData.businessHeadEmail,
-      businessHeadPhone: formData.businessHeadPhone,
-      payrollSpocName: formData.payrollSpocName,
-      payrollSpocEmail: formData.payrollSpocEmail,
-      payrollSpocPhone: formData.payrollSpocPhone,
+      deliveryLeadName: formData.deliveryLeadName || undefined,
+      deliveryLeadEmail: formData.deliveryLeadEmail || undefined,
+      deliveryLeadPhone: formData.deliveryLeadPhone || undefined,
+      businessHeadName: formData.businessHeadName || undefined,
+      businessHeadEmail: formData.businessHeadEmail || undefined,
+      businessHeadPhone: formData.businessHeadPhone || undefined,
+      payrollSpocName: formData.payrollSpocName || undefined,
+      payrollSpocEmail: formData.payrollSpocEmail || undefined,
+      payrollSpocPhone: formData.payrollSpocPhone || undefined,
       // City-specific SPOC data
       citySpocs,
-    });
+    };
+    
+    console.log('Sending vendor payload:', vendorPayload);
+    createVendorMutation.mutate(vendorPayload);
   };
 
   const handleCreateRecruiter = () => {
@@ -676,9 +673,6 @@ export default function MasterData() {
     setEditFormData({
       name: vendor.name,
       code: "",
-      email: vendor.email,
-      phone: vendor.phone || "",
-      contactPerson: vendor.contactPerson || "",
       commercialTerms: vendor.commercialTerms || "",
       replacementPeriod: (vendor as any).replacementPeriod?.toString() || "",
       incentiveStructure: "",
@@ -692,7 +686,6 @@ export default function MasterData() {
       deliveryLeadName: vendor.deliveryLeadName || "",
       deliveryLeadEmail: vendor.deliveryLeadEmail || "",
       deliveryLeadPhone: vendor.deliveryLeadPhone || "",
-
       businessHeadName: vendor.businessHeadName || "",
       businessHeadEmail: vendor.businessHeadEmail || "",
       businessHeadPhone: vendor.businessHeadPhone || "",
@@ -1885,9 +1878,9 @@ export default function MasterData() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead>Contact Person</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
+                      <TableHead>Delivery Lead</TableHead>
+                      <TableHead>Delivery Lead Email</TableHead>
+                      <TableHead>Delivery Lead Phone</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -1909,9 +1902,9 @@ export default function MasterData() {
                       safeVendors.map((vendor: Vendor) => (
                         <TableRow key={vendor.id}>
                           <TableCell className="font-medium">{vendor.name}</TableCell>
-                          <TableCell>{vendor.contactPerson || "N/A"}</TableCell>
-                          <TableCell>{vendor.email}</TableCell>
-                          <TableCell>{vendor.phone || "N/A"}</TableCell>
+                          <TableCell>{vendor.deliveryLeadName || "N/A"}</TableCell>
+                          <TableCell>{vendor.deliveryLeadEmail || "N/A"}</TableCell>
+                          <TableCell>{vendor.deliveryLeadPhone || "N/A"}</TableCell>
                           <TableCell>
                             <Badge variant={vendor.isActive ? "default" : "secondary"}>
                               {vendor.isActive ? "Active" : "Inactive"}
@@ -1980,7 +1973,7 @@ export default function MasterData() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="sourcingFee">Sourcing Fee (%)</Label>
+                      <Label htmlFor="sourcingFee">Sourcing Fee (₹)</Label>
                       <Input
                         id="sourcingFee"
                         type="number"
@@ -2638,16 +2631,12 @@ export default function MasterData() {
                       <p className="text-sm font-semibold">{selectedVendor.name}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-slate-600">Contact Person</Label>
-                      <p className="text-sm">{selectedVendor.contactPerson || "N/A"}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Email</Label>
-                      <p className="text-sm">{selectedVendor.email}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-slate-600">Phone</Label>
-                      <p className="text-sm">{selectedVendor.phone || "N/A"}</p>
+                      <Label className="text-sm font-medium text-slate-600">Status</Label>
+                      <p className="text-sm">
+                        <Badge variant={selectedVendor.isActive ? "default" : "secondary"}>
+                          {selectedVendor.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -2674,7 +2663,7 @@ export default function MasterData() {
                         </TableRow>
                         <TableRow>
                           <TableCell className="border-r font-medium">Sourcing Fee</TableCell>
-                          <TableCell>{selectedVendor.sourcingFee ? `${selectedVendor.sourcingFee}%` : "N/A"}</TableCell>
+                          <TableCell>{selectedVendor.sourcingFee ? `₹${selectedVendor.sourcingFee}` : "N/A"}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell className="border-r font-medium">Replacement Days</TableCell>

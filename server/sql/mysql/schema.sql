@@ -72,10 +72,6 @@ CREATE TABLE IF NOT EXISTS roles (
 CREATE TABLE IF NOT EXISTS vendors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
-    email TEXT,
-    phone VARCHAR(15),
-    contact_person TEXT,
-    address TEXT,
     -- Commercial Terms
     management_fees DECIMAL(5,2),
     sourcing_fee DECIMAL(5,2),

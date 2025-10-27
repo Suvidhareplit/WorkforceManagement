@@ -734,11 +734,7 @@ export class SqlStorage implements IStorage {
   
   async createVendor(vendorData: any, options?: CreateOptions): Promise<any> {
     const { 
-      name, 
-      email, 
-      phone, 
-      contactPerson, 
-      address,
+      name,
       managementFees,
       sourcingFee,
       replacementDays,
@@ -759,15 +755,15 @@ export class SqlStorage implements IStorage {
     
     const insertResult = await query(`
       INSERT INTO vendors (
-        name, email, phone, contact_person, address,
+        name,
         management_fees, sourcing_fee, replacement_days,
         delivery_lead_name, delivery_lead_email, delivery_lead_phone,
         business_head_name, business_head_email, business_head_phone,
         payroll_spoc_name, payroll_spoc_email, payroll_spoc_phone,
         is_active, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
-      name, email, phone, contactPerson, address,
+      name,
       managementFees, sourcingFee, replacementDays,
       deliveryLeadName, deliveryLeadEmail, deliveryLeadPhone,
       businessHeadName, businessHeadEmail, businessHeadPhone,
