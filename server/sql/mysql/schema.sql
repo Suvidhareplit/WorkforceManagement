@@ -56,7 +56,6 @@ CREATE TABLE IF NOT EXISTS roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
     code VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
     job_description_file TEXT,
     paygroup_id INT,
     business_unit_id INT,

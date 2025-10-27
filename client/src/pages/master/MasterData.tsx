@@ -39,7 +39,6 @@ export default function MasterData() {
   const [editFormData, setEditFormData] = useState({
     name: "",
     code: "",
-    description: "",
     email: "",
     phone: "",
     contactPerson: "",
@@ -69,7 +68,6 @@ export default function MasterData() {
   const [formData, setFormData] = useState({
     name: "",
     code: "",
-    description: "",
     email: "",
     phone: "",
     contactPerson: "",
@@ -275,7 +273,6 @@ export default function MasterData() {
     const newFormData = {
       name: "",
       code: "",
-      description: "",
       email: "",
       phone: "",
       contactPerson: "",
@@ -361,7 +358,6 @@ export default function MasterData() {
     const roleData = new FormData();
     roleData.append('name', formData.name);
     roleData.append('code', formData.code.toUpperCase());
-    roleData.append('description', formData.description);
     roleData.append('paygroup', formData.paygroup || '');
     roleData.append('businessUnit', formData.businessUnit || '');
     roleData.append('department', formData.department || '');
@@ -379,7 +375,7 @@ export default function MasterData() {
       console.log('Sending API request...');
       const result = await createRoleMutation.mutateAsync(roleData);
       console.log('API response:', result);
-      setFormData({ ...formData, name: "", code: "", description: "", paygroup: "", businessUnit: "", department: "", subDepartment: "", jobDescriptionFile: null });
+      setFormData({ ...formData, name: "", code: "", paygroup: "", businessUnit: "", department: "", subDepartment: "", jobDescriptionFile: null });
       // Reset file input
       const fileInput = document.getElementById('roleJD') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -466,7 +462,6 @@ export default function MasterData() {
     setEditFormData({
       name: city.name,
       code: city.code,
-      description: "",
       email: "",
       phone: "",
       contactPerson: "",
@@ -564,7 +559,6 @@ export default function MasterData() {
       setEditFormData({
         name: "",
         code: "",
-        description: "",
         email: "",
         phone: "",
         contactPerson: "",
@@ -608,7 +602,6 @@ export default function MasterData() {
     setEditFormData({
       name: cluster.name,
       code: cluster.code,
-      description: cluster.description || "",
       email: "",
       phone: "",
       contactPerson: "",
@@ -682,7 +675,6 @@ export default function MasterData() {
     setEditFormData({
       name: vendor.name,
       code: "",
-      description: "",
       email: vendor.email,
       phone: vendor.phone || "",
       contactPerson: vendor.contactPerson || "",
@@ -734,7 +726,6 @@ export default function MasterData() {
     setEditFormData({
       name: recruiter.name,
       code: "",
-      description: "",
       email: recruiter.email,
       phone: recruiter.phone || "",
       contactPerson: "",

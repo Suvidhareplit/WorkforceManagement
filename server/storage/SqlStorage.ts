@@ -407,22 +407,18 @@ export class SqlStorage implements IStorage {
 
   async createRole(roleData: any, options?: CreateOptions): Promise<any> {
     console.log('SqlStorage.createRole called with:', roleData);
-    const { name, code, description, jobDescriptionFile, paygroup, businessUnit, business_unit, department, subDepartment, sub_department, isActive = true } = roleData;
-    
-    // Handle both camelCase and snake_case field names
-    const actualBusinessUnit = businessUnit || business_unit;
-    const actualSubDepartment = subDepartment || sub_department;
+    const { name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, is_active = true } = roleData;
     
     console.log('Prepared values for insertion:', {
-      name, code, description, jobDescriptionFile, paygroup, 
-      actualBusinessUnit, department, actualSubDepartment, isActive
+      name, code, job_description_file, paygroup_id, 
+      business_unit_id, department_id, sub_department_id, is_active
     });
     
     try {
       const insertResult = await query(`
-        INSERT INTO roles (name, code, description, job_description_file, paygroup, business_unit, department, sub_department, is_active, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-      `, [name, code, description, jobDescriptionFile, paygroup, actualBusinessUnit, department, actualSubDepartment, isActive]);
+        INSERT INTO roles (name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      `, [name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, is_active]);
       
       console.log('Insert result:', insertResult);
       
@@ -447,7 +443,6 @@ export class SqlStorage implements IStorage {
     const fieldMap: Record<string, string> = {
       'name': 'name',
       'code': 'code',
-      'description': 'description',
       'paygroup_id': 'paygroup_id',
       'paygroupId': 'paygroup_id',
       'business_unit_id': 'business_unit_id',
