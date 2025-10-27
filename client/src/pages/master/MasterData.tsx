@@ -1951,12 +1951,43 @@ export default function MasterData() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="vendorName">Vendor Name</Label>
+                  <Label htmlFor="vendorName">Vendor Name *</Label>
                   <Input
                     id="vendorName"
                     placeholder="Enter vendor name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="vendorEmail">Vendor Email *</Label>
+                  <Input
+                    id="vendorEmail"
+                    type="email"
+                    placeholder="Enter vendor email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="vendorPhone">Vendor Phone</Label>
+                  <Input
+                    id="vendorPhone"
+                    placeholder="Enter vendor phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="vendorContactPerson">Contact Person</Label>
+                  <Input
+                    id="vendorContactPerson"
+                    placeholder="Enter contact person name"
+                    value={formData.contactPerson}
+                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
                   />
                 </div>
 
