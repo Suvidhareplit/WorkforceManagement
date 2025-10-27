@@ -549,7 +549,7 @@ export default function MasterData() {
 
         await apiRequest(endpoint, {
           method: "PATCH",
-          body: JSON.stringify(updateData),
+          body: updateData,
         });
       }
       
