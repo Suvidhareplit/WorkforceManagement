@@ -1779,39 +1779,75 @@ export default function MasterData() {
                 </div>
                 <div>
                   <Label htmlFor="rolePaygroup">Paygroup</Label>
-                  <Input
-                    id="rolePaygroup"
-                    placeholder="Enter paygroup"
-                    value={formData.paygroup}
-                    onChange={(e) => setFormData({ ...formData, paygroup: e.target.value })}
-                  />
+                  <Select
+                    value={formData.paygroup || ""}
+                    onValueChange={(value) => setFormData({ ...formData, paygroup: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select paygroup" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safePaygroups.map((pg: Paygroup) => (
+                        <SelectItem key={pg.id} value={pg.id.toString()}>
+                          {pg.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="roleBusinessUnit">Business Unit</Label>
-                  <Input
-                    id="roleBusinessUnit"
-                    placeholder="Enter business unit"
-                    value={formData.businessUnit}
-                    onChange={(e) => setFormData({ ...formData, businessUnit: e.target.value })}
-                  />
+                  <Select
+                    value={formData.businessUnit || ""}
+                    onValueChange={(value) => setFormData({ ...formData, businessUnit: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select business unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeBusinessUnits.map((bu: BusinessUnit) => (
+                        <SelectItem key={bu.id} value={bu.id.toString()}>
+                          {bu.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="roleDepartment">Department</Label>
-                  <Input
-                    id="roleDepartment"
-                    placeholder="Enter department"
-                    value={formData.department}
-                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  />
+                  <Select
+                    value={formData.department || ""}
+                    onValueChange={(value) => setFormData({ ...formData, department: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeDepartments.map((dept: Department) => (
+                        <SelectItem key={dept.id} value={dept.id.toString()}>
+                          {dept.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="roleSubDepartment">Sub Department</Label>
-                  <Input
-                    id="roleSubDepartment"
-                    placeholder="Enter sub department"
-                    value={formData.subDepartment}
-                    onChange={(e) => setFormData({ ...formData, subDepartment: e.target.value })}
-                  />
+                  <Select
+                    value={formData.subDepartment || ""}
+                    onValueChange={(value) => setFormData({ ...formData, subDepartment: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sub department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeSubDepartments.map((sd: SubDepartment) => (
+                        <SelectItem key={sd.id} value={sd.id.toString()}>
+                          {sd.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="roleJD">Job Description (PDF/DOC)</Label>

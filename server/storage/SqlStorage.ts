@@ -367,27 +367,46 @@ export class SqlStorage implements IStorage {
   async updateClusterStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any> {
     return this.updateCluster(id, { isActive }, options);
   }
-
   // Roles - production-ready CRUD
   async getRoles(filters?: FilterOptions): Promise<any[]> {
     const { orderClause, limitClause } = this.buildFilterClause(filters);
     const result = await query(`
-      SELECT * FROM roles 
+      SELECT r.*, 
+             pg.name as paygroup_name,
+             bu.name as business_unit_name,
+             d.name as department_name,
+             sd.name as sub_department_name
+      FROM roles r
+      LEFT JOIN paygroups pg ON r.paygroup_id = pg.id
+      LEFT JOIN business_units bu ON r.business_unit_id = bu.id
+      LEFT JOIN departments d ON r.department_id = d.id
+      LEFT JOIN sub_departments sd ON r.sub_department_id = sd.id
       WHERE 1=1 
-      ${orderClause || 'ORDER BY name ASC'} 
+      ${orderClause} 
       ${limitClause}
     `);
     return result.rows as any[];
   }
 
   async getRole(id: number): Promise<any> {
-    const result = await query('SELECT * FROM roles WHERE id = ?', [id]);
+    const result = await query(`
+      SELECT r.*, 
+             pg.name as paygroup_name,
+             bu.name as business_unit_name,
+             d.name as department_name,
+             sd.name as sub_department_name
+      FROM roles r
+      LEFT JOIN paygroups pg ON r.paygroup_id = pg.id
+      LEFT JOIN business_units bu ON r.business_unit_id = bu.id
+      LEFT JOIN departments d ON r.department_id = d.id
+      LEFT JOIN sub_departments sd ON r.sub_department_id = sd.id
+      WHERE r.id = ?
+    `, [id]);
     return result.rows[0] as any || null;
   }
 
   async createRole(roleData: any, options?: CreateOptions): Promise<any> {
     console.log('SqlStorage.createRole called with:', roleData);
-    
     const { name, code, description, jobDescriptionFile, paygroup, businessUnit, business_unit, department, subDepartment, sub_department, isActive = true } = roleData;
     
     // Handle both camelCase and snake_case field names
