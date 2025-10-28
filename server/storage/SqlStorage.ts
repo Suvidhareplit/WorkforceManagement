@@ -821,32 +821,52 @@ export class SqlStorage implements IStorage {
   async updateVendor(id: number, vendorData: any, options?: UpdateOptions): Promise<any> {
     console.log('🔍 updateVendor called with:', { id, vendorData });
     
-    const { citySpocs, ...mainVendorData } = vendorData;
-    const fields: string[] = [];
-    const values: any[] = [];
-    
-    // Convert camelCase to snake_case for database columns
-    Object.entries(mainVendorData).forEach(([key, value]) => {
-      if (key !== 'id' && value !== undefined && !key.startsWith('citySpoc')) {
-        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
-        fields.push(`${dbKey} = ?`);
-        values.push(value);
+    try {
+      // Extract citySpocs (could be citySpocs or city_spocs depending on conversion)
+      const citySpocs = vendorData.citySpocs || vendorData.city_spocs;
+      const fields: string[] = [];
+      const values: any[] = [];
+      
+      // Convert camelCase to snake_case for database columns
+      Object.entries(vendorData).forEach(([key, value]) => {
+        if (key !== 'id' && 
+            key !== 'citySpocs' && 
+            key !== 'city_spocs' &&
+            value !== undefined && 
+            value !== null &&
+            value !== '' &&
+            !key.startsWith('citySpoc') &&
+            !key.startsWith('city_spoc')) {
+          const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+          console.log(`  Field: ${key} -> ${dbKey} = ${value}`);
+          fields.push(`${dbKey} = ?`);
+          values.push(value);
+        }
+      });
+      
+      // Handle city_spocs JSON update
+      if (citySpocs && typeof citySpocs === 'object' && Object.keys(citySpocs).length > 0) {
+        console.log('  Adding city_spocs:', citySpocs);
+        fields.push('city_spocs = ?');
+        values.push(JSON.stringify(citySpocs));
       }
-    });
-    
-    // Handle city_spocs JSON update
-    if (citySpocs && Object.keys(citySpocs).length > 0) {
-      fields.push('city_spocs = ?');
-      values.push(JSON.stringify(citySpocs));
+      
+      if (fields.length > 0) {
+        values.push(id);
+        const sql = `UPDATE vendors SET ${fields.join(', ')} WHERE id = ?`;
+        console.log('  SQL:', sql);
+        console.log('  Values:', values);
+        await query(sql, values);
+        console.log('✅ Vendor updated');
+      } else {
+        console.log('⚠️ No fields to update');
+      }
+      
+      return await this.getVendor(id) as any;
+    } catch (error) {
+      console.error('❌ Error in updateVendor:', error);
+      throw error;
     }
-    
-    if (fields.length > 0) {
-      values.push(id);
-      await query(`UPDATE vendors SET ${fields.join(', ')} WHERE id = ?`, values);
-      console.log('✅ Vendor updated');
-    }
-    
-    return await this.getVendor(id) as any;
   }
   
   async deleteVendor(id: number, options?: UpdateOptions): Promise<any> {

@@ -503,30 +503,42 @@ export default function MasterData() {
             departmentId: editFormData.department ? parseInt(editFormData.department) : undefined,
             subDepartmentId: editFormData.subDepartment ? parseInt(editFormData.subDepartment) : undefined
           }),
-          ...(editType === 'vendor' && { 
-            email: editFormData.email,
-            phone: editFormData.phone,
-            contactPerson: editFormData.contactPerson,
-            commercialTerms: editFormData.commercialTerms,
-            replacementPeriod: editFormData.replacementPeriod ? parseInt(editFormData.replacementPeriod) : undefined,
-            // Commercial terms
-            managementFees: editFormData.managementFees ? parseFloat(editFormData.managementFees) : undefined,
-            sourcingFee: editFormData.sourcingFee ? parseFloat(editFormData.sourcingFee) : undefined,
-            replacementDays: editFormData.replacementDays ? parseInt(editFormData.replacementDays) : undefined,
-            // Contact details
-            deliveryLeadName: editFormData.deliveryLeadName,
-            deliveryLeadEmail: editFormData.deliveryLeadEmail,
-            deliveryLeadPhone: editFormData.deliveryLeadPhone,
-            cityRecruitmentSpocName: (editFormData as any).cityRecruitmentSpocName,
-            cityRecruitmentSpocEmail: (editFormData as any).cityRecruitmentSpocEmail,
-            cityRecruitmentSpocPhone: (editFormData as any).cityRecruitmentSpocPhone,
-            businessHeadName: editFormData.businessHeadName,
-            businessHeadEmail: editFormData.businessHeadEmail,
-            businessHeadPhone: editFormData.businessHeadPhone,
-            payrollSpocName: editFormData.payrollSpocName,
-            payrollSpocEmail: editFormData.payrollSpocEmail,
-            payrollSpocPhone: editFormData.payrollSpocPhone,
-          }),
+          ...(editType === 'vendor' && (() => {
+            // Extract city SPOC fields
+            const citySpocs: any = {};
+            Object.keys(editFormData).forEach(key => {
+              if (key.startsWith('citySpoc_')) {
+                citySpocs[key] = (editFormData as any)[key];
+              }
+            });
+            
+            return {
+              email: editFormData.email,
+              phone: editFormData.phone,
+              contactPerson: editFormData.contactPerson,
+              commercialTerms: editFormData.commercialTerms,
+              replacementPeriod: editFormData.replacementPeriod ? parseInt(editFormData.replacementPeriod) : undefined,
+              // Commercial terms
+              managementFees: editFormData.managementFees ? parseFloat(editFormData.managementFees) : undefined,
+              sourcingFee: editFormData.sourcingFee ? parseFloat(editFormData.sourcingFee) : undefined,
+              replacementDays: editFormData.replacementDays ? parseInt(editFormData.replacementDays) : undefined,
+              // Contact details
+              deliveryLeadName: editFormData.deliveryLeadName,
+              deliveryLeadEmail: editFormData.deliveryLeadEmail,
+              deliveryLeadPhone: editFormData.deliveryLeadPhone,
+              cityRecruitmentSpocName: (editFormData as any).cityRecruitmentSpocName,
+              cityRecruitmentSpocEmail: (editFormData as any).cityRecruitmentSpocEmail,
+              cityRecruitmentSpocPhone: (editFormData as any).cityRecruitmentSpocPhone,
+              businessHeadName: editFormData.businessHeadName,
+              businessHeadEmail: editFormData.businessHeadEmail,
+              businessHeadPhone: editFormData.businessHeadPhone,
+              payrollSpocName: editFormData.payrollSpocName,
+              payrollSpocEmail: editFormData.payrollSpocEmail,
+              payrollSpocPhone: editFormData.payrollSpocPhone,
+              // City SPOCs as object
+              citySpocs: Object.keys(citySpocs).length > 0 ? citySpocs : undefined,
+            };
+          })()),
           ...(editType === 'recruiter' && { 
             email: editFormData.email,
             phone: editFormData.phone,
