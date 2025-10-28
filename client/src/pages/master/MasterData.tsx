@@ -664,6 +664,9 @@ export default function MasterData() {
   };
 
   const handleViewVendorDetails = (vendor: Vendor) => {
+    console.log('📋 Viewing vendor details:', vendor);
+    console.log('📋 City SPOCs:', vendor.citySpocs);
+    console.log('📋 City SPOC Data:', vendor.citySpocData);
     setSelectedVendor(vendor);
     setVendorDetailsOpen(true);
   };
@@ -2938,19 +2941,19 @@ export default function MasterData() {
                           <div>
                             <Label className="text-xs font-medium text-slate-600">Name</Label>
                             <p className="mt-1">
-                              {selectedVendor.citySpocData?.[city.id]?.name || "Not specified"}
+                              {selectedVendor.citySpocs?.[`citySpoc_${city.id}_name`] || selectedVendor.citySpocData?.[city.id]?.name || "Not specified"}
                             </p>
                           </div>
                           <div>
                             <Label className="text-xs font-medium text-slate-600">Email</Label>
                             <p className="mt-1">
-                              {selectedVendor.citySpocData?.[city.id]?.email || "Not specified"}
+                              {selectedVendor.citySpocs?.[`citySpoc_${city.id}_email`] || selectedVendor.citySpocData?.[city.id]?.email || "Not specified"}
                             </p>
                           </div>
                           <div>
                             <Label className="text-xs font-medium text-slate-600">Phone</Label>
                             <p className="mt-1">
-                              {selectedVendor.citySpocData?.[city.id]?.phone || "Not specified"}
+                              {selectedVendor.citySpocs?.[`citySpoc_${city.id}_phone`] || selectedVendor.citySpocData?.[city.id]?.phone || "Not specified"}
                             </p>
                           </div>
                         </div>
