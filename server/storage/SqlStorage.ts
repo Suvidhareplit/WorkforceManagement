@@ -827,7 +827,7 @@ export class SqlStorage implements IStorage {
     
     // Convert camelCase to snake_case for database columns
     Object.entries(mainVendorData).forEach(([key, value]) => {
-      if (key !== 'id' && value !== undefined && !key.startsWith('citySpoc_')) {
+      if (key !== 'id' && value !== undefined && !key.startsWith('citySpoc')) {
         const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
         fields.push(`${dbKey} = ?`);
         values.push(value);
