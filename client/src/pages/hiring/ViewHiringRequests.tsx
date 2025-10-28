@@ -11,7 +11,7 @@ import { api } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 // Removed HiringRequest import since backend returns snake_case fields
 import { Link } from "wouter";
-import { Plus, Filter, Search, Download, Eye } from "lucide-react";
+import { Plus, Filter, Search, Download, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ViewHiringRequests() {
   const [filters, setFilters] = useState({
@@ -22,6 +22,8 @@ export default function ViewHiringRequests() {
     priority: "all",
     search: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
   const { toast } = useToast();
 
   const { data: requestsResponse, isLoading } = useQuery({
@@ -30,7 +32,35 @@ export default function ViewHiringRequests() {
     retry: 1,
   });
 
-  const requests = (requestsResponse as any)?.data || [];
+  const allRequests = (requestsResponse as any)?.data || [];
+
+  // Apply filters
+  const filteredRequests = allRequests.filter((request: any) => {
+    const matchesCity = filters.cityId === "all" || request.cityId?.toString() === filters.cityId || request.city_id?.toString() === filters.cityId;
+    const matchesCluster = filters.clusterId === "all" || request.clusterId?.toString() === filters.clusterId || request.cluster_id?.toString() === filters.clusterId;
+    const matchesRole = filters.roleId === "all" || request.roleId?.toString() === filters.roleId || request.role_id?.toString() === filters.roleId;
+    const matchesStatus = filters.status === "all" || request.status === filters.status;
+    const matchesPriority = filters.priority === "all" || request.priority === filters.priority;
+    const matchesSearch = filters.search === "" || 
+      (request.request_id || request.requestId || "").toLowerCase().includes(filters.search.toLowerCase()) ||
+      (request.role_name || request.roleName || "").toLowerCase().includes(filters.search.toLowerCase()) ||
+      (request.city_name || request.cityName || "").toLowerCase().includes(filters.search.toLowerCase()) ||
+      (request.cluster_name || request.clusterName || "").toLowerCase().includes(filters.search.toLowerCase());
+    
+    return matchesCity && matchesCluster && matchesRole && matchesStatus && matchesPriority && matchesSearch;
+  });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
 
 
 
@@ -141,14 +171,14 @@ export default function ViewHiringRequests() {
               <Input
                 placeholder="Search requests..."
                 value={filters.search}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onChange={(e) => handleFilterChange({ ...filters, search: e.target.value })}
                 className="pl-9"
               />
             </div>
 
             <Select
               value={filters.cityId}
-              onValueChange={(value) => setFilters({ ...filters, cityId: value, clusterId: "all" })}
+              onValueChange={(value) => handleFilterChange({ ...filters, cityId: value, clusterId: "all" })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Cities" />
@@ -165,7 +195,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.clusterId}
-              onValueChange={(value) => setFilters({ ...filters, clusterId: value })}
+              onValueChange={(value) => handleFilterChange({ ...filters, clusterId: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Clusters" />
@@ -182,7 +212,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.roleId}
-              onValueChange={(value) => setFilters({ ...filters, roleId: value })}
+              onValueChange={(value) => handleFilterChange({ ...filters, roleId: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Roles" />
@@ -199,7 +229,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.status}
-              onValueChange={(value) => setFilters({ ...filters, status: value })}
+              onValueChange={(value) => handleFilterChange({ ...filters, status: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Status" />
@@ -214,7 +244,7 @@ export default function ViewHiringRequests() {
 
             <Select
               value={filters.priority}
-              onValueChange={(value) => setFilters({ ...filters, priority: value })}
+              onValueChange={(value) => handleFilterChange({ ...filters, priority: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="All Priorities" />
@@ -256,14 +286,14 @@ export default function ViewHiringRequests() {
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : !Array.isArray(requests) || requests.length === 0 ? (
+              ) : paginatedRequests.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={10} className="text-center py-8">
                     No hiring requests found
                   </TableCell>
                 </TableRow>
               ) : (
-                Array.isArray(requests) && requests.map((request: any) => (
+                paginatedRequests.map((request: any) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-mono text-sm">
                       {request.request_id || request.requestId}
@@ -322,6 +352,59 @@ export default function ViewHiringRequests() {
             </TableBody>
           </Table>
         </CardContent>
+        
+        {/* Pagination Controls */}
+        {filteredRequests.length > 0 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t">
+            <div className="text-sm text-slate-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredRequests.length)} of {filteredRequests.length} results
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    // Show first page, last page, current page, and pages around current
+                    return page === 1 || 
+                           page === totalPages || 
+                           (page >= currentPage - 1 && page <= currentPage + 1);
+                  })
+                  .map((page, index, array) => (
+                    <div key={page} className="flex items-center">
+                      {index > 0 && array[index - 1] !== page - 1 && (
+                        <span className="px-2 text-slate-400">...</span>
+                      )}
+                      <Button
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className="min-w-[40px]"
+                      >
+                        {page}
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
