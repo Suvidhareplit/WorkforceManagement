@@ -42,6 +42,7 @@ router.get('/sub-department', masterDataController.getSubDepartments.bind(master
 router.get('/role', masterDataController.getRoles.bind(masterDataController));
 router.get('/vendor', masterDataController.getVendors.bind(masterDataController));
 router.get('/recruiter', masterDataController.getRecruiters.bind(masterDataController));
+router.get('/trainer', masterDataController.getTrainers.bind(masterDataController));
 
 // File serving route
 router.get('/files/:filename', (req, res) => {
@@ -63,6 +64,7 @@ router.post('/sub-department', masterDataController.createSubDepartment.bind(mas
 router.post('/role', upload.single('jobDescriptionFile'), masterDataController.createRole.bind(masterDataController));
 router.post('/vendor', masterDataController.createVendor.bind(masterDataController));
 router.post('/recruiter', masterDataController.createRecruiter.bind(masterDataController));
+router.post('/trainer', masterDataController.createTrainer.bind(masterDataController));
 
 // Toggle status for master data (Active/Inactive)
 router.patch('/city/:id/toggle-status', masterDataController.toggleCityStatus.bind(masterDataController));
@@ -70,6 +72,7 @@ router.patch('/cluster/:id/toggle-status', masterDataController.toggleClusterSta
 router.patch('/role/:id/toggle-status', masterDataController.toggleRoleStatus.bind(masterDataController));
 router.patch('/vendor/:id/toggle-status', masterDataController.toggleVendorStatus.bind(masterDataController));
 router.patch('/recruiter/:id/toggle-status', masterDataController.toggleRecruiterStatus.bind(masterDataController));
+router.patch('/trainer/:id/toggle-status', masterDataController.toggleTrainerStatus.bind(masterDataController));
 
 // Edit master data
 router.patch('/city/:id', masterDataController.updateCity.bind(masterDataController));
@@ -81,5 +84,6 @@ router.patch('/sub-department/:id', masterDataController.updateSubDepartment.bin
 router.patch('/role/:id', upload.single('jobDescriptionFile'), masterDataController.updateRole.bind(masterDataController));
 router.patch('/vendor/:id', masterDataController.updateVendor.bind(masterDataController));
 router.patch('/recruiter/:id', masterDataController.updateRecruiter.bind(masterDataController));
+router.patch('/trainer/:id', masterDataController.updateTrainer.bind(masterDataController));
 
 export { router as masterDataRoutes };

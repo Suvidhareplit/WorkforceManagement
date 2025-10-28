@@ -65,6 +65,16 @@ export class MasterDataController extends BaseController {
     }
   }
 
+  async getTrainers(req: Request, res: Response): Promise<void> {
+    try {
+      const filters = this.buildFilterOptions(req);
+      const trainers = await this.storage.getTrainers(filters);
+      this.sendSuccess(res, trainers, 'Trainers retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve trainers');
+    }
+  }
+
   // Create operations
   async createCity(req: Request, res: Response): Promise<void> {
     try {
@@ -120,6 +130,16 @@ export class MasterDataController extends BaseController {
       this.sendSuccess(res, recruiter, 'Recruiter created successfully');
     } catch (error) {
       this.handleError(res, error, 'Failed to create recruiter');
+    }
+  }
+
+  async createTrainer(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const trainer = await this.storage.createTrainer(req.body, { changedBy: userId });
+      this.sendSuccess(res, trainer, 'Trainer created successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to create trainer');
     }
   }
 
@@ -214,6 +234,24 @@ export class MasterDataController extends BaseController {
     }
   }
 
+  async toggleTrainerStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const userId = this.getUserId(req);
+      
+      const trainer = await this.storage.updateTrainerStatus(id, isActive, { changedBy: userId });
+      if (!trainer) {
+        this.sendNotFound(res, 'Trainer');
+        return;
+      }
+      
+      this.sendSuccess(res, trainer, 'Trainer status updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update trainer status');
+    }
+  }
+
   // Update operations
   async updateCity(req: Request, res: Response): Promise<void> {
     try {
@@ -302,6 +340,23 @@ export class MasterDataController extends BaseController {
       this.sendSuccess(res, recruiter, 'Recruiter updated successfully');
     } catch (error) {
       this.handleError(res, error, 'Failed to update recruiter');
+    }
+  }
+
+  async updateTrainer(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = this.getUserId(req);
+      
+      const trainer = await this.storage.updateTrainer(id, req.body, { changedBy: userId });
+      if (!trainer) {
+        this.sendNotFound(res, 'Trainer');
+        return;
+      }
+      
+      this.sendSuccess(res, trainer, 'Trainer updated successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to update trainer');
     }
   }
 
@@ -460,18 +515,22 @@ export const getClusters = masterDataController.getClusters.bind(masterDataContr
 export const getRoles = masterDataController.getRoles.bind(masterDataController);
 export const getVendors = masterDataController.getVendors.bind(masterDataController);
 export const getRecruiters = masterDataController.getRecruiters.bind(masterDataController);
+export const getTrainers = masterDataController.getTrainers.bind(masterDataController);
 export const createCity = masterDataController.createCity.bind(masterDataController);
 export const createCluster = masterDataController.createCluster.bind(masterDataController);
 export const createRole = masterDataController.createRole.bind(masterDataController);
 export const createVendor = masterDataController.createVendor.bind(masterDataController);
 export const createRecruiter = masterDataController.createRecruiter.bind(masterDataController);
+export const createTrainer = masterDataController.createTrainer.bind(masterDataController);
 export const toggleCityStatus = masterDataController.toggleCityStatus.bind(masterDataController);
 export const toggleClusterStatus = masterDataController.toggleClusterStatus.bind(masterDataController);
 export const toggleRoleStatus = masterDataController.toggleRoleStatus.bind(masterDataController);
 export const toggleVendorStatus = masterDataController.toggleVendorStatus.bind(masterDataController);
 export const toggleRecruiterStatus = masterDataController.toggleRecruiterStatus.bind(masterDataController);
+export const toggleTrainerStatus = masterDataController.toggleTrainerStatus.bind(masterDataController);
 export const updateCity = masterDataController.updateCity.bind(masterDataController);
 export const updateCluster = masterDataController.updateCluster.bind(masterDataController);
 export const updateRole = masterDataController.updateRole.bind(masterDataController);
 export const updateVendor = masterDataController.updateVendor.bind(masterDataController);
 export const updateRecruiter = masterDataController.updateRecruiter.bind(masterDataController);
+export const updateTrainer = masterDataController.updateTrainer.bind(masterDataController);

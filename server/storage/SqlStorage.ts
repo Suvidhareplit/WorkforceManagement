@@ -944,6 +944,73 @@ export class SqlStorage implements IStorage {
     return this.updateRecruiter(id, { isActive }, options);
   }
 
+  // Trainers - production-ready CRUD
+  async getTrainers(filters?: FilterOptions): Promise<any[]> {
+    const { orderClause, limitClause } = this.buildFilterClause(filters);
+    const result = await query(`
+      SELECT t.*, c.name as cityName 
+      FROM trainers t
+      LEFT JOIN cities c ON t.city_id = c.id
+      WHERE 1=1 
+      ${orderClause || 'ORDER BY t.name ASC'} 
+      ${limitClause}
+    `);
+    return result.rows as any[];
+  }
+
+  async getTrainer(id: number): Promise<any> {
+    const result = await query(`
+      SELECT t.*, c.name as cityName 
+      FROM trainers t
+      LEFT JOIN cities c ON t.city_id = c.id
+      WHERE t.id = ?
+    `, [id]);
+    return result.rows[0] as any || null;
+  }
+
+  async createTrainer(trainerData: any, options?: CreateOptions): Promise<any> {
+    const { name, cityId, email, phone, isActive = true } = trainerData;
+    
+    const insertResult = await query(`
+      INSERT INTO trainers (name, city_id, email, phone, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, NOW())
+    `, [name, cityId, email, phone, isActive]);
+    
+    const trainerId = (insertResult.rows as any).insertId;
+    return await this.getTrainer(trainerId) as any;
+  }
+
+  async updateTrainer(id: number, trainerData: any, options?: UpdateOptions): Promise<any> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    
+    Object.entries(trainerData).forEach(([key, value]) => {
+      if (key !== 'id' && value !== undefined) {
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        fields.push(`${dbKey} = ?`);
+        values.push(value);
+      }
+    });
+    
+    if (fields.length === 0) {
+      return await this.getTrainer(id);
+    }
+    
+    values.push(id);
+    await query(`UPDATE trainers SET ${fields.join(', ')} WHERE id = ?`, values);
+    
+    return await this.getTrainer(id);
+  }
+
+  async deleteTrainer(id: number, options?: UpdateOptions): Promise<any> {
+    const result = await query('DELETE FROM trainers WHERE id = ?', [id]);
+    return result.rowCount > 0;
+  }
+
+  async updateTrainerStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any> {
+    return this.updateTrainer(id, { isActive }, options);
+  }
+
   // Hiring Requests - production-ready CRUD
   async getHiringRequests(filters?: FilterOptions): Promise<any[]> {
     const { orderClause, limitClause } = this.buildFilterClause(filters);

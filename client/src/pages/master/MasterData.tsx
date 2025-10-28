@@ -13,8 +13,8 @@ import { Switch } from "@/components/ui/switch";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { City, Cluster, Role, Vendor, Recruiter, Paygroup, BusinessUnit, Department, SubDepartment } from "@/types";
-import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye, DollarSign, Building, Layers, FolderTree, Plus, X } from "lucide-react";
+import { City, Cluster, Role, Vendor, Recruiter, Trainer, Paygroup, BusinessUnit, Department, SubDepartment } from "@/types";
+import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye, DollarSign, Building, Layers, FolderTree, Plus, X, GraduationCap } from "lucide-react";
 
 import { useEffect } from "react";
 
@@ -133,6 +133,10 @@ export default function MasterData() {
     queryKey: ["/api/master-data/recruiter"],
   });
 
+  const { data: trainers = [], isLoading: loadingTrainers } = useQuery({
+    queryKey: ["/api/master-data/trainer"],
+  });
+
   // Ensure data is always an array to prevent map errors - SHOW ALL ITEMS INCLUDING INACTIVE
   const safeCities = Array.isArray(cities) ? cities : [];
   const safeClusters = Array.isArray(clusters) ? clusters : [];
@@ -143,6 +147,7 @@ export default function MasterData() {
   const safeRoles = Array.isArray(roles) ? roles : [];
   const safeVendors = Array.isArray(vendors) ? vendors : [];
   const safeRecruiters = Array.isArray(recruiters) ? recruiters : [];
+  const safeTrainers = Array.isArray(trainers) ? trainers : [];
 
   const createCityMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -785,7 +790,7 @@ export default function MasterData() {
       </div>
 
       <Tabs defaultValue="cities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9 gap-1">
+        <TabsList className="grid w-full grid-cols-10 gap-1">
           <TabsTrigger value="cities">Cities</TabsTrigger>
           <TabsTrigger value="clusters">Clusters</TabsTrigger>
           <TabsTrigger value="paygroups">Paygroups</TabsTrigger>
@@ -795,6 +800,7 @@ export default function MasterData() {
           <TabsTrigger value="roles">Roles</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
           <TabsTrigger value="recruiters">Recruiters</TabsTrigger>
+          <TabsTrigger value="trainers">Trainers</TabsTrigger>
         </TabsList>
 
         <TabsContent value="cities">
@@ -2357,6 +2363,167 @@ export default function MasterData() {
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
                   {createRecruiterMutation.isPending ? "Creating..." : "Create Recruiter"}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="trainers">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <GraduationCap className="h-5 w-5 mr-2" />
+                  Trainers
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>City</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingTrainers ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          Loading...
+                        </TableCell>
+                      </TableRow>
+                    ) : safeTrainers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          No trainers found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      safeTrainers.map((trainer: Trainer) => (
+                        <TableRow key={trainer.id}>
+                          <TableCell className="font-medium">{trainer.name}</TableCell>
+                          <TableCell>{trainer.cityName || "N/A"}</TableCell>
+                          <TableCell>{trainer.email}</TableCell>
+                          <TableCell>{trainer.phone || "N/A"}</TableCell>
+                          <TableCell>
+                            <Badge variant={trainer.isActive ? "default" : "secondary"}>
+                              {trainer.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Switch
+                              checked={trainer.isActive}
+                              onCheckedChange={async () => {
+                                try {
+                                  await apiRequest(`/api/master-data/trainer/${trainer.id}/toggle-status`, {
+                                    method: "PATCH",
+                                    body: { isActive: !trainer.isActive },
+                                  });
+                                  queryClient.invalidateQueries({ queryKey: ["/api/master-data/trainer"] });
+                                  toast({
+                                    title: "Success",
+                                    description: `Trainer ${trainer.isActive ? 'deactivated' : 'activated'} successfully`,
+                                  });
+                                } catch (error: any) {
+                                  toast({
+                                    title: "Error",
+                                    description: error.message || "Failed to update trainer status",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Trainer</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="trainerName">Trainer Name *</Label>
+                  <Input
+                    id="trainerName"
+                    placeholder="Enter trainer name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="trainerCity">City *</Label>
+                  <Select value={formData.cityId} onValueChange={(value) => setFormData({ ...formData, cityId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select city" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeCities.map((city: City) => (
+                        <SelectItem key={city.id} value={city.id.toString()}>
+                          {city.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="trainerEmail">Email *</Label>
+                  <Input
+                    id="trainerEmail"
+                    type="email"
+                    placeholder="Enter email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="trainerPhone">Phone</Label>
+                  <Input
+                    id="trainerPhone"
+                    placeholder="Enter phone number"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await apiRequest("/api/master-data/trainer", {
+                        method: "POST",
+                        body: {
+                          name: formData.name,
+                          cityId: parseInt(formData.cityId),
+                          email: formData.email,
+                          phone: formData.phone,
+                        },
+                      });
+                      queryClient.invalidateQueries({ queryKey: ["/api/master-data/trainer"] });
+                      toast({
+                        title: "Success",
+                        description: "Trainer created successfully",
+                      });
+                      setFormData({ ...formData, name: "", email: "", phone: "", cityId: "1" });
+                    } catch (error: any) {
+                      toast({
+                        title: "Error",
+                        description: error.message || "Failed to create trainer",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  Create Trainer
                 </Button>
               </CardContent>
             </Card>

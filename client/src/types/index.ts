@@ -135,6 +135,16 @@ export interface Recruiter {
   isActive: boolean;
 }
 
+export interface Trainer {
+  id: number;
+  name: string;
+  cityId: number;
+  cityName?: string;
+  email: string;
+  phone?: string;
+  isActive: boolean;
+}
+
 export interface HiringRequest {
   id: number;
   cityId: number;
