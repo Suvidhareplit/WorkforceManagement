@@ -1877,13 +1877,25 @@ export default function MasterData() {
         </TabsContent>
 
         <TabsContent value="vendors">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
+          <div className="space-y-6">
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Users className="h-5 w-5 mr-2" />
-                  Vendors
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center">
+                    <Users className="h-5 w-5 mr-2" />
+                    Vendors
+                  </CardTitle>
+                  {!showAddVendorForm && (
+                    <Button 
+                      onClick={() => setShowAddVendorForm(true)}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add New Vendor
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="p-0 overflow-x-auto">
                 <Table>
@@ -1972,15 +1984,7 @@ export default function MasterData() {
               </CardContent>
             </Card>
 
-            {!showAddVendorForm ? (
-              <Button 
-                onClick={() => setShowAddVendorForm(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Vendor
-              </Button>
-            ) : (
+            {showAddVendorForm && (
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Add New Vendor</CardTitle>
