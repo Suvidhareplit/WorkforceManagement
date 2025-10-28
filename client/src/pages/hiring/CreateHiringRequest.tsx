@@ -39,15 +39,20 @@ export default function CreateHiringRequest() {
 
   const { data: cities = [] } = useQuery({
     queryKey: ["/api/master-data/city"],
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const { data: clusters = [] } = useQuery({
-    queryKey: [`/api/master-data/city/${selectedCityId}/clusters`],
-    enabled: !!selectedCityId,
+    queryKey: ["/api/master-data/cluster"],
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const { data: roles = [] } = useQuery({
     queryKey: ["/api/master-data/role"],
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -165,10 +170,17 @@ export default function CreateHiringRequest() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Array.isArray(clusters) && clusters.filter((cluster: any) => cluster.id && cluster.id.toString() && cluster.name).map((cluster: any) => (
-                            <SelectItem key={cluster.id} value={cluster.id.toString()}>
-                              {cluster.name}
-                            </SelectItem>
+                          {Array.isArray(clusters) && clusters
+                            .filter((cluster: any) => 
+                              cluster.id && 
+                              cluster.id.toString() && 
+                              cluster.name &&
+                              (!selectedCityId || cluster.cityId?.toString() === selectedCityId)
+                            )
+                            .map((cluster: any) => (
+                              <SelectItem key={cluster.id} value={cluster.id.toString()}>
+                                {cluster.name}
+                              </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
