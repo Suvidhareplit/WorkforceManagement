@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS roles (
 CREATE TABLE IF NOT EXISTS vendors (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
+    code VARCHAR(50),
     -- Commercial Terms
     management_fees DECIMAL(5,2),
     sourcing_fee DECIMAL(10,2),

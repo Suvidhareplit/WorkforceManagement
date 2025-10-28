@@ -757,6 +757,7 @@ export class SqlStorage implements IStorage {
   async createVendor(vendorData: any, options?: CreateOptions): Promise<any> {
     // Handle both camelCase and snake_case
     const name = vendorData.name;
+    const code = vendorData.code;
     const managementFees = vendorData.management_fees || vendorData.managementFees;
     const sourcingFee = vendorData.sourcing_fee || vendorData.sourcingFee;
     const replacementDays = vendorData.replacement_days || vendorData.replacementDays;
@@ -794,16 +795,16 @@ export class SqlStorage implements IStorage {
     
     const insertResult = await query(`
       INSERT INTO vendors (
-        name,
+        name, code,
         management_fees, sourcing_fee, replacement_days,
         delivery_lead_name, delivery_lead_email, delivery_lead_phone,
         business_head_name, business_head_email, business_head_phone,
         payroll_spoc_name, payroll_spoc_email, payroll_spoc_phone,
         city_spocs,
         is_active, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
-      name,
+      name, code,
       managementFees, sourcingFee, replacementDays,
       deliveryLeadName, deliveryLeadEmail, deliveryLeadPhone,
       businessHeadName, businessHeadEmail, businessHeadPhone,
@@ -827,11 +828,17 @@ export class SqlStorage implements IStorage {
       const fields: string[] = [];
       const values: any[] = [];
       
+      // Fields that don't exist in vendors table
+      const excludedFields = ['id', 'email', 'phone', 'contactPerson', 'contact_person', 
+                              'commercialTerms', 'commercial_terms', 'replacementPeriod', 'replacement_period',
+                              'citySpocs', 'city_spocs', 'incentiveStructure', 'incentive_structure',
+                              'cityRecruitmentSpocName', 'city_recruitment_spoc_name',
+                              'cityRecruitmentSpocEmail', 'city_recruitment_spoc_email',
+                              'cityRecruitmentSpocPhone', 'city_recruitment_spoc_phone'];
+      
       // Convert camelCase to snake_case for database columns
       Object.entries(vendorData).forEach(([key, value]) => {
-        if (key !== 'id' && 
-            key !== 'citySpocs' && 
-            key !== 'city_spocs' &&
+        if (!excludedFields.includes(key) &&
             value !== undefined && 
             value !== null &&
             value !== '' &&
