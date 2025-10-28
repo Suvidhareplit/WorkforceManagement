@@ -549,6 +549,11 @@ export default function MasterData() {
             phone: editFormData.phone,
             incentiveStructure: (editFormData as any).incentiveStructure
           }),
+          ...(editType === 'trainer' && { 
+            cityId: parseInt(editFormData.cityId),
+            email: editFormData.email,
+            phone: editFormData.phone
+          }),
           ...(editType === 'cluster' && { city_id: parseInt(editFormData.cityId) }), // Use snake_case for backend
           ...(editType === 'department' && { 
             businessUnitId: editFormData.businessUnit ? parseInt(editFormData.businessUnit) : undefined
@@ -759,6 +764,17 @@ export default function MasterData() {
       replacementPeriod: "",
       cityId: recruiter.cityId?.toString() || "1",
       jobDescriptionFile: null,
+    } as any);
+  };
+
+  const handleEditTrainer = (trainer: Trainer) => {
+    setEditingItem(trainer);
+    setEditType("trainer");
+    setEditFormData({
+      name: trainer.name,
+      email: trainer.email,
+      phone: trainer.phone || "",
+      cityId: trainer.cityId?.toString() || "1",
     } as any);
   };
 
@@ -2416,28 +2432,37 @@ export default function MasterData() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Switch
-                              checked={trainer.isActive}
-                              onCheckedChange={async () => {
-                                try {
-                                  await apiRequest(`/api/master-data/trainer/${trainer.id}/toggle-status`, {
-                                    method: "PATCH",
-                                    body: { isActive: !trainer.isActive },
-                                  });
-                                  queryClient.invalidateQueries({ queryKey: ["/api/master-data/trainer"] });
-                                  toast({
-                                    title: "Success",
-                                    description: `Trainer ${trainer.isActive ? 'deactivated' : 'activated'} successfully`,
-                                  });
-                                } catch (error: any) {
-                                  toast({
-                                    title: "Error",
-                                    description: error.message || "Failed to update trainer status",
-                                    variant: "destructive",
-                                  });
-                                }
-                              }}
-                            />
+                            <div className="flex space-x-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditTrainer(trainer)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Switch
+                                checked={trainer.isActive}
+                                onCheckedChange={async () => {
+                                  try {
+                                    await apiRequest(`/api/master-data/trainer/${trainer.id}/toggle-status`, {
+                                      method: "PATCH",
+                                      body: { isActive: !trainer.isActive },
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/master-data/trainer"] });
+                                    toast({
+                                      title: "Success",
+                                      description: `Trainer ${trainer.isActive ? 'deactivated' : 'activated'} successfully`,
+                                    });
+                                  } catch (error: any) {
+                                    toast({
+                                      title: "Error",
+                                      description: error.message || "Failed to update trainer status",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              />
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -2564,7 +2589,7 @@ export default function MasterData() {
               />
             </div>
 
-            {editType !== "recruiter" && (
+            {editType !== "recruiter" && editType !== "trainer" && (
               <div>
                 <Label htmlFor="editCode">Code</Label>
                 <Input
@@ -2959,6 +2984,45 @@ export default function MasterData() {
                   onChange={(e) => setEditFormData({ ...editFormData, incentiveStructure: e.target.value } as any)}
                 />
               </div>
+            )}
+
+            {editType === "trainer" && (
+              <>
+                <div>
+                  <Label htmlFor="editCity">City</Label>
+                  <Select value={editFormData.cityId} onValueChange={(value) => setEditFormData({ ...editFormData, cityId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select city" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeCities.map((city: City) => (
+                        <SelectItem key={city.id} value={city.id.toString()}>
+                          {city.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editEmail">Email</Label>
+                  <Input
+                    id="editEmail"
+                    type="email"
+                    placeholder="Enter email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editPhone">Phone</Label>
+                  <Input
+                    id="editPhone"
+                    placeholder="Enter phone"
+                    value={editFormData.phone}
+                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                  />
+                </div>
+              </>
             )}
 
             <div className="flex gap-2 pt-4">

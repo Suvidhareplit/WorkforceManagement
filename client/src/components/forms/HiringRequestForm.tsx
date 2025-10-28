@@ -29,16 +29,21 @@ export default function HiringRequestForm({ onSubmit, isLoading = false, onCance
   const [selectedCityId, setSelectedCityId] = useState<string>("");
 
   const { data: cities } = useQuery({
-    queryKey: ["/api/master-data/cities"],
+    queryKey: ["/api/master-data/city"],
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true,
   });
 
   const { data: clusters } = useQuery({
-    queryKey: ["/api/master-data/cities", selectedCityId, "clusters"],
-    enabled: !!selectedCityId,
+    queryKey: ["/api/master-data/cluster"],
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true,
   });
 
   const { data: roles } = useQuery({
-    queryKey: ["/api/master-data/roles"],
+    queryKey: ["/api/master-data/role"],
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true,
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -111,11 +116,17 @@ export default function HiringRequestForm({ onSubmit, isLoading = false, onCance
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {(clusters as any[])?.filter((cluster: any) => cluster.id && cluster.id.toString()).map((cluster: any) => (
-                      <SelectItem key={cluster.id} value={cluster.id.toString()}>
-                        {cluster.name}
-                      </SelectItem>
-                    ))}
+                    {(clusters as any[])
+                      ?.filter((cluster: any) => 
+                        cluster.id && 
+                        cluster.id.toString() && 
+                        (!selectedCityId || cluster.cityId?.toString() === selectedCityId)
+                      )
+                      .map((cluster: any) => (
+                        <SelectItem key={cluster.id} value={cluster.id.toString()}>
+                          {cluster.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
