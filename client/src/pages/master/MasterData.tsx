@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { City, Cluster, Role, Vendor, Recruiter, Paygroup, BusinessUnit, Department, SubDepartment } from "@/types";
-import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye, DollarSign, Building, Layers, FolderTree } from "lucide-react";
+import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye, DollarSign, Building, Layers, FolderTree, Plus, X } from "lucide-react";
 
 import { useEffect } from "react";
 
@@ -36,6 +36,7 @@ export default function MasterData() {
   const [editType, setEditType] = useState<string>("");
   const [vendorDetailsOpen, setVendorDetailsOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [showAddVendorForm, setShowAddVendorForm] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: "",
     code: "",
@@ -1884,28 +1885,37 @@ export default function MasterData() {
                   Vendors
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="p-0 overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Delivery Lead</TableHead>
-                      <TableHead>Delivery Lead Email</TableHead>
-                      <TableHead>Delivery Lead Phone</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="min-w-[150px]">Name</TableHead>
+                      <TableHead className="min-w-[100px]">Mgmt Fees (%)</TableHead>
+                      <TableHead className="min-w-[120px]">Sourcing Fee (₹)</TableHead>
+                      <TableHead className="min-w-[120px]">Replace Days</TableHead>
+                      <TableHead className="min-w-[120px]">Delivery Lead</TableHead>
+                      <TableHead className="min-w-[180px]">DL Email</TableHead>
+                      <TableHead className="min-w-[120px]">DL Phone</TableHead>
+                      <TableHead className="min-w-[120px]">Business Head</TableHead>
+                      <TableHead className="min-w-[180px]">BH Email</TableHead>
+                      <TableHead className="min-w-[120px]">BH Phone</TableHead>
+                      <TableHead className="min-w-[120px]">Payroll SPOC</TableHead>
+                      <TableHead className="min-w-[180px]">PS Email</TableHead>
+                      <TableHead className="min-w-[120px]">PS Phone</TableHead>
+                      <TableHead className="min-w-[80px]">Status</TableHead>
+                      <TableHead className="min-w-[150px] sticky right-0 bg-white">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loadingVendors ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={15} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : safeVendors.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={15} className="text-center py-8">
                           No vendors found
                         </TableCell>
                       </TableRow>
@@ -1913,15 +1923,24 @@ export default function MasterData() {
                       safeVendors.map((vendor: Vendor) => (
                         <TableRow key={vendor.id}>
                           <TableCell className="font-medium">{vendor.name}</TableCell>
+                          <TableCell>{vendor.managementFees || "N/A"}</TableCell>
+                          <TableCell>{vendor.sourcingFee || "N/A"}</TableCell>
+                          <TableCell>{vendor.replacementDays || "N/A"}</TableCell>
                           <TableCell>{vendor.deliveryLeadName || "N/A"}</TableCell>
                           <TableCell>{vendor.deliveryLeadEmail || "N/A"}</TableCell>
                           <TableCell>{vendor.deliveryLeadPhone || "N/A"}</TableCell>
+                          <TableCell>{vendor.businessHeadName || "N/A"}</TableCell>
+                          <TableCell>{vendor.businessHeadEmail || "N/A"}</TableCell>
+                          <TableCell>{vendor.businessHeadPhone || "N/A"}</TableCell>
+                          <TableCell>{vendor.payrollSpocName || "N/A"}</TableCell>
+                          <TableCell>{vendor.payrollSpocEmail || "N/A"}</TableCell>
+                          <TableCell>{vendor.payrollSpocPhone || "N/A"}</TableCell>
                           <TableCell>
                             <Badge variant={vendor.isActive ? "default" : "secondary"}>
                               {vendor.isActive ? "Active" : "Inactive"}
                             </Badge>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="sticky right-0 bg-white">
                             <div className="flex space-x-2">
                               <Button 
                                 variant="ghost" 
@@ -1953,11 +1972,27 @@ export default function MasterData() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Add New Vendor</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            {!showAddVendorForm ? (
+              <Button 
+                onClick={() => setShowAddVendorForm(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Vendor
+              </Button>
+            ) : (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Add New Vendor</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowAddVendorForm(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="vendorName">Vendor Name *</Label>
                   <Input
@@ -2171,6 +2206,7 @@ export default function MasterData() {
                 </Button>
               </CardContent>
             </Card>
+            )}
           </div>
         </TabsContent>
 

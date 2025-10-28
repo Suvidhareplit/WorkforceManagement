@@ -118,6 +118,11 @@ export interface Vendor {
     };
   };
   
+  // City SPOCs as JSON (from backend)
+  citySpocs?: {
+    [key: string]: string;
+  };
+  
   isActive: boolean;
 }
 
