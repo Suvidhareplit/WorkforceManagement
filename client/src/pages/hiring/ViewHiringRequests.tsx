@@ -66,23 +66,33 @@ export default function ViewHiringRequests() {
 
   const { data: citiesResponse } = useQuery({
     queryKey: ["/api/master-data/city"],
-    queryFn: () => api.masterData.getCities(),
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const { data: clustersResponse } = useQuery({
-    queryKey: [`/api/master-data/city/${filters.cityId}/clusters`],
-    queryFn: () => api.masterData.getClustersByCity(parseInt(filters.cityId)),
-    enabled: !!filters.cityId && filters.cityId !== "all",
+    queryKey: ["/api/master-data/cluster"],
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const { data: rolesResponse } = useQuery({
     queryKey: ["/api/master-data/role"],
-    queryFn: () => api.masterData.getRoles(),
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
-  const cities = (citiesResponse as any)?.data || [];
-  const clusters = (clustersResponse as any)?.data || [];
-  const roles = (rolesResponse as any)?.data || [];
+  const cities = (citiesResponse as any) || [];
+  const allClusters = (clustersResponse as any) || [];
+  const roles = (rolesResponse as any) || [];
+  
+  // Filter clusters by selected city
+  const clusters = filters.cityId === "all" 
+    ? allClusters 
+    : allClusters.filter((cluster: any) => 
+        cluster.cityId?.toString() === filters.cityId || 
+        cluster.city_id?.toString() === filters.cityId
+      );
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
