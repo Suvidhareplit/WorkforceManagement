@@ -27,10 +27,10 @@ export default function OfferManagement() {
   const { toast } = useToast();
 
   const { data: selectedCandidatesResponse, isLoading: loadingSelected } = useQuery({
-    queryKey: ["/api/interviews/candidates", { status: "selected,offered" }],
+    queryKey: ["/api/interviews/candidates"],
     queryFn: async () => {
-      // Fetch both selected and offered candidates
-      const response = await apiRequest("/api/interviews/candidates?status=selected,offered", { method: "GET" });
+      // Fetch all candidates
+      const response = await apiRequest("/api/interviews/candidates", { method: "GET" });
       return response;
     },
     refetchOnWindowFocus: true,
@@ -38,8 +38,11 @@ export default function OfferManagement() {
   });
 
 
-  // Extract data from API responses
-  const selectedCandidates = (selectedCandidatesResponse as any)?.data || [];
+  // Extract data from API responses and filter for selected and offered candidates
+  const allCandidates = (selectedCandidatesResponse as any)?.data || [];
+  const selectedCandidates = allCandidates.filter((c: any) => 
+    c.status === 'selected' || c.status === 'offered'
+  );
 
   console.log('📋 Offer Management Data:', {
     selectedCount: selectedCandidates.length,
@@ -70,12 +73,12 @@ export default function OfferManagement() {
       
       // Force invalidate and refetch
       await queryClient.invalidateQueries({ 
-        queryKey: ["/api/interviews/candidates", { status: "selected,offered" }]
+        queryKey: ["/api/interviews/candidates"]
       });
       
       // Force a hard refetch
       await queryClient.refetchQueries({
-        queryKey: ["/api/interviews/candidates", { status: "selected,offered" }]
+        queryKey: ["/api/interviews/candidates"]
       });
       
       toast({
@@ -148,7 +151,7 @@ export default function OfferManagement() {
 
       // Refetch data
       await queryClient.refetchQueries({
-        queryKey: ["/api/interviews/candidates", { status: "selected,offered" }]
+        queryKey: ["/api/interviews/candidates"]
       });
 
       toast({
