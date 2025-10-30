@@ -58,7 +58,12 @@ export default function OfferManagement() {
 
   const updateOfferMutation = useMutation({
     mutationFn: async ({ id, dateOfJoining, grossSalary, sendOffer }: { id: number; dateOfJoining?: string; grossSalary?: string; sendOffer?: boolean }) => {
-      return await apiRequest(`/api/interviews/candidates/${id}/offer`, {
+      console.log('🚀 Sending PATCH request:', {
+        url: `/api/interviews/candidates/${id}/offer`,
+        body: { dateOfJoining, grossSalary, sendOffer }
+      });
+      
+      const result = await apiRequest(`/api/interviews/candidates/${id}/offer`, {
         method: "PATCH",
         body: {
           dateOfJoining,
@@ -66,6 +71,9 @@ export default function OfferManagement() {
           sendOffer,
         }
       });
+      
+      console.log('📥 PATCH response:', result);
+      return result;
     },
     onSuccess: async (data) => {
       console.log('✅ Mutation success, updated candidate:', data);
@@ -83,6 +91,7 @@ export default function OfferManagement() {
       setEditingGross(null);
     },
     onError: (error: any) => {
+      console.error('❌ Mutation error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update offer details",
