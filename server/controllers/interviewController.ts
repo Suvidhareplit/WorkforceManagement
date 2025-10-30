@@ -119,11 +119,15 @@ const updatePrescreening = async (req: Request, res: Response) => {
     const passingScore = 7;
     const result = score >= passingScore ? 'pass' : 'fail';
     
+    // MySQL datetime format
+    const now = new Date();
+    const mysqlDatetime = now.toISOString().slice(0, 19).replace('T', ' ');
+    
     const updateData: any = {
       prescreeningScore: score,
       prescreeningResult: result,
       prescreeningNotes: notes,
-      prescreeningDate: new Date(),
+      prescreeningDate: mysqlDatetime,
       status: result === 'pass' ? 'prescreening' : 'rejected'
     };
     
@@ -182,12 +186,18 @@ const updateTechnical = async (req: Request, res: Response) => {
     }
     
     const updateData: any = {
-      technicalScore: score,
       technicalResult: status,
       technicalNotes: notes,
-      technicalDate: new Date(),
       status: status === 'selected' ? 'selected' : 'rejected'
     };
+    
+    // Add optional fields
+    if (score) updateData.technicalScore = score;
+    
+    // MySQL datetime format
+    const now = new Date();
+    const mysqlDatetime = now.toISOString().slice(0, 19).replace('T', ' ');
+    updateData.technicalDate = mysqlDatetime;
     
     console.log('📝 Calling updateCandidate with:', updateData);
     const candidate = await storage.updateCandidate(id, updateData);
