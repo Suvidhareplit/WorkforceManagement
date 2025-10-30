@@ -6,23 +6,24 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
-import { CalendarIcon, Send, Pencil } from "lucide-react";
+import { CalendarIcon, Pencil, Download, Filter } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 
 export default function OfferManagement() {
-  const [dateOfJoining, setDateOfJoining] = useState<Date>();
-  const [grossSalary, setGrossSalary] = useState("");
   const [editingDOJ, setEditingDOJ] = useState<number | null>(null);
   const [editingGross, setEditingGross] = useState<number | null>(null);
   const [tempDOJ, setTempDOJ] = useState<Date | undefined>();
   const [tempGross, setTempGross] = useState("");
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<number[]>([]);
+  const [cityFilter, setCityFilter] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const { toast } = useToast();
 
   const { data: selectedCandidatesResponse, isLoading: loadingSelected } = useQuery({
@@ -134,23 +135,6 @@ export default function OfferManagement() {
     setEditingGross(null);
   };
 
-  const handleSendOffer = (candidate: Candidate) => {
-    if (!dateOfJoining || !grossSalary) {
-      toast({
-        title: "Error",
-        description: "Please provide date of joining and salary",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    updateOfferMutation.mutate({
-      id: candidate.id,
-      dateOfJoining: dateOfJoining.toISOString(),
-      grossSalary,
-      sendOffer: true, // Flag to change status to 'offered'
-    });
-  };
 
   const getSourceDisplay = (candidate: Candidate) => {
     if (candidate.resumeSource === 'vendor' && candidate.vendorName) {
@@ -165,6 +149,113 @@ export default function OfferManagement() {
     return candidate.resumeSource?.replace('_', ' ') || 'Direct';
   };
 
+  // Filter selected candidates
+  const filteredSelectedCandidates = selectedCandidates.filter((candidate: any) => {
+    if (cityFilter && cityFilter !== "all" && candidate.cityName !== cityFilter) return false;
+    if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;
+    if (dateRange.to && new Date(candidate.createdAt) > new Date(dateRange.to)) return false;
+    return true;
+  });
+
+  // Get unique cities from candidates
+  const uniqueCities = Array.from(new Set(selectedCandidates.map((c: any) => c.cityName).filter(Boolean)));
+
+  // Toggle select all
+  const toggleSelectAll = () => {
+    if (selectedCandidateIds.length === filteredSelectedCandidates.length) {
+      setSelectedCandidateIds([]);
+    } else {
+      setSelectedCandidateIds(filteredSelectedCandidates.map((c: any) => c.id));
+    }
+  };
+
+  // Toggle individual candidate
+  const toggleCandidate = (id: number) => {
+    setSelectedCandidateIds(prev => 
+      prev.includes(id) ? prev.filter(cid => cid !== id) : [...prev, id]
+    );
+  };
+
+  // Download CSV
+  const downloadCSV = () => {
+    const candidatesToDownload = filteredSelectedCandidates.filter((c: any) => 
+      selectedCandidateIds.includes(c.id)
+    );
+
+    if (candidatesToDownload.length === 0) {
+      toast({
+        title: "No candidates selected",
+        description: "Please select at least one candidate to download",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // CSV Headers
+    const headers = [
+      "Name",
+      "City",
+      "Cluster",
+      "Role",
+      "Phone Number",
+      "Email ID",
+      "Qualification",
+      "Experience (Years)",
+      "Source Type",
+      "Source Name",
+      "DOJ",
+      "Gross Salary (Monthly)"
+    ];
+
+    // CSV Rows
+    const rows = candidatesToDownload.map((candidate: any) => {
+      const sourceType = candidate.resumeSource === 'vendor' ? 'Vendor' :
+                        candidate.resumeSource === 'field_recruiter' ? 'Field Recruiter' :
+                        candidate.resumeSource === 'referral' ? 'Referral' : 'Direct';
+      
+      const sourceName = candidate.resumeSource === 'vendor' ? candidate.vendorName :
+                        candidate.resumeSource === 'field_recruiter' ? candidate.recruiterName :
+                        candidate.resumeSource === 'referral' ? candidate.referralName : '-';
+
+      return [
+        candidate.name || '',
+        candidate.cityName || '',
+        candidate.clusterName || '',
+        candidate.roleName || '',
+        candidate.phone || '',
+        candidate.email || '',
+        candidate.qualification || '',
+        candidate.experienceYears || '0',
+        sourceType,
+        sourceName || '',
+        candidate.joiningDate ? format(new Date(candidate.joiningDate), 'dd-MMM-yyyy') : '',
+        candidate.offeredSalary ? `₹${parseFloat(candidate.offeredSalary).toLocaleString('en-IN')}` : ''
+      ];
+    });
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row: any[]) => row.map((cell: any) => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `selected_candidates_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Success",
+      description: `Downloaded ${candidatesToDownload.length} candidate(s)`,
+    });
+  };
+
   return (
     <div>
       {/* Header */}
@@ -177,40 +268,99 @@ export default function OfferManagement() {
         {/* Selected Candidates */}
         <Card>
           <CardHeader>
-            <CardTitle>Selected Candidates - Awaiting Offer</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Selected Candidates - Awaiting Offer</CardTitle>
+              <Button
+                onClick={downloadCSV}
+                disabled={selectedCandidateIds.length === 0}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download CSV ({selectedCandidateIds.length})
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent>
+            {/* Filters */}
+            <div className="flex gap-4 mb-4 p-4 bg-slate-50 rounded-lg">
+              <div className="flex-1">
+                <Label className="text-sm font-medium mb-2 block">
+                  <Filter className="inline h-4 w-4 mr-1" />
+                  Filter by City
+                </Label>
+                <Select value={cityFilter} onValueChange={setCityFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Cities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Cities</SelectItem>
+                    {uniqueCities.map((city: any) => (
+                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Label className="text-sm font-medium mb-2 block">From Date</Label>
+                <Input
+                  type="date"
+                  value={dateRange.from}
+                  onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+                />
+              </div>
+              <div className="flex-1">
+                <Label className="text-sm font-medium mb-2 block">To Date</Label>
+                <Input
+                  type="date"
+                  value={dateRange.to}
+                  onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+                />
+              </div>
+            </div>
+
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={selectedCandidateIds.length === filteredSelectedCandidates.length && filteredSelectedCandidates.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>City</TableHead>
                   <TableHead>Cluster</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Source</TableHead>
-                  <TableHead>Interview Status</TableHead>
+                  <TableHead>Qualification</TableHead>
+                  <TableHead>Experience</TableHead>
                   <TableHead>DOJ</TableHead>
                   <TableHead>Gross (Monthly)</TableHead>
-                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loadingSelected ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8">
+                    <TableCell colSpan={11} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : (selectedCandidates as any[])?.length === 0 ? (
+                ) : filteredSelectedCandidates.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8">
+                    <TableCell colSpan={11} className="text-center py-8">
                       No selected candidates awaiting offers
                     </TableCell>
                   </TableRow>
                 ) : (
-                  (selectedCandidates as any[])?.map((candidate: any) => (
+                  filteredSelectedCandidates.map((candidate: any) => (
                     <TableRow key={candidate.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedCandidateIds.includes(candidate.id)}
+                          onCheckedChange={() => toggleCandidate(candidate.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{candidate.name}</TableCell>
                       <TableCell>{candidate.cityName || candidate.city?.name || '-'}</TableCell>
                       <TableCell>{candidate.clusterName || candidate.cluster?.name || '-'}</TableCell>
@@ -224,10 +374,11 @@ export default function OfferManagement() {
                       <TableCell className="text-sm">
                         {getSourceDisplay(candidate)}
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="default" className="bg-green-600">
-                          Selected
-                        </Badge>
+                      <TableCell className="text-sm">
+                        {candidate.qualification || '-'}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {candidate.experienceYears ? `${candidate.experienceYears} years` : '-'}
                       </TableCell>
                       <TableCell className="text-sm">
                         {editingDOJ === candidate.id ? (
@@ -375,121 +526,6 @@ export default function OfferManagement() {
                             )}
                           </div>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                // Pre-populate with existing values
-                                setDateOfJoining(candidate.joiningDate ? new Date(candidate.joiningDate) : undefined);
-                                setGrossSalary(candidate.offeredSalary ? candidate.offeredSalary.toString() : "");
-                              }}
-                            >
-                              <Send className="h-4 w-4 mr-2" />
-                              Send Offer
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Send Job Offer - {candidate.name}</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div className="bg-slate-50 p-4 rounded-lg mb-4">
-                                <h4 className="font-medium mb-3">Candidate Details</h4>
-                                <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                                  <div><strong>Name:</strong> {candidate.name}</div>
-                                  <div><strong>City:</strong> {candidate.cityName || candidate.city?.name}</div>
-                                  <div><strong>Cluster:</strong> {candidate.clusterName || candidate.cluster?.name}</div>
-                                  <div><strong>Role:</strong> {candidate.roleName || candidate.role?.name}</div>
-                                  <div><strong>Phone:</strong> {candidate.phone}</div>
-                                  <div><strong>Email:</strong> {candidate.email}</div>
-                                  <div><strong>Source:</strong> {getSourceDisplay(candidate)}</div>
-                                  <div><strong>Interview Status:</strong> <Badge variant="default" className="bg-green-600">Selected</Badge></div>
-                                </div>
-                              </div>
-
-                              <div className="space-y-4">
-                                <div>
-                                  <Label className="text-base font-medium">Date of Joining (DOJ) <span className="text-red-500">*</span></Label>
-                                  <Popover>
-                                    <PopoverTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        className={cn(
-                                          "w-full justify-start text-left font-normal mt-2",
-                                          !dateOfJoining && "text-muted-foreground"
-                                        )}
-                                      >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {dateOfJoining ? format(dateOfJoining, "PPP") : "Select date of joining"}
-                                      </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                      <Calendar
-                                        mode="single"
-                                        selected={dateOfJoining}
-                                        onSelect={setDateOfJoining}
-                                        disabled={(date) =>
-                                          date < new Date() || date < new Date("1900-01-01")
-                                        }
-                                        initialFocus
-                                      />
-                                    </PopoverContent>
-                                  </Popover>
-                                </div>
-
-                                <div>
-                                  <Label htmlFor="salary" className="text-base font-medium">Gross Salary (Monthly) <span className="text-red-500">*</span></Label>
-                                  <div className="relative mt-2">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 font-medium">
-                                      Gross Rs.
-                                    </span>
-                                    <Input
-                                      id="salary"
-                                      type="text"
-                                      value={grossSalary}
-                                      onChange={(e) => {
-                                        // Only allow numbers
-                                        const value = e.target.value.replace(/[^0-9]/g, '');
-                                        setGrossSalary(value);
-                                      }}
-                                      placeholder="Enter monthly amount (e.g., 25000)"
-                                      className="pl-24"
-                                    />
-                                  </div>
-                                  {grossSalary && (
-                                    <p className="text-sm text-slate-600 mt-1">
-                                      Monthly: ₹{parseInt(grossSalary).toLocaleString('en-IN')} | Annual: ₹{(parseInt(grossSalary) * 12).toLocaleString('en-IN')}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="bg-blue-50 p-4 rounded-lg">
-                                <h4 className="font-medium text-blue-900 mb-2">Offer Process</h4>
-                                <p className="text-sm text-blue-800">
-                                  {candidate.resumeSource === 'vendor' 
-                                    ? "Selection notification will be sent to the vendor with DOJ and salary details."
-                                    : "Offer letter will be sent directly to the candidate with DOJ and salary details."}
-                                </p>
-                              </div>
-
-                              <div className="flex justify-end">
-                                <Button
-                                  onClick={() => handleSendOffer(candidate)}
-                                  disabled={!dateOfJoining || !grossSalary || updateOfferMutation.isPending}
-                                  className="bg-blue-600 hover:bg-blue-700"
-                                >
-                                  <Send className="h-4 w-4 mr-2" />
-                                  {updateOfferMutation.isPending ? "Sending..." : "Send Offer"}
-                                </Button>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
                       </TableCell>
                     </TableRow>
                   ))
