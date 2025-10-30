@@ -23,8 +23,10 @@ const candidateSchema = z.object({
   name: z.string().min(1, "Name is required"),
   phone: z.string().min(10, "Valid phone number is required"),
   aadharNumber: z.string()
-    .min(12, "Aadhar number is required")
-    .regex(/^\d{12}$/, "Aadhar number must be exactly 12 digits"),
+    .min(1, "Aadhar number is required")
+    .transform((val) => val.trim().replace(/\s/g, ''))
+    .refine((val) => val.length === 12, "Aadhar number must be exactly 12 digits")
+    .refine((val) => /^\d{12}$/.test(val), "Aadhar number must contain only digits"),
   email: z.string().email("Valid email is required"),
   roleId: z.string().min(1, "Role is required"),
   cityId: z.string().min(1, "City is required"),
