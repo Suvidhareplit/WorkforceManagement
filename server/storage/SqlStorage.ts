@@ -1193,6 +1193,10 @@ export class SqlStorage implements IStorage {
       city,
       cluster,
       qualification,
+      currentCompany,
+      experienceYears,
+      currentCtc,
+      expectedCtc,
       resumeSource,
       vendor,
       recruiter,
@@ -1281,12 +1285,14 @@ export class SqlStorage implements IStorage {
     const insertResult = await query(`
       INSERT INTO candidates (
         application_id, name, phone, aadhar_number, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
-        qualification, resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
+        qualification, current_company, experience_years, current_ctc, expected_ctc,
+        resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
     `, [
       applicationId, name, phone, aadharNumber, email, roleId, role, cityId, city, clusterId, cluster,
-      qualification, resumeSource, vendorId, vendorName, recruiterId, recruiterName, referralName
+      qualification, currentCompany, experienceYears, currentCtc, expectedCtc,
+      resumeSource, vendorId, vendorName, recruiterId, recruiterName, referralName
     ]);
     
     // Return success response with application ID

@@ -32,6 +32,10 @@ const candidateSchema = z.object({
   cityId: z.string().min(1, "City is required"),
   clusterId: z.string().min(1, "Cluster is required"),
   qualification: z.string().min(1, "Qualification is required"),
+  currentCompany: z.string().optional(),
+  experienceYears: z.string().optional(),
+  currentNth: z.string().optional(),
+  expectedCtc: z.string().optional(),
   resumeSource: z.string().min(1, "Resume source is required"),
   vendorId: z.string().optional(),
   recruiterId: z.string().optional(),
@@ -746,6 +750,10 @@ export default function CandidateApplication() {
       cityId: "",
       clusterId: "",
       qualification: "",
+      currentCompany: "",
+      experienceYears: "",
+      currentNth: "",
+      expectedCtc: "",
       resumeSource: "",
       vendorId: "",
       recruiterId: "",
@@ -777,6 +785,12 @@ export default function CandidateApplication() {
       
       // Add aadharNumber (mandatory)
       payload.aadharNumber = data.aadharNumber;
+      
+      // Add optional fields
+      if (data.currentCompany) payload.currentCompany = data.currentCompany;
+      if (data.experienceYears) payload.experienceYears = parseFloat(data.experienceYears);
+      if (data.currentNth) payload.currentCtc = parseFloat(data.currentNth);
+      if (data.expectedCtc) payload.expectedCtc = parseFloat(data.expectedCtc);
       
       console.log('Payload being sent to API:', payload);
 
@@ -1119,6 +1133,79 @@ export default function CandidateApplication() {
                     </FormItem>
                   )}
                 />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="currentCompany"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Current Company (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter current company name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="experienceYears"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Relevant Experience (Years)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.5"
+                            placeholder="e.g., 2.5" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="currentNth"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Current NTH (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="Enter current NTH" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="expectedCtc"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Expected CTC (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="Enter expected CTC" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
