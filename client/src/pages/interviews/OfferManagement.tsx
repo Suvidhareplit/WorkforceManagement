@@ -24,6 +24,7 @@ export default function OfferManagement() {
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<number[]>([]);
   const [cityFilter, setCityFilter] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [feedbackDate, setFeedbackDate] = useState("");
   const { toast } = useToast();
 
   const { data: selectedCandidatesResponse, isLoading: loadingSelected } = useQuery({
@@ -141,9 +142,23 @@ export default function OfferManagement() {
     try {
       // Update each selected candidate's status to 'offered'
       for (const candidateId of selectedCandidateIds) {
+        const candidate = filteredSelectedCandidates.find((c: any) => c.id === candidateId);
+        
+        // Must have DOJ and salary to mark as offered
+        if (!candidate?.joiningDate || !candidate?.offeredSalary) {
+          toast({
+            title: "Missing Information",
+            description: `${candidate?.name || 'Candidate'} needs DOJ and Gross Salary before sharing selection`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
         await apiRequest(`/api/interviews/candidates/${candidateId}/offer`, {
           method: "PATCH",
           body: {
+            dateOfJoining: candidate.joiningDate,
+            grossSalary: candidate.offeredSalary.toString(),
             sendOffer: true, // This will change status to 'offered'
           }
         });
@@ -290,6 +305,120 @@ export default function OfferManagement() {
     });
   };
 
+  // Download interview feedback for specific date
+  const downloadInterviewFeedback = () => {
+    if (!feedbackDate) {
+      toast({
+        title: "Date Required",
+        description: "Please select an interview date",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Filter candidates by interview date (using createdAt or updatedAt)
+    const feedbackCandidates = allCandidates.filter((c: any) => {
+      const candidateDate = new Date(c.updatedAt || c.createdAt).toISOString().split('T')[0];
+      return candidateDate === feedbackDate;
+    });
+
+    if (feedbackCandidates.length === 0) {
+      toast({
+        title: "No Data",
+        description: `No interviews found for ${format(new Date(feedbackDate), 'dd-MMM-yyyy')}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // CSV Headers
+    const headers = [
+      "Name",
+      "City",
+      "Cluster",
+      "Role",
+      "Phone Number",
+      "Email ID",
+      "Qualification",
+      "Experience (Years)",
+      "Source Type",
+      "Source Name",
+      "Interview Status",
+      "Rejection Reason",
+      "Comments",
+      "DOJ (Selected)",
+      "Gross Salary (Selected)",
+      "Interview Date"
+    ];
+
+    // CSV Rows
+    const rows = feedbackCandidates.map((candidate: any) => {
+      const sourceType = candidate.resumeSource === 'vendor' ? 'Vendor' :
+                        candidate.resumeSource === 'field_recruiter' ? 'Field Recruiter' :
+                        candidate.resumeSource === 'referral' ? 'Referral' : 'Direct';
+      
+      const sourceName = candidate.resumeSource === 'vendor' ? candidate.vendorName :
+                        candidate.resumeSource === 'field_recruiter' ? candidate.recruiterName :
+                        candidate.resumeSource === 'referral' ? candidate.referralName : '-';
+
+      const interviewStatus = candidate.status === 'selected' ? 'Selected' :
+                             candidate.status === 'offered' ? 'Selection Shared' :
+                             candidate.technicalResult === 'rejected' ? 'Rejected (Technical)' :
+                             candidate.prescreeningResult === 'rejected' ? 'Rejected (Prescreening)' :
+                             'Pending';
+
+      const rejectionReason = candidate.technicalResult === 'rejected' ? (candidate.technicalReason || '-') :
+                             candidate.prescreeningResult === 'rejected' ? (candidate.prescreeningReason || '-') : '-';
+
+      const comments = candidate.technicalComments || candidate.prescreeningComments || '-';
+
+      return [
+        candidate.name || '',
+        candidate.cityName || '',
+        candidate.clusterName || '',
+        candidate.roleName || '',
+        candidate.phone || '',
+        candidate.email || '',
+        candidate.qualification || '',
+        candidate.experienceYears || '0',
+        sourceType,
+        sourceName || '',
+        interviewStatus,
+        rejectionReason,
+        comments,
+        candidate.status === 'selected' || candidate.status === 'offered' 
+          ? (candidate.joiningDate ? format(new Date(candidate.joiningDate), 'dd-MMM-yyyy') : 'Not Set')
+          : '-',
+        candidate.status === 'selected' || candidate.status === 'offered'
+          ? (candidate.offeredSalary ? `₹${parseFloat(candidate.offeredSalary).toLocaleString('en-IN')}` : 'Not Set')
+          : '-',
+        format(new Date(candidate.updatedAt || candidate.createdAt), 'dd-MMM-yyyy HH:mm')
+      ];
+    });
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row: any[]) => row.map((cell: any) => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `interview_feedback_${feedbackDate}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Success",
+      description: `Downloaded feedback for ${feedbackCandidates.length} candidate(s)`,
+    });
+  };
+
   return (
     <div>
       {/* Header */}
@@ -299,6 +428,45 @@ export default function OfferManagement() {
       </div>
 
       <div className="space-y-6">
+        {/* Interview Feedback Download */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-blue-900">Download Interview Feedback to Vendor</CardTitle>
+            <p className="text-sm text-blue-700 mt-1">
+              Download complete interview status for a specific date including selected candidates (with DOJ & Salary) and rejected candidates (with reasons)
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <Label className="text-sm font-medium mb-2 block">Select Interview Date</Label>
+                <Input
+                  type="date"
+                  value={feedbackDate}
+                  onChange={(e) => setFeedbackDate(e.target.value)}
+                  className="bg-white"
+                />
+              </div>
+              <Button
+                onClick={downloadInterviewFeedback}
+                disabled={!feedbackDate}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Feedback
+              </Button>
+            </div>
+            <div className="mt-4 p-3 bg-white rounded border border-blue-200">
+              <p className="text-sm font-medium text-blue-900 mb-2">CSV will include:</p>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• <strong>Selected Candidates:</strong> Name, Contact, DOJ, Gross Salary, Source</li>
+                <li>• <strong>Rejected Candidates:</strong> Name, Contact, Rejection Reason, Comments, Source</li>
+                <li>• <strong>All Candidates:</strong> Qualification, Experience, Interview Status</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Selected Candidates */}
         <Card>
           <CardHeader>
