@@ -113,12 +113,18 @@ const updateCandidate = async (req: Request, res: Response) => {
 const updatePrescreening = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { approved, notes } = req.body;
+    const { score, notes } = req.body;
+    
+    // Prescreening pass criteria: score >= 7
+    const passingScore = 7;
+    const result = score >= passingScore ? 'pass' : 'fail';
     
     const updateData: any = {
-      prescreeningApproved: approved,
+      prescreeningScore: score,
+      prescreeningResult: result,
       prescreeningNotes: notes,
-      status: approved ? 'technical' : 'rejected'
+      prescreeningDate: new Date(),
+      status: result === 'pass' ? 'prescreening' : 'rejected'
     };
     
     const candidate = await storage.updateCandidate(id, updateData);

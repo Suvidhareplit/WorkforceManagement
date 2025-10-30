@@ -81,13 +81,10 @@ export default function Prescreening() {
 
   const updatePrescreeningMutation = useMutation({
     mutationFn: async ({ id, marks, notes }: { id: number; marks: number; notes: string }) => {
-      const benchmarkMet = marks >= 7;
-      
-      return await apiRequest(`/api/interviews/candidates/${id}/screening`, {
+      return await apiRequest(`/api/interviews/candidates/${id}/prescreening`, {
         method: "PATCH",
         body: {
           score: marks,
-          benchmarkMet,
           notes,
         }
       });
@@ -318,12 +315,12 @@ export default function Prescreening() {
                     <TableCell className="text-slate-700">{candidate.clusterName}</TableCell>
                     <TableCell className="text-slate-700">{candidate.roleName}</TableCell>
                     <TableCell>
-                      {candidate.screeningScore !== null && candidate.screeningScore !== undefined ? (
+                      {candidate.prescreening_score !== null && candidate.prescreening_score !== undefined ? (
                         <Badge 
-                          variant={candidate.benchmarkMet ? 'default' : 'destructive'}
-                          className={candidate.benchmarkMet ? 'bg-green-500' : ''}
+                          variant={candidate.prescreening_result === 'pass' ? 'default' : 'destructive'}
+                          className={candidate.prescreening_result === 'pass' ? 'bg-green-500' : ''}
                         >
-                          {candidate.benchmarkMet ? 'Passed' : 'Failed'}
+                          {candidate.prescreening_result === 'pass' ? 'Passed' : 'Failed'}
                         </Badge>
                       ) : (
                         <Badge variant="secondary">
@@ -332,9 +329,9 @@ export default function Prescreening() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {candidate.screeningScore ? (
-                        <Badge variant={candidate.benchmarkMet ? 'default' : 'destructive'}>
-                          {candidate.screeningScore}/10
+                      {candidate.prescreening_score ? (
+                        <Badge variant={candidate.prescreening_result === 'pass' ? 'default' : 'destructive'}>
+                          {candidate.prescreening_score}/10
                         </Badge>
                       ) : '-'}
                     </TableCell>
@@ -346,8 +343,8 @@ export default function Prescreening() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                setNotes(candidate.prescreeningNotes || "");
-                                setMarks(candidate.prescreeningScore ? candidate.prescreeningScore.toString() : "");
+                                setNotes(candidate.prescreening_notes || "");
+                                setMarks(candidate.prescreening_score ? candidate.prescreening_score.toString() : "");
                               }}
                             >
                               <Eye className="h-4 w-4" />
