@@ -236,13 +236,16 @@ const updateOffer = async (req: Request, res: Response) => {
     const salary = grossSalary || gross_salary;
     
     if (doj) {
-      updateData.dateOfJoining = new Date(doj);
-      console.log('✅ Setting DOJ:', updateData.dateOfJoining);
+      // Convert to MySQL date format (YYYY-MM-DD)
+      const date = new Date(doj);
+      const mysqlDate = date.toISOString().slice(0, 10);
+      updateData.joiningDate = mysqlDate;
+      console.log('✅ Setting DOJ (joining_date):', updateData.joiningDate);
     }
     
     if (salary) {
-      updateData.grossSalary = salary.toString();
-      console.log('✅ Setting Gross:', updateData.grossSalary);
+      updateData.offeredSalary = parseFloat(salary);
+      console.log('✅ Setting Offered Salary:', updateData.offeredSalary);
     }
     
     // Only change status to 'offered' if both DOJ and Gross are provided
