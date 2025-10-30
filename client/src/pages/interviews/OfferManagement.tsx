@@ -282,14 +282,18 @@ export default function OfferManagement() {
       ];
     });
 
-    // Create CSV content
+    // Create CSV content with UTF-8 BOM for proper rupee symbol display
     const csvContent = [
       headers.join(','),
       ...rows.map((row: any[]) => row.map((cell: any) => `"${cell}"`).join(','))
     ].join('\n');
 
+    // Add UTF-8 BOM (Byte Order Mark) to fix rupee symbol encoding
+    const BOM = '\uFEFF';
+    const csvWithBOM = BOM + csvContent;
+
     // Download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
@@ -389,14 +393,18 @@ export default function OfferManagement() {
       ];
     });
 
-    // Create CSV content
+    // Create CSV content with UTF-8 BOM for proper rupee symbol display
     const csvContent = [
       headers.join(','),
       ...rows.map((row: any[]) => row.map((cell: any) => `"${cell}"`).join(','))
     ].join('\n');
 
+    // Add UTF-8 BOM (Byte Order Mark) to fix rupee symbol encoding
+    const BOM = '\uFEFF';
+    const csvWithBOM = BOM + csvContent;
+
     // Download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
