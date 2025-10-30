@@ -57,12 +57,13 @@ export default function OfferManagement() {
   });
 
   const updateOfferMutation = useMutation({
-    mutationFn: async ({ id, dateOfJoining, grossSalary }: { id: number; dateOfJoining?: string; grossSalary?: string }) => {
+    mutationFn: async ({ id, dateOfJoining, grossSalary, sendOffer }: { id: number; dateOfJoining?: string; grossSalary?: string; sendOffer?: boolean }) => {
       return await apiRequest(`/api/interviews/candidates/${id}/offer`, {
         method: "PATCH",
         body: {
           dateOfJoining,
           grossSalary,
+          sendOffer,
         }
       });
     },
@@ -121,6 +122,7 @@ export default function OfferManagement() {
       id: candidate.id,
       dateOfJoining: dateOfJoining.toISOString(),
       grossSalary,
+      sendOffer: true, // Flag to change status to 'offered'
     });
   };
 

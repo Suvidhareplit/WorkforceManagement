@@ -217,7 +217,7 @@ const updateTechnical = async (req: Request, res: Response) => {
 const updateOffer = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { dateOfJoining, grossSalary, date_of_joining, gross_salary } = req.body;
+    const { dateOfJoining, grossSalary, date_of_joining, gross_salary, sendOffer, send_offer } = req.body;
     
     console.log('🔍 updateOffer called with:', {
       id,
@@ -225,7 +225,9 @@ const updateOffer = async (req: Request, res: Response) => {
       dateOfJoining,
       grossSalary,
       date_of_joining,
-      gross_salary
+      gross_salary,
+      sendOffer,
+      send_offer
     });
     
     // Build update object with only provided fields
@@ -234,6 +236,7 @@ const updateOffer = async (req: Request, res: Response) => {
     
     const doj = dateOfJoining || date_of_joining;
     const salary = grossSalary || gross_salary;
+    const shouldSendOffer = sendOffer || send_offer;
     
     if (doj) {
       // Convert to MySQL date format (YYYY-MM-DD)
@@ -248,10 +251,10 @@ const updateOffer = async (req: Request, res: Response) => {
       console.log('✅ Setting Offered Salary:', updateData.offeredSalary);
     }
     
-    // Only change status to 'offered' if both DOJ and Gross are provided
-    if (doj && salary) {
+    // Only change status to 'offered' when sendOffer flag is true (manual action)
+    if (shouldSendOffer && doj && salary) {
       updateData.status = 'offered';
-      console.log('✅ Setting status to offered');
+      console.log('✅ Setting status to offered (manual send)');
     }
     
     console.log('📝 Calling updateCandidate with:', updateData);
@@ -262,8 +265,8 @@ const updateOffer = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Candidate not found" });
     }
     
-    // Send offer email only when both DOJ and Gross are set (status changes to 'offered')
-    if (doj && salary) {
+    // Send offer email only when sendOffer flag is true (manual send action)
+    if (shouldSendOffer && doj && salary) {
       try {
         if (candidate.resumeSource === 'vendor' && candidate.vendorId) {
           const vendor = await storage.getVendors().then(vendors => vendors.find(v => v.id === candidate.vendorId));
