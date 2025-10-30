@@ -331,27 +331,22 @@ export default function OfferManagement() {
       return;
     }
 
-    // CSV Headers
+    // CSV Headers - ONE sheet with BOTH selected and rejected
     const headers = [
       "Name",
+      "Mobile Number",
       "City",
       "Cluster",
       "Role",
-      "Phone Number",
-      "Email ID",
-      "Qualification",
-      "Experience (Years)",
       "Source Type",
       "Source Name",
       "Interview Status",
-      "Rejection Reason",
-      "Comments",
-      "DOJ (Selected)",
-      "Gross Salary (Selected)",
-      "Interview Date"
+      "DOJ",
+      "Gross Salary (Monthly)",
+      "Rejection Reason"
     ];
 
-    // CSV Rows
+    // CSV Rows - All candidates (selected + rejected) in one sheet
     const rows = feedbackCandidates.map((candidate: any) => {
       const sourceType = candidate.resumeSource === 'vendor' ? 'Vendor' :
                         candidate.resumeSource === 'field_recruiter' ? 'Field Recruiter' :
@@ -362,37 +357,35 @@ export default function OfferManagement() {
                         candidate.resumeSource === 'referral' ? candidate.referralName : '-';
 
       const interviewStatus = candidate.status === 'selected' ? 'Selected' :
-                             candidate.status === 'offered' ? 'Selection Shared' :
-                             candidate.technicalResult === 'rejected' ? 'Rejected (Technical)' :
-                             candidate.prescreeningResult === 'rejected' ? 'Rejected (Prescreening)' :
+                             candidate.status === 'offered' ? 'Selected' :
+                             candidate.technicalResult === 'rejected' ? 'Rejected' :
+                             candidate.prescreeningResult === 'rejected' ? 'Rejected' :
                              'Pending';
 
-      const rejectionReason = candidate.technicalResult === 'rejected' ? (candidate.technicalReason || '-') :
-                             candidate.prescreeningResult === 'rejected' ? (candidate.prescreeningReason || '-') : '-';
+      const rejectionReason = candidate.technicalResult === 'rejected' ? (candidate.technicalReason || 'Not specified') :
+                             candidate.prescreeningResult === 'rejected' ? (candidate.prescreeningReason || 'Not specified') : '-';
 
-      const comments = candidate.technicalComments || candidate.prescreeningComments || '-';
+      // DOJ and Salary only for selected candidates
+      const doj = (candidate.status === 'selected' || candidate.status === 'offered') && candidate.joiningDate
+        ? format(new Date(candidate.joiningDate), 'dd-MMM-yyyy')
+        : '-';
+
+      const grossSalary = (candidate.status === 'selected' || candidate.status === 'offered') && candidate.offeredSalary
+        ? `₹${parseFloat(candidate.offeredSalary).toLocaleString('en-IN')}`
+        : '-';
 
       return [
         candidate.name || '',
+        candidate.phone || '',
         candidate.cityName || '',
         candidate.clusterName || '',
         candidate.roleName || '',
-        candidate.phone || '',
-        candidate.email || '',
-        candidate.qualification || '',
-        candidate.experienceYears || '0',
         sourceType,
         sourceName || '',
         interviewStatus,
-        rejectionReason,
-        comments,
-        candidate.status === 'selected' || candidate.status === 'offered' 
-          ? (candidate.joiningDate ? format(new Date(candidate.joiningDate), 'dd-MMM-yyyy') : 'Not Set')
-          : '-',
-        candidate.status === 'selected' || candidate.status === 'offered'
-          ? (candidate.offeredSalary ? `₹${parseFloat(candidate.offeredSalary).toLocaleString('en-IN')}` : 'Not Set')
-          : '-',
-        format(new Date(candidate.updatedAt || candidate.createdAt), 'dd-MMM-yyyy HH:mm')
+        doj,
+        grossSalary,
+        rejectionReason
       ];
     });
 
@@ -457,12 +450,13 @@ export default function OfferManagement() {
               </Button>
             </div>
             <div className="mt-4 p-3 bg-white rounded border border-blue-200">
-              <p className="text-sm font-medium text-blue-900 mb-2">CSV will include:</p>
+              <p className="text-sm font-medium text-blue-900 mb-2">ONE Excel sheet with ALL candidates (Selected + Rejected):</p>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• <strong>Selected Candidates:</strong> Name, Contact, DOJ, Gross Salary, Source</li>
-                <li>• <strong>Rejected Candidates:</strong> Name, Contact, Rejection Reason, Comments, Source</li>
-                <li>• <strong>All Candidates:</strong> Qualification, Experience, Interview Status</li>
+                <li>• <strong>For ALL:</strong> Name, Mobile, City, Cluster, Role, Source Type, Source Name, Status</li>
+                <li>• <strong>For Selected:</strong> DOJ and Gross Salary (filled)</li>
+                <li>• <strong>For Rejected:</strong> Rejection Reason (filled)</li>
               </ul>
+              <p className="text-xs text-blue-600 mt-2 italic">Example: 10 candidates on 30-Nov → 6 Selected (with DOJ & Salary) + 4 Rejected (with Reason) = 10 rows in one sheet</p>
             </div>
           </CardContent>
         </Card>
