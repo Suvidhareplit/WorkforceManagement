@@ -66,8 +66,10 @@ export default function Prescreening() {
   useEffect(() => {
     console.log('Prescreening - Raw Response:', candidatesResponse);
     console.log('Prescreening - Extracted Candidates:', candidates);
-    console.log('Prescreening - Filtered Logic - Has screeningScore:', 
-      candidates.filter((c: any) => c.screeningScore !== null && c.screeningScore !== undefined).length);
+    console.log('Prescreening - Has prescreening_score:', 
+      candidates.filter((c: any) => c.prescreening_score !== null && c.prescreening_score !== undefined).length);
+    console.log('Prescreening - Applied status:', 
+      candidates.filter((c: any) => c.status === 'applied').length);
     console.log('Prescreening - Loading:', candidatesLoading);
     console.log('Prescreening - Error:', candidatesError);
   }, [candidatesResponse, candidates, candidatesLoading, candidatesError]);
@@ -130,30 +132,27 @@ export default function Prescreening() {
 
   // Filter candidates to show prescreening history (applied, pending, passed, rejected)
   const filteredCandidates = Array.isArray(candidates) ? candidates.filter((candidate: any) => {
-    // Show ALL candidates who have been prescreened (have a screening score)
+    // Show ALL candidates who have been prescreened (have a prescreening score)
     // OR candidates pending prescreening (status = 'applied')
-    // This ensures prescreened candidates remain visible regardless of their current status
-    const hasBeenPrescreened = candidate.screeningScore !== null && candidate.screeningScore !== undefined;
+    const hasBeenPrescreened = candidate.prescreening_score !== null && candidate.prescreening_score !== undefined;
     const isPendingPrescreening = candidate.status === 'applied';
     
     if (!hasBeenPrescreened && !isPendingPrescreening) return false;
     
     // Status filter (pending, passed, rejected) - Based on PRESCREENING results
     if (statusFilter && statusFilter !== "all") {
-      // Pending: Not yet evaluated in prescreening (no screening score)
-      if (statusFilter === "pending" && candidate.screeningScore !== null) return false;
+      // Pending: Not yet evaluated in prescreening (no prescreening score)
+      if (statusFilter === "pending" && candidate.prescreening_score !== null) return false;
       
-      // Passed: Passed prescreening benchmark (moved to technical or benchmarkMet = true)
+      // Passed: Passed prescreening (prescreening_result = 'pass')
       if (statusFilter === "passed") {
-        const passedPrescreening = (candidate.benchmarkMet === true || candidate.benchmarkMet === 1) && candidate.screeningScore !== null;
+        const passedPrescreening = candidate.prescreening_result === 'pass' && candidate.prescreening_score !== null;
         if (!passedPrescreening) return false;
       }
       
-      // Rejected: Failed prescreening benchmark (benchmarkMet = false)
-      // Show regardless of current status - they failed prescreening
+      // Rejected: Failed prescreening (prescreening_result = 'fail')
       if (statusFilter === "rejected") {
-        const rejectedAtPrescreening = (candidate.benchmarkMet === false || candidate.benchmarkMet === 0) && 
-                                        candidate.screeningScore !== null;
+        const rejectedAtPrescreening = candidate.prescreening_result === 'fail' && candidate.prescreening_score !== null;
         if (!rejectedAtPrescreening) return false;
       }
     }
