@@ -67,13 +67,16 @@ export default function OfferManagement() {
         }
       });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate and refetch both queries to ensure UI updates
       queryClient.invalidateQueries({ 
         queryKey: ["/api/interviews/candidates"]
       });
-      refetchSelected();
-      refetchOffered();
+      
+      // Wait a bit for DB to update, then refetch
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await refetchSelected();
+      await refetchOffered();
       
       toast({
         title: "Success",
@@ -93,10 +96,11 @@ export default function OfferManagement() {
 
   const handleUpdateDOJ = (candidateId: number, date: Date | undefined) => {
     if (!date) return;
-    console.log('Updating DOJ:', { candidateId, date: date.toISOString() });
+    console.log('🔵 Updating DOJ:', { candidateId, date: date.toISOString() });
     updateOfferMutation.mutate({
       id: candidateId,
       dateOfJoining: date.toISOString(),
+      sendOffer: false, // Explicitly set to false - don't change status
     });
     setEditingDOJ(null);
     setTempDOJ(undefined);
@@ -104,9 +108,11 @@ export default function OfferManagement() {
 
   const handleUpdateGross = (candidateId: number, salary: string) => {
     if (!salary || salary.trim() === '') return;
+    console.log('🔵 Updating Gross Salary:', { candidateId, salary });
     updateOfferMutation.mutate({
       id: candidateId,
       grossSalary: salary,
+      sendOffer: false, // Explicitly set to false - don't change status
     });
     setEditingGross(null);
   };
