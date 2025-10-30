@@ -1261,6 +1261,18 @@ export class SqlStorage implements IStorage {
     
     const applicationId = `${cityCode}_${clusterCode}_${roleCode}_${namePrefix}_${String(nextSeq).padStart(4, '0')}`;
     
+    // Find open hiring request for this position
+    let hiringRequestId = null;
+    const hiringRequestResult = await query(`
+      SELECT id FROM hiring_requests 
+      WHERE city_id = ? AND cluster_id = ? AND role_id = ? AND status = 'open'
+      LIMIT 1
+    `, [cityId, clusterId, roleId]);
+    
+    if (hiringRequestResult.rows[0]) {
+      hiringRequestId = (hiringRequestResult.rows[0] as any).id;
+    }
+    
     let vendorId = null;
     let vendorName = null;
     let recruiterId = null;
@@ -1284,13 +1296,13 @@ export class SqlStorage implements IStorage {
 
     const insertResult = await query(`
       INSERT INTO candidates (
-        application_id, name, phone, aadhar_number, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
+        application_id, hiring_request_id, name, phone, aadhar_number, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
         qualification, current_company, experience_years, current_ctc, expected_ctc,
         resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
     `, [
-      applicationId, name, phone, aadharNumber, email, roleId, role, cityId, city, clusterId, cluster,
+      applicationId, hiringRequestId, name, phone, aadharNumber, email, roleId, role, cityId, city, clusterId, cluster,
       qualification, currentCompany, experienceYears, currentCtc, expectedCtc,
       resumeSource, vendorId, vendorName, recruiterId, recruiterName, referralName
     ]);
