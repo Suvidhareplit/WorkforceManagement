@@ -75,20 +75,24 @@ export default function TechnicalRound() {
     return selectedCity && cluster.cityId === selectedCity.id;
   }) : [];
 
-  // Filter candidates who went through technical interview (pending, selected, rejected)
+  // Filter candidates who passed prescreening - they should appear in technical round
   const filteredCandidates = Array.isArray(allCandidates) ? allCandidates.filter((candidate: any) => {
-    // Show candidates in technical status OR those who were evaluated (selected/rejected with technical notes)
-    const isTechnicalRelated = (candidate.status === 'technical' && (candidate.benchmarkMet === true || candidate.benchmarkMet === 1)) ||
-           ((candidate.status === 'selected' || candidate.status === 'rejected' || candidate.technicalStatus === 'selected' || candidate.technicalStatus === 'rejected') && candidate.technicalNotes);
+    // Show ONLY candidates who PASSED prescreening (prescreeningResult = 'pass')
+    // This includes: pending technical, selected, or rejected from technical
+    const passedPrescreening = candidate.prescreeningResult === 'pass';
     
-    if (!isTechnicalRelated) return false;
+    if (!passedPrescreening) return false;
     
-    // Status filter (pending, selected, rejected)
-    // Check both status and technicalStatus fields
+    // Status filter (pending, selected, rejected) - Based on TECHNICAL results
     if (statusFilter && statusFilter !== "all") {
-      if (statusFilter === "pending" && candidate.technicalNotes) return false;
-      if (statusFilter === "selected" && candidate.status !== 'selected' && candidate.technicalStatus !== 'selected') return false;
-      if (statusFilter === "rejected" && candidate.status !== 'rejected' && candidate.technicalStatus !== 'rejected') return false;
+      // Pending: Passed prescreening but not yet evaluated in technical (no technicalResult)
+      if (statusFilter === "pending" && candidate.technicalResult) return false;
+      
+      // Selected: Passed technical round (technicalResult = 'selected')
+      if (statusFilter === "selected" && candidate.technicalResult !== 'selected') return false;
+      
+      // Rejected: Failed technical round (technicalResult = 'rejected')
+      if (statusFilter === "rejected" && candidate.technicalResult !== 'rejected') return false;
     }
     
     if (cityFilter && cityFilter !== "all" && candidate.cityName !== cityFilter) return false;

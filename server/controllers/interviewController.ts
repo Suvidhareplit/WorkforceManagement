@@ -170,26 +170,23 @@ const updateScreening = async (req: Request, res: Response) => {
 const updateTechnical = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { status, notes, technical_status, technical_notes } = req.body;
-    
-    const techStatus = status || technical_status;
-    const techNotes = notes || technical_notes;
+    const { status, notes, score } = req.body;
     
     console.log('🔍 updateTechnical called with:', {
       id,
-      body: req.body,
-      techStatus,
-      techNotes
+      body: req.body
     });
     
-    if (!['selected', 'rejected'].includes(techStatus)) {
-      return res.status(400).json({ message: "Invalid status" });
+    if (!['selected', 'rejected'].includes(status)) {
+      return res.status(400).json({ message: "Invalid status. Must be 'selected' or 'rejected'" });
     }
     
     const updateData: any = {
-      technicalStatus: techStatus,
-      technicalNotes: techNotes,
-      status: techStatus === 'selected' ? 'selected' : 'rejected'
+      technicalScore: score,
+      technicalResult: status,
+      technicalNotes: notes,
+      technicalDate: new Date(),
+      status: status === 'selected' ? 'selected' : 'rejected'
     };
     
     console.log('📝 Calling updateCandidate with:', updateData);
