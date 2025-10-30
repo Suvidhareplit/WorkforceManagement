@@ -701,15 +701,25 @@ export default function CandidateApplication() {
 
   const { data: cities } = useQuery({
     queryKey: ["/api/master-data/city"],
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const { data: clusters } = useQuery({
     queryKey: ["/api/master-data/cluster"],
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   const { data: roles } = useQuery({
     queryKey: ["/api/master-data/role"],
+    staleTime: 0,
+    refetchOnMount: true,
   });
+
+  // Debug logging
+  console.log('CandidateApplication - Roles data:', roles);
+  console.log('CandidateApplication - Is roles array?', Array.isArray(roles));
 
   const { data: vendors } = useQuery({
     queryKey: ["/api/master-data/vendor"],
