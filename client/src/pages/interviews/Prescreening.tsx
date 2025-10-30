@@ -66,8 +66,8 @@ export default function Prescreening() {
   useEffect(() => {
     console.log('Prescreening - Raw Response:', candidatesResponse);
     console.log('Prescreening - Extracted Candidates:', candidates);
-    console.log('Prescreening - Has prescreening_score:', 
-      candidates.filter((c: any) => c.prescreening_score !== null && c.prescreening_score !== undefined).length);
+    console.log('Prescreening - Has prescreeningScore:', 
+      candidates.filter((c: any) => c.prescreeningScore !== null && c.prescreeningScore !== undefined).length);
     console.log('Prescreening - Applied status:', 
       candidates.filter((c: any) => c.status === 'applied').length);
     console.log('Prescreening - Loading:', candidatesLoading);
@@ -134,7 +134,7 @@ export default function Prescreening() {
   const filteredCandidates = Array.isArray(candidates) ? candidates.filter((candidate: any) => {
     // Show ALL candidates who have been prescreened (have a prescreening score)
     // OR candidates pending prescreening (status = 'applied')
-    const hasBeenPrescreened = candidate.prescreening_score !== null && candidate.prescreening_score !== undefined;
+    const hasBeenPrescreened = candidate.prescreeningScore !== null && candidate.prescreeningScore !== undefined;
     const isPendingPrescreening = candidate.status === 'applied';
     
     if (!hasBeenPrescreened && !isPendingPrescreening) return false;
@@ -142,17 +142,17 @@ export default function Prescreening() {
     // Status filter (pending, passed, rejected) - Based on PRESCREENING results
     if (statusFilter && statusFilter !== "all") {
       // Pending: Not yet evaluated in prescreening (no prescreening score)
-      if (statusFilter === "pending" && candidate.prescreening_score !== null) return false;
+      if (statusFilter === "pending" && candidate.prescreeningScore !== null) return false;
       
-      // Passed: Passed prescreening (prescreening_result = 'pass')
+      // Passed: Passed prescreening (prescreeningResult = 'pass')
       if (statusFilter === "passed") {
-        const passedPrescreening = candidate.prescreening_result === 'pass' && candidate.prescreening_score !== null;
+        const passedPrescreening = candidate.prescreeningResult === 'pass' && candidate.prescreeningScore !== null;
         if (!passedPrescreening) return false;
       }
       
-      // Rejected: Failed prescreening (prescreening_result = 'fail')
+      // Rejected: Failed prescreening (prescreeningResult = 'fail')
       if (statusFilter === "rejected") {
-        const rejectedAtPrescreening = candidate.prescreening_result === 'fail' && candidate.prescreening_score !== null;
+        const rejectedAtPrescreening = candidate.prescreeningResult === 'fail' && candidate.prescreeningScore !== null;
         if (!rejectedAtPrescreening) return false;
       }
     }
@@ -314,12 +314,12 @@ export default function Prescreening() {
                     <TableCell className="text-slate-700">{candidate.clusterName}</TableCell>
                     <TableCell className="text-slate-700">{candidate.roleName}</TableCell>
                     <TableCell>
-                      {candidate.prescreening_score !== null && candidate.prescreening_score !== undefined ? (
+                      {candidate.prescreeningScore !== null && candidate.prescreeningScore !== undefined ? (
                         <Badge 
-                          variant={candidate.prescreening_result === 'pass' ? 'default' : 'destructive'}
-                          className={candidate.prescreening_result === 'pass' ? 'bg-green-500' : ''}
+                          variant={candidate.prescreeningResult === 'pass' ? 'default' : 'destructive'}
+                          className={candidate.prescreeningResult === 'pass' ? 'bg-green-500' : ''}
                         >
-                          {candidate.prescreening_result === 'pass' ? 'Passed' : 'Failed'}
+                          {candidate.prescreeningResult === 'pass' ? 'Passed' : 'Failed'}
                         </Badge>
                       ) : (
                         <Badge variant="secondary">
@@ -328,9 +328,9 @@ export default function Prescreening() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {candidate.prescreening_score ? (
-                        <Badge variant={candidate.prescreening_result === 'pass' ? 'default' : 'destructive'}>
-                          {candidate.prescreening_score}/10
+                      {candidate.prescreeningScore ? (
+                        <Badge variant={candidate.prescreeningResult === 'pass' ? 'default' : 'destructive'}>
+                          {candidate.prescreeningScore}/10
                         </Badge>
                       ) : '-'}
                     </TableCell>
@@ -342,8 +342,8 @@ export default function Prescreening() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                setNotes(candidate.prescreening_notes || "");
-                                setMarks(candidate.prescreening_score ? candidate.prescreening_score.toString() : "");
+                                setNotes(candidate.prescreeningNotes || "");
+                                setMarks(candidate.prescreeningScore ? candidate.prescreeningScore.toString() : "");
                               }}
                             >
                               <Eye className="h-4 w-4" />
