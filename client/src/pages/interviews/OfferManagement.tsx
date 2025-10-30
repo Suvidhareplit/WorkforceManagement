@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
-import { CalendarIcon, Pencil, Download, Filter } from "lucide-react";
+import { CalendarIcon, Pencil, Download, Filter, Share2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
@@ -27,34 +27,23 @@ export default function OfferManagement() {
   const { toast } = useToast();
 
   const { data: selectedCandidatesResponse, isLoading: loadingSelected } = useQuery({
-    queryKey: ["/api/interviews/candidates", { status: "selected" }],
+    queryKey: ["/api/interviews/candidates", { status: "selected,offered" }],
     queryFn: async () => {
-      const response = await apiRequest("/api/interviews/candidates?status=selected", { method: "GET" });
+      // Fetch both selected and offered candidates
+      const response = await apiRequest("/api/interviews/candidates?status=selected,offered", { method: "GET" });
       return response;
     },
     refetchOnWindowFocus: true,
     staleTime: 0,
   });
 
-  const { data: offeredCandidatesResponse, isLoading: loadingOffered } = useQuery({
-    queryKey: ["/api/interviews/candidates", { status: "offered" }],
-    queryFn: async () => {
-      const response = await apiRequest("/api/interviews/candidates?status=offered", { method: "GET" });
-      return response;
-    },
-    refetchOnWindowFocus: true,
-    staleTime: 0,
-  });
 
   // Extract data from API responses
   const selectedCandidates = (selectedCandidatesResponse as any)?.data || [];
-  const offeredCandidates = (offeredCandidatesResponse as any)?.data || [];
 
   console.log('📋 Offer Management Data:', {
     selectedCount: selectedCandidates.length,
-    offeredCount: offeredCandidates.length,
-    selectedCandidates: selectedCandidates.slice(0, 2),
-    offeredCandidates: offeredCandidates.slice(0, 2)
+    selectedCandidates: selectedCandidates.slice(0, 2)
   });
 
   const updateOfferMutation = useMutation({
@@ -81,12 +70,12 @@ export default function OfferManagement() {
       
       // Force invalidate and refetch
       await queryClient.invalidateQueries({ 
-        queryKey: ["/api/interviews/candidates", { status: "selected" }]
+        queryKey: ["/api/interviews/candidates", { status: "selected,offered" }]
       });
       
       // Force a hard refetch
       await queryClient.refetchQueries({
-        queryKey: ["/api/interviews/candidates", { status: "selected" }]
+        queryKey: ["/api/interviews/candidates", { status: "selected,offered" }]
       });
       
       toast({
@@ -133,6 +122,48 @@ export default function OfferManagement() {
       sendOffer: false, // Explicitly set to false - don't change status
     });
     setEditingGross(null);
+  };
+
+  // Mark selection as shared
+  const markSelectionShared = async () => {
+    if (selectedCandidateIds.length === 0) {
+      toast({
+        title: "No candidates selected",
+        description: "Please select at least one candidate",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Update each selected candidate's status to 'offered'
+      for (const candidateId of selectedCandidateIds) {
+        await apiRequest(`/api/interviews/candidates/${candidateId}/offer`, {
+          method: "PATCH",
+          body: {
+            sendOffer: true, // This will change status to 'offered'
+          }
+        });
+      }
+
+      // Refetch data
+      await queryClient.refetchQueries({
+        queryKey: ["/api/interviews/candidates", { status: "selected,offered" }]
+      });
+
+      toast({
+        title: "Success",
+        description: `Selection shared for ${selectedCandidateIds.length} candidate(s)`,
+      });
+
+      setSelectedCandidateIds([]);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to share selection",
+        variant: "destructive",
+      });
+    }
   };
 
 
@@ -270,14 +301,24 @@ export default function OfferManagement() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Selected Candidates - Awaiting Offer</CardTitle>
-              <Button
-                onClick={downloadCSV}
-                disabled={selectedCandidateIds.length === 0}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download CSV ({selectedCandidateIds.length})
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={markSelectionShared}
+                  disabled={selectedCandidateIds.length === 0}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Selection Shared ({selectedCandidateIds.length})
+                </Button>
+                <Button
+                  onClick={downloadCSV}
+                  disabled={selectedCandidateIds.length === 0}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download CSV ({selectedCandidateIds.length})
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -337,6 +378,7 @@ export default function OfferManagement() {
                   <TableHead>Experience</TableHead>
                   <TableHead>DOJ</TableHead>
                   <TableHead>Gross (Monthly)</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -527,75 +569,12 @@ export default function OfferManagement() {
                           </div>
                         )}
                       </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Offered Candidates */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Offered Candidates</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>DOJ</TableHead>
-                  <TableHead>Gross Salary</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Offer Date</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loadingOffered ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : (offeredCandidates as any[])?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      No offered candidates
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  (offeredCandidates as any[])?.map((candidate: any) => (
-                    <TableRow key={candidate.id}>
-                      <TableCell className="font-medium">{candidate.name}</TableCell>
-                      <TableCell>{candidate.role?.name}</TableCell>
                       <TableCell>
-                        <div className="text-sm">
-                          <div>{candidate.phone}</div>
-                          <div className="text-slate-500">{candidate.email}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {candidate.joiningDate 
-                          ? format(new Date(candidate.joiningDate), "PPP")
-                          : "Not set"}
-                      </TableCell>
-                      <TableCell className="font-mono">
-                        ₹{candidate.offeredSalary ? Number(candidate.offeredSalary).toLocaleString() : "Not set"}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {getSourceDisplay(candidate)}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(candidate.updatedAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          Offered
-                        </Badge>
+                        {candidate.status === 'offered' ? (
+                          <Badge className="bg-purple-600">Selection Shared</Badge>
+                        ) : (
+                          <Badge className="bg-green-600">Selected</Badge>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
