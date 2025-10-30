@@ -57,12 +57,13 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
     }
 
     // Get master data for validation
-    const [roles, cities, clusters, vendors, recruiters] = await Promise.all([
+    const [roles, cities, clusters, vendors, recruiters, hiringRequests] = await Promise.all([
       storage.getRoles(),
       storage.getCities(),
       storage.getClusters(),
       storage.getVendors(),
       storage.getRecruiters(),
+      storage.getHiringRequests({ status: 'open' }),
     ]);
 
     // Create lookup maps
@@ -78,6 +79,13 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
         clustersByCity.set(cluster.cityId, new Map());
       }
       clustersByCity.get(cluster.cityId)!.set(cluster.name.toLowerCase(), cluster);
+    });
+
+    // Create a map of open positions: key = "cityId-clusterId-roleId", value = hiring request
+    const openPositionsMap = new Map<string, any>();
+    hiringRequests.forEach(request => {
+      const key = `${request.cityId || request.city_id}-${request.clusterId || request.cluster_id}-${request.roleId || request.role_id}`;
+      openPositionsMap.set(key, request);
     });
 
     // Valid values
@@ -160,6 +168,21 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
           } else {
             row.clusterId = cluster.id;
           }
+        }
+      }
+
+      // Validate open position (only if city, cluster, and role are all valid)
+      if (row.cityId && row.clusterId && row.roleId) {
+        const positionKey = `${row.cityId}-${row.clusterId}-${row.roleId}`;
+        const openPosition = openPositionsMap.get(positionKey);
+        
+        if (!openPosition) {
+          row.errors.push({ 
+            row: row.row, 
+            field: 'position', 
+            value: `${row.city} - ${row.cluster} - ${row.role}`, 
+            message: `No open position found for this combination of City, Cluster, and Role. Please create a hiring request first.` 
+          });
         }
       }
 
