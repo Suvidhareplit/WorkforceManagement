@@ -17,6 +17,36 @@ const createCandidate = async (req: Request, res: Response) => {
     
     console.log('Mapped candidate data:', JSON.stringify(mappedData, null, 2));
     
+    // VALIDATION: Check if there's an open position for this city-cluster-role combination
+    // Get city, cluster, and role IDs from the candidate data
+    const cities = await storage.getCities();
+    const clusters = await storage.getClusters();
+    const roles = await storage.getRoles();
+    
+    const city = cities.find((c: any) => c.name.toLowerCase() === mappedData.city?.toLowerCase());
+    const cluster = clusters.find((cl: any) => cl.name.toLowerCase() === mappedData.cluster?.toLowerCase());
+    const role = roles.find((r: any) => r.name.toLowerCase() === mappedData.role?.toLowerCase());
+    
+    if (!city || !cluster || !role) {
+      return res.status(400).json({ 
+        message: "Invalid city, cluster, or role. Please check your selection." 
+      });
+    }
+    
+    // Check for open hiring request
+    const openRequests = await storage.getHiringRequests({ 
+      status: 'open',
+      cityId: city.id,
+      clusterId: cluster.id,
+      roleId: role.id
+    });
+    
+    if (!openRequests || openRequests.length === 0) {
+      return res.status(400).json({ 
+        message: `No open position found for ${role.name} in ${city.name} - ${cluster.name}. Please contact HR to create a hiring request first.` 
+      });
+    }
+    
     const candidate = await storage.createCandidate(mappedData);
     
     // Return the complete candidate data
