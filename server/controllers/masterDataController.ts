@@ -360,39 +360,39 @@ export class MasterDataController extends BaseController {
     }
   }
 
-  // Paygroups
-  async getPaygroups(req: Request, res: Response): Promise<void> {
+  // Functions
+  async getFunctions(req: Request, res: Response): Promise<void> {
     try {
       const filters = this.buildFilterOptions(req);
-      const paygroups = await this.storage.getPaygroups(filters);
-      this.sendSuccess(res, paygroups, 'Paygroups retrieved successfully');
+      const functions = await this.storage.getFunctions(filters);
+      this.sendSuccess(res, functions, 'Functions retrieved successfully');
     } catch (error) {
-      this.handleError(res, error, 'Failed to retrieve paygroups');
+      this.handleError(res, error, 'Failed to retrieve functions');
     }
   }
 
-  async createPaygroup(req: Request, res: Response): Promise<void> {
+  async createFunction(req: Request, res: Response): Promise<void> {
     try {
       const userId = this.getUserId(req);
-      const paygroup = await this.storage.createPaygroup(req.body, { changedBy: userId });
-      this.sendSuccess(res, paygroup, 'Paygroup created successfully');
+      const func = await this.storage.createFunction(req.body, { changedBy: userId });
+      this.sendSuccess(res, func, 'Function created successfully');
     } catch (error) {
-      this.handleError(res, error, 'Failed to create paygroup');
+      this.handleError(res, error, 'Failed to create function');
     }
   }
 
-  async updatePaygroup(req: Request, res: Response): Promise<void> {
+  async updateFunction(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id);
       const userId = this.getUserId(req);
-      const paygroup = await this.storage.updatePaygroup(id, req.body, { changedBy: userId });
-      if (!paygroup) {
-        this.sendNotFound(res, 'Paygroup');
+      const func = await this.storage.updateFunction(id, req.body, { changedBy: userId });
+      if (!func) {
+        this.sendNotFound(res, 'Function');
         return;
       }
-      this.sendSuccess(res, paygroup, 'Paygroup updated successfully');
+      this.sendSuccess(res, func, 'Function updated successfully');
     } catch (error) {
-      this.handleError(res, error, 'Failed to update paygroup');
+      this.handleError(res, error, 'Failed to update function');
     }
   }
 

@@ -63,12 +63,12 @@ export interface IStorage {
   deleteCluster(id: number, options?: UpdateOptions): Promise<boolean>;
   updateClusterStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any>;
 
-  // Paygroups - using any types for raw SQL approach
-  getPaygroups(filters?: FilterOptions): Promise<any[]>;
-  getPaygroup(id: number): Promise<any>;
-  createPaygroup(paygroupData: any, options?: CreateOptions): Promise<any>;
-  updatePaygroup(id: number, paygroupData: any, options?: UpdateOptions): Promise<any>;
-  deletePaygroup(id: number, options?: UpdateOptions): Promise<boolean>;
+  // Functions - using any types for raw SQL approach
+  getFunctions(filters?: FilterOptions): Promise<any[]>;
+  getFunction(id: number): Promise<any>;
+  createFunction(functionData: any, options?: CreateOptions): Promise<any>;
+  updateFunction(id: number, functionData: any, options?: UpdateOptions): Promise<any>;
+  deleteFunction(id: number, options?: UpdateOptions): Promise<boolean>;
 
   // Business Units - using any types for raw SQL approach
   getBusinessUnits(filters?: FilterOptions): Promise<any[]>;

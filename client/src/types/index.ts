@@ -32,7 +32,7 @@ export interface Cluster {
   description?: string;
 }
 
-export interface Paygroup {
+export interface Function {
   id: number;
   name: string;
   code: string;
@@ -70,8 +70,8 @@ export interface Role {
   code: string;
   description?: string;
   jobDescriptionFile?: string;
-  paygroupId?: number;
-  paygroupName?: string;
+  functionId?: number;
+  functionName?: string;
   businessUnitId?: number;
   businessUnitName?: string;
   departmentId?: number;

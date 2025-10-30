@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { City, Cluster, Role, Vendor, Recruiter, Trainer, Paygroup, BusinessUnit, Department, SubDepartment } from "@/types";
+import { City, Cluster, Role, Vendor, Recruiter, Trainer, Function, BusinessUnit, Department, SubDepartment } from "@/types";
 import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye, DollarSign, Building, Layers, FolderTree, Plus, X, GraduationCap } from "lucide-react";
 
 import { useEffect } from "react";
@@ -23,7 +23,7 @@ export default function MasterData() {
     // Invalidate queries to ensure fresh data on component mount
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/city"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/cluster"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/master-data/paygroup"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/master-data/function"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/business-unit"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/department"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/sub-department"] });
@@ -47,7 +47,7 @@ export default function MasterData() {
     replacementPeriod: "",
     cityId: "1",
     jobDescriptionFile: null as File | null,
-    paygroup: "",
+    function: "",
     businessUnit: "",
     department: "",
     subDepartment: "",
@@ -76,7 +76,7 @@ export default function MasterData() {
     replacementPeriod: "",
     cityId: "1", // Default to first city to avoid empty string
     jobDescriptionFile: null as File | null,
-    paygroup: "",
+    function: "",
     businessUnit: "",
     department: "",
     subDepartment: "",
@@ -105,8 +105,8 @@ export default function MasterData() {
     queryKey: ["/api/master-data/cluster"],
   });
 
-  const { data: paygroups = [], isLoading: loadingPaygroups } = useQuery({
-    queryKey: ["/api/master-data/paygroup"],
+  const { data: functions = [], isLoading: loadingFunctions } = useQuery({
+    queryKey: ["/api/master-data/function"],
   });
 
   const { data: businessUnits = [], isLoading: loadingBusinessUnits } = useQuery({
@@ -140,7 +140,7 @@ export default function MasterData() {
   // Ensure data is always an array to prevent map errors - SHOW ALL ITEMS INCLUDING INACTIVE
   const safeCities = Array.isArray(cities) ? cities : [];
   const safeClusters = Array.isArray(clusters) ? clusters : [];
-  const safePaygroups = Array.isArray(paygroups) ? paygroups : [];
+  const safeFunctions = Array.isArray(functions) ? functions : [];
   const safeBusinessUnits = Array.isArray(businessUnits) ? businessUnits : [];
   const safeDepartments = Array.isArray(departments) ? departments : [];
   const safeSubDepartments = Array.isArray(subDepartments) ? subDepartments : [];
@@ -286,7 +286,7 @@ export default function MasterData() {
       replacementPeriod: "",
       cityId: "1",
       jobDescriptionFile: null,
-      paygroup: "",
+      function: "",
       businessUnit: "",
       department: "",
       // Commercial terms
@@ -364,7 +364,7 @@ export default function MasterData() {
     const roleData = new FormData();
     roleData.append('name', formData.name);
     roleData.append('code', formData.code.toUpperCase());
-    if (formData.paygroup) roleData.append('paygroupId', formData.paygroup);
+    if (formData.function) roleData.append('functionId', formData.function);
     if (formData.businessUnit) roleData.append('businessUnitId', formData.businessUnit);
     if (formData.department) roleData.append('departmentId', formData.department);
     if (formData.subDepartment) roleData.append('subDepartmentId', formData.subDepartment);
@@ -381,7 +381,7 @@ export default function MasterData() {
       console.log('Sending API request...');
       const result = await createRoleMutation.mutateAsync(roleData);
       console.log('API response:', result);
-      setFormData({ ...formData, name: "", code: "", paygroup: "", businessUnit: "", department: "", subDepartment: "", jobDescriptionFile: null });
+      setFormData({ ...formData, name: "", code: "", function: "", businessUnit: "", department: "", subDepartment: "", jobDescriptionFile: null });
       // Reset file input
       const fileInput = document.getElementById('roleJD') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -487,7 +487,7 @@ export default function MasterData() {
         const formData = new FormData();
         formData.append('name', editFormData.name);
         formData.append('code', editFormData.code);
-        if (editFormData.paygroup) formData.append('paygroupId', editFormData.paygroup);
+        if (editFormData.function) formData.append('functionId', editFormData.function);
         if (editFormData.businessUnit) formData.append('businessUnitId', editFormData.businessUnit);
         if (editFormData.department) formData.append('departmentId', editFormData.department);
         if (editFormData.subDepartment) formData.append('subDepartmentId', editFormData.subDepartment);
@@ -503,7 +503,7 @@ export default function MasterData() {
           name: editFormData.name,
           code: editFormData.code,
           ...(editType === 'role' && { 
-            paygroupId: editFormData.paygroup ? parseInt(editFormData.paygroup) : undefined,
+            functionId: editFormData.function ? parseInt(editFormData.function) : undefined,
             businessUnitId: editFormData.businessUnit ? parseInt(editFormData.businessUnit) : undefined,
             departmentId: editFormData.department ? parseInt(editFormData.department) : undefined,
             subDepartmentId: editFormData.subDepartment ? parseInt(editFormData.subDepartment) : undefined
@@ -659,7 +659,7 @@ export default function MasterData() {
       ...editFormData,
       name: role.name,
       code: role.code,
-      paygroup: role.paygroupId?.toString() || "",
+      function: role.functionId?.toString() || "",
       businessUnit: role.businessUnitId?.toString() || "",
       department: role.departmentId?.toString() || "",
       subDepartment: role.subDepartmentId?.toString() || "",
@@ -809,7 +809,7 @@ export default function MasterData() {
         <TabsList className="grid w-full grid-cols-10 gap-1">
           <TabsTrigger value="cities">Cities</TabsTrigger>
           <TabsTrigger value="clusters">Clusters</TabsTrigger>
-          <TabsTrigger value="paygroups">Paygroups</TabsTrigger>
+          <TabsTrigger value="functions">Functions</TabsTrigger>
           <TabsTrigger value="business-units">Business Units</TabsTrigger>
           <TabsTrigger value="departments">Departments</TabsTrigger>
           <TabsTrigger value="sub-departments">Sub Depts</TabsTrigger>
@@ -1056,13 +1056,13 @@ export default function MasterData() {
         </TabsContent>
 
         {/* PAYGROUPS TAB */}
-        <TabsContent value="paygroups">
+        <TabsContent value="functions">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <DollarSign className="h-5 w-5 mr-2" />
-                  Paygroups
+                  Functions
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -1076,26 +1076,26 @@ export default function MasterData() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {loadingPaygroups ? (
+                    {loadingFunctions ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
-                    ) : safePaygroups.length === 0 ? (
+                    ) : safeFunctions.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-8">
-                          No paygroups found
+                          No functions found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      safePaygroups.map((paygroup: Paygroup) => (
-                        <TableRow key={paygroup.id}>
-                          <TableCell className="font-medium">{paygroup.name}</TableCell>
-                          <TableCell className="font-mono">{paygroup.code}</TableCell>
+                      safeFunctions.map((func: Function) => (
+                        <TableRow key={func.id}>
+                          <TableCell className="font-medium">{func.name}</TableCell>
+                          <TableCell className="font-mono">{func.code}</TableCell>
                           <TableCell>
-                            <Badge variant={paygroup.isActive ? "default" : "secondary"}>
-                              {paygroup.isActive ? "Active" : "Inactive"}
+                            <Badge variant={func.isActive ? "default" : "secondary"}>
+                              {func.isActive ? "Active" : "Inactive"}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -1104,34 +1104,34 @@ export default function MasterData() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => {
-                                  setEditingItem(paygroup);
-                                  setEditType("paygroup");
+                                  setEditingItem(func);
+                                  setEditType("function");
                                   setEditFormData({
                                     ...editFormData,
-                                    name: paygroup.name,
-                                    code: paygroup.code,
+                                    name: func.name,
+                                    code: func.code,
                                   });
                                 }}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Switch
-                                checked={paygroup.isActive}
+                                checked={func.isActive}
                                 onCheckedChange={async () => {
                                   try {
-                                    await apiRequest(`/api/master-data/paygroup/${paygroup.id}`, {
+                                    await apiRequest(`/api/master-data/function/${func.id}`, {
                                       method: "PATCH",
-                                      body: { isActive: !paygroup.isActive },
+                                      body: { isActive: !func.isActive },
                                     });
-                                    queryClient.invalidateQueries({ queryKey: ["/api/master-data/paygroup"] });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/master-data/function"] });
                                     toast({
                                       title: "Success",
-                                      description: `Paygroup ${!paygroup.isActive ? "activated" : "deactivated"} successfully`,
+                                      description: `Function ${!func.isActive ? "activated" : "deactivated"} successfully`,
                                     });
                                   } catch (error: any) {
                                     toast({
                                       title: "Error",
-                                      description: error.message || "Failed to update paygroup status",
+                                      description: error.message || "Failed to update function status",
                                       variant: "destructive",
                                     });
                                   }
@@ -1149,23 +1149,23 @@ export default function MasterData() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Add New Paygroup</CardTitle>
+                <CardTitle>Add New Function</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="paygroupName">Paygroup Name</Label>
+                  <Label htmlFor="functionName">Function Name</Label>
                   <Input
-                    id="paygroupName"
-                    placeholder="Enter paygroup name"
+                    id="functionName"
+                    placeholder="Enter function name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="paygroupCode">Paygroup Code</Label>
+                  <Label htmlFor="functionCode">Function Code</Label>
                   <Input
-                    id="paygroupCode"
-                    placeholder="Enter paygroup code"
+                    id="functionCode"
+                    placeholder="Enter function code"
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                   />
@@ -1173,30 +1173,30 @@ export default function MasterData() {
                 <Button
                   onClick={async () => {
                     try {
-                      await apiRequest("/api/master-data/paygroup", {
+                      await apiRequest("/api/master-data/function", {
                         method: "POST",
                         body: {
                           name: formData.name,
                           code: formData.code,
                         },
                       });
-                      queryClient.invalidateQueries({ queryKey: ["/api/master-data/paygroup"] });
+                      queryClient.invalidateQueries({ queryKey: ["/api/master-data/function"] });
                       setFormData({ ...formData, name: "", code: "" });
                       toast({
                         title: "Success",
-                        description: "Paygroup created successfully",
+                        description: "Function created successfully",
                       });
                     } catch (error: any) {
                       toast({
                         title: "Error",
-                        description: error.message || "Failed to create paygroup",
+                        description: error.message || "Failed to create function",
                         variant: "destructive",
                       });
                     }
                   }}
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
-                  Create Paygroup
+                  Create Function
                 </Button>
               </CardContent>
             </Card>
@@ -1708,7 +1708,7 @@ export default function MasterData() {
                         <TableHead>Name</TableHead>
                         <TableHead>Code</TableHead>
                         <TableHead>Business Unit</TableHead>
-                        <TableHead>Paygroup</TableHead>
+                        <TableHead>Function</TableHead>
                         <TableHead>Department</TableHead>
                         <TableHead>Sub Department</TableHead>
                         <TableHead>Job Description</TableHead>
@@ -1735,7 +1735,7 @@ export default function MasterData() {
                             <TableCell className="font-medium">{role.name}</TableCell>
                             <TableCell className="font-mono">{role.code}</TableCell>
                             <TableCell className="text-sm">{role.businessUnitName || '-'}</TableCell>
-                            <TableCell className="text-sm">{role.paygroupName || '-'}</TableCell>
+                            <TableCell className="text-sm">{role.functionName || '-'}</TableCell>
                             <TableCell className="text-sm">{role.departmentName || '-'}</TableCell>
                             <TableCell className="text-sm">{role.subDepartmentName || '-'}</TableCell>
                             <TableCell>
@@ -1812,16 +1812,16 @@ export default function MasterData() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="rolePaygroup">Paygroup</Label>
+                  <Label htmlFor="roleFunction">Function</Label>
                   <Select
-                    value={formData.paygroup || ""}
-                    onValueChange={(value) => setFormData({ ...formData, paygroup: value })}
+                    value={formData.function || ""}
+                    onValueChange={(value) => setFormData({ ...formData, function: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select paygroup" />
+                      <SelectValue placeholder="Select function" />
                     </SelectTrigger>
                     <SelectContent>
-                      {safePaygroups.map((pg: Paygroup) => (
+                      {safeFunctions.map((pg: Function) => (
                         <SelectItem key={pg.id} value={pg.id.toString()}>
                           {pg.name}
                         </SelectItem>
@@ -2604,16 +2604,16 @@ export default function MasterData() {
             {editType === "role" && (
               <>
                 <div>
-                  <Label htmlFor="editPaygroup">Paygroup</Label>
+                  <Label htmlFor="editFunction">Function</Label>
                   <Select
-                    value={editFormData.paygroup}
-                    onValueChange={(value) => setEditFormData({ ...editFormData, paygroup: value })}
+                    value={editFormData.function}
+                    onValueChange={(value) => setEditFormData({ ...editFormData, function: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select paygroup" />
+                      <SelectValue placeholder="Select function" />
                     </SelectTrigger>
                     <SelectContent>
-                      {safePaygroups.map((pg: Paygroup) => (
+                      {safeFunctions.map((pg: Function) => (
                         <SelectItem key={pg.id} value={pg.id.toString()}>
                           {pg.name}
                         </SelectItem>

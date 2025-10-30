@@ -493,11 +493,11 @@ export class SqlStorage implements IStorage {
     return this.updateRole(id, { isActive }, options);
   }
 
-  // Paygroups - production-ready CRUD
-  async getPaygroups(filters?: FilterOptions): Promise<any[]> {
+  // Functions - production-ready CRUD
+  async getFunctions(filters?: FilterOptions): Promise<any[]> {
     const { orderClause, limitClause } = this.buildFilterClause(filters);
     const result = await query(`
-      SELECT * FROM paygroups 
+      SELECT * FROM functions 
       WHERE 1=1 
       ${orderClause || 'ORDER BY name ASC'} 
       ${limitClause}
@@ -505,22 +505,22 @@ export class SqlStorage implements IStorage {
     return result.rows as any[];
   }
 
-  async getPaygroup(id: number): Promise<any> {
-    const result = await query('SELECT * FROM paygroups WHERE id = ?', [id]);
+  async getFunction(id: number): Promise<any> {
+    const result = await query('SELECT * FROM functions WHERE id = ?', [id]);
     return result.rows[0] as any || null;
   }
 
-  async createPaygroup(data: any, options?: CreateOptions): Promise<any> {
+  async createFunction(data: any, options?: CreateOptions): Promise<any> {
     const { name, code, isActive = true } = data;
     const insertResult = await query(`
-      INSERT INTO paygroups (name, code, is_active, created_at)
+      INSERT INTO functions (name, code, is_active, created_at)
       VALUES (?, ?, ?, NOW())
     `, [name, code, isActive]);
-    const paygroupId = (insertResult.rows as any).insertId;
-    return await this.getPaygroup(paygroupId);
+    const functionId = (insertResult.rows as any).insertId;
+    return await this.getFunction(functionId);
   }
 
-  async updatePaygroup(id: number, data: any, options?: UpdateOptions): Promise<any> {
+  async updateFunction(id: number, data: any, options?: UpdateOptions): Promise<any> {
     const fields: string[] = [];
     const values: any[] = [];
     Object.entries(data).forEach(([key, value]) => {
@@ -532,13 +532,13 @@ export class SqlStorage implements IStorage {
     });
     if (fields.length > 0) {
       values.push(id);
-      await query(`UPDATE paygroups SET ${fields.join(', ')} WHERE id = ?`, values);
+      await query(`UPDATE functions SET ${fields.join(', ')} WHERE id = ?`, values);
     }
-    return await this.getPaygroup(id);
+    return await this.getFunction(id);
   }
 
-  async deletePaygroup(id: number, options?: UpdateOptions): Promise<any> {
-    const result = await query('DELETE FROM paygroups WHERE id = ?', [id]);
+  async deleteFunction(id: number, options?: UpdateOptions): Promise<any> {
+    const result = await query('DELETE FROM functions WHERE id = ?', [id]);
     return result.rowCount > 0;
   }
 
