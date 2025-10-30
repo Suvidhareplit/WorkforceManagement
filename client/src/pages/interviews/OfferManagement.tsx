@@ -23,7 +23,6 @@ export default function OfferManagement() {
   const [tempGross, setTempGross] = useState("");
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<number[]>([]);
   const [cityFilter, setCityFilter] = useState("");
-  const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [feedbackDate, setFeedbackDate] = useState("");
   const { toast } = useToast();
 
@@ -198,13 +197,8 @@ export default function OfferManagement() {
     return candidate.resumeSource?.replace('_', ' ') || 'Direct';
   };
 
-  // Filter selected candidates
-  const filteredSelectedCandidates = selectedCandidates.filter((candidate: any) => {
-    if (cityFilter && cityFilter !== "all" && candidate.cityName !== cityFilter) return false;
-    if (dateRange.from && new Date(candidate.createdAt) < new Date(dateRange.from)) return false;
-    if (dateRange.to && new Date(candidate.createdAt) > new Date(dateRange.to)) return false;
-    return true;
-  });
+  // Filter selected candidates (no filters applied here, just show all)
+  const filteredSelectedCandidates = selectedCandidates;
 
   // Get unique cities from candidates
   const uniqueCities = Array.from(new Set(selectedCandidates.map((c: any) => c.cityName).filter(Boolean)));
@@ -320,10 +314,12 @@ export default function OfferManagement() {
       return;
     }
 
-    // Filter candidates by interview date (using createdAt or updatedAt)
+    // Filter candidates by interview date and city
     const feedbackCandidates = allCandidates.filter((c: any) => {
       const candidateDate = new Date(c.updatedAt || c.createdAt).toISOString().split('T')[0];
-      return candidateDate === feedbackDate;
+      const dateMatch = candidateDate === feedbackDate;
+      const cityMatch = !cityFilter || cityFilter === "all" || c.cityName === cityFilter;
+      return dateMatch && cityMatch;
     });
 
     if (feedbackCandidates.length === 0) {
@@ -448,6 +444,23 @@ export default function OfferManagement() {
                   className="bg-white"
                 />
               </div>
+              <div className="flex-1">
+                <Label className="text-sm font-medium mb-2 block">
+                  <Filter className="inline h-4 w-4 mr-1" />
+                  Filter by City
+                </Label>
+                <Select value={cityFilter} onValueChange={setCityFilter}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="All Cities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Cities</SelectItem>
+                    {uniqueCities.map((city: any) => (
+                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button
                 onClick={downloadInterviewFeedback}
                 disabled={!feedbackDate}
@@ -495,43 +508,6 @@ export default function OfferManagement() {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Filters */}
-            <div className="flex gap-4 mb-4 p-4 bg-slate-50 rounded-lg">
-              <div className="flex-1">
-                <Label className="text-sm font-medium mb-2 block">
-                  <Filter className="inline h-4 w-4 mr-1" />
-                  Filter by City
-                </Label>
-                <Select value={cityFilter} onValueChange={setCityFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Cities" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Cities</SelectItem>
-                    {uniqueCities.map((city: any) => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <Label className="text-sm font-medium mb-2 block">From Date</Label>
-                <Input
-                  type="date"
-                  value={dateRange.from}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
-                />
-              </div>
-              <div className="flex-1">
-                <Label className="text-sm font-medium mb-2 block">To Date</Label>
-                <Input
-                  type="date"
-                  value={dateRange.to}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
-                />
-              </div>
-            </div>
-
             <Table>
               <TableHeader>
                 <TableRow>
@@ -744,7 +720,7 @@ export default function OfferManagement() {
                       </TableCell>
                       <TableCell>
                         {candidate.status === 'offered' ? (
-                          <Badge className="bg-purple-600">Selection Shared</Badge>
+                          <Badge className="bg-green-600 text-black font-bold">Selection Shared</Badge>
                         ) : (
                           <Badge className="bg-green-600">Selected</Badge>
                         )}
