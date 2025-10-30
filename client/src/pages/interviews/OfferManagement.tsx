@@ -78,8 +78,13 @@ export default function OfferManagement() {
     onSuccess: async (data) => {
       console.log('✅ Mutation success, updated candidate:', data);
       
-      // Just invalidate - let React Query handle the refetch automatically
-      queryClient.invalidateQueries({ 
+      // Force invalidate and refetch
+      await queryClient.invalidateQueries({ 
+        queryKey: ["/api/interviews/candidates", { status: "selected" }]
+      });
+      
+      // Force a hard refetch
+      await queryClient.refetchQueries({
         queryKey: ["/api/interviews/candidates", { status: "selected" }]
       });
       
