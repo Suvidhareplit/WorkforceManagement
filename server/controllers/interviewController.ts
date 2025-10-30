@@ -11,8 +11,13 @@ const createCandidate = async (req: Request, res: Response) => {
     // Map frontend camelCase fields to backend expected format
     const mappedData = {
       ...candidateData,
+      aadharNumber: candidateData.aadharNumber || candidateData.aadhar_number,
       resumeSource: candidateData.resumeSource || candidateData.resume_source,
-      referralName: candidateData.referralName || candidateData.referral_name
+      referralName: candidateData.referralName || candidateData.referral_name,
+      currentCompany: candidateData.currentCompany || candidateData.current_company,
+      experienceYears: candidateData.experienceYears || candidateData.experience_years,
+      currentCtc: candidateData.currentCtc || candidateData.current_ctc,
+      expectedCtc: candidateData.expectedCtc || candidateData.expected_ctc
     };
     
     console.log('Mapped candidate data:', JSON.stringify(mappedData, null, 2));
