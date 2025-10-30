@@ -133,14 +133,27 @@ CREATE TABLE IF NOT EXISTS hiring_requests (
 CREATE TABLE IF NOT EXISTS candidates (
     id INT AUTO_INCREMENT PRIMARY KEY,
     application_id VARCHAR(50) NOT NULL UNIQUE,
-    hiring_request_id INT NOT NULL,
     name TEXT NOT NULL,
     email VARCHAR(255) NOT NULL,
     phone VARCHAR(15) NOT NULL,
-    experience_years DECIMAL(3,1),
+    aadhar_number VARCHAR(12) UNIQUE,
+    role_id INT,
+    role_name VARCHAR(255),
+    city_id INT,
+    city_name VARCHAR(255),
+    cluster_id INT,
+    cluster_name VARCHAR(255),
+    qualification VARCHAR(50),
     current_company TEXT,
+    experience_years DECIMAL(3,1),
     current_ctc DECIMAL(10,2),
     expected_ctc DECIMAL(10,2),
+    resume_source ENUM('vendor', 'field_recruiter', 'referral'),
+    vendor_id INT,
+    vendor_name VARCHAR(255),
+    recruiter_id INT,
+    recruiter_name VARCHAR(255),
+    referral_name VARCHAR(255),
     resume_url TEXT,
     status ENUM('applied', 'prescreening', 'technical', 'selected', 'rejected', 'offered', 'joined') DEFAULT 'applied',
     interview_notes TEXT,
@@ -148,8 +161,7 @@ CREATE TABLE IF NOT EXISTS candidates (
     offered_salary DECIMAL(10,2),
     joining_date DATE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (hiring_request_id) REFERENCES hiring_requests(id) ON DELETE CASCADE
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -157,7 +169,6 @@ CREATE INDEX idx_hiring_requests_city_id ON hiring_requests(city_id);
 CREATE INDEX idx_hiring_requests_cluster_id ON hiring_requests(cluster_id);
 CREATE INDEX idx_hiring_requests_role_id ON hiring_requests(role_id);
 CREATE INDEX idx_hiring_requests_created_by ON hiring_requests(created_by);
-CREATE INDEX idx_candidates_hiring_request_id ON candidates(hiring_request_id);
 CREATE INDEX idx_candidates_status ON candidates(status);
 
 
