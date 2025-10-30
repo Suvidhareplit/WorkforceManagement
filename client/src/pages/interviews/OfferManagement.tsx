@@ -25,7 +25,7 @@ export default function OfferManagement() {
   const [tempGross, setTempGross] = useState("");
   const { toast } = useToast();
 
-  const { data: selectedCandidatesResponse, isLoading: loadingSelected, refetch: refetchSelected } = useQuery({
+  const { data: selectedCandidatesResponse, isLoading: loadingSelected } = useQuery({
     queryKey: ["/api/interviews/candidates", { status: "selected" }],
     queryFn: async () => {
       const response = await apiRequest("/api/interviews/candidates?status=selected", { method: "GET" });
@@ -35,7 +35,7 @@ export default function OfferManagement() {
     staleTime: 0,
   });
 
-  const { data: offeredCandidatesResponse, isLoading: loadingOffered, refetch: refetchOffered } = useQuery({
+  const { data: offeredCandidatesResponse, isLoading: loadingOffered } = useQuery({
     queryKey: ["/api/interviews/candidates", { status: "offered" }],
     queryFn: async () => {
       const response = await apiRequest("/api/interviews/candidates?status=offered", { method: "GET" });
@@ -67,16 +67,13 @@ export default function OfferManagement() {
         }
       });
     },
-    onSuccess: async () => {
-      // Invalidate and refetch both queries to ensure UI updates
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/interviews/candidates"]
-      });
+    onSuccess: async (data) => {
+      console.log('✅ Mutation success, updated candidate:', data);
       
-      // Wait a bit for DB to update, then refetch
-      await new Promise(resolve => setTimeout(resolve, 100));
-      await refetchSelected();
-      await refetchOffered();
+      // Just invalidate - let React Query handle the refetch automatically
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/interviews/candidates", { status: "selected" }]
+      });
       
       toast({
         title: "Success",
