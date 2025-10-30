@@ -25,7 +25,7 @@ export default function OfferManagement() {
   const [tempGross, setTempGross] = useState("");
   const { toast } = useToast();
 
-  const { data: selectedCandidatesResponse, isLoading: loadingSelected } = useQuery({
+  const { data: selectedCandidatesResponse, isLoading: loadingSelected, refetch: refetchSelected } = useQuery({
     queryKey: ["/api/interviews/candidates", { status: "selected" }],
     queryFn: async () => {
       const response = await apiRequest("/api/interviews/candidates?status=selected", { method: "GET" });
@@ -35,7 +35,7 @@ export default function OfferManagement() {
     staleTime: 0,
   });
 
-  const { data: offeredCandidatesResponse, isLoading: loadingOffered } = useQuery({
+  const { data: offeredCandidatesResponse, isLoading: loadingOffered, refetch: refetchOffered } = useQuery({
     queryKey: ["/api/interviews/candidates", { status: "offered" }],
     queryFn: async () => {
       const response = await apiRequest("/api/interviews/candidates?status=offered", { method: "GET" });
@@ -68,11 +68,12 @@ export default function OfferManagement() {
       });
     },
     onSuccess: () => {
-      // Only invalidate the selected candidates query (not offered)
+      // Invalidate and refetch both queries to ensure UI updates
       queryClient.invalidateQueries({ 
-        queryKey: ["/api/interviews/candidates", { status: "selected" }],
-        exact: true
+        queryKey: ["/api/interviews/candidates"]
       });
+      refetchSelected();
+      refetchOffered();
       
       toast({
         title: "Success",
