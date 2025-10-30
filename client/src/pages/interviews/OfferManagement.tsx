@@ -256,12 +256,12 @@ export default function OfferManagement() {
                             className="cursor-pointer hover:bg-slate-100 p-2 rounded flex items-center gap-2"
                             onClick={() => {
                               setEditingDOJ(candidate.id);
-                              setTempDOJ(candidate.dateOfJoining ? new Date(candidate.dateOfJoining) : undefined);
+                              setTempDOJ(candidate.joiningDate ? new Date(candidate.joiningDate) : undefined);
                             }}
                           >
-                            {candidate.dateOfJoining ? (
+                            {candidate.joiningDate ? (
                               <>
-                                <span>{format(new Date(candidate.dateOfJoining), 'dd-MMM-yyyy')}</span>
+                                <span>{format(new Date(candidate.joiningDate), 'dd-MMM-yyyy')}</span>
                                 <span className="text-xs text-slate-400">(click to edit)</span>
                               </>
                             ) : (
@@ -321,12 +321,12 @@ export default function OfferManagement() {
                             className="cursor-pointer hover:bg-slate-100 p-2 rounded flex items-center gap-2"
                             onClick={() => {
                               setEditingGross(candidate.id);
-                              setTempGross(candidate.grossSalary || '');
+                              setTempGross(candidate.offeredSalary ? candidate.offeredSalary.toString() : '');
                             }}
                           >
-                            {candidate.grossSalary ? (
+                            {candidate.offeredSalary ? (
                               <>
-                                <span>₹{parseInt(candidate.grossSalary).toLocaleString('en-IN')}</span>
+                                <span>₹{parseFloat(candidate.offeredSalary).toLocaleString('en-IN')}</span>
                                 <span className="text-xs text-slate-400">(click to edit)</span>
                               </>
                             ) : (
@@ -343,8 +343,8 @@ export default function OfferManagement() {
                               size="sm"
                               onClick={() => {
                                 // Pre-populate with existing values
-                                setDateOfJoining(candidate.dateOfJoining ? new Date(candidate.dateOfJoining) : undefined);
-                                setGrossSalary(candidate.grossSalary || "");
+                                setDateOfJoining(candidate.joiningDate ? new Date(candidate.joiningDate) : undefined);
+                                setGrossSalary(candidate.offeredSalary ? candidate.offeredSalary.toString() : "");
                               }}
                             >
                               <Send className="h-4 w-4 mr-2" />
@@ -502,12 +502,12 @@ export default function OfferManagement() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {candidate.dateOfJoining 
-                          ? format(new Date(candidate.dateOfJoining), "PPP")
+                        {candidate.joiningDate 
+                          ? format(new Date(candidate.joiningDate), "PPP")
                           : "Not set"}
                       </TableCell>
                       <TableCell className="font-mono">
-                        ₹{candidate.grossSalary ? Number(candidate.grossSalary).toLocaleString() : "Not set"}
+                        ₹{candidate.offeredSalary ? Number(candidate.offeredSalary).toLocaleString() : "Not set"}
                       </TableCell>
                       <TableCell className="text-sm">
                         {getSourceDisplay(candidate)}
