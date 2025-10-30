@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
-import { CalendarIcon, Send } from "lucide-react";
+import { CalendarIcon, Send, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -93,11 +93,13 @@ export default function OfferManagement() {
 
   const handleUpdateDOJ = (candidateId: number, date: Date | undefined) => {
     if (!date) return;
+    console.log('Updating DOJ:', { candidateId, date: date.toISOString() });
     updateOfferMutation.mutate({
       id: candidateId,
       dateOfJoining: date.toISOString(),
     });
     setEditingDOJ(null);
+    setTempDOJ(undefined);
   };
 
   const handleUpdateGross = (candidateId: number, salary: string) => {
@@ -265,15 +267,17 @@ export default function OfferManagement() {
                             }}
                           >
                             {candidate.joiningDate ? (
-                              <div className="flex items-center gap-2">
-                                <CalendarIcon className="h-4 w-4 text-blue-600" />
+                              <div className="flex items-center gap-3">
                                 <span className="font-medium">{format(new Date(candidate.joiningDate), 'dd-MMM-yyyy')}</span>
-                                <span className="text-xs text-blue-600 hover:text-blue-800">✏️ Edit</span>
+                                <div className="flex items-center gap-1 text-slate-600 hover:text-slate-900">
+                                  <Pencil className="h-3.5 w-3.5" />
+                                  <span className="text-sm font-bold">EDIT</span>
+                                </div>
                               </div>
                             ) : (
-                              <div className="flex items-center gap-2 text-blue-600">
+                              <div className="flex items-center gap-2 text-slate-500">
                                 <CalendarIcon className="h-4 w-4" />
-                                <span className="hover:underline">Set Date</span>
+                                <span className="font-medium">Set Date</span>
                               </div>
                             )}
                           </div>
@@ -334,13 +338,16 @@ export default function OfferManagement() {
                             }}
                           >
                             {candidate.offeredSalary ? (
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-3">
                                 <span className="font-medium">₹{parseFloat(candidate.offeredSalary).toLocaleString('en-IN')}</span>
-                                <span className="text-xs text-blue-600 hover:text-blue-800">✏️ Edit</span>
+                                <div className="flex items-center gap-1 text-slate-600 hover:text-slate-900">
+                                  <Pencil className="h-3.5 w-3.5" />
+                                  <span className="text-sm font-bold">EDIT</span>
+                                </div>
                               </div>
                             ) : (
-                              <div className="flex items-center gap-2 text-blue-600">
-                                <span className="hover:underline">Set Salary</span>
+                              <div className="flex items-center gap-2 text-slate-500">
+                                <span className="font-medium">Set Salary</span>
                               </div>
                             )}
                           </div>
