@@ -372,12 +372,12 @@ export class SqlStorage implements IStorage {
     const { orderClause, limitClause } = this.buildFilterClause(filters);
     const result = await query(`
       SELECT r.*, 
-             pg.name as paygroup_name,
+             f.name as function_name,
              bu.name as business_unit_name,
              d.name as department_name,
              sd.name as sub_department_name
       FROM roles r
-      LEFT JOIN paygroups pg ON r.paygroup_id = pg.id
+      LEFT JOIN functions f ON r.paygroup_id = f.id
       LEFT JOIN business_units bu ON r.business_unit_id = bu.id
       LEFT JOIN departments d ON r.department_id = d.id
       LEFT JOIN sub_departments sd ON r.sub_department_id = sd.id
@@ -391,12 +391,12 @@ export class SqlStorage implements IStorage {
   async getRole(id: number): Promise<any> {
     const result = await query(`
       SELECT r.*, 
-             pg.name as paygroup_name,
+             f.name as function_name,
              bu.name as business_unit_name,
              d.name as department_name,
              sd.name as sub_department_name
       FROM roles r
-      LEFT JOIN paygroups pg ON r.paygroup_id = pg.id
+      LEFT JOIN functions f ON r.paygroup_id = f.id
       LEFT JOIN business_units bu ON r.business_unit_id = bu.id
       LEFT JOIN departments d ON r.department_id = d.id
       LEFT JOIN sub_departments sd ON r.sub_department_id = sd.id
