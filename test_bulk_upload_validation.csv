@@ -1,0 +1,5 @@
+name,phone,aadharNumber,email,role,city,cluster,qualification,resumeSource,sourceName
+Valid User 1,9876543210,111111111111,valid1@example.com,Quality Check Associate,Bangalore,Hebbal,Graduation,referral,John Doe
+Invalid Position,9876543211,222222222222,invalid1@example.com,Workshop Technician,Bangalore,Hebbal,B.Tech,referral,Jane Smith
+Valid User 2,9876543212,333333333333,valid2@example.com,Bike Captain,Bangalore,Hebbal,Diploma,referral,Bob Johnson
+Invalid City Cluster,9876543213,444444444444,invalid2@example.com,Quality Check Associate,Delhi,Hebbal,Graduation,referral,Alice Brown
