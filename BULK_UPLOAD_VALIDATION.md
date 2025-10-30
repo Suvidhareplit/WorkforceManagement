@@ -1,7 +1,7 @@
-# Bulk Candidate Upload - Open Position Validation
+# Candidate Application - Open Position Validation
 
 ## Feature Overview
-The bulk candidate upload now validates that positions are open before allowing candidate uploads. This ensures candidates are only added to active hiring requests.
+Both single and bulk candidate applications now validate that positions are open before allowing submissions. This ensures candidates are only added to active hiring requests.
 
 ## Validation Rules
 
@@ -75,6 +75,41 @@ John Doe,9876543210,111111111111,john@example.com,Bike Washer,Delhi,Connaught Pl
 ## Implementation Details
 
 ### Backend Changes
+
+#### Single Application Validation
+**File:** `server/controllers/interviewController.ts`
+
+1. **Fetch Master Data**
+   ```typescript
+   const cities = await storage.getCities();
+   const clusters = await storage.getClusters();
+   const roles = await storage.getRoles();
+   ```
+
+2. **Validate Names to IDs**
+   ```typescript
+   const city = cities.find((c: any) => c.name.toLowerCase() === mappedData.city?.toLowerCase());
+   const cluster = clusters.find((cl: any) => cl.name.toLowerCase() === mappedData.cluster?.toLowerCase());
+   const role = roles.find((r: any) => r.name.toLowerCase() === mappedData.role?.toLowerCase());
+   ```
+
+3. **Check Open Position**
+   ```typescript
+   const openRequests = await storage.getHiringRequests({ 
+     status: 'open',
+     cityId: city.id,
+     clusterId: cluster.id,
+     roleId: role.id
+   });
+   
+   if (!openRequests || openRequests.length === 0) {
+     return res.status(400).json({ 
+       message: `No open position found for ${role.name} in ${city.name} - ${cluster.name}. Please contact HR to create a hiring request first.` 
+     });
+   }
+   ```
+
+#### Bulk Upload Validation
 **File:** `server/controllers/bulkUploadController.ts`
 
 1. **Fetch Open Positions**
