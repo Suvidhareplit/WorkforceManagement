@@ -223,7 +223,11 @@ export default function OfferManagement() {
                                   mode="single"
                                   selected={tempDOJ}
                                   onSelect={setTempDOJ}
-                                  disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
+                                  disabled={(date) => {
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+                                    return date < today;
+                                  }}
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -261,12 +265,16 @@ export default function OfferManagement() {
                             }}
                           >
                             {candidate.joiningDate ? (
-                              <>
-                                <span>{format(new Date(candidate.joiningDate), 'dd-MMM-yyyy')}</span>
-                                <span className="text-xs text-slate-400">(click to edit)</span>
-                              </>
+                              <div className="flex items-center gap-2">
+                                <CalendarIcon className="h-4 w-4 text-blue-600" />
+                                <span className="font-medium">{format(new Date(candidate.joiningDate), 'dd-MMM-yyyy')}</span>
+                                <span className="text-xs text-blue-600 hover:text-blue-800">✏️ Edit</span>
+                              </div>
                             ) : (
-                              <span className="text-slate-400">Click to set</span>
+                              <div className="flex items-center gap-2 text-blue-600">
+                                <CalendarIcon className="h-4 w-4" />
+                                <span className="hover:underline">Set Date</span>
+                              </div>
                             )}
                           </div>
                         )}
@@ -326,12 +334,14 @@ export default function OfferManagement() {
                             }}
                           >
                             {candidate.offeredSalary ? (
-                              <>
-                                <span>₹{parseFloat(candidate.offeredSalary).toLocaleString('en-IN')}</span>
-                                <span className="text-xs text-slate-400">(click to edit)</span>
-                              </>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">₹{parseFloat(candidate.offeredSalary).toLocaleString('en-IN')}</span>
+                                <span className="text-xs text-blue-600 hover:text-blue-800">✏️ Edit</span>
+                              </div>
                             ) : (
-                              <span className="text-slate-400">Click to set</span>
+                              <div className="flex items-center gap-2 text-blue-600">
+                                <span className="hover:underline">Set Salary</span>
+                              </div>
                             )}
                           </div>
                         )}
