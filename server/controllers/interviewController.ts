@@ -174,7 +174,7 @@ const updateScreening = async (req: Request, res: Response) => {
 const updateTechnical = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { status, notes, score } = req.body;
+    const { status, notes } = req.body;
     
     console.log('🔍 updateTechnical called with:', {
       id,
@@ -190,9 +190,6 @@ const updateTechnical = async (req: Request, res: Response) => {
       technicalNotes: notes,
       status: status === 'selected' ? 'selected' : 'rejected'
     };
-    
-    // Add optional fields
-    if (score) updateData.technicalScore = score;
     
     // MySQL datetime format
     const now = new Date();

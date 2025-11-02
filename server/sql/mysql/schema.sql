@@ -160,7 +160,6 @@ CREATE TABLE IF NOT EXISTS candidates (
     prescreening_result ENUM('pass', 'fail', 'pending') DEFAULT 'pending',
     prescreening_date DATETIME,
     prescreening_notes TEXT,
-    technical_score INT,
     technical_result ENUM('selected', 'rejected', 'pending') DEFAULT 'pending',
     technical_date DATETIME,
     technical_notes TEXT,
