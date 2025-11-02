@@ -426,31 +426,43 @@ export default function OfferManagement() {
 
       <div className="space-y-6">
         {/* Interview Feedback Download */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardHeader>
-            <CardTitle className="text-blue-900">Download Interview Feedback to Vendor</CardTitle>
-            <p className="text-sm text-blue-700 mt-1">
-              Download complete interview status for a specific date including selected candidates (with DOJ & Salary) and rejected candidates (with reasons)
-            </p>
+        <Card className="border-2 border-blue-100 shadow-sm">
+          <CardHeader className="space-y-3 pb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-blue-100 rounded-lg">
+                <Download className="h-5 w-5 text-blue-700" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-semibold text-slate-900 tracking-tight">
+                  Interview Feedback Report
+                </CardTitle>
+                <p className="text-sm text-slate-600 mt-1 font-normal">
+                  Generate comprehensive feedback report for vendors with selection and rejection details
+                </p>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <Label className="text-sm font-medium mb-2 block">Select Interview Date</Label>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="interview-date" className="text-sm font-semibold text-slate-700">
+                  Interview Date
+                </Label>
                 <Input
+                  id="interview-date"
                   type="date"
                   value={feedbackDate}
                   onChange={(e) => setFeedbackDate(e.target.value)}
-                  className="bg-white"
+                  className="h-11 border-slate-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
-              <div className="flex-1">
-                <Label className="text-sm font-medium mb-2 block">
-                  <Filter className="inline h-4 w-4 mr-1" />
-                  Filter by City
+              <div className="space-y-2">
+                <Label htmlFor="city-filter" className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Filter className="h-3.5 w-3.5" />
+                  City Filter
                 </Label>
                 <Select value={cityFilter} onValueChange={setCityFilter}>
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger id="city-filter" className="h-11 border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     <SelectValue placeholder="All Cities" />
                   </SelectTrigger>
                   <SelectContent>
@@ -461,23 +473,46 @@ export default function OfferManagement() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button
-                onClick={downloadInterviewFeedback}
-                disabled={!feedbackDate}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download Feedback
-              </Button>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-slate-700 opacity-0">Action</Label>
+                <Button
+                  onClick={downloadInterviewFeedback}
+                  disabled={!feedbackDate}
+                  className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Report
+                </Button>
+              </div>
             </div>
-            <div className="mt-4 p-3 bg-white rounded border border-blue-200">
-              <p className="text-sm font-medium text-blue-900 mb-2">ONE Excel sheet with ALL candidates (Selected + Rejected):</p>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• <strong>For ALL:</strong> Name, Mobile, City, Cluster, Role, Source Type, Source Name, Status</li>
-                <li>• <strong>For Selected:</strong> DOJ and Gross Salary (filled)</li>
-                <li>• <strong>For Rejected:</strong> Rejection Reason (filled)</li>
-              </ul>
-              <p className="text-xs text-blue-600 mt-2 italic">Example: 10 candidates on 30-Nov → 6 Selected (with DOJ & Salary) + 4 Rejected (with Reason) = 10 rows in one sheet</p>
+            
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100">
+              <h4 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <span className="h-1.5 w-1.5 bg-blue-600 rounded-full"></span>
+                Report Contents
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="space-y-1">
+                  <p className="font-semibold text-slate-700">All Candidates</p>
+                  <p className="text-slate-600 leading-relaxed">Name, Mobile, City, Cluster, Role, Source Details, Status</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-semibold text-green-700">Selected Candidates</p>
+                  <p className="text-slate-600 leading-relaxed">Date of Joining & Gross Salary included</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-semibold text-red-700">Rejected Candidates</p>
+                  <p className="text-slate-600 leading-relaxed">Rejection Reason & Comments included</p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-blue-200">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  <span className="font-semibold text-slate-700">Example:</span> 10 candidates interviewed on 30-Nov → 
+                  <span className="text-green-700 font-medium"> 6 Selected</span> (with DOJ & Salary) + 
+                  <span className="text-red-700 font-medium"> 4 Rejected</span> (with Reasons) = 
+                  <span className="font-semibold"> 10 rows in one Excel sheet</span>
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
