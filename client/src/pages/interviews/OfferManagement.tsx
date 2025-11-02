@@ -316,7 +316,11 @@ export default function OfferManagement() {
 
     // Filter candidates by interview date and city
     const feedbackCandidates = allCandidates.filter((c: any) => {
-      const candidateDate = new Date(c.updatedAt || c.createdAt).toISOString().split('T')[0];
+      // Use technical_date (actual interview date) if available, otherwise fall back to updatedAt/createdAt
+      const interviewDate = c.technicalDate || c.technical_date || c.updatedAt || c.createdAt;
+      if (!interviewDate) return false;
+      
+      const candidateDate = new Date(interviewDate).toISOString().split('T')[0];
       const dateMatch = candidateDate === feedbackDate;
       const cityMatch = !cityFilter || cityFilter === "all" || c.cityName === cityFilter;
       return dateMatch && cityMatch;
