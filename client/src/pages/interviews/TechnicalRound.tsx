@@ -359,10 +359,10 @@ export default function TechnicalRound() {
                       <TableCell>
                         {(candidate as any).technicalNotes ? (
                           <Badge 
-                            variant={(candidate as any).status === 'selected' ? 'default' : 'destructive'}
-                            className={(candidate as any).status === 'selected' ? 'bg-green-500' : ''}
+                            variant={(candidate as any).technicalResult === 'selected' ? 'default' : 'destructive'}
+                            className={(candidate as any).technicalResult === 'selected' ? 'bg-green-500' : ''}
                           >
-                            {(candidate as any).status === 'selected' ? 'Selected' : 'Rejected'}
+                            {(candidate as any).technicalResult === 'selected' ? 'Selected' : 'Rejected'}
                           </Badge>
                         ) : (
                           <Select
