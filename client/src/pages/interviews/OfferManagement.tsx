@@ -486,31 +486,31 @@ export default function OfferManagement() {
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-5 border border-blue-100">
-              <h4 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                <span className="h-1.5 w-1.5 bg-blue-600 rounded-full"></span>
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+              <h4 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <span className="h-2 w-2 bg-blue-600 rounded-full"></span>
                 Report Contents
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div className="space-y-1">
-                  <p className="font-semibold text-slate-700">All Candidates</p>
-                  <p className="text-slate-600 leading-relaxed">Name, Mobile, City, Cluster, Role, Source Details, Status</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-base">
+                <div className="space-y-2">
+                  <p className="font-bold text-slate-800 text-base">All Candidates</p>
+                  <p className="text-slate-700 leading-relaxed font-semibold">Name, Mobile, City, Cluster, Role, Source Details, Status</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="font-semibold text-green-700">Selected Candidates</p>
-                  <p className="text-slate-600 leading-relaxed">Date of Joining & Gross Salary included</p>
+                <div className="space-y-2">
+                  <p className="font-bold text-green-700 text-base">Selected Candidates</p>
+                  <p className="text-slate-700 leading-relaxed font-semibold">Date of Joining & Gross Salary included</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="font-semibold text-red-700">Rejected Candidates</p>
-                  <p className="text-slate-600 leading-relaxed">Rejection Reason & Comments included</p>
+                <div className="space-y-2">
+                  <p className="font-bold text-red-700 text-base">Rejected Candidates</p>
+                  <p className="text-slate-700 leading-relaxed font-semibold">Rejection Reason & Comments included</p>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-blue-200">
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  <span className="font-semibold text-slate-700">Example:</span> 10 candidates interviewed on 30-Nov → 
-                  <span className="text-green-700 font-medium"> 6 Selected</span> (with DOJ & Salary) + 
-                  <span className="text-red-700 font-medium"> 4 Rejected</span> (with Reasons) = 
-                  <span className="font-semibold"> 10 rows in one Excel sheet</span>
+              <div className="mt-5 pt-5 border-t border-blue-200">
+                <p className="text-sm text-slate-700 leading-relaxed font-bold">
+                  <span className="text-slate-900">Example:</span> 10 candidates interviewed on 30-Nov → 
+                  <span className="text-green-700"> 6 Selected</span> (with DOJ & Salary) + 
+                  <span className="text-red-700"> 4 Rejected</span> (with Reasons) = 
+                  <span className="text-slate-900"> 10 rows in one Excel sheet</span>
                 </p>
               </div>
             </div>
