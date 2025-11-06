@@ -218,7 +218,7 @@ export default function TechnicalRound() {
   };
 
   // Show loading state on initial load
-  if (isLoading && !allCandidates) {
+  if (isLoading && !allCandidatesResponse) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
