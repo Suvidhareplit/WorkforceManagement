@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Candidate } from "@/types";
-import { CalendarIcon, Pencil, Download, Filter, Share2 } from "lucide-react";
+import { CalendarIcon, Pencil, Download, Filter } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
@@ -127,61 +127,6 @@ export default function OfferManagement() {
     setEditingGross(null);
   };
 
-  // Mark selection as shared
-  const markSelectionShared = async () => {
-    if (selectedCandidateIds.length === 0) {
-      toast({
-        title: "No candidates selected",
-        description: "Please select at least one candidate",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Update each selected candidate's status to 'offered'
-      for (const candidateId of selectedCandidateIds) {
-        const candidate = filteredSelectedCandidates.find((c: any) => c.id === candidateId);
-        
-        // Must have DOJ and salary to mark as offered
-        if (!candidate?.joiningDate || !candidate?.offeredSalary) {
-          toast({
-            title: "Missing Information",
-            description: `${candidate?.name || 'Candidate'} needs DOJ and Gross Salary before sharing selection`,
-            variant: "destructive",
-          });
-          continue;
-        }
-
-        await apiRequest(`/api/interviews/candidates/${candidateId}/offer`, {
-          method: "PATCH",
-          body: {
-            dateOfJoining: candidate.joiningDate,
-            grossSalary: candidate.offeredSalary.toString(),
-            sendOffer: true, // This will change status to 'offered'
-          }
-        });
-      }
-
-      // Refetch data
-      await queryClient.refetchQueries({
-        queryKey: ["/api/interviews/candidates"]
-      });
-
-      toast({
-        title: "Success",
-        description: `Selection shared for ${selectedCandidateIds.length} candidate(s)`,
-      });
-
-      setSelectedCandidateIds([]);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to share selection",
-        variant: "destructive",
-      });
-    }
-  };
 
 
   const getSourceDisplay = (candidate: Candidate) => {
@@ -528,14 +473,6 @@ export default function OfferManagement() {
               <CardTitle>Selected Candidates - Awaiting Offer</CardTitle>
               <div className="flex gap-2">
                 <Button
-                  onClick={markSelectionShared}
-                  disabled={selectedCandidateIds.length === 0}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Selection Shared ({selectedCandidateIds.length})
-                </Button>
-                <Button
                   onClick={downloadCSV}
                   disabled={selectedCandidateIds.length === 0}
                   className="bg-green-600 hover:bg-green-700"
@@ -566,7 +503,7 @@ export default function OfferManagement() {
                   <TableHead>Experience</TableHead>
                   <TableHead>DOJ</TableHead>
                   <TableHead>Gross (Monthly)</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -758,11 +695,15 @@ export default function OfferManagement() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {candidate.status === 'offered' ? (
-                          <Badge className="bg-green-600 text-black font-bold">Selection Shared</Badge>
-                        ) : (
-                          <Badge className="bg-green-600">Selected</Badge>
-                        )}
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                          >
+                            View Details
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
