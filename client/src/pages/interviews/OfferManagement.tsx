@@ -127,13 +127,14 @@ export default function OfferManagement() {
     setEditingGross(null);
   };
 
-  // Assign induction - change status to assigned_induction
+  // Assign induction - create induction record and change status
   const handleAssignInduction = async (candidateId: number) => {
     try {
-      await apiRequest(`/api/interviews/candidates/${candidateId}/status`, {
-        method: "PATCH",
+      // Create induction training record
+      await apiRequest(`/api/training/induction`, {
+        method: "POST",
         body: {
-          status: "assigned_induction"
+          candidateId: candidateId
         }
       });
 

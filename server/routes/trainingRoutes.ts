@@ -7,22 +7,28 @@ const router = Router();
 // All routes require authentication
 router.use(authenticate);
 
-// Create training session
-router.post('/', trainingController.createTrainingSession);
+// ==================== INDUCTION ROUTES ====================
+// Create induction record
+router.post('/induction', trainingController.createInduction);
 
-// Get training sessions
-router.get('/', trainingController.getTrainingSessions);
+// Get all induction records
+router.get('/induction', trainingController.getInductions);
 
-// Update training session
-router.patch('/:id', trainingController.updateTrainingSession);
+// Update induction record
+router.patch('/induction/:id', trainingController.updateInduction);
 
-// Mark attendance
-router.post('/:id/attendance', trainingController.markAttendance);
+// ==================== CLASSROOM TRAINING ROUTES ====================
+// Get all classroom training records
+router.get('/classroom', trainingController.getClassroomTrainings);
 
-// Mark candidate fit/not fit
-router.patch('/:id/fitness', trainingController.updateFitness);
+// Update classroom training record
+router.patch('/classroom/:id', trainingController.updateClassroomTraining);
 
-// Confirm FTE
-router.patch('/:id/fte', trainingController.confirmFTE);
+// ==================== FIELD TRAINING ROUTES ====================
+// Get all field training records
+router.get('/field', trainingController.getFieldTrainings);
+
+// Update field training record
+router.patch('/field/:id', trainingController.updateFieldTraining);
 
 export { router as trainingRoutes };

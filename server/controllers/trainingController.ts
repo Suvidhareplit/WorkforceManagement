@@ -1,147 +1,274 @@
 import { Request, Response } from "express";
-import { getStorage } from '../storage';
-const storage = getStorage();
-import { sendEmail } from "../services/emailService";
+import { query } from '../config/db';
 
-const createTrainingSession = async (req: Request, res: Response) => {
+// ==================== INDUCTION TRAINING ====================
+
+// Create induction record when candidate is assigned
+const createInduction = async (req: Request, res: Response) => {
   try {
-    const sessionData = req.body;
+    const { candidateId } = req.body;
     
-    const session = await storage.createTrainingSession(sessionData);
-    res.status(201).json(session);
+    // Get candidate details
+    const candidateResult = await query(
+      'SELECT * FROM candidates WHERE id = ?',
+      [candidateId]
+    );
+    
+    if (!candidateResult.rows || candidateResult.rows.length === 0) {
+      return res.status(404).json({ message: "Candidate not found" });
+    }
+    
+    const candidate = candidateResult.rows[0] as any;
+    
+    // Create induction record
+    const result = await query(
+      `INSERT INTO induction_training (
+        candidate_id, name, mobile_number, city, cluster, role,
+        date_of_joining, gross_salary
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        candidate.id,
+        candidate.name,
+        candidate.phone,
+        candidate.city_name,
+        candidate.cluster_name,
+        candidate.role_name,
+        candidate.joining_date,
+        candidate.offered_salary
+      ]
+    );
+    
+    // Update candidate status to assigned_induction
+    await query(
+      'UPDATE candidates SET status = ? WHERE id = ?',
+      ['assigned_induction', candidateId]
+    );
+    
+    res.status(201).json({ 
+      message: "Induction record created successfully",
+      data: { id: (result.rows as any).insertId || result.rowCount }
+    });
   } catch (error) {
-    console.error('Create training session error:', error);
+    console.error('Create induction error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const getTrainingSessions = async (req: Request, res: Response) => {
+// Get all induction records
+const getInductions = async (req: Request, res: Response) => {
   try {
-    const filters = req.query;
-    const sessions = await storage.getTrainingSessions(filters);
-    res.json(sessions);
+    const inductions = await query(
+      'SELECT * FROM induction_training ORDER BY created_at DESC'
+    );
+    res.json({ data: inductions });
   } catch (error) {
-    console.error('Get training sessions error:', error);
+    console.error('Get inductions error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const updateTrainingSession = async (req: Request, res: Response) => {
+// Update induction record
+const updateInduction = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const updateData = req.body;
     
-    const session = await storage.updateTrainingSession(id, updateData);
+    const fields: string[] = [];
+    const values: any[] = [];
     
-    if (!session) {
-      return res.status(404).json({ message: "Training session not found" });
-    }
-    
-    res.json(session);
-  } catch (error) {
-    console.error('Update training session error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const markAttendance = async (req: Request, res: Response) => {
-  try {
-    const sessionId = parseInt(req.params.id);
-    const { date, present, notes } = req.body;
-    const userId = (req as any).user.userId;
-    
-    // In a real implementation, you'd have a separate attendance table
-    // For now, just update the session with attendance marked
-    const session = await storage.updateTrainingSession(sessionId, {
-      attendanceMarked: true
+    Object.keys(updateData).forEach(key => {
+      fields.push(`${key} = ?`);
+      values.push(updateData[key]);
     });
     
-    if (!session) {
-      return res.status(404).json({ message: "Training session not found" });
-    }
+    values.push(id);
     
-    res.json({ message: "Attendance marked successfully" });
-  } catch (error) {
-    console.error('Mark attendance error:', error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const updateFitness = async (req: Request, res: Response) => {
-  try {
-    const id = parseInt(req.params.id);
-    const { fitStatus, comments } = req.body;
+    await query(
+      `UPDATE induction_training SET ${fields.join(', ')} WHERE id = ?`,
+      values
+    );
     
-    if (!['fit', 'not_fit'].includes(fitStatus)) {
-      return res.status(400).json({ message: "Invalid fit status" });
-    }
-    
-    const session = await storage.updateTrainingSession(id, {
-      fitStatus,
-      comments,
-      status: fitStatus === 'fit' ? 'completed' : 'dropped_out'
-    });
-    
-    if (!session) {
-      return res.status(404).json({ message: "Training session not found" });
-    }
-    
-    // If marked fit and it's classroom training, notify manager for field training
-    if (fitStatus === 'fit' && session.trainingType === 'classroom' && session.managerId) {
-      try {
-        const manager = await storage.getUser(session.managerId);
-        if (manager) {
-          await sendEmail({
-            to: manager.email || '',
-            subject: 'Candidate Ready for Field Training',
-            html: `<p>Candidate has completed classroom training and is ready for field training.</p>`
-          });
-        }
-      } catch (emailError) {
-        console.error('Email sending error:', emailError);
+    // If induction status is completed and joining_status is joined, move to CRT
+    if (updateData.induction_status === 'completed' && updateData.joining_status === 'joined') {
+      const inductionResult = await query(
+        'SELECT * FROM induction_training WHERE id = ?',
+        [id]
+      );
+      
+      if (inductionResult.rows && inductionResult.rows.length > 0) {
+        const induction = inductionResult.rows[0] as any;
+        
+        // Create classroom training record
+        await query(
+          `INSERT INTO classroom_training (induction_id, candidate_id)
+           VALUES (?, ?)`,
+          [induction.id, induction.candidate_id]
+        );
       }
     }
     
-    res.json(session);
+    res.json({ message: "Induction updated successfully" });
   } catch (error) {
-    console.error('Update fitness error:', error);
+    console.error('Update induction error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const confirmFTE = async (req: Request, res: Response) => {
+// ==================== CLASSROOM TRAINING ====================
+
+// Get all classroom training records
+const getClassroomTrainings = async (req: Request, res: Response) => {
+  try {
+    const trainings = await query(
+      `SELECT ct.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
+              it.date_of_joining, it.gross_salary, it.manager_name
+       FROM classroom_training ct
+       JOIN induction_training it ON ct.induction_id = it.id
+       ORDER BY ct.created_at DESC`
+    );
+    res.json({ data: trainings });
+  } catch (error) {
+    console.error('Get classroom trainings error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Update classroom training record
+const updateClassroomTraining = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const { confirmed } = req.body;
+    const updateData = req.body;
     
-    const session = await storage.updateTrainingSession(id, {
-      fteConfirmed: confirmed,
-      status: confirmed ? 'completed' : 'dropped_out'
-    });
-    
-    if (!session) {
-      return res.status(404).json({ message: "Training session not found" });
-    }
-    
-    // Update candidate status to joined if FTE confirmed
-    if (confirmed && session.candidateId) {
-      await storage.updateCandidate(session.candidateId, {
-        status: 'joined'
+    // Validation
+    if (updateData.crt_feedback === 'not_fit_crt_rejection' && (!updateData.remarks || !updateData.last_working_day)) {
+      return res.status(400).json({ 
+        message: "Remarks and Last Working Day are mandatory for CRT Rejection" 
       });
     }
     
-    res.json(session);
+    if (updateData.crt_feedback === 'early_exit' && (!updateData.exit_date || !updateData.exit_reason)) {
+      return res.status(400).json({ 
+        message: "Exit Date and Reason are mandatory for Early Exit" 
+      });
+    }
+    
+    const fields: string[] = [];
+    const values: any[] = [];
+    
+    Object.keys(updateData).forEach(key => {
+      fields.push(`${key} = ?`);
+      values.push(updateData[key]);
+    });
+    
+    values.push(id);
+    
+    await query(
+      `UPDATE classroom_training SET ${fields.join(', ')} WHERE id = ?`,
+      values
+    );
+    
+    // If CRT feedback is 'fit' or 'fit_need_observation', move to FT
+    if (updateData.crt_feedback === 'fit' || updateData.crt_feedback === 'fit_need_observation') {
+      const crtResult = await query(
+        'SELECT * FROM classroom_training WHERE id = ?',
+        [id]
+      );
+      
+      if (crtResult.rows && crtResult.rows.length > 0) {
+        const crt = crtResult.rows[0] as any;
+        
+        // Check if FT record already exists
+        const existingFT = await query(
+          'SELECT id FROM field_training WHERE classroom_training_id = ?',
+          [crt.id]
+        );
+        
+        if (!existingFT.rows || existingFT.rows.length === 0) {
+          // Create field training record
+          await query(
+            `INSERT INTO field_training (classroom_training_id, candidate_id)
+             VALUES (?, ?)`,
+            [crt.id, crt.candidate_id]
+          );
+        }
+      }
+    }
+    
+    res.json({ message: "Classroom training updated successfully" });
   } catch (error) {
-    console.error('Update FTE error:', error);
+    console.error('Update classroom training error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// ==================== FIELD TRAINING ====================
+
+// Get all field training records
+const getFieldTrainings = async (req: Request, res: Response) => {
+  try {
+    const trainings = await query(
+      `SELECT ft.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
+              it.date_of_joining, it.gross_salary, it.manager_name,
+              ct.training_start_date, ct.training_completion_date
+       FROM field_training ft
+       JOIN classroom_training ct ON ft.classroom_training_id = ct.id
+       JOIN induction_training it ON ct.induction_id = it.id
+       ORDER BY ft.created_at DESC`
+    );
+    res.json({ data: trainings });
+  } catch (error) {
+    console.error('Get field trainings error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Update field training record
+const updateFieldTraining = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const updateData = req.body;
+    
+    // Validation
+    if (updateData.ft_feedback === 'not_fit_ft_rejection' && !updateData.rejection_reason) {
+      return res.status(400).json({ 
+        message: "Rejection Reason is mandatory for FT Rejection" 
+      });
+    }
+    
+    if (updateData.absconding === 'yes' && !updateData.last_reporting_date) {
+      return res.status(400).json({ 
+        message: "Last Reporting Date is mandatory for Absconding" 
+      });
+    }
+    
+    const fields: string[] = [];
+    const values: any[] = [];
+    
+    Object.keys(updateData).forEach(key => {
+      fields.push(`${key} = ?`);
+      values.push(updateData[key]);
+    });
+    
+    values.push(id);
+    
+    await query(
+      `UPDATE field_training SET ${fields.join(', ')} WHERE id = ?`,
+      values
+    );
+    
+    res.json({ message: "Field training updated successfully" });
+  } catch (error) {
+    console.error('Update field training error:', error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
 export const trainingController = {
-  createTrainingSession,
-  getTrainingSessions,
-  updateTrainingSession,
-  markAttendance,
-  updateFitness,
-  confirmFTE
+  createInduction,
+  getInductions,
+  updateInduction,
+  getClassroomTrainings,
+  updateClassroomTraining,
+  getFieldTrainings,
+  updateFieldTraining
 };
