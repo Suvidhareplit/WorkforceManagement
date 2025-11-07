@@ -92,6 +92,11 @@ const menuItems = [
         label: "Field Training",
         href: "/training/field",
       },
+      {
+        icon: UserCheck,
+        label: "Onboarding",
+        href: "/training/onboarding",
+      },
     ],
   },
   {
