@@ -127,11 +127,8 @@ const updateInduction = async (req: Request, res: Response) => {
       values
     );
     
-    // Merge current record with update to get final state
-    const finalState = { ...currentRecord, ...updateData };
-    
-    // If induction status is completed and joining_status is joined, move to CRT
-    if (finalState.induction_status === 'completed' && finalState.joining_status === 'joined') {
+    // If induction_status is being updated to 'completed', create classroom training
+    if (updateData.induction_status === 'completed') {
       // Check if classroom training already exists
       const existingCRT = await query(
         'SELECT id FROM classroom_training WHERE induction_id = ?',
@@ -140,7 +137,7 @@ const updateInduction = async (req: Request, res: Response) => {
       
       if (!existingCRT.rows || existingCRT.rows.length === 0) {
         // Create classroom training record
-        console.log('✅ Auto-creating classroom training for induction ID:', id);
+        console.log('✅ Auto-creating classroom training for induction ID:', id, 'Candidate:', currentRecord.candidate_id);
         await query(
           `INSERT INTO classroom_training (induction_id, candidate_id)
            VALUES (?, ?)`,
@@ -148,6 +145,8 @@ const updateInduction = async (req: Request, res: Response) => {
         );
         
         console.log('✅ Classroom training created successfully!');
+      } else {
+        console.log('ℹ️  Classroom training already exists for induction ID:', id);
       }
     }
     
