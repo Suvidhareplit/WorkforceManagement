@@ -70,12 +70,12 @@ export default function InductionTraining() {
   const handleEdit = (induction: any) => {
     setEditingId(induction.id);
     setEditData({
-      joining_status: induction.joining_status,
-      manager_name: induction.manager_name,
-      induction_done_by: induction.induction_done_by,
-      onboarding_form_filled: induction.onboarding_form_filled,
-      uan_number_generated: induction.uan_number_generated,
-      induction_status: induction.induction_status,
+      joining_status: induction.joiningStatus || induction.joining_status,
+      manager_name: induction.managerName || induction.manager_name,
+      induction_done_by: induction.inductionDoneBy || induction.induction_done_by,
+      onboarding_form_filled: induction.onboardingFormFilled || induction.onboarding_form_filled,
+      uan_number_generated: induction.uanNumberGenerated || induction.uan_number_generated,
+      induction_status: induction.inductionStatus || induction.induction_status,
     });
   };
 
@@ -167,8 +167,8 @@ export default function InductionTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant={induction.joining_status === 'joined' ? 'default' : 'outline'}>
-                            {induction.joining_status ? induction.joining_status.charAt(0).toUpperCase() + induction.joining_status.slice(1).replace('_', ' ') : 'Pending'}
+                          <Badge variant={(induction.joiningStatus || induction.joining_status) === 'joined' ? 'default' : 'outline'}>
+                            {(induction.joiningStatus || induction.joining_status) ? (induction.joiningStatus || induction.joining_status).charAt(0).toUpperCase() + (induction.joiningStatus || induction.joining_status).slice(1).replace('_', ' ') : 'Pending'}
                           </Badge>
                         )}
                       </TableCell>
@@ -182,7 +182,7 @@ export default function InductionTraining() {
                             className="w-[150px]"
                           />
                         ) : (
-                          induction.manager_name || '-'
+                          induction.managerName || induction.manager_name || '-'
                         )}
                       </TableCell>
 
@@ -190,7 +190,7 @@ export default function InductionTraining() {
                       <TableCell>
                         {editingId === induction.id ? (
                           <Select
-                            value={editData.induction_done_by?.toString() || induction.induction_done_by?.toString() || ''}
+                            value={editData.induction_done_by?.toString() || (induction.inductionDoneBy || induction.induction_done_by)?.toString() || ''}
                             onValueChange={(value) => setEditData({...editData, induction_done_by: parseInt(value)})}
                           >
                             <SelectTrigger className="w-[150px]">
@@ -205,7 +205,7 @@ export default function InductionTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          trainers.find((t: any) => t.id === induction.induction_done_by)?.name || '-'
+                          trainers.find((t: any) => t.id === (induction.inductionDoneBy || induction.induction_done_by))?.name || '-'
                         )}
                       </TableCell>
 
@@ -213,7 +213,7 @@ export default function InductionTraining() {
                       <TableCell>
                         {editingId === induction.id ? (
                           <Select
-                            value={editData.onboarding_form_filled || induction.onboarding_form_filled}
+                            value={editData.onboarding_form_filled || (induction.onboardingFormFilled || induction.onboarding_form_filled)}
                             onValueChange={(value) => setEditData({...editData, onboarding_form_filled: value})}
                           >
                             <SelectTrigger className="w-[100px]">
@@ -226,7 +226,7 @@ export default function InductionTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant="outline">{induction.onboarding_form_filled || 'ytb'}</Badge>
+                          <Badge variant="outline">{induction.onboardingFormFilled || induction.onboarding_form_filled || 'ytb'}</Badge>
                         )}
                       </TableCell>
 
@@ -234,7 +234,7 @@ export default function InductionTraining() {
                       <TableCell>
                         {editingId === induction.id ? (
                           <Select
-                            value={editData.uan_number_generated || induction.uan_number_generated}
+                            value={editData.uan_number_generated || (induction.uanNumberGenerated || induction.uan_number_generated)}
                             onValueChange={(value) => setEditData({...editData, uan_number_generated: value})}
                           >
                             <SelectTrigger className="w-[100px]">
@@ -247,7 +247,7 @@ export default function InductionTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant="outline">{induction.uan_number_generated || 'ytb'}</Badge>
+                          <Badge variant="outline">{induction.uanNumberGenerated || induction.uan_number_generated || 'ytb'}</Badge>
                         )}
                       </TableCell>
 
@@ -255,7 +255,7 @@ export default function InductionTraining() {
                       <TableCell>
                         {editingId === induction.id ? (
                           <Select
-                            value={editData.induction_status || induction.induction_status}
+                            value={editData.induction_status || (induction.inductionStatus || induction.induction_status)}
                             onValueChange={(value) => setEditData({...editData, induction_status: value})}
                             disabled={induction.joining_status === 'pending' || induction.joiningStatus === 'pending'}
                           >
@@ -270,12 +270,12 @@ export default function InductionTraining() {
                           </Select>
                         ) : (
                           <Badge 
-                            variant={(induction.joining_status === 'pending' || induction.joiningStatus === 'pending') ? 'outline' : (induction.induction_status === 'completed' ? 'default' : 'outline')}
-                            className={(induction.joining_status === 'pending' || induction.joiningStatus === 'pending') ? 'bg-gray-100 text-gray-500' : (induction.induction_status === 'completed' ? 'bg-green-600' : '')}
+                            variant={(induction.joiningStatus || induction.joining_status) === 'pending' ? 'outline' : ((induction.inductionStatus || induction.induction_status) === 'completed' ? 'default' : 'outline')}
+                            className={(induction.joiningStatus || induction.joining_status) === 'pending' ? 'bg-gray-100 text-gray-500' : ((induction.inductionStatus || induction.induction_status) === 'completed' ? 'bg-green-600' : '')}
                           >
-                            {(induction.joining_status === 'pending' || induction.joiningStatus === 'pending') 
+                            {(induction.joiningStatus || induction.joining_status) === 'pending' 
                               ? 'N/A' 
-                              : (induction.induction_status ? induction.induction_status.replace('_', ' ').charAt(0).toUpperCase() + induction.induction_status.replace('_', ' ').slice(1) : 'In progress')}
+                              : ((induction.inductionStatus || induction.induction_status) ? (induction.inductionStatus || induction.induction_status).replace('_', ' ').charAt(0).toUpperCase() + (induction.inductionStatus || induction.induction_status).replace('_', ' ').slice(1) : 'In progress')}
                           </Badge>
                         )}
                       </TableCell>
