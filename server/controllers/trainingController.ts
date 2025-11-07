@@ -100,6 +100,18 @@ const updateInduction = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     const updateData = req.body;
     
+    // First, get the current record to check combined state
+    const currentRecordResult = await query(
+      'SELECT * FROM induction_training WHERE id = ?',
+      [id]
+    );
+    
+    if (!currentRecordResult.rows || currentRecordResult.rows.length === 0) {
+      return res.status(404).json({ message: "Induction record not found" });
+    }
+    
+    const currentRecord = currentRecordResult.rows[0] as any;
+    
     const fields: string[] = [];
     const values: any[] = [];
     
@@ -115,22 +127,27 @@ const updateInduction = async (req: Request, res: Response) => {
       values
     );
     
+    // Merge current record with update to get final state
+    const finalState = { ...currentRecord, ...updateData };
+    
     // If induction status is completed and joining_status is joined, move to CRT
-    if (updateData.induction_status === 'completed' && updateData.joining_status === 'joined') {
-      const inductionResult = await query(
-        'SELECT * FROM induction_training WHERE id = ?',
+    if (finalState.induction_status === 'completed' && finalState.joining_status === 'joined') {
+      // Check if classroom training already exists
+      const existingCRT = await query(
+        'SELECT id FROM classroom_training WHERE induction_id = ?',
         [id]
       );
       
-      if (inductionResult.rows && inductionResult.rows.length > 0) {
-        const induction = inductionResult.rows[0] as any;
-        
+      if (!existingCRT.rows || existingCRT.rows.length === 0) {
         // Create classroom training record
+        console.log('✅ Auto-creating classroom training for induction ID:', id);
         await query(
           `INSERT INTO classroom_training (induction_id, candidate_id)
            VALUES (?, ?)`,
-          [induction.id, induction.candidate_id]
+          [id, currentRecord.candidate_id]
         );
+        
+        console.log('✅ Classroom training created successfully!');
       }
     }
     
