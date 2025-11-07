@@ -196,6 +196,7 @@ export default function FieldTraining() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="fit">Fit</SelectItem>
+                              <SelectItem value="fit_need_refresher_training">Fit - Need Refresher Training</SelectItem>
                               <SelectItem value="not_fit_ft_rejection">Not Fit - FT Rejection</SelectItem>
                               <SelectItem value="ft_absconding">FT Absconding</SelectItem>
                             </SelectContent>
@@ -209,46 +210,79 @@ export default function FieldTraining() {
                         )}
                       </TableCell>
 
-                      {/* Manager Feedback */}
+                      {/* Manager Feedback - Conditional */}
                       <TableCell>
-                        {editingId === field.id ? (
-                          <Textarea
-                            value={editData.manager_feedback || (field.managerFeedback || field.manager_feedback) || ''}
-                            onChange={(e) => setEditData({...editData, manager_feedback: e.target.value})}
-                            className="w-[200px]"
-                            rows={2}
-                          />
-                        ) : (
-                          field.managerFeedback || field.manager_feedback || '-'
-                        )}
+                        {(() => {
+                          const fteStatus = editingId === field.id 
+                            ? (editData.ft_feedback || field.ftFeedback || field.ft_feedback)
+                            : (field.ftFeedback || field.ft_feedback);
+                          const showFields = fteStatus === 'not_fit_ft_rejection' || fteStatus === 'ft_absconding';
+                          
+                          if (!showFields) {
+                            return <span className="text-gray-500">N/A</span>;
+                          }
+                          
+                          return editingId === field.id ? (
+                            <Textarea
+                              value={editData.manager_feedback || (field.managerFeedback || field.manager_feedback) || ''}
+                              onChange={(e) => setEditData({...editData, manager_feedback: e.target.value})}
+                              className="w-[200px]"
+                              rows={2}
+                            />
+                          ) : (
+                            field.managerFeedback || field.manager_feedback || '-'
+                          );
+                        })()}
                       </TableCell>
 
-                      {/* Rejection Reason */}
+                      {/* Rejection Reason - Conditional */}
                       <TableCell>
-                        {editingId === field.id ? (
-                          <Textarea
-                            value={editData.rejection_reason || (field.rejectionReason || field.rejection_reason) || ''}
-                            onChange={(e) => setEditData({...editData, rejection_reason: e.target.value})}
-                            className="w-[200px]"
-                            rows={2}
-                          />
-                        ) : (
-                          field.rejectionReason || field.rejection_reason || '-'
-                        )}
+                        {(() => {
+                          const fteStatus = editingId === field.id 
+                            ? (editData.ft_feedback || field.ftFeedback || field.ft_feedback)
+                            : (field.ftFeedback || field.ft_feedback);
+                          const showFields = fteStatus === 'not_fit_ft_rejection' || fteStatus === 'ft_absconding';
+                          
+                          if (!showFields) {
+                            return <span className="text-gray-500">N/A</span>;
+                          }
+                          
+                          return editingId === field.id ? (
+                            <Textarea
+                              value={editData.rejection_reason || (field.rejectionReason || field.rejection_reason) || ''}
+                              onChange={(e) => setEditData({...editData, rejection_reason: e.target.value})}
+                              className="w-[200px]"
+                              rows={2}
+                            />
+                          ) : (
+                            field.rejectionReason || field.rejection_reason || '-'
+                          );
+                        })()}
                       </TableCell>
 
-                      {/* Exit Date */}
+                      {/* Exit Date - Conditional */}
                       <TableCell>
-                        {editingId === field.id ? (
-                          <Input
-                            type="date"
-                            value={editData.last_reporting_date || (field.lastReportingDate || field.last_reporting_date) || ''}
-                            onChange={(e) => setEditData({...editData, last_reporting_date: e.target.value})}
-                            className="w-[150px]"
-                          />
-                        ) : (
-                          (field.lastReportingDate || field.last_reporting_date) ? format(new Date(field.lastReportingDate || field.last_reporting_date), "dd-MMM-yyyy") : "-"
-                        )}
+                        {(() => {
+                          const fteStatus = editingId === field.id 
+                            ? (editData.ft_feedback || field.ftFeedback || field.ft_feedback)
+                            : (field.ftFeedback || field.ft_feedback);
+                          const showFields = fteStatus === 'not_fit_ft_rejection' || fteStatus === 'ft_absconding';
+                          
+                          if (!showFields) {
+                            return <span className="text-gray-500">N/A</span>;
+                          }
+                          
+                          return editingId === field.id ? (
+                            <Input
+                              type="date"
+                              value={editData.last_reporting_date || (field.lastReportingDate || field.last_reporting_date) || ''}
+                              onChange={(e) => setEditData({...editData, last_reporting_date: e.target.value})}
+                              className="w-[150px]"
+                            />
+                          ) : (
+                            (field.lastReportingDate || field.last_reporting_date) ? format(new Date(field.lastReportingDate || field.last_reporting_date), "dd-MMM-yyyy") : "-"
+                          );
+                        })()}
                       </TableCell>
 
                       {/* Actions */}
