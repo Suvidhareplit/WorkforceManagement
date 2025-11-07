@@ -58,10 +58,9 @@ export default function FieldTraining() {
       buddy_aligned: field.buddyAligned || field.buddy_aligned,
       buddy_name: field.buddyName || field.buddy_name,
       buddy_phone_number: field.buddyPhoneNumber || field.buddy_phone_number,
-      manager_feedback: field.managerFeedback || field.manager_feedback,
       ft_feedback: field.ftFeedback || field.ft_feedback,
+      manager_feedback: field.managerFeedback || field.manager_feedback,
       rejection_reason: field.rejectionReason || field.rejection_reason,
-      absconding: field.absconding,
       last_reporting_date: field.lastReportingDate || field.last_reporting_date,
     });
   };
@@ -93,33 +92,32 @@ export default function FieldTraining() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead>City</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Manager</TableHead>
-                  <TableHead>Training Dates</TableHead>
-                  <TableHead>Buddy Aligned</TableHead>
-                  <TableHead>Buddy Name</TableHead>
-                  <TableHead>Buddy Phone</TableHead>
-                  <TableHead>Manager Feedback</TableHead>
-                  <TableHead>FT Feedback</TableHead>
-                  <TableHead>Rejection Reason</TableHead>
-                  <TableHead>Absconding</TableHead>
-                  <TableHead>Last Reporting Date</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="font-semibold">Name</TableHead>
+                  <TableHead className="font-semibold">Mobile</TableHead>
+                  <TableHead className="font-semibold">City</TableHead>
+                  <TableHead className="font-semibold">Role</TableHead>
+                  <TableHead className="font-semibold">Manager</TableHead>
+                  <TableHead className="font-semibold">Training Dates</TableHead>
+                  <TableHead className="font-semibold">Buddy Aligned</TableHead>
+                  <TableHead className="font-semibold">Buddy Name</TableHead>
+                  <TableHead className="font-semibold">Buddy Phone</TableHead>
+                  <TableHead className="font-semibold">FTE Status</TableHead>
+                  <TableHead className="font-semibold">Manager Feedback</TableHead>
+                  <TableHead className="font-semibold">Rejection Reason</TableHead>
+                  <TableHead className="font-semibold">Exit Date</TableHead>
+                  <TableHead className="font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={15} className="text-center py-8">
+                    <TableCell colSpan={14} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : fields.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={15} className="text-center py-8">
+                    <TableCell colSpan={14} className="text-center py-8">
                       No field training records found
                     </TableCell>
                   </TableRow>
@@ -186,6 +184,31 @@ export default function FieldTraining() {
                         )}
                       </TableCell>
 
+                      {/* FTE Status */}
+                      <TableCell>
+                        {editingId === field.id ? (
+                          <Select
+                            value={editData.ft_feedback || (field.ftFeedback || field.ft_feedback) || ''}
+                            onValueChange={(value) => setEditData({...editData, ft_feedback: value})}
+                          >
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Select Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="fit">Fit</SelectItem>
+                              <SelectItem value="not_fit_ft_rejection">Not Fit - FT Rejection</SelectItem>
+                              <SelectItem value="ft_absconding">FT Absconding</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          (field.ftFeedback || field.ft_feedback) ? (
+                            <Badge variant={(field.ftFeedback || field.ft_feedback) === 'fit' ? 'default' : 'destructive'}>
+                              {(field.ftFeedback || field.ft_feedback).replace(/_/g, ' ')}
+                            </Badge>
+                          ) : '-'
+                        )}
+                      </TableCell>
+
                       {/* Manager Feedback */}
                       <TableCell>
                         {editingId === field.id ? (
@@ -197,30 +220,6 @@ export default function FieldTraining() {
                           />
                         ) : (
                           field.managerFeedback || field.manager_feedback || '-'
-                        )}
-                      </TableCell>
-
-                      {/* FT Feedback */}
-                      <TableCell>
-                        {editingId === field.id ? (
-                          <Select
-                            value={editData.ft_feedback || (field.ftFeedback || field.ft_feedback) || ''}
-                            onValueChange={(value) => setEditData({...editData, ft_feedback: value})}
-                          >
-                            <SelectTrigger className="w-[180px]">
-                              <SelectValue placeholder="Select Feedback" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="fit">Fit</SelectItem>
-                              <SelectItem value="not_fit_ft_rejection">Not Fit - FT Rejection</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          (field.ftFeedback || field.ft_feedback) ? (
-                            <Badge variant={(field.ftFeedback || field.ft_feedback) === 'fit' ? 'default' : 'destructive'}>
-                              {(field.ftFeedback || field.ft_feedback).replace(/_/g, ' ')}
-                            </Badge>
-                          ) : '-'
                         )}
                       </TableCell>
 
@@ -238,29 +237,7 @@ export default function FieldTraining() {
                         )}
                       </TableCell>
 
-                      {/* Absconding */}
-                      <TableCell>
-                        {editingId === field.id ? (
-                          <Select
-                            value={editData.absconding || field.absconding}
-                            onValueChange={(value) => setEditData({...editData, absconding: value})}
-                          >
-                            <SelectTrigger className="w-[100px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="yes">Yes</SelectItem>
-                              <SelectItem value="no">No</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Badge variant={field.absconding === 'yes' ? 'destructive' : 'outline'}>
-                            {field.absconding || 'no'}
-                          </Badge>
-                        )}
-                      </TableCell>
-
-                      {/* Last Reporting Date */}
+                      {/* Exit Date */}
                       <TableCell>
                         {editingId === field.id ? (
                           <Input
