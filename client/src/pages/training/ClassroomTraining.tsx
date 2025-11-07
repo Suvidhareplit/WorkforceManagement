@@ -27,14 +27,14 @@ export default function ClassroomTraining() {
     queryKey: ["/api/training/classroom"],
   });
 
-  const classrooms = classroomResponse?.data || [];
+  const classrooms = (classroomResponse as any) || [];
 
   // Fetch trainers for dropdown
   const { data: trainersResponse } = useQuery({
     queryKey: ["/api/master-data/trainer"],
   });
 
-  const trainers = trainersResponse?.data || [];
+  const trainers = (trainersResponse as any) || [];
 
   // Update classroom training mutation
   const updateClassroomMutation = useMutation({
@@ -67,20 +67,22 @@ export default function ClassroomTraining() {
   const handleEdit = (classroom: any) => {
     setEditingId(classroom.id);
     setEditData({
-      training_start_date: classroom.training_start_date,
-      training_completion_date: classroom.training_completion_date,
-      trainer_id: classroom.trainer_id,
-      crt_feedback: classroom.crt_feedback,
+      training_start_date: classroom.trainingStartDate || classroom.training_start_date,
+      training_completion_date: classroom.trainingCompletionDate || classroom.training_completion_date,
+      trainer_id: classroom.trainerId || classroom.trainer_id,
+      crt_feedback: classroom.crtFeedback || classroom.crt_feedback,
       remarks: classroom.remarks,
-      last_working_day: classroom.last_working_day,
-      exit_date: classroom.exit_date,
-      exit_reason: classroom.exit_reason,
+      last_working_day: classroom.lastWorkingDay || classroom.last_working_day,
+      exit_date: classroom.exitDate || classroom.exit_date,
+      exit_reason: classroom.exitReason || classroom.exit_reason,
     });
-    if (classroom.training_start_date) {
-      setTempStartDate(new Date(classroom.training_start_date));
+    const startDate = classroom.trainingStartDate || classroom.training_start_date;
+    if (startDate) {
+      setTempStartDate(new Date(startDate));
     }
-    if (classroom.training_completion_date) {
-      setTempEndDate(new Date(classroom.training_completion_date));
+    const endDate = classroom.trainingCompletionDate || classroom.training_completion_date;
+    if (endDate) {
+      setTempEndDate(new Date(endDate));
     }
   };
 
@@ -153,10 +155,10 @@ export default function ClassroomTraining() {
                   classrooms.map((classroom: any) => (
                     <TableRow key={classroom.id}>
                       <TableCell className="font-medium">{classroom.name}</TableCell>
-                      <TableCell>{classroom.mobile_number}</TableCell>
+                      <TableCell>{classroom.mobileNumber || classroom.mobile_number || '-'}</TableCell>
                       <TableCell>{classroom.city}</TableCell>
                       <TableCell>{classroom.role}</TableCell>
-                      <TableCell>{classroom.manager_name || '-'}</TableCell>
+                      <TableCell>{classroom.managerName || classroom.manager_name || '-'}</TableCell>
                       
                       {/* Training Start Date */}
                       <TableCell>
@@ -177,7 +179,7 @@ export default function ClassroomTraining() {
                             </PopoverContent>
                           </Popover>
                         ) : (
-                          classroom.training_start_date ? format(new Date(classroom.training_start_date), "dd-MMM-yyyy") : "-"
+                          (classroom.trainingStartDate || classroom.training_start_date) ? format(new Date(classroom.trainingStartDate || classroom.training_start_date), "dd-MMM-yyyy") : "-"
                         )}
                       </TableCell>
 
@@ -200,7 +202,7 @@ export default function ClassroomTraining() {
                             </PopoverContent>
                           </Popover>
                         ) : (
-                          classroom.training_completion_date ? format(new Date(classroom.training_completion_date), "dd-MMM-yyyy") : "-"
+                          (classroom.trainingCompletionDate || classroom.training_completion_date) ? format(new Date(classroom.trainingCompletionDate || classroom.training_completion_date), "dd-MMM-yyyy") : "-"
                         )}
                       </TableCell>
 
@@ -208,7 +210,7 @@ export default function ClassroomTraining() {
                       <TableCell>
                         {editingId === classroom.id ? (
                           <Select
-                            value={editData.trainer_id?.toString() || classroom.trainer_id?.toString() || ''}
+                            value={editData.trainer_id?.toString() || (classroom.trainerId || classroom.trainer_id)?.toString() || ''}
                             onValueChange={(value) => setEditData({...editData, trainer_id: parseInt(value)})}
                           >
                             <SelectTrigger className="w-[150px]">
@@ -223,7 +225,7 @@ export default function ClassroomTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          trainers.find((t: any) => t.id === classroom.trainer_id)?.name || '-'
+                          trainers.find((t: any) => t.id === (classroom.trainerId || classroom.trainer_id))?.name || '-'
                         )}
                       </TableCell>
 
@@ -231,7 +233,7 @@ export default function ClassroomTraining() {
                       <TableCell>
                         {editingId === classroom.id ? (
                           <Select
-                            value={editData.crt_feedback || classroom.crt_feedback || ''}
+                            value={editData.crt_feedback || (classroom.crtFeedback || classroom.crt_feedback) || ''}
                             onValueChange={(value) => setEditData({...editData, crt_feedback: value})}
                           >
                             <SelectTrigger className="w-[180px]">
@@ -245,9 +247,9 @@ export default function ClassroomTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          classroom.crt_feedback ? (
-                            <Badge variant={classroom.crt_feedback === 'fit' || classroom.crt_feedback === 'fit_need_observation' ? 'default' : 'destructive'}>
-                              {classroom.crt_feedback.replace(/_/g, ' ')}
+                          (classroom.crtFeedback || classroom.crt_feedback) ? (
+                            <Badge variant={(classroom.crtFeedback || classroom.crt_feedback) === 'fit' || (classroom.crtFeedback || classroom.crt_feedback) === 'fit_need_observation' ? 'default' : 'destructive'}>
+                              {(classroom.crtFeedback || classroom.crt_feedback).replace(/_/g, ' ')}
                             </Badge>
                           ) : '-'
                         )}
@@ -272,12 +274,12 @@ export default function ClassroomTraining() {
                         {editingId === classroom.id ? (
                           <Input
                             type="date"
-                            value={editData.last_working_day || classroom.last_working_day || ''}
+                            value={editData.last_working_day || (classroom.lastWorkingDay || classroom.last_working_day) || ''}
                             onChange={(e) => setEditData({...editData, last_working_day: e.target.value})}
                             className="w-[150px]"
                           />
                         ) : (
-                          classroom.last_working_day ? format(new Date(classroom.last_working_day), "dd-MMM-yyyy") : "-"
+                          (classroom.lastWorkingDay || classroom.last_working_day) ? format(new Date(classroom.lastWorkingDay || classroom.last_working_day), "dd-MMM-yyyy") : "-"
                         )}
                       </TableCell>
 
@@ -286,12 +288,12 @@ export default function ClassroomTraining() {
                         {editingId === classroom.id ? (
                           <Input
                             type="date"
-                            value={editData.exit_date || classroom.exit_date || ''}
+                            value={editData.exit_date || (classroom.exitDate || classroom.exit_date) || ''}
                             onChange={(e) => setEditData({...editData, exit_date: e.target.value})}
                             className="w-[150px]"
                           />
                         ) : (
-                          classroom.exit_date ? format(new Date(classroom.exit_date), "dd-MMM-yyyy") : "-"
+                          (classroom.exitDate || classroom.exit_date) ? format(new Date(classroom.exitDate || classroom.exit_date), "dd-MMM-yyyy") : "-"
                         )}
                       </TableCell>
 
@@ -299,7 +301,7 @@ export default function ClassroomTraining() {
                       <TableCell>
                         {editingId === classroom.id ? (
                           <Select
-                            value={editData.exit_reason || classroom.exit_reason || ''}
+                            value={editData.exit_reason || (classroom.exitReason || classroom.exit_reason) || ''}
                             onValueChange={(value) => setEditData({...editData, exit_reason: value})}
                           >
                             <SelectTrigger className="w-[150px]">
@@ -310,7 +312,7 @@ export default function ClassroomTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          classroom.exit_reason || '-'
+                          (classroom.exitReason || classroom.exit_reason) || '-'
                         )}
                       </TableCell>
 
