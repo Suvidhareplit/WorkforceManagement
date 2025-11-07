@@ -21,14 +21,14 @@ export default function InductionTraining() {
     queryKey: ["/api/training/induction"],
   });
 
-  const inductions = (inductionsResponse as any)?.data || [];
+  const inductions = (inductionsResponse as any) || [];
 
   // Fetch trainers for dropdown
   const { data: trainersResponse } = useQuery({
     queryKey: ["/api/master-data/trainer"],
   });
 
-  const trainers = (trainersResponse as any)?.data || [];
+  const trainers = (trainersResponse as any) || [];
 
   // Update induction mutation
   const updateInductionMutation = useMutation({
