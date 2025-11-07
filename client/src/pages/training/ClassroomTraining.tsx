@@ -3,30 +3,21 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest3, queryClient } from "@/lib/queryClient";
-import { TrainingSession } from "@/types";
-import { CalendarIcon, CheckCircle, UserCheck, Clock } from "lucide-react";
-import { format, addDays } from "date-fns";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Edit, Save, X, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 export default function ClassroomTraining() {
-  const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
-  const [attendanceDate, setAttendanceDate] = useState<Date>();
-  const [isPresent, setIsPresent] = useState(false);
-  const [attendanceNotes, setAttendanceNotes] = useState("");
-  const [fitnessStatus, setFitnessStatus] = useState("");
-  const [fitnessComments, setFitnessComments] = useState("");
-  const [dropoutReason, setDropoutReason] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editData, setEditData] = useState<any>({});
   const { toast } = useToast();
 
   const { data: completedInduction, isLoading: loadingInduction } = useQuery({
