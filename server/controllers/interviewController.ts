@@ -294,6 +294,32 @@ const updateOffer = async (req: Request, res: Response) => {
   }
 };
 
+const updateCandidateStatus = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { status } = req.body;
+    
+    console.log('🔍 updateCandidateStatus called with:', { id, status });
+    
+    const validStatuses = ['applied', 'prescreening', 'technical', 'selected', 'rejected', 'offered', 'joined', 'assigned_induction'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+    }
+    
+    const candidate = await storage.updateCandidate(id, { status });
+    console.log('✅ Updated candidate status:', candidate);
+    
+    if (!candidate) {
+      return res.status(404).json({ message: "Candidate not found" });
+    }
+    
+    res.json({ data: candidate });
+  } catch (error) {
+    console.error('Update candidate status error:', error);
+    res.status(500).json({ message: "Internal server error", error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+};
+
 export const interviewController = {
   createCandidate,
   getCandidates,
@@ -302,5 +328,6 @@ export const interviewController = {
   updatePrescreening,
   updateScreening,
   updateTechnical,
-  updateOffer
+  updateOffer,
+  updateCandidateStatus
 };

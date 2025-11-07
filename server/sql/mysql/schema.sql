@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS candidates (
     recruiter_name VARCHAR(255),
     referral_name VARCHAR(255),
     resume_url TEXT,
-    status ENUM('applied', 'prescreening', 'technical', 'selected', 'rejected', 'offered', 'joined') DEFAULT 'applied',
+    status ENUM('applied', 'prescreening', 'technical', 'selected', 'rejected', 'offered', 'joined', 'assigned_induction') DEFAULT 'applied',
     prescreening_score INT,
     prescreening_result ENUM('pass', 'fail', 'pending') DEFAULT 'pending',
     prescreening_date DATETIME,

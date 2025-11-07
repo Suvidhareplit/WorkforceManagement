@@ -127,7 +127,33 @@ export default function OfferManagement() {
     setEditingGross(null);
   };
 
+  // Assign induction - change status to assigned_induction
+  const handleAssignInduction = async (candidateId: number) => {
+    try {
+      await apiRequest(`/api/interviews/candidates/${candidateId}/status`, {
+        method: "PATCH",
+        body: {
+          status: "assigned_induction"
+        }
+      });
 
+      // Refetch data
+      await queryClient.refetchQueries({
+        queryKey: ["/api/interviews/candidates"]
+      });
+
+      toast({
+        title: "Success",
+        description: "Candidate assigned to induction",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign induction",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getSourceDisplay = (candidate: Candidate) => {
     if (candidate.resumeSource === 'vendor' && candidate.vendorName) {
@@ -470,7 +496,7 @@ export default function OfferManagement() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Selected Candidates - Awaiting Offer</CardTitle>
+              <CardTitle>Selected Candidates - Awaiting Induction</CardTitle>
               <div className="flex gap-2">
                 <Button
                   onClick={downloadCSV}
@@ -503,6 +529,7 @@ export default function OfferManagement() {
                   <TableHead>Experience</TableHead>
                   <TableHead>DOJ</TableHead>
                   <TableHead>Gross (Monthly)</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -695,15 +722,35 @@ export default function OfferManagement() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                          >
-                            View Details
-                          </Button>
-                        </div>
+                        {candidate.status === 'assigned_induction' ? (
+                          <Badge className="bg-purple-600">Assigned Induction</Badge>
+                        ) : (
+                          <Badge className="bg-green-600">Selected</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {candidate.joiningDate && candidate.offeredSalary ? (
+                          candidate.status === 'assigned_induction' ? (
+                            <Badge variant="outline" className="text-purple-600">Induction Assigned</Badge>
+                          ) : (
+                            <Select
+                              onValueChange={(value) => {
+                                if (value === 'assign_induction') {
+                                  handleAssignInduction(candidate.id);
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select Action" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="assign_induction">Assign Induction</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )
+                        ) : (
+                          <span className="text-sm text-slate-500">Set DOJ & Salary first</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

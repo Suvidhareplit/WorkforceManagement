@@ -33,4 +33,7 @@ router.patch('/candidates/:id/technical', interviewController.updateTechnical);
 // Update offer status
 router.patch('/candidates/:id/offer', interviewController.updateOffer);
 
+// Update candidate status
+router.patch('/candidates/:id/status', interviewController.updateCandidateStatus);
+
 export { router as interviewRoutes };
