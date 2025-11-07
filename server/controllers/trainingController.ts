@@ -60,7 +60,8 @@ const getInductions = async (req: Request, res: Response) => {
     const result = await query(
       'SELECT * FROM induction_training ORDER BY created_at DESC'
     );
-    res.json({ data: result.rows });
+    const rows = result.rows || [];
+    res.json({ data: rows });
   } catch (error) {
     console.error('Get inductions error:', error);
     res.status(500).json({ message: "Internal server error" });
@@ -126,7 +127,8 @@ const getClassroomTrainings = async (req: Request, res: Response) => {
        JOIN induction_training it ON ct.induction_id = it.id
        ORDER BY ct.created_at DESC`
     );
-    res.json({ data: result.rows });
+    const rows = result.rows || [];
+    res.json({ data: rows });
   } catch (error) {
     console.error('Get classroom trainings error:', error);
     res.status(500).json({ message: "Internal server error" });
@@ -215,7 +217,8 @@ const getFieldTrainings = async (req: Request, res: Response) => {
        JOIN induction_training it ON ct.induction_id = it.id
        ORDER BY ft.created_at DESC`
     );
-    res.json({ data: result.rows });
+    const rows = result.rows || [];
+    res.json({ data: rows });
   } catch (error) {
     console.error('Get field trainings error:', error);
     res.status(500).json({ message: "Internal server error" });
