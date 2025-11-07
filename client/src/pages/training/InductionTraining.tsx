@@ -3,124 +3,79 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest3, queryClient } from "@/lib/queryClient";
-import { Candidate, TrainingSession } from "@/types";
-import { CalendarIcon, Play, CheckCircle } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Edit, Save, X } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 
 export default function InductionTraining() {
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-  const [startDate, setStartDate] = useState<Date>();
-  const [notes, setNotes] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editData, setEditData] = useState<any>({});
   const { toast } = useToast();
 
-  const { data: joinedCandidates, isLoading: loadingCandidates } = useQuery({
-    queryKey: ["/api/interviews/candidates", { status: "joined" }],
+  // Fetch induction training records
+  const { data: inductionsResponse, isLoading } = useQuery({
+    queryKey: ["/api/training/induction"],
   });
 
-  const { data: trainingSessions, isLoading: loadingSessions } = useQuery({
-    queryKey: ["/api/training", { trainingType: "induction" }],
+  const inductions = inductionsResponse?.data || [];
+
+  // Fetch trainers for dropdown
+  const { data: trainersResponse } = useQuery({
+    queryKey: ["/api/master-data/trainer"],
   });
 
-  const createTrainingMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return await apiRequest3("POST", "/api/training", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/training"] });
-      toast({
-        title: "Success",
-        description: "Induction training assigned successfully",
-      });
-      setSelectedCandidate(null);
-      setStartDate(undefined);
-      setNotes("");
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to assign training",
-        variant: "destructive",
-      });
-    },
-  });
+  const trainers = trainersResponse?.data || [];
 
-  const updateTrainingMutation = useMutation({
+  // Update induction mutation
+  const updateInductionMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      return await apiRequest3("PATCH", `/api/training/${id}`, data);
+      return await apiRequest(`/api/training/induction/${id}`, {
+        method: "PATCH",
+        body: data
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/training"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/training/induction"] });
       toast({
         title: "Success",
-        description: "Training session updated successfully",
+        description: "Induction record updated successfully",
       });
+      setEditingId(null);
+      setEditData({});
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update training",
+        description: error.message || "Failed to update induction",
         variant: "destructive",
       });
     },
   });
 
-  const handleAssignTraining = (candidate: Candidate) => {
-    if (!startDate) {
-      toast({
-        title: "Error",
-        description: "Please select a start date",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    createTrainingMutation.mutate({
-      candidateId: candidate.id,
-      trainingType: "induction",
-      startDate: startDate.toISOString(),
-      duration: 1, // 1 day for induction
-      status: "assigned",
-      comments: notes,
+  const handleEdit = (induction: any) => {
+    setEditingId(induction.id);
+    setEditData({
+      joining_status: induction.joining_status,
+      manager_name: induction.manager_name,
+      induction_done_by: induction.induction_done_by,
+      onboarding_form_filled: induction.onboarding_form_filled,
+      uan_number_generated: induction.uan_number_generated,
+      induction_status: induction.induction_status,
     });
   };
 
-  const handleStartTraining = (sessionId: number) => {
-    updateTrainingMutation.mutate({
-      id: sessionId,
-      data: { status: "in_progress" },
-    });
+  const handleSave = (id: number) => {
+    updateInductionMutation.mutate({ id, data: editData });
   };
 
-  const handleCompleteTraining = (sessionId: number) => {
-    updateTrainingMutation.mutate({
-      id: sessionId,
-      data: { status: "completed", endDate: new Date().toISOString() },
-    });
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'assigned':
-        return 'outline';
-      case 'in_progress':
-        return 'default';
-      case 'completed':
-        return 'default';
-      case 'dropped_out':
-        return 'destructive';
-      default:
-        return 'outline';
-    }
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditData({});
   };
 
   return (
@@ -128,272 +83,227 @@ export default function InductionTraining() {
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Induction Training</h2>
-        <p className="text-slate-600 mt-1">Manage onboarding and induction process for new joiners</p>
+        <p className="text-slate-600 mt-1">Manage onboarding and induction process for candidates assigned to induction</p>
       </div>
 
-      <div className="space-y-6">
-        {/* New Joiners - Awaiting Induction */}
-        <Card>
-          <CardHeader>
-            <CardTitle>New Joiners - Awaiting Induction</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
+      {/* Induction Records Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Induction Training Records</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>Mobile</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Cluster</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Location</TableHead>
                   <TableHead>DOJ</TableHead>
-                  <TableHead>Contact</TableHead>
+                  <TableHead>Gross</TableHead>
+                  <TableHead>Joining Status</TableHead>
+                  <TableHead>Manager Name</TableHead>
+                  <TableHead>Induction Done By</TableHead>
+                  <TableHead>Onboarding Form</TableHead>
+                  <TableHead>UAN Generated</TableHead>
+                  <TableHead>Induction Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {loadingCandidates ? (
+                {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={14} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : (joinedCandidates as any[])?.length === 0 ? (
+                ) : inductions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      No new joiners awaiting induction
+                    <TableCell colSpan={14} className="text-center py-8">
+                      No induction records found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  (joinedCandidates as any[])?.map((candidate: Candidate) => (
-                    <TableRow key={candidate.id}>
-                      <TableCell className="font-medium">{candidate.name}</TableCell>
-                      <TableCell>{candidate.role?.name}</TableCell>
+                  inductions.map((induction: any) => (
+                    <TableRow key={induction.id}>
+                      <TableCell className="font-medium">{induction.name}</TableCell>
+                      <TableCell>{induction.mobile_number}</TableCell>
+                      <TableCell>{induction.city}</TableCell>
+                      <TableCell>{induction.cluster}</TableCell>
+                      <TableCell>{induction.role}</TableCell>
                       <TableCell>
-                        <div className="text-sm">
-                          <div>{candidate.city?.name}</div>
-                          <div className="text-slate-500">{candidate.cluster?.name}</div>
-                        </div>
+                        {induction.date_of_joining 
+                          ? format(new Date(induction.date_of_joining), "dd-MMM-yyyy")
+                          : "-"}
                       </TableCell>
+                      <TableCell>₹{induction.gross_salary ? Number(induction.gross_salary).toLocaleString() : "-"}</TableCell>
+                      
+                      {/* Joining Status */}
                       <TableCell>
-                        {candidate.dateOfJoining 
-                          ? format(new Date(candidate.dateOfJoining), "PPP")
-                          : "Not set"}
+                        {editingId === induction.id ? (
+                          <Select
+                            value={editData.joining_status || induction.joining_status}
+                            onValueChange={(value) => setEditData({...editData, joining_status: value})}
+                          >
+                            <SelectTrigger className="w-[130px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="joined">Joined</SelectItem>
+                              <SelectItem value="not_joined">Not Joined</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge variant={induction.joining_status === 'joined' ? 'default' : 'outline'}>
+                            {induction.joining_status || 'pending'}
+                          </Badge>
+                        )}
                       </TableCell>
+
+                      {/* Manager Name */}
                       <TableCell>
-                        <div className="text-sm">
-                          <div>{candidate.phone}</div>
-                          <div className="text-slate-500">{candidate.email}</div>
-                        </div>
+                        {editingId === induction.id ? (
+                          <Input
+                            value={editData.manager_name || induction.manager_name || ''}
+                            onChange={(e) => setEditData({...editData, manager_name: e.target.value})}
+                            className="w-[150px]"
+                          />
+                        ) : (
+                          induction.manager_name || '-'
+                        )}
                       </TableCell>
+
+                      {/* Induction Done By */}
                       <TableCell>
-                        <Dialog>
-                          <DialogTrigger asChild>
+                        {editingId === induction.id ? (
+                          <Select
+                            value={editData.induction_done_by?.toString() || induction.induction_done_by?.toString() || ''}
+                            onValueChange={(value) => setEditData({...editData, induction_done_by: parseInt(value)})}
+                          >
+                            <SelectTrigger className="w-[150px]">
+                              <SelectValue placeholder="Select Trainer" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {trainers.map((trainer: any) => (
+                                <SelectItem key={trainer.id} value={trainer.id.toString()}>
+                                  {trainer.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          trainers.find((t: any) => t.id === induction.induction_done_by)?.name || '-'
+                        )}
+                      </TableCell>
+
+                      {/* Onboarding Form Filled */}
+                      <TableCell>
+                        {editingId === induction.id ? (
+                          <Select
+                            value={editData.onboarding_form_filled || induction.onboarding_form_filled}
+                            onValueChange={(value) => setEditData({...editData, onboarding_form_filled: value})}
+                          >
+                            <SelectTrigger className="w-[100px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Yes</SelectItem>
+                              <SelectItem value="ytb">YTB</SelectItem>
+                              <SelectItem value="no">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge variant="outline">{induction.onboarding_form_filled || 'ytb'}</Badge>
+                        )}
+                      </TableCell>
+
+                      {/* UAN Number Generated */}
+                      <TableCell>
+                        {editingId === induction.id ? (
+                          <Select
+                            value={editData.uan_number_generated || induction.uan_number_generated}
+                            onValueChange={(value) => setEditData({...editData, uan_number_generated: value})}
+                          >
+                            <SelectTrigger className="w-[100px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="yes">Yes</SelectItem>
+                              <SelectItem value="ytb">YTB</SelectItem>
+                              <SelectItem value="no">No</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge variant="outline">{induction.uan_number_generated || 'ytb'}</Badge>
+                        )}
+                      </TableCell>
+
+                      {/* Induction Status */}
+                      <TableCell>
+                        {editingId === induction.id ? (
+                          <Select
+                            value={editData.induction_status || induction.induction_status}
+                            onValueChange={(value) => setEditData({...editData, induction_status: value})}
+                          >
+                            <SelectTrigger className="w-[150px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="in_progress">In Progress</SelectItem>
+                              <SelectItem value="ytb_completed">YTB Completed</SelectItem>
+                              <SelectItem value="completed">Completed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge 
+                            variant={induction.induction_status === 'completed' ? 'default' : 'outline'}
+                            className={induction.induction_status === 'completed' ? 'bg-green-600' : ''}
+                          >
+                            {induction.induction_status || 'in_progress'}
+                          </Badge>
+                        )}
+                      </TableCell>
+
+                      {/* Actions */}
+                      <TableCell>
+                        {editingId === induction.id ? (
+                          <div className="flex gap-2">
                             <Button
-                              variant="outline"
                               size="sm"
-                              onClick={() => {
-                                setSelectedCandidate(candidate);
-                                setStartDate(undefined);
-                                setNotes("");
-                              }}
+                              onClick={() => handleSave(induction.id)}
+                              disabled={updateInductionMutation.isPending}
                             >
-                              <Play className="h-4 w-4 mr-2" />
-                              Assign Induction
+                              <Save className="h-4 w-4" />
                             </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Assign Induction Training - {candidate.name}</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <h4 className="font-medium mb-2">Employee Details</h4>
-                                  <div className="space-y-1 text-sm">
-                                    <div><strong>Name:</strong> {candidate.name}</div>
-                                    <div><strong>Role:</strong> {candidate.role?.name}</div>
-                                    <div><strong>DOJ:</strong> {candidate.dateOfJoining 
-                                      ? format(new Date(candidate.dateOfJoining), "PPP") 
-                                      : "Not set"}</div>
-                                    <div><strong>Salary:</strong> ₹{candidate.grossSalary ? Number(candidate.grossSalary).toLocaleString() : "Not set"}</div>
-                                  </div>
-                                </div>
-                                <div>
-                                  <h4 className="font-medium mb-2">Induction Details</h4>
-                                  <div className="space-y-1 text-sm text-slate-600">
-                                    <div>• HR orientation and company policies</div>
-                                    <div>• Document collection and verification</div>
-                                    <div>• System access setup</div>
-                                    <div>• Welcome session</div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <Label>Induction Start Date</Label>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      className={cn(
-                                        "w-full justify-start text-left font-normal",
-                                        !startDate && "text-muted-foreground"
-                                      )}
-                                    >
-                                      <CalendarIcon className="mr-2 h-4 w-4" />
-                                      {startDate ? format(startDate, "PPP") : "Pick a date"}
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-auto p-0">
-                                    <Calendar
-                                      mode="single"
-                                      selected={startDate}
-                                      onSelect={setStartDate}
-                                      disabled={(date) =>
-                                        date < new Date() || date < new Date("1900-01-01")
-                                      }
-                                      initialFocus
-                                    />
-                                  </PopoverContent>
-                                </Popover>
-                              </div>
-
-                              <div>
-                                <Label htmlFor="notes">Additional Notes</Label>
-                                <Textarea
-                                  id="notes"
-                                  placeholder="Any specific instructions or requirements..."
-                                  value={notes}
-                                  onChange={(e) => setNotes(e.target.value)}
-                                  rows={3}
-                                />
-                              </div>
-
-                              <div className="flex justify-end">
-                                <Button
-                                  onClick={() => handleAssignTraining(candidate)}
-                                  disabled={!startDate || createTrainingMutation.isPending}
-                                  className="bg-blue-600 hover:bg-blue-700"
-                                >
-                                  {createTrainingMutation.isPending ? "Assigning..." : "Assign Induction"}
-                                </Button>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Induction Sessions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Induction Training Sessions</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loadingSessions ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : (trainingSessions as any[])?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      No induction sessions found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  (trainingSessions as any[])?.map((session: TrainingSession) => (
-                    <TableRow key={session.id}>
-                      <TableCell className="font-medium">
-                        {session.candidate?.name}
-                      </TableCell>
-                      <TableCell>{session.candidate?.role?.name}</TableCell>
-                      <TableCell>
-                        {session.startDate 
-                          ? format(new Date(session.startDate), "PPP")
-                          : "Not scheduled"}
-                      </TableCell>
-                      <TableCell>{session.duration} day(s)</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(session.status)}>
-                          {session.status.replace('_', ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-16 bg-slate-200 rounded-full h-2">
-                            <div 
-                              className="bg-blue-600 h-2 rounded-full" 
-                              style={{
-                                width: session.status === 'completed' ? '100%' : 
-                                       session.status === 'in_progress' ? '50%' : '0%'
-                              }}
-                            ></div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleCancel}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
-                          <span className="text-xs text-slate-600">
-                            {session.status === 'completed' ? '100%' : 
-                             session.status === 'in_progress' ? '50%' : '0%'}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          {session.status === 'assigned' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleStartTraining(session.id)}
-                              disabled={updateTrainingMutation.isPending}
-                            >
-                              <Play className="h-4 w-4 mr-2" />
-                              Start
-                            </Button>
-                          )}
-                          {session.status === 'in_progress' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCompleteTraining(session.id)}
-                              disabled={updateTrainingMutation.isPending}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Complete
-                            </Button>
-                          )}
-                          {session.status === 'completed' && (
-                            <Badge variant="outline" className="text-green-600">
-                              Completed
-                            </Badge>
-                          )}
-                        </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(induction)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
