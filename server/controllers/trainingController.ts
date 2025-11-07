@@ -6,7 +6,11 @@ import { query } from '../config/db';
 // Create induction record when candidate is assigned
 const createInduction = async (req: Request, res: Response) => {
   try {
-    const { candidateId } = req.body;
+    const { candidate_id: candidateId } = req.body;
+    
+    if (!candidateId) {
+      return res.status(400).json({ message: "Candidate ID is required" });
+    }
     
     // Get candidate details
     const candidateResult = await query(
