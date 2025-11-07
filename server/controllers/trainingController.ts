@@ -74,15 +74,19 @@ const createInduction = async (req: Request, res: Response) => {
 // Get all induction records
 const getInductions = async (req: Request, res: Response) => {
   try {
-    // Disable caching for this endpoint
+    // Disable caching AND ETags for this endpoint
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    res.removeHeader('ETag');
     
     const result = await query(
       'SELECT * FROM induction_training ORDER BY created_at DESC'
     );
     const rows = result.rows || [];
+    
+    // Send response without ETag
+    res.set('ETag', ''); // Explicitly disable ETag
     res.json({ data: rows });
   } catch (error) {
     console.error('Get inductions error:', error);
@@ -142,10 +146,11 @@ const updateInduction = async (req: Request, res: Response) => {
 // Get all classroom training records
 const getClassroomTrainings = async (req: Request, res: Response) => {
   try {
-    // Disable caching for this endpoint
+    // Disable caching AND ETags for this endpoint
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    res.removeHeader('ETag');
     
     const result = await query(
       `SELECT ct.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
@@ -155,6 +160,8 @@ const getClassroomTrainings = async (req: Request, res: Response) => {
        ORDER BY ct.created_at DESC`
     );
     const rows = result.rows || [];
+    
+    res.set('ETag', '');
     res.json({ data: rows });
   } catch (error) {
     console.error('Get classroom trainings error:', error);
@@ -235,10 +242,11 @@ const updateClassroomTraining = async (req: Request, res: Response) => {
 // Get all field training records
 const getFieldTrainings = async (req: Request, res: Response) => {
   try {
-    // Disable caching for this endpoint
+    // Disable caching AND ETags for this endpoint
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    res.removeHeader('ETag');
     
     const result = await query(
       `SELECT ft.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
@@ -250,6 +258,8 @@ const getFieldTrainings = async (req: Request, res: Response) => {
        ORDER BY ft.created_at DESC`
     );
     const rows = result.rows || [];
+    
+    res.set('ETag', '');
     res.json({ data: rows });
   } catch (error) {
     console.error('Get field trainings error:', error);
