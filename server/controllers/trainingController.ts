@@ -191,6 +191,18 @@ const updateClassroomTraining = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     const updateData = req.body;
     
+    // Get current record first
+    const currentRecordResult = await query(
+      'SELECT * FROM classroom_training WHERE id = ?',
+      [id]
+    );
+    
+    if (!currentRecordResult.rows || currentRecordResult.rows.length === 0) {
+      return res.status(404).json({ message: "Classroom training record not found" });
+    }
+    
+    const currentRecord = currentRecordResult.rows[0] as any;
+    
     // Validation
     if (updateData.crt_feedback === 'not_fit_crt_rejection' && (!updateData.remarks || !updateData.last_working_day)) {
       return res.status(400).json({ 
@@ -219,30 +231,29 @@ const updateClassroomTraining = async (req: Request, res: Response) => {
       values
     );
     
-    // If CRT feedback is 'fit' or 'fit_need_observation', move to FT
-    if (updateData.crt_feedback === 'fit' || updateData.crt_feedback === 'fit_need_observation') {
-      const crtResult = await query(
-        'SELECT * FROM classroom_training WHERE id = ?',
+    // Merge current record with update to get final state
+    const finalState = { ...currentRecord, ...updateData };
+    
+    // If CRT feedback is 'fit' or 'fit_need_observation', auto-create Field Training
+    if (finalState.crt_feedback === 'fit' || finalState.crt_feedback === 'fit_need_observation') {
+      // Check if FT record already exists
+      const existingFT = await query(
+        'SELECT id FROM field_training WHERE classroom_training_id = ?',
         [id]
       );
       
-      if (crtResult.rows && crtResult.rows.length > 0) {
-        const crt = crtResult.rows[0] as any;
-        
-        // Check if FT record already exists
-        const existingFT = await query(
-          'SELECT id FROM field_training WHERE classroom_training_id = ?',
-          [crt.id]
+      if (!existingFT.rows || existingFT.rows.length === 0) {
+        // Create field training record
+        console.log('✅ Auto-creating field training for classroom ID:', id, 'Candidate:', currentRecord.candidate_id);
+        await query(
+          `INSERT INTO field_training (classroom_training_id, candidate_id)
+           VALUES (?, ?)`,
+          [id, currentRecord.candidate_id]
         );
         
-        if (!existingFT.rows || existingFT.rows.length === 0) {
-          // Create field training record
-          await query(
-            `INSERT INTO field_training (classroom_training_id, candidate_id)
-             VALUES (?, ?)`,
-            [crt.id, crt.candidate_id]
-          );
-        }
+        console.log('✅ Field training created successfully!');
+      } else {
+        console.log('ℹ️  Field training already exists for classroom ID:', id);
       }
     }
     
