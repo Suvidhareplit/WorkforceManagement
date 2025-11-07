@@ -126,8 +126,7 @@ export default function ClassroomTraining() {
                   <TableHead className="font-semibold">City</TableHead>
                   <TableHead className="font-semibold">Role</TableHead>
                   <TableHead className="font-semibold">Manager</TableHead>
-                  <TableHead className="font-semibold">Training Start</TableHead>
-                  <TableHead className="font-semibold">Training End</TableHead>
+                  <TableHead className="font-semibold" colSpan={2}>CRT Training Period</TableHead>
                   <TableHead className="font-semibold">Trainer</TableHead>
                   <TableHead className="font-semibold">CRT Feedback</TableHead>
                   <TableHead className="font-semibold">Remarks</TableHead>
