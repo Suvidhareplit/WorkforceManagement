@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { Edit, Save, X } from "lucide-react";
 import { format } from "date-fns";
 
@@ -17,11 +17,20 @@ export default function InductionTraining() {
   const { toast } = useToast();
 
   // Fetch induction training records
-  const { data: inductionsResponse, isLoading } = useQuery({
+  const { data: inductionsResponse, isLoading, refetch } = useQuery({
     queryKey: ["/api/training/induction"],
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const inductions = (inductionsResponse as any) || [];
+  
+  console.log('🔍 Induction Data:', {
+    response: inductionsResponse,
+    inductions: inductions,
+    length: inductions?.length,
+    rawData: JSON.stringify(inductionsResponse)
+  });
 
   // Fetch trainers for dropdown
   const { data: trainersResponse } = useQuery({
@@ -38,9 +47,9 @@ export default function InductionTraining() {
         body: data
       });
     },
-    onSuccess: () => {
-      // Invalidate query - this will automatically trigger a refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/training/induction"] });
+    onSuccess: async () => {
+      // Manually refetch to get fresh data
+      await refetch();
       
       toast({
         title: "Success",
