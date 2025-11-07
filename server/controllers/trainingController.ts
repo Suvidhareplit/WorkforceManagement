@@ -74,6 +74,11 @@ const createInduction = async (req: Request, res: Response) => {
 // Get all induction records
 const getInductions = async (req: Request, res: Response) => {
   try {
+    // Disable caching for this endpoint
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     const result = await query(
       'SELECT * FROM induction_training ORDER BY created_at DESC'
     );
@@ -137,6 +142,11 @@ const updateInduction = async (req: Request, res: Response) => {
 // Get all classroom training records
 const getClassroomTrainings = async (req: Request, res: Response) => {
   try {
+    // Disable caching for this endpoint
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     const result = await query(
       `SELECT ct.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
               it.date_of_joining, it.gross_salary, it.manager_name
@@ -225,6 +235,11 @@ const updateClassroomTraining = async (req: Request, res: Response) => {
 // Get all field training records
 const getFieldTrainings = async (req: Request, res: Response) => {
   try {
+    // Disable caching for this endpoint
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     const result = await query(
       `SELECT ft.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
               it.date_of_joining, it.gross_salary, it.manager_name,
