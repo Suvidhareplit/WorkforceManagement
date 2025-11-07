@@ -78,37 +78,37 @@ export default function InductionTraining() {
   };
 
   return (
-    <div>
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">Induction Training</h2>
-        <p className="text-slate-600 mt-1">Manage onboarding and induction process for candidates assigned to induction</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Induction Training</h1>
+        <p className="text-slate-600 mt-2 text-sm">Manage onboarding and induction process for candidates assigned to induction</p>
       </div>
 
       {/* Induction Records Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Induction Training Records</CardTitle>
+      <Card className="shadow-sm border-slate-200">
+        <CardHeader className="bg-white border-b border-slate-100">
+          <CardTitle className="text-xl font-semibold text-slate-800">Induction Training Records</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="font-bold">Name</TableHead>
-                  <TableHead className="font-bold">Mobile</TableHead>
-                  <TableHead className="font-bold">City</TableHead>
-                  <TableHead className="font-bold">Cluster</TableHead>
-                  <TableHead className="font-bold">Role</TableHead>
-                  <TableHead className="font-bold">DOJ</TableHead>
-                  <TableHead className="font-bold">Gross</TableHead>
-                  <TableHead className="font-bold">Joining Status</TableHead>
-                  <TableHead className="font-bold">Manager Name</TableHead>
-                  <TableHead className="font-bold">Induction Done By</TableHead>
-                  <TableHead className="font-bold">Onboarding Form</TableHead>
-                  <TableHead className="font-bold">UAN Generated</TableHead>
-                  <TableHead className="font-bold">Induction Status</TableHead>
-                  <TableHead className="font-bold">Actions</TableHead>
+                <TableRow className="bg-slate-50">
+                  <TableHead className="font-semibold text-slate-700">Name</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Mobile</TableHead>
+                  <TableHead className="font-semibold text-slate-700">City</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Cluster</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Role</TableHead>
+                  <TableHead className="font-semibold text-slate-700">DOJ</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Gross</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Joining Status</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Manager Name</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Induction Done By</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Onboarding Form Status</TableHead>
+                  <TableHead className="font-semibold text-slate-700">UAN Generation Status</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Induction Status</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -126,15 +126,15 @@ export default function InductionTraining() {
                   </TableRow>
                 ) : (
                   inductions.map((induction: any) => (
-                    <TableRow key={induction.id}>
-                      <TableCell className="font-medium">{induction.name}</TableCell>
+                    <TableRow key={induction.id} className="hover:bg-slate-50 transition-colors">
+                      <TableCell className="font-medium text-slate-900">{induction.name}</TableCell>
                       <TableCell>{induction.mobileNumber || induction.mobile_number || '-'}</TableCell>
                       <TableCell>{induction.city}</TableCell>
                       <TableCell>{induction.cluster}</TableCell>
                       <TableCell>{induction.role}</TableCell>
                       <TableCell>
-                        {induction.date_of_joining 
-                          ? format(new Date(induction.date_of_joining), "dd-MMM-yyyy")
+                        {induction.dateOfJoining || induction.date_of_joining
+                          ? format(new Date(induction.dateOfJoining || induction.date_of_joining), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
                       <TableCell>{induction.grossSalary ? Number(induction.grossSalary).toLocaleString() : (induction.gross_salary ? Number(induction.gross_salary).toLocaleString() : "-")}</TableCell>
@@ -246,6 +246,7 @@ export default function InductionTraining() {
                           <Select
                             value={editData.induction_status || induction.induction_status}
                             onValueChange={(value) => setEditData({...editData, induction_status: value})}
+                            disabled={induction.joining_status === 'pending' || induction.joiningStatus === 'pending'}
                           >
                             <SelectTrigger className="w-[150px]">
                               <SelectValue />
@@ -258,10 +259,12 @@ export default function InductionTraining() {
                           </Select>
                         ) : (
                           <Badge 
-                            variant={induction.induction_status === 'completed' ? 'default' : 'outline'}
-                            className={induction.induction_status === 'completed' ? 'bg-green-600' : ''}
+                            variant={(induction.joining_status === 'pending' || induction.joiningStatus === 'pending') ? 'outline' : (induction.induction_status === 'completed' ? 'default' : 'outline')}
+                            className={(induction.joining_status === 'pending' || induction.joiningStatus === 'pending') ? 'bg-gray-100 text-gray-500' : (induction.induction_status === 'completed' ? 'bg-green-600' : '')}
                           >
-                            {induction.induction_status || 'in_progress'}
+                            {(induction.joining_status === 'pending' || induction.joiningStatus === 'pending') 
+                              ? 'N/A' 
+                              : (induction.induction_status ? induction.induction_status.replace('_', ' ').charAt(0).toUpperCase() + induction.induction_status.replace('_', ' ').slice(1) : 'In progress')}
                           </Badge>
                         )}
                       </TableCell>
