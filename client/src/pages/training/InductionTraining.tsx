@@ -38,10 +38,9 @@ export default function InductionTraining() {
         body: data
       });
     },
-    onSuccess: async () => {
-      // Invalidate and refetch
-      await queryClient.invalidateQueries({ queryKey: ["/api/training/induction"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/training/induction"] });
+    onSuccess: () => {
+      // Invalidate query - this will automatically trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/training/induction"] });
       
       toast({
         title: "Success",
