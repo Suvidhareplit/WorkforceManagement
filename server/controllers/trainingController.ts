@@ -8,6 +8,13 @@ const createInduction = async (req: Request, res: Response) => {
   try {
     const { candidate_id: candidateId } = req.body;
     
+    console.log('🔍 Create Induction Request:', {
+      body: req.body,
+      candidate_id: req.body.candidate_id,
+      candidateId: candidateId,
+      type: typeof candidateId
+    });
+    
     if (!candidateId) {
       return res.status(400).json({ message: "Candidate ID is required" });
     }
@@ -17,6 +24,12 @@ const createInduction = async (req: Request, res: Response) => {
       'SELECT * FROM candidates WHERE id = ?',
       [candidateId]
     );
+    
+    console.log('🔍 Candidate Query Result:', {
+      candidateId,
+      rowsFound: candidateResult.rows?.length || 0,
+      rows: candidateResult.rows
+    });
     
     if (!candidateResult.rows || candidateResult.rows.length === 0) {
       return res.status(404).json({ message: "Candidate not found" });
