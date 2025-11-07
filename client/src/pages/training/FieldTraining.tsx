@@ -20,9 +20,11 @@ export default function FieldTraining() {
   // Fetch field training records
   const { data: fieldResponse, isLoading } = useQuery({
     queryKey: ["/api/training/field"],
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
-  const fields = fieldResponse?.data || [];
+  const fields = (fieldResponse as any) || [];
 
   // Update field training mutation
   const updateFieldMutation = useMutation({
@@ -53,14 +55,14 @@ export default function FieldTraining() {
   const handleEdit = (field: any) => {
     setEditingId(field.id);
     setEditData({
-      buddy_aligned: field.buddy_aligned,
-      buddy_name: field.buddy_name,
-      buddy_phone_number: field.buddy_phone_number,
-      manager_feedback: field.manager_feedback,
-      ft_feedback: field.ft_feedback,
-      rejection_reason: field.rejection_reason,
+      buddy_aligned: field.buddyAligned || field.buddy_aligned,
+      buddy_name: field.buddyName || field.buddy_name,
+      buddy_phone_number: field.buddyPhoneNumber || field.buddy_phone_number,
+      manager_feedback: field.managerFeedback || field.manager_feedback,
+      ft_feedback: field.ftFeedback || field.ft_feedback,
+      rejection_reason: field.rejectionReason || field.rejection_reason,
       absconding: field.absconding,
-      last_reporting_date: field.last_reporting_date,
+      last_reporting_date: field.lastReportingDate || field.last_reporting_date,
     });
   };
 
@@ -125,14 +127,14 @@ export default function FieldTraining() {
                   fields.map((field: any) => (
                     <TableRow key={field.id}>
                       <TableCell className="font-medium">{field.name}</TableCell>
-                      <TableCell>{field.mobile_number}</TableCell>
+                      <TableCell>{field.mobileNumber || field.mobile_number || '-'}</TableCell>
                       <TableCell>{field.city}</TableCell>
                       <TableCell>{field.role}</TableCell>
-                      <TableCell>{field.manager_name || '-'}</TableCell>
+                      <TableCell>{field.managerName || field.manager_name || '-'}</TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {field.training_start_date && <div>Start: {format(new Date(field.training_start_date), "dd-MMM-yyyy")}</div>}
-                          {field.training_completion_date && <div>End: {format(new Date(field.training_completion_date), "dd-MMM-yyyy")}</div>}
+                          {(field.trainingStartDate || field.training_start_date) && <div>Start: {format(new Date(field.trainingStartDate || field.training_start_date), "dd-MMM-yyyy")}</div>}
+                          {(field.trainingCompletionDate || field.training_completion_date) && <div>End: {format(new Date(field.trainingCompletionDate || field.training_completion_date), "dd-MMM-yyyy")}</div>}
                         </div>
                       </TableCell>
                       
@@ -140,7 +142,7 @@ export default function FieldTraining() {
                       <TableCell>
                         {editingId === field.id ? (
                           <Select
-                            value={editData.buddy_aligned || field.buddy_aligned}
+                            value={editData.buddy_aligned || (field.buddyAligned || field.buddy_aligned)}
                             onValueChange={(value) => setEditData({...editData, buddy_aligned: value})}
                           >
                             <SelectTrigger className="w-[100px]">
@@ -152,8 +154,8 @@ export default function FieldTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant={field.buddy_aligned === 'yes' ? 'default' : 'outline'}>
-                            {field.buddy_aligned || 'no'}
+                          <Badge variant={(field.buddyAligned || field.buddy_aligned) === 'yes' ? 'default' : 'outline'}>
+                            {field.buddyAligned || field.buddy_aligned || 'no'}
                           </Badge>
                         )}
                       </TableCell>
@@ -162,12 +164,12 @@ export default function FieldTraining() {
                       <TableCell>
                         {editingId === field.id ? (
                           <Input
-                            value={editData.buddy_name || field.buddy_name || ''}
+                            value={editData.buddy_name || (field.buddyName || field.buddy_name) || ''}
                             onChange={(e) => setEditData({...editData, buddy_name: e.target.value})}
                             className="w-[150px]"
                           />
                         ) : (
-                          field.buddy_name || '-'
+                          field.buddyName || field.buddy_name || '-'
                         )}
                       </TableCell>
 
@@ -175,12 +177,12 @@ export default function FieldTraining() {
                       <TableCell>
                         {editingId === field.id ? (
                           <Input
-                            value={editData.buddy_phone_number || field.buddy_phone_number || ''}
+                            value={editData.buddy_phone_number || (field.buddyPhoneNumber || field.buddy_phone_number) || ''}
                             onChange={(e) => setEditData({...editData, buddy_phone_number: e.target.value})}
                             className="w-[130px]"
                           />
                         ) : (
-                          field.buddy_phone_number || '-'
+                          field.buddyPhoneNumber || field.buddy_phone_number || '-'
                         )}
                       </TableCell>
 
@@ -188,13 +190,13 @@ export default function FieldTraining() {
                       <TableCell>
                         {editingId === field.id ? (
                           <Textarea
-                            value={editData.manager_feedback || field.manager_feedback || ''}
+                            value={editData.manager_feedback || (field.managerFeedback || field.manager_feedback) || ''}
                             onChange={(e) => setEditData({...editData, manager_feedback: e.target.value})}
                             className="w-[200px]"
                             rows={2}
                           />
                         ) : (
-                          field.manager_feedback || '-'
+                          field.managerFeedback || field.manager_feedback || '-'
                         )}
                       </TableCell>
 
@@ -202,7 +204,7 @@ export default function FieldTraining() {
                       <TableCell>
                         {editingId === field.id ? (
                           <Select
-                            value={editData.ft_feedback || field.ft_feedback || ''}
+                            value={editData.ft_feedback || (field.ftFeedback || field.ft_feedback) || ''}
                             onValueChange={(value) => setEditData({...editData, ft_feedback: value})}
                           >
                             <SelectTrigger className="w-[180px]">
@@ -214,9 +216,9 @@ export default function FieldTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          field.ft_feedback ? (
-                            <Badge variant={field.ft_feedback === 'fit' ? 'default' : 'destructive'}>
-                              {field.ft_feedback.replace(/_/g, ' ')}
+                          (field.ftFeedback || field.ft_feedback) ? (
+                            <Badge variant={(field.ftFeedback || field.ft_feedback) === 'fit' ? 'default' : 'destructive'}>
+                              {(field.ftFeedback || field.ft_feedback).replace(/_/g, ' ')}
                             </Badge>
                           ) : '-'
                         )}
@@ -226,13 +228,13 @@ export default function FieldTraining() {
                       <TableCell>
                         {editingId === field.id ? (
                           <Textarea
-                            value={editData.rejection_reason || field.rejection_reason || ''}
+                            value={editData.rejection_reason || (field.rejectionReason || field.rejection_reason) || ''}
                             onChange={(e) => setEditData({...editData, rejection_reason: e.target.value})}
                             className="w-[200px]"
                             rows={2}
                           />
                         ) : (
-                          field.rejection_reason || '-'
+                          field.rejectionReason || field.rejection_reason || '-'
                         )}
                       </TableCell>
 
@@ -263,12 +265,12 @@ export default function FieldTraining() {
                         {editingId === field.id ? (
                           <Input
                             type="date"
-                            value={editData.last_reporting_date || field.last_reporting_date || ''}
+                            value={editData.last_reporting_date || (field.lastReportingDate || field.last_reporting_date) || ''}
                             onChange={(e) => setEditData({...editData, last_reporting_date: e.target.value})}
                             className="w-[150px]"
                           />
                         ) : (
-                          field.last_reporting_date ? format(new Date(field.last_reporting_date), "dd-MMM-yyyy") : "-"
+                          (field.lastReportingDate || field.last_reporting_date) ? format(new Date(field.lastReportingDate || field.last_reporting_date), "dd-MMM-yyyy") : "-"
                         )}
                       </TableCell>
 
