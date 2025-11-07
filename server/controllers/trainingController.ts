@@ -57,10 +57,10 @@ const createInduction = async (req: Request, res: Response) => {
 // Get all induction records
 const getInductions = async (req: Request, res: Response) => {
   try {
-    const inductions = await query(
+    const result = await query(
       'SELECT * FROM induction_training ORDER BY created_at DESC'
     );
-    res.json({ data: inductions });
+    res.json({ data: result.rows });
   } catch (error) {
     console.error('Get inductions error:', error);
     res.status(500).json({ message: "Internal server error" });
@@ -119,14 +119,14 @@ const updateInduction = async (req: Request, res: Response) => {
 // Get all classroom training records
 const getClassroomTrainings = async (req: Request, res: Response) => {
   try {
-    const trainings = await query(
+    const result = await query(
       `SELECT ct.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
               it.date_of_joining, it.gross_salary, it.manager_name
        FROM classroom_training ct
        JOIN induction_training it ON ct.induction_id = it.id
        ORDER BY ct.created_at DESC`
     );
-    res.json({ data: trainings });
+    res.json({ data: result.rows });
   } catch (error) {
     console.error('Get classroom trainings error:', error);
     res.status(500).json({ message: "Internal server error" });
@@ -206,7 +206,7 @@ const updateClassroomTraining = async (req: Request, res: Response) => {
 // Get all field training records
 const getFieldTrainings = async (req: Request, res: Response) => {
   try {
-    const trainings = await query(
+    const result = await query(
       `SELECT ft.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
               it.date_of_joining, it.gross_salary, it.manager_name,
               ct.training_start_date, ct.training_completion_date
@@ -215,7 +215,7 @@ const getFieldTrainings = async (req: Request, res: Response) => {
        JOIN induction_training it ON ct.induction_id = it.id
        ORDER BY ft.created_at DESC`
     );
-    res.json({ data: trainings });
+    res.json({ data: result.rows });
   } catch (error) {
     console.error('Get field trainings error:', error);
     res.status(500).json({ message: "Internal server error" });
