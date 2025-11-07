@@ -18,10 +18,7 @@ router.get('/candidates', interviewController.getCandidates);
 // Get candidate by ID
 router.get('/candidates/:id', interviewController.getCandidateById);
 
-// Update candidate (general update)
-router.patch('/candidates/:id', interviewController.updateCandidate);
-
-// Update prescreening status
+// Update prescreening status (specific routes first)
 router.patch('/candidates/:id/prescreening', interviewController.updatePrescreening);
 
 // Update screening scores
@@ -35,5 +32,8 @@ router.patch('/candidates/:id/offer', interviewController.updateOffer);
 
 // Update candidate status
 router.patch('/candidates/:id/status', interviewController.updateCandidateStatus);
+
+// Update candidate (general update - should be last)
+router.patch('/candidates/:id', interviewController.updateCandidate);
 
 export { router as interviewRoutes };
