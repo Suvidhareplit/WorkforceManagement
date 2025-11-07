@@ -300,6 +300,18 @@ const updateFieldTraining = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     const updateData = req.body;
     
+    // Get current record first
+    const currentRecordResult = await query(
+      'SELECT * FROM field_training WHERE id = ?',
+      [id]
+    );
+    
+    if (!currentRecordResult.rows || currentRecordResult.rows.length === 0) {
+      return res.status(404).json({ message: "Field training record not found" });
+    }
+    
+    const currentRecord = currentRecordResult.rows[0] as any;
+    
     // Validation
     if (updateData.ft_feedback === 'not_fit_ft_rejection' && !updateData.rejection_reason) {
       return res.status(400).json({ 
@@ -327,6 +339,59 @@ const updateFieldTraining = async (req: Request, res: Response) => {
       `UPDATE field_training SET ${fields.join(', ')} WHERE id = ?`,
       values
     );
+    
+    // Merge current record with update to get final state
+    const finalState = { ...currentRecord, ...updateData };
+    
+    // If FT feedback is 'fit' or 'fit_need_refresher_training', auto-create Onboarding
+    if (finalState.ft_feedback === 'fit' || finalState.ft_feedback === 'fit_need_refresher_training') {
+      // Check if onboarding record already exists
+      const existingOnboarding = await query(
+        'SELECT id FROM onboarding WHERE candidate_id = ?',
+        [currentRecord.candidate_id]
+      );
+      
+      if (!existingOnboarding.rows || existingOnboarding.rows.length === 0) {
+        // Get candidate details
+        const candidateDetails = await query(
+          `SELECT ft.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
+                  it.date_of_joining, it.gross_salary, it.manager_name
+           FROM field_training ft
+           JOIN classroom_training ct ON ft.classroom_training_id = ct.id
+           JOIN induction_training it ON ct.induction_id = it.id
+           WHERE ft.id = ?`,
+          [id]
+        );
+        
+        if (candidateDetails.rows && candidateDetails.rows.length > 0) {
+          const candidate = candidateDetails.rows[0] as any;
+          
+          console.log('✅ Auto-creating onboarding for field training ID:', id, 'Candidate:', candidate.candidate_id);
+          await query(
+            `INSERT INTO onboarding (
+              field_training_id, candidate_id, name, mobile_number,
+              city, cluster, role, manager_name, date_of_joining, gross_salary
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              id,
+              candidate.candidate_id,
+              candidate.name,
+              candidate.mobile_number,
+              candidate.city,
+              candidate.cluster,
+              candidate.role,
+              candidate.manager_name,
+              candidate.date_of_joining,
+              candidate.gross_salary
+            ]
+          );
+          
+          console.log('✅ Onboarding record created successfully!');
+        }
+      } else {
+        console.log('ℹ️  Onboarding already exists for candidate ID:', currentRecord.candidate_id);
+      }
+    }
     
     res.json({ message: "Field training updated successfully" });
   } catch (error) {

@@ -9,13 +9,77 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Edit, Save, X } from "lucide-react";
+import { Edit, Save, X, Download } from "lucide-react";
 import { format } from "date-fns";
 
 export default function FieldTraining() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editData, setEditData] = useState<any>({});
   const { toast } = useToast();
+
+  // Export Fit candidates to CSV
+  const exportFitCandidates = () => {
+    const fitCandidates = fields.filter((field: any) => 
+      (field.ftFeedback || field.ft_feedback) === 'fit' || 
+      (field.ftFeedback || field.ft_feedback) === 'fit_need_refresher_training'
+    );
+
+    if (fitCandidates.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No fit candidates found to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // CSV Headers
+    const headers = [
+      "Name", "Mobile", "City", "Cluster", "Role", "Manager", 
+      "Training Start Date", "Training End Date", 
+      "Buddy Aligned", "Buddy Name", "Buddy Phone",
+      "FTE Status", "Manager Feedback"
+    ];
+
+    // CSV Rows
+    const rows = fitCandidates.map((field: any) => [
+      field.name || '',
+      field.mobileNumber || field.mobile_number || '',
+      field.city || '',
+      field.cluster || '',
+      field.role || '',
+      field.managerName || field.manager_name || '',
+      field.trainingStartDate || field.training_start_date ? format(new Date(field.trainingStartDate || field.training_start_date), "dd-MMM-yyyy") : '',
+      field.trainingCompletionDate || field.training_completion_date ? format(new Date(field.trainingCompletionDate || field.training_completion_date), "dd-MMM-yyyy") : '',
+      field.buddyAligned || field.buddy_aligned || '',
+      field.buddyName || field.buddy_name || '',
+      field.buddyPhoneNumber || field.buddy_phone_number || '',
+      (field.ftFeedback || field.ft_feedback || '').replace(/_/g, ' '),
+      field.managerFeedback || field.manager_feedback || ''
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row: any) => row.map((cell: any) => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `fit_candidates_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Success",
+      description: `Exported ${fitCandidates.length} fit candidates`,
+    });
+  };
 
   // Fetch field training records
   const { data: fieldResponse, isLoading } = useQuery({
@@ -77,9 +141,15 @@ export default function FieldTraining() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800">Field Training (FT)</h2>
-        <p className="text-slate-600 mt-1">Manage field training for candidates who completed classroom training</p>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Field Training (FT)</h2>
+          <p className="text-slate-600 mt-1">Manage field training for candidates who completed classroom training</p>
+        </div>
+        <Button onClick={exportFitCandidates} className="flex items-center gap-2">
+          <Download className="h-4 w-4" />
+          Export Fit Candidates
+        </Button>
       </div>
 
       {/* Field Training Records Table */}

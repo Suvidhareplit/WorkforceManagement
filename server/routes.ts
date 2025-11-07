@@ -5,6 +5,7 @@ import { authRoutes } from "./routes/authRoutes";
 import { hiringRoutes } from "./routes/hiringRoutes";
 import { interviewRoutes } from "./routes/interviewRoutes";
 import { trainingRoutes } from "./routes/trainingRoutes";
+import onboardingRoutes from "./routes/onboardingRoutes";
 import { employeeRoutes } from "./routes/employeeRoutes";
 import { userRoutes } from "./routes/userRoutes";
 import { masterDataRoutes } from "./routes/masterDataRoutes";
@@ -25,6 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/hiring', hiringRoutes);
   app.use('/api/interviews', interviewRoutes);
   app.use('/api/training', trainingRoutes);
+  app.use('/api/onboarding', onboardingRoutes);
   app.use('/api/employees', employeeRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/master-data', masterDataRoutes);
