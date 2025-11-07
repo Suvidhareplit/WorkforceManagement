@@ -95,20 +95,20 @@ export default function InductionTraining() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead>City</TableHead>
-                  <TableHead>Cluster</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>DOJ</TableHead>
-                  <TableHead>Gross</TableHead>
-                  <TableHead>Joining Status</TableHead>
-                  <TableHead>Manager Name</TableHead>
-                  <TableHead>Induction Done By</TableHead>
-                  <TableHead>Onboarding Form</TableHead>
-                  <TableHead>UAN Generated</TableHead>
-                  <TableHead>Induction Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="font-bold">Name</TableHead>
+                  <TableHead className="font-bold">Mobile</TableHead>
+                  <TableHead className="font-bold">City</TableHead>
+                  <TableHead className="font-bold">Cluster</TableHead>
+                  <TableHead className="font-bold">Role</TableHead>
+                  <TableHead className="font-bold">DOJ</TableHead>
+                  <TableHead className="font-bold">Gross</TableHead>
+                  <TableHead className="font-bold">Joining Status</TableHead>
+                  <TableHead className="font-bold">Manager Name</TableHead>
+                  <TableHead className="font-bold">Induction Done By</TableHead>
+                  <TableHead className="font-bold">Onboarding Form</TableHead>
+                  <TableHead className="font-bold">UAN Generated</TableHead>
+                  <TableHead className="font-bold">Induction Status</TableHead>
+                  <TableHead className="font-bold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -128,7 +128,7 @@ export default function InductionTraining() {
                   inductions.map((induction: any) => (
                     <TableRow key={induction.id}>
                       <TableCell className="font-medium">{induction.name}</TableCell>
-                      <TableCell>{induction.mobile_number}</TableCell>
+                      <TableCell>{induction.mobileNumber || induction.mobile_number || '-'}</TableCell>
                       <TableCell>{induction.city}</TableCell>
                       <TableCell>{induction.cluster}</TableCell>
                       <TableCell>{induction.role}</TableCell>
@@ -137,7 +137,7 @@ export default function InductionTraining() {
                           ? format(new Date(induction.date_of_joining), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell>₹{induction.gross_salary ? Number(induction.gross_salary).toLocaleString() : "-"}</TableCell>
+                      <TableCell>{induction.grossSalary ? Number(induction.grossSalary).toLocaleString() : (induction.gross_salary ? Number(induction.gross_salary).toLocaleString() : "-")}</TableCell>
                       
                       {/* Joining Status */}
                       <TableCell>
@@ -157,7 +157,7 @@ export default function InductionTraining() {
                           </Select>
                         ) : (
                           <Badge variant={induction.joining_status === 'joined' ? 'default' : 'outline'}>
-                            {induction.joining_status || 'pending'}
+                            {induction.joining_status ? induction.joining_status.charAt(0).toUpperCase() + induction.joining_status.slice(1).replace('_', ' ') : 'Pending'}
                           </Badge>
                         )}
                       </TableCell>
