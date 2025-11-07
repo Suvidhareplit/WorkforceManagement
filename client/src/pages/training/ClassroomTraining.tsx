@@ -72,7 +72,6 @@ export default function ClassroomTraining() {
       trainer_id: classroom.trainerId || classroom.trainer_id,
       crt_feedback: classroom.crtFeedback || classroom.crt_feedback,
       remarks: classroom.remarks,
-      last_working_day: classroom.lastWorkingDay || classroom.last_working_day,
       exit_date: classroom.exitDate || classroom.exit_date,
       exit_reason: classroom.exitReason || classroom.exit_reason,
     });
@@ -122,32 +121,31 @@ export default function ClassroomTraining() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Mobile</TableHead>
-                  <TableHead>City</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Manager</TableHead>
-                  <TableHead>Training Start</TableHead>
-                  <TableHead>Training End</TableHead>
-                  <TableHead>Trainer</TableHead>
-                  <TableHead>CRT Feedback</TableHead>
-                  <TableHead>Remarks</TableHead>
-                  <TableHead>Last Working Day</TableHead>
-                  <TableHead>Exit Date</TableHead>
-                  <TableHead>Exit Reason</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="font-semibold">Name</TableHead>
+                  <TableHead className="font-semibold">Mobile</TableHead>
+                  <TableHead className="font-semibold">City</TableHead>
+                  <TableHead className="font-semibold">Role</TableHead>
+                  <TableHead className="font-semibold">Manager</TableHead>
+                  <TableHead className="font-semibold">Training Start</TableHead>
+                  <TableHead className="font-semibold">Training End</TableHead>
+                  <TableHead className="font-semibold">Trainer</TableHead>
+                  <TableHead className="font-semibold">CRT Feedback</TableHead>
+                  <TableHead className="font-semibold">Remarks</TableHead>
+                  <TableHead className="font-semibold">Exit Date</TableHead>
+                  <TableHead className="font-semibold">Exit Reason</TableHead>
+                  <TableHead className="font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8">
+                    <TableCell colSpan={13} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : classrooms.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8">
+                    <TableCell colSpan={13} className="text-center py-8">
                       No classroom training records found
                     </TableCell>
                   </TableRow>
@@ -269,51 +267,61 @@ export default function ClassroomTraining() {
                         )}
                       </TableCell>
 
-                      {/* Last Working Day */}
+                      {/* Exit Date - Only for Not Fit or Early Exit */}
                       <TableCell>
-                        {editingId === classroom.id ? (
-                          <Input
-                            type="date"
-                            value={editData.last_working_day || (classroom.lastWorkingDay || classroom.last_working_day) || ''}
-                            onChange={(e) => setEditData({...editData, last_working_day: e.target.value})}
-                            className="w-[150px]"
-                          />
-                        ) : (
-                          (classroom.lastWorkingDay || classroom.last_working_day) ? format(new Date(classroom.lastWorkingDay || classroom.last_working_day), "dd-MMM-yyyy") : "-"
-                        )}
+                        {(() => {
+                          const crtFeedback = editingId === classroom.id 
+                            ? (editData.crt_feedback || classroom.crtFeedback || classroom.crt_feedback)
+                            : (classroom.crtFeedback || classroom.crt_feedback);
+                          const showExitFields = crtFeedback === 'not_fit_crt_rejection' || crtFeedback === 'early_exit';
+                          
+                          if (!showExitFields) {
+                            return <span className="text-gray-500">N/A</span>;
+                          }
+                          
+                          return editingId === classroom.id ? (
+                            <Input
+                              type="date"
+                              value={editData.exit_date || (classroom.exitDate || classroom.exit_date) || ''}
+                              onChange={(e) => setEditData({...editData, exit_date: e.target.value})}
+                              className="w-[150px]"
+                            />
+                          ) : (
+                            (classroom.exitDate || classroom.exit_date) ? format(new Date(classroom.exitDate || classroom.exit_date), "dd-MMM-yyyy") : "-"
+                          );
+                        })()}
                       </TableCell>
 
-                      {/* Exit Date */}
+                      {/* Exit Reason - Only for Not Fit or Early Exit */}
                       <TableCell>
-                        {editingId === classroom.id ? (
-                          <Input
-                            type="date"
-                            value={editData.exit_date || (classroom.exitDate || classroom.exit_date) || ''}
-                            onChange={(e) => setEditData({...editData, exit_date: e.target.value})}
-                            className="w-[150px]"
-                          />
-                        ) : (
-                          (classroom.exitDate || classroom.exit_date) ? format(new Date(classroom.exitDate || classroom.exit_date), "dd-MMM-yyyy") : "-"
-                        )}
-                      </TableCell>
-
-                      {/* Exit Reason */}
-                      <TableCell>
-                        {editingId === classroom.id ? (
-                          <Select
-                            value={editData.exit_reason || (classroom.exitReason || classroom.exit_reason) || ''}
-                            onValueChange={(value) => setEditData({...editData, exit_reason: value})}
-                          >
-                            <SelectTrigger className="w-[150px]">
-                              <SelectValue placeholder="Select Reason" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="crt_absconding">CRT Absconding</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          (classroom.exitReason || classroom.exit_reason) || '-'
-                        )}
+                        {(() => {
+                          const crtFeedback = editingId === classroom.id 
+                            ? (editData.crt_feedback || classroom.crtFeedback || classroom.crt_feedback)
+                            : (classroom.crtFeedback || classroom.crt_feedback);
+                          const showExitFields = crtFeedback === 'not_fit_crt_rejection' || crtFeedback === 'early_exit';
+                          
+                          if (!showExitFields) {
+                            return <span className="text-gray-500">N/A</span>;
+                          }
+                          
+                          return editingId === classroom.id ? (
+                            <Select
+                              value={editData.exit_reason || (classroom.exitReason || classroom.exit_reason) || ''}
+                              onValueChange={(value) => setEditData({...editData, exit_reason: value})}
+                            >
+                              <SelectTrigger className="w-[150px]">
+                                <SelectValue placeholder="Select Reason" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="crt_absconding">CRT Absconding</SelectItem>
+                                <SelectItem value="performance_issues">Performance Issues</SelectItem>
+                                <SelectItem value="personal_reasons">Personal Reasons</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            (classroom.exitReason || classroom.exit_reason) || '-'
+                          );
+                        })()}
                       </TableCell>
 
                       {/* Actions */}
