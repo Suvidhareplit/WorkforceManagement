@@ -352,16 +352,27 @@ const updateFieldTraining = async (req: Request, res: Response) => {
       );
       
       if (!existingOnboarding.rows || existingOnboarding.rows.length === 0) {
-        // Get candidate details including resume source
+        // Get candidate details including resume source and role organizational details
         const candidateDetails = await query(
           `SELECT ft.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
                   it.date_of_joining, it.gross_salary, it.manager_name,
-                  c.email, c.resume_source, c.vendor_id, c.vendor_name,
-                  c.recruiter_id, c.recruiter_name, c.referral_name
+                  c.id as candidate_id, c.email, c.resume_source, c.vendor_id, c.vendor_name,
+                  c.recruiter_id, c.recruiter_name, c.referral_name,
+                  c.role_id,
+                  r.name as role_name,
+                  f.name as function_name,
+                  bu.name as business_unit_name,
+                  d.name as department_name,
+                  sd.name as sub_department_name
            FROM field_training ft
            JOIN classroom_training ct ON ft.classroom_training_id = ct.id
            JOIN induction_training it ON ct.induction_id = it.id
            JOIN candidates c ON ft.candidate_id = c.id
+           LEFT JOIN roles r ON c.role_id = r.id
+           LEFT JOIN functions f ON r.paygroup_id = f.id
+           LEFT JOIN business_units bu ON r.business_unit_id = bu.id
+           LEFT JOIN departments d ON r.department_id = d.id
+           LEFT JOIN sub_departments sd ON r.sub_department_id = sd.id
            WHERE ft.id = ?`,
           [id]
         );
@@ -369,13 +380,20 @@ const updateFieldTraining = async (req: Request, res: Response) => {
         if (candidateDetails.rows && candidateDetails.rows.length > 0) {
           const candidate = candidateDetails.rows[0] as any;
           
-          console.log('✅ Auto-creating onboarding for field training ID:', id, 'Candidate:', candidate.candidate_id);
+          // Calculate cost centre based on resume source type
+          let costCentre = 'YGO'; // Default for non-vendor sources
+          if (candidate.resume_source === 'vendor' && candidate.vendor_name) {
+            costCentre = candidate.vendor_name;
+          }
+          
+          console.log('✅ Auto-creating onboarding for field training ID:', id, 'Candidate:', candidate.candidate_id, 'Cost Centre:', costCentre);
           await query(
             `INSERT INTO onboarding (
               field_training_id, candidate_id, name, mobile_number, email,
               city, cluster, role, manager_name, date_of_joining, gross_salary,
-              resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              resume_source, cost_centre, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
+              function_name, business_unit_name, department_name, sub_department_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               id,
               candidate.candidate_id,
@@ -389,11 +407,16 @@ const updateFieldTraining = async (req: Request, res: Response) => {
               candidate.date_of_joining,
               candidate.gross_salary,
               candidate.resume_source,
+              costCentre,
               candidate.vendor_id,
               candidate.vendor_name,
               candidate.recruiter_id,
               candidate.recruiter_name,
-              candidate.referral_name
+              candidate.referral_name,
+              candidate.function_name,
+              candidate.business_unit_name,
+              candidate.department_name,
+              candidate.sub_department_name
             ]
           );
           

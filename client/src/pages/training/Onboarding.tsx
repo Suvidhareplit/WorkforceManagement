@@ -77,6 +77,11 @@ export default function Onboarding() {
       "Gross Salary (DO NOT EDIT)",
       "Resume Source Type (DO NOT EDIT)",
       "Resume Source Name (DO NOT EDIT)",
+      "Cost Centre (DO NOT EDIT)",
+      "Function (DO NOT EDIT)",
+      "Business Unit (DO NOT EDIT)",
+      "Department (DO NOT EDIT)",
+      "Sub Department (DO NOT EDIT)",
       "Gender", 
       "Date of Birth (YYYY-MM-DD)",
       "Blood Group", 
@@ -92,7 +97,22 @@ export default function Onboarding() {
       "Permanent Address",
       "Emergency Contact Number", 
       "Emergency Contact Name", 
-      "Relation with Emergency Contact"
+      "Relation with Emergency Contact",
+      "Father Name",
+      "Mother Name",
+      "Mother DOB (YYYY-MM-DD)",
+      "UAN Number (12 digits)",
+      "ESIC IP Number (10 digits or N/A)",
+      "Wife Name",
+      "Wife DOB (YYYY-MM-DD)",
+      "Child 1 Name",
+      "Child 1 Gender (male/female)",
+      "Child 1 DOB (YYYY-MM-DD)",
+      "Child 2 Name",
+      "Child 2 Gender (male/female)",
+      "Child 2 DOB (YYYY-MM-DD)",
+      "Nominee Name",
+      "Nominee Relation"
     ];
 
     const rows = pendingCandidates.map((record: any) => {
@@ -130,6 +150,11 @@ export default function Onboarding() {
         record.grossSalary || record.gross_salary || '',
         resumeSourceType,
         resumeSourceName,
+        record.costCentre || record.cost_centre || '',
+        record.functionName || record.function_name || '',
+        record.businessUnitName || record.business_unit_name || '',
+        record.departmentName || record.department_name || '',
+        record.subDepartmentName || record.sub_department_name || '',
         record.gender || '',
         record.dateOfBirth || record.date_of_birth ? format(new Date(record.dateOfBirth || record.date_of_birth), 'yyyy-MM-dd') : '',
         record.bloodGroup || record.blood_group || '',
@@ -145,7 +170,22 @@ export default function Onboarding() {
         record.permanentAddress || record.permanent_address || '',
         record.emergencyContactNumber || record.emergency_contact_number || '',
         record.emergencyContactName || record.emergency_contact_name || '',
-        record.emergencyContactRelation || record.emergency_contact_relation || ''
+        record.emergencyContactRelation || record.emergency_contact_relation || '',
+        record.fatherName || record.father_name || '',
+        record.motherName || record.mother_name || '',
+        record.motherDob || record.mother_dob ? format(new Date(record.motherDob || record.mother_dob), 'yyyy-MM-dd') : '',
+        record.uanNumber || record.uan_number || '',
+        record.esicIpNumber || record.esic_ip_number || '',
+        record.wifeName || record.wife_name || '',
+        record.wifeDob || record.wife_dob ? format(new Date(record.wifeDob || record.wife_dob), 'yyyy-MM-dd') : '',
+        record.child1Name || record.child1_name || '',
+        record.child1Gender || record.child1_gender || '',
+        record.child1Dob || record.child1_dob ? format(new Date(record.child1Dob || record.child1_dob), 'yyyy-MM-dd') : '',
+        record.child2Name || record.child2_name || '',
+        record.child2Gender || record.child2_gender || '',
+        record.child2Dob || record.child2_dob ? format(new Date(record.child2Dob || record.child2_dob), 'yyyy-MM-dd') : '',
+        record.nomineeName || record.nominee_name || '',
+        record.nomineeRelation || record.nominee_relation || ''
       ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
     });
 
@@ -329,6 +369,11 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Gross Salary</TableHead>
                   <TableHead className="font-semibold">Resume Source Type</TableHead>
                   <TableHead className="font-semibold">Resume Source Name</TableHead>
+                  <TableHead className="font-semibold">Cost Centre</TableHead>
+                  <TableHead className="font-semibold">Function</TableHead>
+                  <TableHead className="font-semibold">Business Unit</TableHead>
+                  <TableHead className="font-semibold">Department</TableHead>
+                  <TableHead className="font-semibold">Sub Department</TableHead>
                   <TableHead className="font-semibold">Gender</TableHead>
                   <TableHead className="font-semibold">DOB</TableHead>
                   <TableHead className="font-semibold">Blood Group</TableHead>
@@ -345,6 +390,21 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Emergency Name</TableHead>
                   <TableHead className="font-semibold">Emergency Number</TableHead>
                   <TableHead className="font-semibold">Emergency Relation</TableHead>
+                  <TableHead className="font-semibold">Father Name</TableHead>
+                  <TableHead className="font-semibold">Mother Name</TableHead>
+                  <TableHead className="font-semibold">Mother DOB</TableHead>
+                  <TableHead className="font-semibold">UAN Number</TableHead>
+                  <TableHead className="font-semibold">ESIC IP Number</TableHead>
+                  <TableHead className="font-semibold">Wife Name</TableHead>
+                  <TableHead className="font-semibold">Wife DOB</TableHead>
+                  <TableHead className="font-semibold">Child 1 Name</TableHead>
+                  <TableHead className="font-semibold">Child 1 Gender</TableHead>
+                  <TableHead className="font-semibold">Child 1 DOB</TableHead>
+                  <TableHead className="font-semibold">Child 2 Name</TableHead>
+                  <TableHead className="font-semibold">Child 2 Gender</TableHead>
+                  <TableHead className="font-semibold">Child 2 DOB</TableHead>
+                  <TableHead className="font-semibold">Nominee Name</TableHead>
+                  <TableHead className="font-semibold">Nominee Relation</TableHead>
                   <TableHead className="font-semibold">Onboarded</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
                 </TableRow>
@@ -352,13 +412,13 @@ export default function Onboarding() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={29} className="text-center py-8">
+                    <TableCell colSpan={49} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : onboardingRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={29} className="text-center py-8">
+                    <TableCell colSpan={49} className="text-center py-8">
                       No onboarding records found
                     </TableCell>
                   </TableRow>
@@ -406,6 +466,11 @@ export default function Onboarding() {
                       </TableCell>
                       <TableCell>{resumeSourceType}</TableCell>
                       <TableCell>{resumeSourceName}</TableCell>
+                      <TableCell>{record.costCentre || record.cost_centre || '-'}</TableCell>
+                      <TableCell>{record.functionName || record.function_name || '-'}</TableCell>
+                      <TableCell>{record.businessUnitName || record.business_unit_name || '-'}</TableCell>
+                      <TableCell>{record.departmentName || record.department_name || '-'}</TableCell>
+                      <TableCell>{record.subDepartmentName || record.sub_department_name || '-'}</TableCell>
                       <TableCell>{record.gender || '-'}</TableCell>
                       <TableCell>
                         {(record.dateOfBirth || record.date_of_birth)
@@ -434,6 +499,37 @@ export default function Onboarding() {
                       <TableCell>{record.emergencyContactName || record.emergency_contact_name || '-'}</TableCell>
                       <TableCell>{record.emergencyContactNumber || record.emergency_contact_number || '-'}</TableCell>
                       <TableCell>{record.emergencyContactRelation || record.emergency_contact_relation || '-'}</TableCell>
+                      <TableCell>{record.fatherName || record.father_name || '-'}</TableCell>
+                      <TableCell>{record.motherName || record.mother_name || '-'}</TableCell>
+                      <TableCell>
+                        {(record.motherDob || record.mother_dob)
+                          ? format(new Date(record.motherDob || record.mother_dob), "dd-MMM-yyyy")
+                          : "-"}
+                      </TableCell>
+                      <TableCell>{record.uanNumber || record.uan_number || '-'}</TableCell>
+                      <TableCell>{record.esicIpNumber || record.esic_ip_number || '-'}</TableCell>
+                      <TableCell>{record.wifeName || record.wife_name || '-'}</TableCell>
+                      <TableCell>
+                        {(record.wifeDob || record.wife_dob)
+                          ? format(new Date(record.wifeDob || record.wife_dob), "dd-MMM-yyyy")
+                          : "-"}
+                      </TableCell>
+                      <TableCell>{record.child1Name || record.child1_name || '-'}</TableCell>
+                      <TableCell>{record.child1Gender || record.child1_gender || '-'}</TableCell>
+                      <TableCell>
+                        {(record.child1Dob || record.child1_dob)
+                          ? format(new Date(record.child1Dob || record.child1_dob), "dd-MMM-yyyy")
+                          : "-"}
+                      </TableCell>
+                      <TableCell>{record.child2Name || record.child2_name || '-'}</TableCell>
+                      <TableCell>{record.child2Gender || record.child2_gender || '-'}</TableCell>
+                      <TableCell>
+                        {(record.child2Dob || record.child2_dob)
+                          ? format(new Date(record.child2Dob || record.child2_dob), "dd-MMM-yyyy")
+                          : "-"}
+                      </TableCell>
+                      <TableCell>{record.nomineeName || record.nominee_name || '-'}</TableCell>
+                      <TableCell>{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
                       <TableCell>
                         <Checkbox
                           checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
