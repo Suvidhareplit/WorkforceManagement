@@ -6,18 +6,11 @@ const getOnboardingRecords = async (req: Request, res: Response) => {
   try {
     const result = await query(
       `SELECT 
-         o.*, 
-         ft.ft_feedback,
-         c.id as candidate_id,
-         c.email AS candidate_email,
-         c.resume_source,
-         c.vendor_id, c.vendor_name,
-         c.recruiter_id, c.recruiter_name,
-         c.referral_name
-       FROM onboarding o
-       JOIN field_training ft ON o.field_training_id = ft.id
-       JOIN candidates c ON o.candidate_id = c.id
-       ORDER BY o.created_at DESC`
+        o.*, 
+        ft.ft_feedback
+      FROM onboarding o
+      JOIN field_training ft ON o.field_training_id = ft.id
+      ORDER BY o.created_at DESC`
     );
     
     const rows = result.rows || [];

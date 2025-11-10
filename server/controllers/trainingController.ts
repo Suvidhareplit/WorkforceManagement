@@ -352,13 +352,16 @@ const updateFieldTraining = async (req: Request, res: Response) => {
       );
       
       if (!existingOnboarding.rows || existingOnboarding.rows.length === 0) {
-        // Get candidate details
+        // Get candidate details including resume source
         const candidateDetails = await query(
           `SELECT ft.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
-                  it.date_of_joining, it.gross_salary, it.manager_name
+                  it.date_of_joining, it.gross_salary, it.manager_name,
+                  c.email, c.resume_source, c.vendor_id, c.vendor_name,
+                  c.recruiter_id, c.recruiter_name, c.referral_name
            FROM field_training ft
            JOIN classroom_training ct ON ft.classroom_training_id = ct.id
            JOIN induction_training it ON ct.induction_id = it.id
+           JOIN candidates c ON ft.candidate_id = c.id
            WHERE ft.id = ?`,
           [id]
         );
@@ -369,20 +372,28 @@ const updateFieldTraining = async (req: Request, res: Response) => {
           console.log('✅ Auto-creating onboarding for field training ID:', id, 'Candidate:', candidate.candidate_id);
           await query(
             `INSERT INTO onboarding (
-              field_training_id, candidate_id, name, mobile_number,
-              city, cluster, role, manager_name, date_of_joining, gross_salary
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              field_training_id, candidate_id, name, mobile_number, email,
+              city, cluster, role, manager_name, date_of_joining, gross_salary,
+              resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               id,
               candidate.candidate_id,
               candidate.name,
               candidate.mobile_number,
+              candidate.email,
               candidate.city,
               candidate.cluster,
               candidate.role,
               candidate.manager_name,
               candidate.date_of_joining,
-              candidate.gross_salary
+              candidate.gross_salary,
+              candidate.resume_source,
+              candidate.vendor_id,
+              candidate.vendor_name,
+              candidate.recruiter_id,
+              candidate.recruiter_name,
+              candidate.referral_name
             ]
           );
           

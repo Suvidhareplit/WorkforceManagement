@@ -75,7 +75,8 @@ export default function Onboarding() {
       "Reporting Manager (DO NOT EDIT)", 
       "Date of Joining (DO NOT EDIT)", 
       "Gross Salary (DO NOT EDIT)",
-      "Resume Source (DO NOT EDIT)",
+      "Resume Source Type (DO NOT EDIT)",
+      "Resume Source Name (DO NOT EDIT)",
       "Gender", 
       "Date of Birth (YYYY-MM-DD)",
       "Blood Group", 
@@ -95,17 +96,25 @@ export default function Onboarding() {
     ];
 
     const rows = pendingCandidates.map((record: any) => {
-      // Format resume source based on type
-      let resumeSource = '-';
+      // Format resume source type and name
       const sourceType = record.resumeSource || record.resume_source;
+      let resumeSourceType = '';
+      let resumeSourceName = '';
+      
       if (sourceType === 'vendor') {
-        resumeSource = `Vendor: ${record.vendorName || record.vendor_name || 'Unknown'}`;
+        resumeSourceType = 'Vendor';
+        resumeSourceName = record.vendorName || record.vendor_name || '';
       } else if (sourceType === 'field_recruiter') {
-        resumeSource = `Recruiter: ${record.recruiterName || record.recruiter_name || 'Unknown'}`;
+        resumeSourceType = 'Field Recruiter';
+        resumeSourceName = record.recruiterName || record.recruiter_name || '';
       } else if (sourceType === 'referral') {
-        resumeSource = `Referral: ${record.referralName || record.referral_name || 'Unknown'}`;
-      } else {
-        resumeSource = sourceType || 'Direct';
+        resumeSourceType = 'Referral';
+        resumeSourceName = record.referralName || record.referral_name || '';
+      } else if (sourceType === 'direct') {
+        resumeSourceType = 'Direct';
+        resumeSourceName = record.directSource || record.direct_source || '';
+      } else if (sourceType) {
+        resumeSourceType = sourceType;
       }
 
       return [
@@ -119,7 +128,8 @@ export default function Onboarding() {
         record.managerName || record.manager_name || '',
         record.dateOfJoining || record.date_of_joining ? format(new Date(record.dateOfJoining || record.date_of_joining), 'yyyy-MM-dd') : '',
         record.grossSalary || record.gross_salary || '',
-        resumeSource,
+        resumeSourceType,
+        resumeSourceName,
         record.gender || '',
         record.dateOfBirth || record.date_of_birth ? format(new Date(record.dateOfBirth || record.date_of_birth), 'yyyy-MM-dd') : '',
         record.bloodGroup || record.blood_group || '',
@@ -317,7 +327,8 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Manager</TableHead>
                   <TableHead className="font-semibold">DOJ</TableHead>
                   <TableHead className="font-semibold">Gross Salary</TableHead>
-                  <TableHead className="font-semibold">Resume Source</TableHead>
+                  <TableHead className="font-semibold">Resume Source Type</TableHead>
+                  <TableHead className="font-semibold">Resume Source Name</TableHead>
                   <TableHead className="font-semibold">Gender</TableHead>
                   <TableHead className="font-semibold">DOB</TableHead>
                   <TableHead className="font-semibold">Blood Group</TableHead>
@@ -341,29 +352,37 @@ export default function Onboarding() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={28} className="text-center py-8">
+                    <TableCell colSpan={29} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : onboardingRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={28} className="text-center py-8">
+                    <TableCell colSpan={29} className="text-center py-8">
                       No onboarding records found
                     </TableCell>
                   </TableRow>
                 ) : (
                   onboardingRecords.map((record: any) => {
-                    // Format resume source
-                    let resumeSource = '-';
+                    // Format resume source type and name
                     const sourceType = record.resumeSource || record.resume_source;
+                    let resumeSourceType = '-';
+                    let resumeSourceName = '-';
+                    
                     if (sourceType === 'vendor') {
-                      resumeSource = `Vendor: ${record.vendorName || record.vendor_name || 'Unknown'}`;
+                      resumeSourceType = 'Vendor';
+                      resumeSourceName = record.vendorName || record.vendor_name || '-';
                     } else if (sourceType === 'field_recruiter') {
-                      resumeSource = `Recruiter: ${record.recruiterName || record.recruiter_name || 'Unknown'}`;
+                      resumeSourceType = 'Field Recruiter';
+                      resumeSourceName = record.recruiterName || record.recruiter_name || '-';
                     } else if (sourceType === 'referral') {
-                      resumeSource = `Referral: ${record.referralName || record.referral_name || 'Unknown'}`;
+                      resumeSourceType = 'Referral';
+                      resumeSourceName = record.referralName || record.referral_name || '-';
+                    } else if (sourceType === 'direct') {
+                      resumeSourceType = 'Direct';
+                      resumeSourceName = record.directSource || record.direct_source || '-';
                     } else if (sourceType) {
-                      resumeSource = sourceType;
+                      resumeSourceType = sourceType;
                     }
 
                     return (
@@ -385,7 +404,8 @@ export default function Onboarding() {
                           ? Number(record.grossSalary || record.gross_salary).toLocaleString()
                           : "-"}
                       </TableCell>
-                      <TableCell>{resumeSource}</TableCell>
+                      <TableCell>{resumeSourceType}</TableCell>
+                      <TableCell>{resumeSourceName}</TableCell>
                       <TableCell>{record.gender || '-'}</TableCell>
                       <TableCell>
                         {(record.dateOfBirth || record.date_of_birth)
