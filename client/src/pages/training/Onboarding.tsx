@@ -323,9 +323,17 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Blood Group</TableHead>
                   <TableHead className="font-semibold">Marital Status</TableHead>
                   <TableHead className="font-semibold">PAN Number</TableHead>
-                  <TableHead className="font-semibold">Account Number</TableHead>
+                  <TableHead className="font-semibold">Name as Per PAN</TableHead>
                   <TableHead className="font-semibold">Aadhar Number</TableHead>
-                  <TableHead className="font-semibold">Emergency Contact</TableHead>
+                  <TableHead className="font-semibold">Name as Per Aadhar</TableHead>
+                  <TableHead className="font-semibold">Account Number</TableHead>
+                  <TableHead className="font-semibold">IFSC Code</TableHead>
+                  <TableHead className="font-semibold">Name as per Bank</TableHead>
+                  <TableHead className="font-semibold">Present Address</TableHead>
+                  <TableHead className="font-semibold">Permanent Address</TableHead>
+                  <TableHead className="font-semibold">Emergency Name</TableHead>
+                  <TableHead className="font-semibold">Emergency Number</TableHead>
+                  <TableHead className="font-semibold">Emergency Relation</TableHead>
                   <TableHead className="font-semibold">Onboarded</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
                 </TableRow>
@@ -333,13 +341,13 @@ export default function Onboarding() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={20} className="text-center py-8">
+                    <TableCell colSpan={28} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : onboardingRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={20} className="text-center py-8">
+                    <TableCell colSpan={28} className="text-center py-8">
                       No onboarding records found
                     </TableCell>
                   </TableRow>
@@ -387,20 +395,25 @@ export default function Onboarding() {
                       <TableCell>{record.bloodGroup || record.blood_group || '-'}</TableCell>
                       <TableCell>{record.maritalStatus || record.marital_status || '-'}</TableCell>
                       <TableCell>{record.panNumber || record.pan_number || '-'}</TableCell>
-                      <TableCell>{record.accountNumber || record.account_number || '-'}</TableCell>
+                      <TableCell>{record.nameAsPerPan || record.name_as_per_pan || '-'}</TableCell>
                       <TableCell>{record.aadharNumber || record.aadhar_number || '-'}</TableCell>
+                      <TableCell>{record.nameAsPerAadhar || record.name_as_per_aadhar || '-'}</TableCell>
+                      <TableCell>{record.accountNumber || record.account_number || '-'}</TableCell>
+                      <TableCell>{record.ifscCode || record.ifsc_code || '-'}</TableCell>
+                      <TableCell>{record.nameAsPerBank || record.name_as_per_bank || '-'}</TableCell>
                       <TableCell>
-                        <div className="text-sm">
-                          {(record.emergencyContactName || record.emergency_contact_name) && (
-                            <div>{record.emergencyContactName || record.emergency_contact_name}</div>
-                          )}
-                          {(record.emergencyContactNumber || record.emergency_contact_number) && (
-                            <div className="text-slate-600">
-                              {record.emergencyContactNumber || record.emergency_contact_number}
-                            </div>
-                          )}
+                        <div className="text-sm max-w-xs truncate">
+                          {record.presentAddress || record.present_address || '-'}
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <div className="text-sm max-w-xs truncate">
+                          {record.permanentAddress || record.permanent_address || '-'}
+                        </div>
+                      </TableCell>
+                      <TableCell>{record.emergencyContactName || record.emergency_contact_name || '-'}</TableCell>
+                      <TableCell>{record.emergencyContactNumber || record.emergency_contact_number || '-'}</TableCell>
+                      <TableCell>{record.emergencyContactRelation || record.emergency_contact_relation || '-'}</TableCell>
                       <TableCell>
                         <Checkbox
                           checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
