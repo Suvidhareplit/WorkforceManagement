@@ -48,22 +48,103 @@ export default function Onboarding() {
     },
   });
 
-  // Download CSV template
+  // Download CSV template with prefilled data for pending onboarding candidates
   const downloadTemplate = () => {
+    // Filter pending onboarding candidates (fit or fit_need_refresher_training)
+    const pendingCandidates = onboardingRecords.filter((record: any) => 
+      (record.onboardingStatus || record.onboarding_status) === 'yet_to_be_onboarded'
+    );
+
+    if (pendingCandidates.length === 0) {
+      toast({
+        title: "No Records",
+        description: "No pending onboarding candidates found",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const headers = [
-      "Name", "Mobile Number", "Email", "Gender", "Date of Birth (YYYY-MM-DD)",
-      "Blood Group", "Marital Status", "PAN Number", "Name as Per PAN",
-      "Account Number", "IFSC Code", "Name as per Bank", "Aadhar Number",
-      "Name as per Aadhar", "Present Address", "Permanent Address",
-      "Emergency Contact Number", "Emergency Contact Name", "Relation with Emergency Contact"
+      "Candidate ID (DO NOT EDIT)", 
+      "Name (DO NOT EDIT)", 
+      "Phone Number (DO NOT EDIT)", 
+      "Email (DO NOT EDIT)", 
+      "City (DO NOT EDIT)", 
+      "Cluster (DO NOT EDIT)", 
+      "Role (DO NOT EDIT)", 
+      "Reporting Manager (DO NOT EDIT)", 
+      "Date of Joining (DO NOT EDIT)", 
+      "Gross Salary (DO NOT EDIT)",
+      "Resume Source (DO NOT EDIT)",
+      "Gender", 
+      "Date of Birth (YYYY-MM-DD)",
+      "Blood Group", 
+      "Marital Status", 
+      "PAN Number", 
+      "Name as Per PAN",
+      "Account Number", 
+      "IFSC Code", 
+      "Name as per Bank", 
+      "Aadhar Number",
+      "Name as per Aadhar", 
+      "Present Address", 
+      "Permanent Address",
+      "Emergency Contact Number", 
+      "Emergency Contact Name", 
+      "Relation with Emergency Contact"
     ];
 
-    const csvContent = headers.join(',');
+    const rows = pendingCandidates.map((record: any) => {
+      // Format resume source based on type
+      let resumeSource = '-';
+      const sourceType = record.resumeSource || record.resume_source;
+      if (sourceType === 'vendor') {
+        resumeSource = `Vendor: ${record.vendorName || record.vendor_name || 'Unknown'}`;
+      } else if (sourceType === 'field_recruiter') {
+        resumeSource = `Recruiter: ${record.recruiterName || record.recruiter_name || 'Unknown'}`;
+      } else if (sourceType === 'referral') {
+        resumeSource = `Referral: ${record.referralName || record.referral_name || 'Unknown'}`;
+      } else {
+        resumeSource = sourceType || 'Direct';
+      }
+
+      return [
+        record.candidateId || record.candidate_id || '',
+        record.name || '',
+        record.mobileNumber || record.mobile_number || '',
+        record.candidateEmail || record.candidate_email || record.email || '',
+        record.city || '',
+        record.cluster || '',
+        record.role || '',
+        record.managerName || record.manager_name || '',
+        record.dateOfJoining || record.date_of_joining ? format(new Date(record.dateOfJoining || record.date_of_joining), 'yyyy-MM-dd') : '',
+        record.grossSalary || record.gross_salary || '',
+        resumeSource,
+        record.gender || '',
+        record.dateOfBirth || record.date_of_birth ? format(new Date(record.dateOfBirth || record.date_of_birth), 'yyyy-MM-dd') : '',
+        record.bloodGroup || record.blood_group || '',
+        record.maritalStatus || record.marital_status || '',
+        record.panNumber || record.pan_number || '',
+        record.nameAsPerPan || record.name_as_per_pan || '',
+        record.accountNumber || record.account_number || '',
+        record.ifscCode || record.ifsc_code || '',
+        record.nameAsPerBank || record.name_as_per_bank || '',
+        record.aadharNumber || record.aadhar_number || '',
+        record.nameAsPerAadhar || record.name_as_per_aadhar || '',
+        record.presentAddress || record.present_address || '',
+        record.permanentAddress || record.permanent_address || '',
+        record.emergencyContactNumber || record.emergency_contact_number || '',
+        record.emergencyContactName || record.emergency_contact_name || '',
+        record.emergencyContactRelation || record.emergency_contact_relation || ''
+      ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+    });
+
+    const csvContent = [headers.map(h => `"${h}"`).join(','), ...rows].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `onboarding_template_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.setAttribute('download', `onboarding_pending_${format(new Date(), 'yyyy-MM-dd')}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -71,7 +152,7 @@ export default function Onboarding() {
 
     toast({
       title: "Success",
-      description: "Template downloaded successfully",
+      description: `Template downloaded with ${pendingCandidates.length} pending candidate(s)`,
     });
   };
 
@@ -84,37 +165,65 @@ export default function Onboarding() {
 
     try {
       const text = await file.text();
-      const lines = text.split('\n');
-      const headers = lines[0].split(',');
       
-      const jsonData = lines.slice(1).filter(line => line.trim()).map(line => {
-        const values = line.split(',');
+      // Parse CSV properly handling quoted fields
+      const parseCSVLine = (line: string): string[] => {
+        const result: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          const nextChar = line[i + 1];
+          
+          if (char === '"' && inQuotes && nextChar === '"') {
+            current += '"';
+            i++; // Skip next quote
+          } else if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim());
+        return result;
+      };
+
+      const lines = text.split('\n').filter(line => line.trim());
+      const headers = parseCSVLine(lines[0]);
+      
+      const jsonData = lines.slice(1).map(line => {
+        const values = parseCSVLine(line);
         const obj: any = {};
         headers.forEach((header, index) => {
-          obj[header.trim()] = values[index]?.trim() || '';
+          obj[header.trim()] = values[index] || '';
         });
         return obj;
       });
 
-      // Transform data to match backend format
+      // Transform data - only editable fields, include candidate_id for matching
       const records = jsonData.map((row: any) => ({
-        name: row['Name'],
-        mobile_number: row['Mobile Number']?.toString(),
-        email: row['Email'],
+        candidate_id: row['Candidate ID (DO NOT EDIT)'],
+        name: row['Name (DO NOT EDIT)'],
+        mobile_number: row['Phone Number (DO NOT EDIT)'],
+        email: row['Email (DO NOT EDIT)'] || row['Email'],
         gender: row['Gender']?.toLowerCase(),
         date_of_birth: row['Date of Birth (YYYY-MM-DD)'],
         blood_group: row['Blood Group'],
         marital_status: row['Marital Status']?.toLowerCase(),
         pan_number: row['PAN Number'],
         name_as_per_pan: row['Name as Per PAN'],
-        account_number: row['Account Number']?.toString(),
+        account_number: row['Account Number'],
         ifsc_code: row['IFSC Code'],
         name_as_per_bank: row['Name as per Bank'],
-        aadhar_number: row['Aadhar Number']?.toString(),
+        aadhar_number: row['Aadhar Number'],
         name_as_per_aadhar: row['Name as per Aadhar'],
         present_address: row['Present Address'],
         permanent_address: row['Permanent Address'],
-        emergency_contact_number: row['Emergency Contact Number']?.toString(),
+        emergency_contact_number: row['Emergency Contact Number'],
         emergency_contact_name: row['Emergency Contact Name'],
         emergency_contact_relation: row['Relation with Emergency Contact']
       }));
@@ -208,6 +317,7 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Manager</TableHead>
                   <TableHead className="font-semibold">DOJ</TableHead>
                   <TableHead className="font-semibold">Gross Salary</TableHead>
+                  <TableHead className="font-semibold">Resume Source</TableHead>
                   <TableHead className="font-semibold">Gender</TableHead>
                   <TableHead className="font-semibold">DOB</TableHead>
                   <TableHead className="font-semibold">Blood Group</TableHead>
@@ -223,18 +333,32 @@ export default function Onboarding() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={19} className="text-center py-8">
+                    <TableCell colSpan={20} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : onboardingRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={19} className="text-center py-8">
+                    <TableCell colSpan={20} className="text-center py-8">
                       No onboarding records found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  onboardingRecords.map((record: any) => (
+                  onboardingRecords.map((record: any) => {
+                    // Format resume source
+                    let resumeSource = '-';
+                    const sourceType = record.resumeSource || record.resume_source;
+                    if (sourceType === 'vendor') {
+                      resumeSource = `Vendor: ${record.vendorName || record.vendor_name || 'Unknown'}`;
+                    } else if (sourceType === 'field_recruiter') {
+                      resumeSource = `Recruiter: ${record.recruiterName || record.recruiter_name || 'Unknown'}`;
+                    } else if (sourceType === 'referral') {
+                      resumeSource = `Referral: ${record.referralName || record.referral_name || 'Unknown'}`;
+                    } else if (sourceType) {
+                      resumeSource = sourceType;
+                    }
+
+                    return (
                     <TableRow key={record.id} className="hover:bg-slate-50 transition-colors">
                       <TableCell className="font-medium text-slate-900">{record.name}</TableCell>
                       <TableCell>{record.mobileNumber || record.mobile_number || '-'}</TableCell>
@@ -253,6 +377,7 @@ export default function Onboarding() {
                           ? Number(record.grossSalary || record.gross_salary).toLocaleString()
                           : "-"}
                       </TableCell>
+                      <TableCell>{resumeSource}</TableCell>
                       <TableCell>{record.gender || '-'}</TableCell>
                       <TableCell>
                         {(record.dateOfBirth || record.date_of_birth)
@@ -296,7 +421,8 @@ export default function Onboarding() {
                         </Badge>
                       </TableCell>
                     </TableRow>
-                  ))
+                    );
+                  })
                 )}
               </TableBody>
             </Table>

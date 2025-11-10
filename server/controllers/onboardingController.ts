@@ -1,13 +1,22 @@
 import { Request, Response } from 'express';
 import { query } from '../config/db';
 
-// Get all onboarding records
+// Get all onboarding records with full pipeline data
 const getOnboardingRecords = async (req: Request, res: Response) => {
   try {
     const result = await query(
-      `SELECT o.*, ft.id as field_training_id
+      `SELECT 
+         o.*, 
+         ft.ft_feedback,
+         c.id as candidate_id,
+         c.email AS candidate_email,
+         c.resume_source,
+         c.vendor_id, c.vendor_name,
+         c.recruiter_id, c.recruiter_name,
+         c.referral_name
        FROM onboarding o
        JOIN field_training ft ON o.field_training_id = ft.id
+       JOIN candidates c ON o.candidate_id = c.id
        ORDER BY o.created_at DESC`
     );
     
@@ -134,13 +143,26 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
     
     for (const record of records) {
       try {
-        // Find candidate by name and mobile
-        const candidateResult = await query(
-          'SELECT id FROM candidates WHERE name = ? AND phone = ?',
-          [record.name, record.mobile_number]
-        );
+        // Identify candidate: prefer candidate_id from CSV, else fallback to name+phone
+        let candidateId: number | null = null;
+        if (record.candidate_id) {
+          const candById = await query('SELECT id FROM candidates WHERE id = ?', [record.candidate_id]);
+          if (candById.rows && candById.rows.length > 0) {
+            candidateId = (candById.rows[0] as any).id;
+          }
+        }
         
-        if (!candidateResult.rows || candidateResult.rows.length === 0) {
+        if (!candidateId) {
+          const candidateResult = await query(
+            'SELECT id FROM candidates WHERE name = ? AND phone = ?',
+            [record.name, record.mobile_number]
+          );
+          if (candidateResult.rows && candidateResult.rows.length > 0) {
+            candidateId = (candidateResult.rows[0] as any).id;
+          }
+        }
+        
+        if (!candidateId) {
           results.failed++;
           results.errors.push({
             name: record.name,
@@ -149,7 +171,6 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
           continue;
         }
         
-        const candidateId = (candidateResult.rows[0] as any).id;
         
         // Find field training record
         const ftResult = await query(
