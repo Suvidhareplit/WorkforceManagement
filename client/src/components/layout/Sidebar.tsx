@@ -135,7 +135,7 @@ export default function Sidebar() {
   const [location] = useLocation();
 
   return (
-    <aside className="w-64 bg-white shadow-lg min-h-screen">
+    <aside className="w-64 bg-white shadow-lg h-screen overflow-y-auto">
       <div className="p-6">
         <nav className="space-y-2">
           {menuItems.map((section) => (

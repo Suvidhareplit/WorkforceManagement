@@ -54,11 +54,19 @@ export default function Layout({ children }: LayoutProps) {
 
   console.log('🏠 Showing main app layout');
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Header />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 p-6">
+    <div className="flex flex-col min-h-screen bg-slate-50">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-50">
+        <Header />
+      </div>
+      {/* Main Content Area with Fixed Sidebar */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Fixed Sidebar */}
+        <div className="sticky left-0 z-40">
+          <Sidebar />
+        </div>
+        {/* Scrollable Main Content */}
+        <main className="flex-1 overflow-auto p-6">
           {children}
         </main>
       </div>

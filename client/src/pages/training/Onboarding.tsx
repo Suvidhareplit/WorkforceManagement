@@ -456,8 +456,8 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">UAN Number</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">ESIC IP Number</TableHead>
                   {/* STATUS */}
-                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Onboarded</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Status</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Onboarded</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -617,12 +617,6 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.esicIpNumber || record.esic_ip_number || '-'}</TableCell>
                       {/* STATUS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <Checkbox
-                          checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
-                          onCheckedChange={(checked) => handleStatusChange(record.id, checked as boolean)}
-                        />
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <Badge
                           variant={
                             (record.onboardingStatus || record.onboarding_status) === 'onboarded'
@@ -634,6 +628,12 @@ export default function Onboarding() {
                             ? 'Onboarded'
                             : 'Yet to be Onboarded'}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <Checkbox
+                          checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
+                          onCheckedChange={(checked) => handleStatusChange(record.id, checked as boolean)}
+                        />
                       </TableCell>
                     </TableRow>
                     );
