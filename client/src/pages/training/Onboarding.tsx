@@ -379,18 +379,41 @@ export default function Onboarding() {
     }
 
     // Mandatory date fields validation (cannot be empty or N/A)
-    const mandatoryDateFields = [
-      'Date of Birth (DD-MMM-YYYY)',
-      'Father DOB (DD-MMM-YYYY)',
-      'Mother DOB (DD-MMM-YYYY)'
-    ];
+    // Exception: If Father/Mother name contains "Late" (deceased), DOB is optional
+    const fatherName = row['Father Name']?.toLowerCase() || '';
+    const motherName = row['Mother Name']?.toLowerCase() || '';
+    const isFatherLate = fatherName.includes('late');
+    const isMotherLate = motherName.includes('late');
     
-    mandatoryDateFields.forEach(field => {
-      const value = row[field];
-      if (!value || value.trim() === '' || value.trim().toLowerCase() === 'n/a' || value.trim().toLowerCase() === 'na') {
-        errors.push(`${field} is required and cannot be N/A`);
+    // Add info message if Late parent detected
+    if (isFatherLate) {
+      warnings.push('Father name contains "Late" - Father DOB is optional');
+    }
+    if (isMotherLate) {
+      warnings.push('Mother name contains "Late" - Mother DOB is optional');
+    }
+    
+    // Date of Birth - always mandatory
+    const dobValue = row['Date of Birth (DD-MMM-YYYY)'];
+    if (!dobValue || dobValue.trim() === '' || dobValue.trim().toLowerCase() === 'n/a' || dobValue.trim().toLowerCase() === 'na') {
+      errors.push('Date of Birth (DD-MMM-YYYY) is required and cannot be N/A');
+    }
+    
+    // Father DOB - mandatory unless Father name contains "Late"
+    const fatherDobValue = row['Father DOB (DD-MMM-YYYY)'];
+    if (!isFatherLate) {
+      if (!fatherDobValue || fatherDobValue.trim() === '' || fatherDobValue.trim().toLowerCase() === 'n/a' || fatherDobValue.trim().toLowerCase() === 'na') {
+        errors.push('Father DOB (DD-MMM-YYYY) is required and cannot be N/A (unless Father name contains "Late")');
       }
-    });
+    }
+    
+    // Mother DOB - mandatory unless Mother name contains "Late"
+    const motherDobValue = row['Mother DOB (DD-MMM-YYYY)'];
+    if (!isMotherLate) {
+      if (!motherDobValue || motherDobValue.trim() === '' || motherDobValue.trim().toLowerCase() === 'n/a' || motherDobValue.trim().toLowerCase() === 'na') {
+        errors.push('Mother DOB (DD-MMM-YYYY) is required and cannot be N/A (unless Mother name contains "Late")');
+      }
+    }
 
     // Date validations
     const dateFields = [
@@ -405,11 +428,19 @@ export default function Onboarding() {
     dateFields.forEach(field => {
       const value = row[field];
       if (value && value.trim() !== '') {
-        // Skip N/A values for optional dates (Wife, Children)
+        // Skip N/A values for optional dates
         const normalizedValue = value.trim().toLowerCase();
-        if ((normalizedValue === 'n/a' || normalizedValue === 'na') && 
-            !mandatoryDateFields.includes(field)) {
-          return; // Skip validation for N/A in optional fields only
+        
+        // Check if this field can be N/A
+        const canBeNA = 
+          field === 'Wife DOB (DD-MMM-YYYY)' || 
+          field === 'Child 1 DOB (DD-MMM-YYYY)' || 
+          field === 'Child 2 DOB (DD-MMM-YYYY)' ||
+          (field === 'Father DOB (DD-MMM-YYYY)' && isFatherLate) ||
+          (field === 'Mother DOB (DD-MMM-YYYY)' && isMotherLate);
+        
+        if ((normalizedValue === 'n/a' || normalizedValue === 'na') && canBeNA) {
+          return; // Skip validation for N/A in optional fields
         }
         
         const parsed = parseDateDDMMMYYYY(value);
