@@ -113,7 +113,9 @@ export default function Onboarding() {
       "Child 2 Gender (male/female)",
       "Child 2 DOB (YYYY-MM-DD)",
       "Nominee Name",
-      "Nominee Relation"
+      "Nominee Relation",
+      "User ID (numbers only)",
+      "Employee ID"
     ];
 
     const rows = pendingCandidates.map((record: any) => {
@@ -187,7 +189,9 @@ export default function Onboarding() {
         record.child2Gender || record.child2_gender || '',
         record.child2Dob || record.child2_dob ? format(new Date(record.child2Dob || record.child2_dob), 'yyyy-MM-dd') : '',
         record.nomineeName || record.nominee_name || '',
-        record.nomineeRelation || record.nominee_relation || ''
+        record.nomineeRelation || record.nominee_relation || '',
+        record.userId || record.user_id || '',
+        record.employeeId || record.employee_id || ''
       ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
     });
 
@@ -277,7 +281,25 @@ export default function Onboarding() {
         permanent_address: row['Permanent Address'],
         emergency_contact_number: row['Emergency Contact Number'],
         emergency_contact_name: row['Emergency Contact Name'],
-        emergency_contact_relation: row['Relation with Emergency Contact']
+        emergency_contact_relation: row['Relation with Emergency Contact'],
+        father_name: row['Father Name'],
+        father_dob: row['Father DOB (YYYY-MM-DD)'],
+        mother_name: row['Mother Name'],
+        mother_dob: row['Mother DOB (YYYY-MM-DD)'],
+        uan_number: row['UAN Number (12 digits)'],
+        esic_ip_number: row['ESIC IP Number (10 digits or N/A)'],
+        wife_name: row['Wife Name'],
+        wife_dob: row['Wife DOB (YYYY-MM-DD)'],
+        child1_name: row['Child 1 Name'],
+        child1_gender: row['Child 1 Gender (male/female)']?.toLowerCase(),
+        child1_dob: row['Child 1 DOB (YYYY-MM-DD)'],
+        child2_name: row['Child 2 Name'],
+        child2_gender: row['Child 2 Gender (male/female)']?.toLowerCase(),
+        child2_dob: row['Child 2 DOB (YYYY-MM-DD)'],
+        nominee_name: row['Nominee Name'],
+        nominee_relation: row['Nominee Relation'],
+        user_id: row['User ID (numbers only)'],
+        employee_id: row['Employee ID']
       }));
 
       // Send to backend
@@ -408,6 +430,8 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Child 2 DOB</TableHead>
                   <TableHead className="font-semibold">Nominee Name</TableHead>
                   <TableHead className="font-semibold">Nominee Relation</TableHead>
+                  <TableHead className="font-semibold">User ID</TableHead>
+                  <TableHead className="font-semibold">Employee ID</TableHead>
                   <TableHead className="font-semibold">Onboarded</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
                 </TableRow>
@@ -415,13 +439,13 @@ export default function Onboarding() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={50} className="text-center py-8">
+                    <TableCell colSpan={52} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : onboardingRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={50} className="text-center py-8">
+                    <TableCell colSpan={52} className="text-center py-8">
                       No onboarding records found
                     </TableCell>
                   </TableRow>
@@ -538,6 +562,8 @@ export default function Onboarding() {
                       </TableCell>
                       <TableCell>{record.nomineeName || record.nominee_name || '-'}</TableCell>
                       <TableCell>{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
+                      <TableCell>{record.userId || record.user_id || '-'}</TableCell>
+                      <TableCell>{record.employeeId || record.employee_id || '-'}</TableCell>
                       <TableCell>
                         <Checkbox
                           checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
