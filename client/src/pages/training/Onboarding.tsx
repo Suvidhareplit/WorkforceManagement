@@ -233,7 +233,7 @@ export default function Onboarding() {
   const parseDateDDMMMYYYY = (dateStr: string): Date | null => {
     if (!dateStr || dateStr.trim() === '') return null;
     try {
-      // Parse DD-MMM-YYYY format (e.g., 12-Aug-2025)
+      // Parse both DD-MMM-YYYY (e.g., 12-Aug-2025) and DD-MM-YYYY (e.g., 25-08-1995)
       const parts = dateStr.trim().split('-');
       if (parts.length !== 3) return null;
       
@@ -241,16 +241,28 @@ export default function Onboarding() {
       const monthStr = parts[1];
       const year = parseInt(parts[2]);
       
-      const months: { [key: string]: number } = {
-        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
-      };
+      let month: number;
       
-      const month = months[monthStr];
-      if (month === undefined || isNaN(day) || isNaN(year)) return null;
+      // Check if month is numeric (DD-MM-YYYY format)
+      const monthNum = parseInt(monthStr);
+      if (!isNaN(monthNum)) {
+        // Numeric month: 01-12 → 0-11 for Date constructor
+        month = monthNum - 1;
+        if (month < 0 || month > 11) return null;
+      } else {
+        // Text month: Jan, Feb, etc.
+        const months: { [key: string]: number } = {
+          'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+          'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        };
+        month = months[monthStr];
+        if (month === undefined) return null;
+      }
       
       const date = new Date(year, month, day);
-      return isNaN(date.getTime()) ? null : date;
+      if (isNaN(date.getTime())) return null;
+      
+      return date;
     } catch {
       return null;
     }
@@ -386,7 +398,7 @@ export default function Onboarding() {
         
         const parsed = parseDateDDMMMYYYY(value);
         if (!parsed) {
-          errors.push(`Invalid date format for ${field}: "${value}" (should be DD-MMM-YYYY, e.g., 12-Aug-2025, or N/A)`);
+          errors.push(`Invalid date format for ${field}: "${value}" (should be DD-MMM-YYYY like 12-Aug-2025 OR DD-MM-YYYY like 25-08-1995, or N/A)`);
         } else {
           // Date reasonableness checks
           const today = new Date();
