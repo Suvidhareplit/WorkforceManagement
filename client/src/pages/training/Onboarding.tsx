@@ -6,13 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Onboarding() {
   const [uploading, setUploading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [validationErrors, setValidationErrors] = useState<any[]>([]);
   const { toast } = useToast();
 
   // Fetch onboarding records
@@ -72,23 +76,23 @@ export default function Onboarding() {
       "Phone Number (DO NOT EDIT)", 
       "Email (DO NOT EDIT)", 
       "Gender", 
-      "Date of Birth (YYYY-MM-DD)",
+      "Date of Birth (DD-MMM-YYYY)",
       "Blood Group", 
       "Marital Status",
       "Name as per Aadhar", 
       "Aadhar Number",
       "Father Name",
-      "Father DOB (YYYY-MM-DD)",
+      "Father DOB (DD-MMM-YYYY)",
       "Mother Name",
-      "Mother DOB (YYYY-MM-DD)",
+      "Mother DOB (DD-MMM-YYYY)",
       "Wife Name",
-      "Wife DOB (YYYY-MM-DD)",
+      "Wife DOB (DD-MMM-YYYY)",
       "Child 1 Name",
       "Child 1 Gender (male/female)",
-      "Child 1 DOB (YYYY-MM-DD)",
+      "Child 1 DOB (DD-MMM-YYYY)",
       "Child 2 Name",
       "Child 2 Gender (male/female)",
-      "Child 2 DOB (YYYY-MM-DD)",
+      "Child 2 DOB (DD-MMM-YYYY)",
       "Nominee Name",
       "Nominee Relation",
       "Present Address", 
@@ -152,23 +156,23 @@ export default function Onboarding() {
         record.mobileNumber || record.mobile_number || '',
         record.candidateEmail || record.candidate_email || record.email || '',
         record.gender || '',
-        record.dateOfBirth || record.date_of_birth ? format(new Date(record.dateOfBirth || record.date_of_birth), 'yyyy-MM-dd') : '',
+        record.dateOfBirth || record.date_of_birth ? format(new Date(record.dateOfBirth || record.date_of_birth), 'dd-MMM-yyyy') : '',
         record.bloodGroup || record.blood_group || '',
         record.maritalStatus || record.marital_status || '',
         record.nameAsPerAadhar || record.name_as_per_aadhar || '',
         record.aadharNumber || record.aadhar_number || '',
         record.fatherName || record.father_name || '',
-        record.fatherDob || record.father_dob ? format(new Date(record.fatherDob || record.father_dob), 'yyyy-MM-dd') : '',
+        record.fatherDob || record.father_dob ? format(new Date(record.fatherDob || record.father_dob), 'dd-MMM-yyyy') : '',
         record.motherName || record.mother_name || '',
-        record.motherDob || record.mother_dob ? format(new Date(record.motherDob || record.mother_dob), 'yyyy-MM-dd') : '',
+        record.motherDob || record.mother_dob ? format(new Date(record.motherDob || record.mother_dob), 'dd-MMM-yyyy') : '',
         record.wifeName || record.wife_name || '',
-        record.wifeDob || record.wife_dob ? format(new Date(record.wifeDob || record.wife_dob), 'yyyy-MM-dd') : '',
+        record.wifeDob || record.wife_dob ? format(new Date(record.wifeDob || record.wife_dob), 'dd-MMM-yyyy') : '',
         record.child1Name || record.child1_name || '',
         record.child1Gender || record.child1_gender || '',
-        record.child1Dob || record.child1_dob ? format(new Date(record.child1Dob || record.child1_dob), 'yyyy-MM-dd') : '',
+        record.child1Dob || record.child1_dob ? format(new Date(record.child1Dob || record.child1_dob), 'dd-MMM-yyyy') : '',
         record.child2Name || record.child2_name || '',
         record.child2Gender || record.child2_gender || '',
-        record.child2Dob || record.child2_dob ? format(new Date(record.child2Dob || record.child2_dob), 'yyyy-MM-dd') : '',
+        record.child2Dob || record.child2_dob ? format(new Date(record.child2Dob || record.child2_dob), 'dd-MMM-yyyy') : '',
         record.nomineeName || record.nominee_name || '',
         record.nomineeRelation || record.nominee_relation || '',
         record.presentAddress || record.present_address || '',
@@ -221,6 +225,96 @@ export default function Onboarding() {
   };
 
   // Handle CSV file upload
+  // Validation functions
+  const parseDateDDMMMYYYY = (dateStr: string): Date | null => {
+    if (!dateStr || dateStr.trim() === '') return null;
+    try {
+      // Parse DD-MMM-YYYY format (e.g., 12-Aug-2025)
+      const parts = dateStr.trim().split('-');
+      if (parts.length !== 3) return null;
+      
+      const day = parseInt(parts[0]);
+      const monthStr = parts[1];
+      const year = parseInt(parts[2]);
+      
+      const months: { [key: string]: number } = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+      };
+      
+      const month = months[monthStr];
+      if (month === undefined || isNaN(day) || isNaN(year)) return null;
+      
+      const date = new Date(year, month, day);
+      return isNaN(date.getTime()) ? null : date;
+    } catch {
+      return null;
+    }
+  };
+
+  const validateRecord = (row: any, index: number) => {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    // Required field: Name or Employee ID
+    if (!row['Name (DO NOT EDIT)']?.trim() && !row['Employee ID']?.trim()) {
+      errors.push('Either Name or Employee ID is required');
+    }
+
+    // Phone number validation
+    if (!row['Phone Number (DO NOT EDIT)']?.trim()) {
+      errors.push('Phone Number is required');
+    }
+
+    // Gender validation
+    if (row['Gender'] && !['male', 'female', 'm', 'f'].includes(row['Gender'].toLowerCase().trim())) {
+      errors.push(`Invalid Gender: "${row['Gender']}" (should be male/female)`);
+    }
+
+    // Date validations
+    const dateFields = [
+      'Date of Birth (DD-MMM-YYYY)',
+      'Father DOB (DD-MMM-YYYY)',
+      'Mother DOB (DD-MMM-YYYY)',
+      'Wife DOB (DD-MMM-YYYY)',
+      'Child 1 DOB (DD-MMM-YYYY)',
+      'Child 2 DOB (DD-MMM-YYYY)'
+    ];
+
+    dateFields.forEach(field => {
+      const value = row[field];
+      if (value && value.trim() !== '') {
+        const parsed = parseDateDDMMMYYYY(value);
+        if (!parsed) {
+          errors.push(`Invalid date format for ${field}: "${value}" (should be DD-MMM-YYYY, e.g., 12-Aug-2025)`);
+        }
+      }
+    });
+
+    // Aadhar validation (12 digits)
+    if (row['Aadhar Number'] && row['Aadhar Number'].replace(/\s/g, '').length !== 12) {
+      errors.push(`Invalid Aadhar Number: "${row['Aadhar Number']}" (should be 12 digits)`);
+    }
+
+    // PAN validation (10 characters)
+    if (row['PAN Number'] && row['PAN Number'].trim().length !== 10) {
+      warnings.push(`PAN Number "${row['PAN Number']}" should be 10 characters`);
+    }
+
+    // UAN validation (12 digits)
+    if (row['UAN Number (12 digits)'] && row['UAN Number (12 digits)'].replace(/\s/g, '').length !== 12) {
+      warnings.push(`UAN Number should be 12 digits, got: "${row['UAN Number (12 digits)']}"`);
+    }
+
+    // ESIC validation (10 digits or N/A)
+    const esic = row['ESIC IP Number (10 digits or N/A)'];
+    if (esic && esic.toUpperCase() !== 'N/A' && esic.replace(/\s/g, '').length !== 10) {
+      warnings.push(`ESIC IP Number should be 10 digits or N/A, got: "${esic}"`);
+    }
+
+    return { rowIndex: index + 1, row, errors, warnings, status: errors.length > 0 ? 'error' : warnings.length > 0 ? 'warning' : 'success' };
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -268,50 +362,103 @@ export default function Onboarding() {
         return obj;
       });
 
-      // Transform data - only editable fields, match by employee_id
-      const records = jsonData.map((row: any) => ({
-        employee_id: row['Employee ID'],
-        user_id: row['User ID (numbers only)'],
-        name: row['Name (DO NOT EDIT)'],
-        mobile_number: row['Phone Number (DO NOT EDIT)'],
-        email: row['Email (DO NOT EDIT)'] || row['Email'],
-        gender: row['Gender']?.toLowerCase(),
-        date_of_birth: row['Date of Birth (YYYY-MM-DD)'],
-        blood_group: row['Blood Group'],
-        marital_status: row['Marital Status']?.toLowerCase(),
-        name_as_per_aadhar: row['Name as per Aadhar'],
-        aadhar_number: row['Aadhar Number'],
-        father_name: row['Father Name'],
-        father_dob: row['Father DOB (YYYY-MM-DD)'],
-        mother_name: row['Mother Name'],
-        mother_dob: row['Mother DOB (YYYY-MM-DD)'],
-        wife_name: row['Wife Name'],
-        wife_dob: row['Wife DOB (YYYY-MM-DD)'],
-        child1_name: row['Child 1 Name'],
-        child1_gender: row['Child 1 Gender (male/female)']?.toLowerCase(),
-        child1_dob: row['Child 1 DOB (YYYY-MM-DD)'],
-        child2_name: row['Child 2 Name'],
-        child2_gender: row['Child 2 Gender (male/female)']?.toLowerCase(),
-        child2_dob: row['Child 2 DOB (YYYY-MM-DD)'],
-        nominee_name: row['Nominee Name'],
-        nominee_relation: row['Nominee Relation'],
-        present_address: row['Present Address'],
-        permanent_address: row['Permanent Address'],
-        emergency_contact_name: row['Emergency Contact Name'],
-        emergency_contact_number: row['Emergency Contact Number'],
-        emergency_contact_relation: row['Relation with Emergency Contact'],
-        legal_entity: row['Legal Entity'],
-        pan_number: row['PAN Number'],
-        name_as_per_pan: row['Name as Per PAN'],
-        account_number: row['Account Number'],
-        ifsc_code: row['IFSC Code'],
-        name_as_per_bank: row['Name as per Bank'],
-        bank_name: row['Bank Name'],
-        uan_number: row['UAN Number (12 digits)'],
-        esic_ip_number: row['ESIC IP Number (10 digits or N/A)']
-      }));
+      // Validate all rows
+      const validatedData = jsonData.map((row, index) => validateRecord(row, index));
+      
+      // Set validation results
+      setValidationErrors(validatedData);
+      setPreviewData(validatedData);
+      setShowPreview(true);
+      setUploading(false);
 
-      // Send to backend
+      // Show summary
+      const errorCount = validatedData.filter(v => v.status === 'error').length;
+      const warningCount = validatedData.filter(v => v.status === 'warning').length;
+      const successCount = validatedData.filter(v => v.status === 'success').length;
+
+      toast({
+        title: "File Validated",
+        description: `✓ ${successCount} valid | ⚠ ${warningCount} warnings | ✗ ${errorCount} errors`,
+      });
+
+      event.target.value = '';
+    } catch (error) {
+      toast({
+        title: "File Parse Failed",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
+      setUploading(false);
+    }
+  };
+
+  // Actual upload after validation
+  const confirmUpload = async () => {
+    const validRows = validationErrors.filter(v => v.status !== 'error');
+    
+    if (validRows.length === 0) {
+      toast({
+        title: "Cannot Upload",
+        description: "No valid rows to upload. Please fix errors first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Transform validated data to backend format
+      const records = validRows.map(({ row }) => {
+        const parseDateField = (fieldName: string) => {
+          const value = row[fieldName];
+          if (!value || value.trim() === '') return null;
+          const parsed = parseDateDDMMMYYYY(value);
+          return parsed ? format(parsed, 'yyyy-MM-dd') : null;
+        };
+
+        return {
+          employee_id: row['Employee ID']?.trim() || null,
+          user_id: row['User ID (numbers only)']?.trim() || null,
+          name: row['Name (DO NOT EDIT)']?.trim(),
+          mobile_number: row['Phone Number (DO NOT EDIT)']?.trim().replace(/\D/g, ''),
+          email: (row['Email (DO NOT EDIT)'] || row['Email'])?.trim().toLowerCase(),
+          gender: row['Gender']?.trim().toLowerCase(),
+          date_of_birth: parseDateField('Date of Birth (DD-MMM-YYYY)'),
+          blood_group: row['Blood Group']?.trim(),
+          marital_status: row['Marital Status']?.trim().toLowerCase(),
+          name_as_per_aadhar: row['Name as per Aadhar']?.trim(),
+          aadhar_number: row['Aadhar Number']?.trim().replace(/\s/g, ''),
+          father_name: row['Father Name']?.trim(),
+          father_dob: parseDateField('Father DOB (DD-MMM-YYYY)'),
+          mother_name: row['Mother Name']?.trim(),
+          mother_dob: parseDateField('Mother DOB (DD-MMM-YYYY)'),
+          wife_name: row['Wife Name']?.trim(),
+          wife_dob: parseDateField('Wife DOB (DD-MMM-YYYY)'),
+          child1_name: row['Child 1 Name']?.trim(),
+          child1_gender: row['Child 1 Gender (male/female)']?.trim().toLowerCase(),
+          child1_dob: parseDateField('Child 1 DOB (DD-MMM-YYYY)'),
+          child2_name: row['Child 2 Name']?.trim(),
+          child2_gender: row['Child 2 Gender (male/female)']?.trim().toLowerCase(),
+          child2_dob: parseDateField('Child 2 DOB (DD-MMM-YYYY)'),
+          nominee_name: row['Nominee Name']?.trim(),
+          nominee_relation: row['Nominee Relation']?.trim(),
+          present_address: row['Present Address']?.trim(),
+          permanent_address: row['Permanent Address']?.trim(),
+          emergency_contact_name: row['Emergency Contact Name']?.trim(),
+          emergency_contact_number: row['Emergency Contact Number']?.trim().replace(/\D/g, ''),
+          emergency_contact_relation: row['Relation with Emergency Contact']?.trim(),
+          legal_entity: row['Legal Entity']?.trim(),
+          pan_number: row['PAN Number']?.trim().toUpperCase(),
+          name_as_per_pan: row['Name as Per PAN']?.trim(),
+          account_number: row['Account Number']?.trim(),
+          ifsc_code: row['IFSC Code']?.trim().toUpperCase(),
+          name_as_per_bank: row['Name as per Bank']?.trim(),
+          bank_name: row['Bank Name']?.trim(),
+          uan_number: row['UAN Number (12 digits)']?.trim().replace(/\s/g, ''),
+          esic_ip_number: row['ESIC IP Number (10 digits or N/A)']?.trim()
+        };
+      });
+
       const response = await apiRequest('/api/onboarding/onboarding/bulk-upload', {
         method: 'POST',
         body: { records }
@@ -321,14 +468,16 @@ export default function Onboarding() {
 
       toast({
         title: "Upload Complete",
-        description: `Success: ${(response as any).results.success}, Failed: ${(response as any).results.failed}`,
+        description: `✓ Success: ${(response as any).results.success} | ✗ Failed: ${(response as any).results.failed}`,
       });
 
       if ((response as any).results.errors.length > 0) {
         console.error('Upload errors:', (response as any).results.errors);
       }
 
-      event.target.value = '';
+      setShowPreview(false);
+      setPreviewData([]);
+      setValidationErrors([]);
     } catch (error) {
       toast({
         title: "Upload Failed",
@@ -644,6 +793,155 @@ export default function Onboarding() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Validation Preview Dialog */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Validation Results
+              <Badge variant={validationErrors.filter(v => v.status === 'error').length > 0 ? 'destructive' : 'default'}>
+                {previewData.length} rows
+              </Badge>
+            </DialogTitle>
+            <DialogDescription>
+              Review validation results before uploading. Rows with errors will be skipped.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="text-2xl font-bold">{validationErrors.filter(v => v.status === 'success').length}</p>
+                      <p className="text-sm text-muted-foreground">Valid Rows</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                    <div>
+                      <p className="text-2xl font-bold">{validationErrors.filter(v => v.status === 'warning').length}</p>
+                      <p className="text-sm text-muted-foreground">Warnings</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                    <div>
+                      <p className="text-2xl font-bold">{validationErrors.filter(v => v.status === 'error').length}</p>
+                      <p className="text-sm text-muted-foreground">Errors</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Validation Details */}
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[60px]">Row</TableHead>
+                    <TableHead className="w-[80px]">Status</TableHead>
+                    <TableHead className="w-[150px]">Name</TableHead>
+                    <TableHead className="w-[120px]">Phone</TableHead>
+                    <TableHead>Issues</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {previewData.map((validation) => (
+                    <TableRow key={validation.rowIndex} className={
+                      validation.status === 'error' ? 'bg-red-50' :
+                      validation.status === 'warning' ? 'bg-yellow-50' :
+                      'bg-green-50'
+                    }>
+                      <TableCell className="font-medium">{validation.rowIndex}</TableCell>
+                      <TableCell>
+                        {validation.status === 'success' && (
+                          <Badge variant="default" className="bg-green-600">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            OK
+                          </Badge>
+                        )}
+                        {validation.status === 'warning' && (
+                          <Badge variant="outline" className="text-yellow-700 border-yellow-700">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Warn
+                          </Badge>
+                        )}
+                        {validation.status === 'error' && (
+                          <Badge variant="destructive">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Error
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {validation.row['Name (DO NOT EDIT)'] || '-'}
+                      </TableCell>
+                      <TableCell>
+                        {validation.row['Phone Number (DO NOT EDIT)'] || '-'}
+                      </TableCell>
+                      <TableCell>
+                        {validation.errors.length > 0 && (
+                          <div className="space-y-1">
+                            {validation.errors.map((error: string, idx: number) => (
+                              <div key={idx} className="text-sm text-red-700 flex items-start gap-1">
+                                <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                <span>{error}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {validation.warnings.length > 0 && (
+                          <div className="space-y-1">
+                            {validation.warnings.map((warning: string, idx: number) => (
+                              <div key={idx} className="text-sm text-yellow-700 flex items-start gap-1">
+                                <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                <span>{warning}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {validation.status === 'success' && (
+                          <span className="text-sm text-green-700">No issues</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowPreview(false)}
+              disabled={uploading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmUpload}
+              disabled={uploading || validationErrors.filter(v => v.status !== 'error').length === 0}
+            >
+              {uploading ? 'Uploading...' : `Upload ${validationErrors.filter(v => v.status !== 'error').length} Valid Rows`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
