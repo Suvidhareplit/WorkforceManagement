@@ -861,8 +861,8 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">Child 2 DOB</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Nominee Name</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Nominee Relation</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[200px] px-3 py-2">Present Address</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[200px] px-3 py-2">Permanent Address</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[500px] px-3 py-2">Present Address</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[500px] px-3 py-2">Permanent Address</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Emergency Name</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Emergency Number</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Emergency Relation</TableHead>
@@ -988,12 +988,12 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeName || record.nominee_name || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeRelation || record.nominee_relation || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[400px] text-xs leading-tight break-words line-clamp-3">
+                        <div className="w-full text-xs leading-tight break-words">
                           {record.presentAddress || record.present_address || 'N/A'}
                         </div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[400px] text-xs leading-tight break-words line-clamp-3">
+                        <div className="w-full text-xs leading-tight break-words">
                           {record.permanentAddress || record.permanent_address || 'N/A'}
                         </div>
                       </TableCell>
