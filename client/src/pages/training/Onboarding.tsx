@@ -90,6 +90,7 @@ export default function Onboarding() {
       "Name as Per PAN",
       "Account Number", 
       "IFSC Code", 
+      "Bank Name",
       "Name as per Bank", 
       "Aadhar Number",
       "Name as per Aadhar", 
@@ -115,7 +116,8 @@ export default function Onboarding() {
       "Nominee Name",
       "Nominee Relation",
       "User ID (numbers only)",
-      "Employee ID"
+      "Employee ID",
+      "Legal Entity"
     ];
 
     const rows = pendingCandidates.map((record: any) => {
@@ -166,6 +168,7 @@ export default function Onboarding() {
         record.nameAsPerPan || record.name_as_per_pan || '',
         record.accountNumber || record.account_number || '',
         record.ifscCode || record.ifsc_code || '',
+        record.bankName || record.bank_name || '',
         record.nameAsPerBank || record.name_as_per_bank || '',
         record.aadharNumber || record.aadhar_number || '',
         record.nameAsPerAadhar || record.name_as_per_aadhar || '',
@@ -191,7 +194,8 @@ export default function Onboarding() {
         record.nomineeName || record.nominee_name || '',
         record.nomineeRelation || record.nominee_relation || '',
         record.userId || record.user_id || '',
-        record.employeeId || record.employee_id || ''
+        record.employeeId || record.employee_id || '',
+        record.legalEntity || record.legal_entity || ''
       ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
     });
 
@@ -274,6 +278,7 @@ export default function Onboarding() {
         name_as_per_pan: row['Name as Per PAN'],
         account_number: row['Account Number'],
         ifsc_code: row['IFSC Code'],
+        bank_name: row['Bank Name'],
         name_as_per_bank: row['Name as per Bank'],
         aadhar_number: row['Aadhar Number'],
         name_as_per_aadhar: row['Name as per Aadhar'],
@@ -299,7 +304,8 @@ export default function Onboarding() {
         nominee_name: row['Nominee Name'],
         nominee_relation: row['Nominee Relation'],
         user_id: row['User ID (numbers only)'],
-        employee_id: row['Employee ID']
+        employee_id: row['Employee ID'],
+        legal_entity: row['Legal Entity']
       }));
 
       // Send to backend
@@ -408,6 +414,7 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Name as Per Aadhar</TableHead>
                   <TableHead className="font-semibold">Account Number</TableHead>
                   <TableHead className="font-semibold">IFSC Code</TableHead>
+                  <TableHead className="font-semibold">Bank Name</TableHead>
                   <TableHead className="font-semibold">Name as per Bank</TableHead>
                   <TableHead className="font-semibold">Present Address</TableHead>
                   <TableHead className="font-semibold">Permanent Address</TableHead>
@@ -432,6 +439,7 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Nominee Relation</TableHead>
                   <TableHead className="font-semibold">User ID</TableHead>
                   <TableHead className="font-semibold">Employee ID</TableHead>
+                  <TableHead className="font-semibold">Legal Entity</TableHead>
                   <TableHead className="font-semibold">Onboarded</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
                 </TableRow>
@@ -439,13 +447,13 @@ export default function Onboarding() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={52} className="text-center py-8">
+                    <TableCell colSpan={54} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : onboardingRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={52} className="text-center py-8">
+                    <TableCell colSpan={54} className="text-center py-8">
                       No onboarding records found
                     </TableCell>
                   </TableRow>
@@ -512,6 +520,7 @@ export default function Onboarding() {
                       <TableCell>{record.nameAsPerAadhar || record.name_as_per_aadhar || '-'}</TableCell>
                       <TableCell>{record.accountNumber || record.account_number || '-'}</TableCell>
                       <TableCell>{record.ifscCode || record.ifsc_code || '-'}</TableCell>
+                      <TableCell>{record.bankName || record.bank_name || '-'}</TableCell>
                       <TableCell>{record.nameAsPerBank || record.name_as_per_bank || '-'}</TableCell>
                       <TableCell>
                         <div className="text-sm max-w-xs truncate">
@@ -564,6 +573,7 @@ export default function Onboarding() {
                       <TableCell>{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
                       <TableCell>{record.userId || record.user_id || '-'}</TableCell>
                       <TableCell>{record.employeeId || record.employee_id || '-'}</TableCell>
+                      <TableCell>{record.legalEntity || record.legal_entity || '-'}</TableCell>
                       <TableCell>
                         <Checkbox
                           checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
