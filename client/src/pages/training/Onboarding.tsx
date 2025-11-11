@@ -591,13 +591,22 @@ export default function Onboarding() {
       const records = validRows.map(({ row }) => {
         const parseDateField = (fieldName: string) => {
           const value = row[fieldName];
-          if (!value || value.trim() === '') return null;
+          console.log(`Parsing date field "${fieldName}":`, value);
+          if (!value || value.trim() === '') {
+            console.log(`  → Empty, returning null`);
+            return null;
+          }
           // Handle N/A values
           const normalizedValue = value.trim().toLowerCase();
-          if (normalizedValue === 'n/a' || normalizedValue === 'na') return null;
+          if (normalizedValue === 'n/a' || normalizedValue === 'na') {
+            console.log(`  → N/A value, returning null`);
+            return null;
+          }
           
           const parsed = parseDateDDMMMYYYY(value);
-          return parsed ? format(parsed, 'yyyy-MM-dd') : null;
+          const result = parsed ? format(parsed, 'yyyy-MM-dd') : null;
+          console.log(`  → Parsed result:`, result);
+          return result;
         };
 
         const trimOrNull = (value: any) => {

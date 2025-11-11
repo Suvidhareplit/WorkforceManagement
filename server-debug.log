@@ -9,3 +9,291 @@ Ignoring invalid configuration option passed to Connection: reconnect. This is c
 Database Config: { host: 'localhost', database: 'hrms_db', user: 'hrms_user' }
 1:12:15 AM [express] Development mode: Vite integration disabled for local backend
 1:12:15 AM [express] serving on port 5000
+1:12:34 AM [express] GET /api/health 404 in 6ms
+Executed query {
+  sql: 'SELECT * FROM users WHERE id = ?',
+  originalSql: 'SELECT * FROM users WHERE id = ?',
+  duration: 72,
+  rows: 1
+}
+1:16:28 AM [express] GET /api/auth/me 304 in 83ms :: {"success":true,"data":{"id":1,"userId":1,"emai…
+Executed query {
+  sql: 'SELECT \n' +
+    '        o.*, \n' +
+    '        ft.ft_feedback\n' +
+    '      FROM onboarding o\n' +
+    '      JOIN field_training ft ON o.field_training_id = ft.id\n' +
+    '      ORDER BY o.created_at DESC',
+  originalSql: 'SELECT \n' +
+    '        o.*, \n' +
+    '        ft.ft_feedback\n' +
+    '      FROM onboarding o\n' +
+    '      JOIN field_training ft ON o.field_training_id = ft.id\n' +
+    '      ORDER BY o.created_at DESC',
+  duration: 11,
+  rows: 1
+}
+1:16:30 AM [express] GET /api/onboarding/onboarding 200 in 24ms :: {"data":[{"id":1,"field_training_…
+Executed query {
+  sql: 'SELECT * FROM users WHERE email = ?',
+  originalSql: 'SELECT * FROM users WHERE email = ?',
+  duration: 1,
+  rows: 1
+}
+1:17:03 AM [express] POST /api/auth/login 401 in 81ms :: {"success":false,"message":"Invalid credent…
+Executed query {
+  sql: 'SELECT * FROM users WHERE email = ?',
+  originalSql: 'SELECT * FROM users WHERE email = ?',
+  duration: 1,
+  rows: 1
+}
+Executed query {
+  sql: '\n' +
+    '      INSERT INTO user_audit_trail (\n' +
+    '        user_id, changed_by, change_type, table_name, record_id, \n' +
+    '        old_values, new_values, timestamp\n' +
+    '      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())\n' +
+    '    ',
+  originalSql: '\n' +
+    '      INSERT INTO user_audit_trail (\n' +
+    '        user_id, changed_by, change_type, table_name, record_id, \n' +
+    '        old_values, new_values, timestamp\n' +
+    '      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())\n' +
+    '    ',
+  duration: 4,
+  rows: 1
+}
+Executed query {
+  sql: 'SELECT * FROM user_audit_trail WHERE id = ?',
+  originalSql: 'SELECT * FROM user_audit_trail WHERE id = ?',
+  duration: 1,
+  rows: 0
+}
+1:17:14 AM [express] POST /api/auth/login 200 in 95ms :: {"success":true,"data":{"token":"eyJhbGciOi…
+Executed query {
+  sql: 'SELECT \n' +
+    '        o.*, \n' +
+    '        ft.ft_feedback\n' +
+    '      FROM onboarding o\n' +
+    '      JOIN field_training ft ON o.field_training_id = ft.id\n' +
+    '      ORDER BY o.created_at DESC',
+  originalSql: 'SELECT \n' +
+    '        o.*, \n' +
+    '        ft.ft_feedback\n' +
+    '      FROM onboarding o\n' +
+    '      JOIN field_training ft ON o.field_training_id = ft.id\n' +
+    '      ORDER BY o.created_at DESC',
+  duration: 2,
+  rows: 1
+}
+1:17:14 AM [express] GET /api/onboarding/onboarding 200 in 2ms :: {"data":[{"id":1,"field_training_i…
+=== BACKEND: Received bulk upload request ===
+Request body keys: [ 'records' ]
+Number of records received: 1
+First record sample: {
+  "employee_id": "YG0123",
+  "user_id": "1234567",
+  "name": "sagar K M",
+  "mobile_number": "7411889572",
+  "email": "kmsagar515@gmail.com",
+  "gender": "male",
+  "date_of_birth": null,
+  "blood_group": "O+",
+  "marital_status": "single",
+  "name_as_per_aadhar": "Sagar K M",
+  "aadhar_number": "742482467235",
+  "father_name": "Late Mahalingappa",
+  "father_dob": null,
+  "mother_name": "Manjula R",
+  "mother_dob": null,
+  "wife_name": null,
+  "wife_dob": null,
+  "child1_name": null,
+  "child1_gender": null,
+  "child1_dob": null,
+  "child2_name": null,
+  "child2_gender": null,
+  "child2_dob": null,
+  "nominee_name": "Manjula",
+  "nominee_relation": "Mother",
+  "present_address": "32 Dhenupuri, 2nd cross, As nagar, MEI colony,Laggere,Bangalore 560058",
+  "permanent_address": "32 Dhenupuri, 2nd cross, As nagar, MEI colony,Laggere,Bangalore 560058",
+  "emergency_contact_name": "Manjula",
+  "emergency_contact_number": "7026590193",
+  "emergency_contact_relation": "Mother",
+  "legal_entity": "YULU",
+  "pan_number": "JCVPS6323A",
+  "name_as_per_pan": "SAGAR K M",
+  "account_number": "560100300547",
+  "ifsc_code": "HDFC00000855",
+  "name_as_per_bank": "Sagar K M",
+  "bank_name": "HDFC",
+  "uan_number": "123456789012",
+  "esic_ip_number": null
+}
+
+--- Processing record: sagar K M ---
+Searching by employee_id: YG0123
+Executed query {
+  sql: 'SELECT id, candidate_id, field_training_id FROM onboarding WHERE employee_id = ?',
+  originalSql: 'SELECT id, candidate_id, field_training_id FROM onboarding WHERE employee_id = ?',
+  duration: 1,
+  rows: 0
+}
+Searching by name and phone: sagar K M, 7411889572
+Executed query {
+  sql: 'SELECT id, candidate_id, field_training_id FROM onboarding WHERE name = ? AND mobile_number = ?',
+  originalSql: 'SELECT id, candidate_id, field_training_id FROM onboarding WHERE name = ? AND mobile_number = ?',
+  duration: 1,
+  rows: 1
+}
+Found by name+phone: 1
+Updating onboarding record for: sagar K M (ID: 1)
+Record data being saved: {
+  "employee_id": "YG0123",
+  "user_id": "1234567",
+  "name": "sagar K M",
+  "mobile_number": "7411889572",
+  "email": "kmsagar515@gmail.com",
+  "gender": "male",
+  "date_of_birth": null,
+  "blood_group": "O+",
+  "marital_status": "single",
+  "name_as_per_aadhar": "Sagar K M",
+  "aadhar_number": "742482467235",
+  "father_name": "Late Mahalingappa",
+  "father_dob": null,
+  "mother_name": "Manjula R",
+  "mother_dob": null,
+  "wife_name": null,
+  "wife_dob": null,
+  "child1_name": null,
+  "child1_gender": null,
+  "child1_dob": null,
+  "child2_name": null,
+  "child2_gender": null,
+  "child2_dob": null,
+  "nominee_name": "Manjula",
+  "nominee_relation": "Mother",
+  "present_address": "32 Dhenupuri, 2nd cross, As nagar, MEI colony,Laggere,Bangalore 560058",
+  "permanent_address": "32 Dhenupuri, 2nd cross, As nagar, MEI colony,Laggere,Bangalore 560058",
+  "emergency_contact_name": "Manjula",
+  "emergency_contact_number": "7026590193",
+  "emergency_contact_relation": "Mother",
+  "legal_entity": "YULU",
+  "pan_number": "JCVPS6323A",
+  "name_as_per_pan": "SAGAR K M",
+  "account_number": "560100300547",
+  "ifsc_code": "HDFC00000855",
+  "name_as_per_bank": "Sagar K M",
+  "bank_name": "HDFC",
+  "uan_number": "123456789012",
+  "esic_ip_number": null
+}
+Update values array: [
+  'YG0123',
+  '1234567',
+  'kmsagar515@gmail.com',
+  'male',
+  null,
+  'O+',
+  'single',
+  'JCVPS6323A',
+  'SAGAR K M',
+  '742482467235',
+  'Sagar K M',
+  '560100300547',
+  'HDFC00000855',
+  'Sagar K M',
+  'HDFC',
+  '32 Dhenupuri, 2nd cross, As nagar, MEI colony,Laggere,Bangalore 560058',
+  '32 Dhenupuri, 2nd cross, As nagar, MEI colony,Laggere,Bangalore 560058',
+  '7026590193',
+  'Manjula',
+  'Mother',
+  'Late Mahalingappa',
+  null,
+  'Manjula R',
+  null,
+  '123456789012',
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  'Manjula',
+  'Mother',
+  'YULU',
+  1
+]
+Executed query {
+  sql: 'UPDATE onboarding SET \n' +
+    '            employee_id = ?, user_id = ?, email = ?, gender = ?, date_of_birth = ?, blood_group = ?,\n' +
+    '            marital_status = ?, pan_number = ?, name_as_per_pan = ?,\n' +
+    '            aadhar_number = ?, name_as_per_aadhar = ?, account_number = ?,\n' +
+    '            ifsc_code = ?, name_as_per_bank = ?, bank_name = ?, present_address = ?,\n' +
+    '            permanent_address = ?, emergency_contact_number = ?,\n' +
+    '            emergency_contact_name = ?, emergency_contact_relation = ?,\n' +
+    '            father_name = ?, father_dob = ?, mother_name = ?, mother_dob = ?,\n' +
+    '            uan_number = ?, esic_ip_number = ?, wife_name = ?, wife_dob = ?,\n' +
+    '            child1_name = ?, child1_gender = ?, child1_dob = ?,\n' +
+    '            child2_name = ?, child2_gender = ?, child2_dob = ?,\n' +
+    '            nominee_name = ?, nominee_relation = ?, legal_entity = ?\n' +
+    '           WHERE id = ?',
+  originalSql: 'UPDATE onboarding SET \n' +
+    '            employee_id = ?, user_id = ?, email = ?, gender = ?, date_of_birth = ?, blood_group = ?,\n' +
+    '            marital_status = ?, pan_number = ?, name_as_per_pan = ?,\n' +
+    '            aadhar_number = ?, name_as_per_aadhar = ?, account_number = ?,\n' +
+    '            ifsc_code = ?, name_as_per_bank = ?, bank_name = ?, present_address = ?,\n' +
+    '            permanent_address = ?, emergency_contact_number = ?,\n' +
+    '            emergency_contact_name = ?, emergency_contact_relation = ?,\n' +
+    '            father_name = ?, father_dob = ?, mother_name = ?, mother_dob = ?,\n' +
+    '            uan_number = ?, esic_ip_number = ?, wife_name = ?, wife_dob = ?,\n' +
+    '            child1_name = ?, child1_gender = ?, child1_dob = ?,\n' +
+    '            child2_name = ?, child2_gender = ?, child2_dob = ?,\n' +
+    '            nominee_name = ?, nominee_relation = ?, legal_entity = ?\n' +
+    '           WHERE id = ?',
+  duration: 2,
+  rows: 1
+}
+Update result: { rows: [], rowCount: 1 }
+Executed query {
+  sql: 'SELECT employee_id, user_id, bank_name, legal_entity, uan_number, father_name FROM onboarding WHERE id = ?',
+  originalSql: 'SELECT employee_id, user_id, bank_name, legal_entity, uan_number, father_name FROM onboarding WHERE id = ?',
+  duration: 1,
+  rows: 1
+}
+Verified saved data: {
+  employee_id: 'YG0123',
+  user_id: '1234567',
+  bank_name: 'HDFC',
+  legal_entity: 'YULU',
+  uan_number: '123456789012',
+  father_name: 'Late Mahalingappa'
+}
+✅ Successfully updated: sagar K M
+
+=== BACKEND: Upload complete ===
+Success: 1, Failed: 0
+1:18:00 AM [express] POST /api/onboarding/onboarding/bulk-upload 200 in 13ms :: {"message":"Bulk upl…
+Executed query {
+  sql: 'SELECT \n' +
+    '        o.*, \n' +
+    '        ft.ft_feedback\n' +
+    '      FROM onboarding o\n' +
+    '      JOIN field_training ft ON o.field_training_id = ft.id\n' +
+    '      ORDER BY o.created_at DESC',
+  originalSql: 'SELECT \n' +
+    '        o.*, \n' +
+    '        ft.ft_feedback\n' +
+    '      FROM onboarding o\n' +
+    '      JOIN field_training ft ON o.field_training_id = ft.id\n' +
+    '      ORDER BY o.created_at DESC',
+  duration: 2,
+  rows: 1
+}
+1:18:00 AM [express] GET /api/onboarding/onboarding 200 in 2ms :: {"data":[{"id":1,"field_training_i…
