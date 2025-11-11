@@ -316,9 +316,21 @@ export default function Onboarding() {
       errors.push('Either Name or Employee ID is required');
     }
 
-    // Phone number validation
-    if (!row['Phone Number (DO NOT EDIT)']?.trim()) {
+    // Phone number validation (10 digits, required)
+    const phone = row['Phone Number (DO NOT EDIT)']?.trim();
+    if (!phone) {
       errors.push('Phone Number is required');
+    } else {
+      const phoneDigits = phone.replace(/\D/g, '');
+      if (phoneDigits.length !== 10) {
+        errors.push(`Phone Number must be exactly 10 digits, got: "${phone}" (${phoneDigits.length} digits)`);
+      }
+    }
+
+    // Email validation
+    const email = row['Email (DO NOT EDIT)']?.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push(`Invalid Email format: "${email}" (should be like user@example.com)`);
     }
 
     // Check if no matching record found (for informational purposes)
@@ -328,7 +340,30 @@ export default function Onboarding() {
 
     // Gender validation
     if (row['Gender'] && !['male', 'female', 'm', 'f'].includes(row['Gender'].toLowerCase().trim())) {
-      errors.push(`Invalid Gender: "${row['Gender']}" (should be male/female)`);
+      errors.push(`Invalid Gender: "${row['Gender']}" (should be male, female, m, or f)`);
+    }
+
+    // Marital Status validation
+    if (row['Marital Status'] && !['single', 'married', 'divorced', 'widowed'].includes(row['Marital Status'].toLowerCase().trim())) {
+      errors.push(`Invalid Marital Status: "${row['Marital Status']}" (should be single/married/divorced/widowed)`);
+    }
+
+    // Blood Group validation
+    if (row['Blood Group']) {
+      const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'A POSITIVE', 'A NEGATIVE', 'B POSITIVE', 'B NEGATIVE', 'AB POSITIVE', 'AB NEGATIVE', 'O POSITIVE', 'O NEGATIVE'];
+      const bloodGroup = row['Blood Group'].trim().toUpperCase().replace(' ', '');
+      const normalized = bloodGroup.replace('POSITIVE', '+').replace('NEGATIVE', '-');
+      if (!validBloodGroups.map(bg => bg.replace(' ', '')).includes(bloodGroup) && !['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].includes(normalized)) {
+        errors.push(`Invalid Blood Group: "${row['Blood Group']}" (should be A+, A-, B+, B-, AB+, AB-, O+, or O-)`);
+      }
+    }
+
+    // Child Gender validation
+    if (row['Child 1 Gender (male/female)'] && !['male', 'female', 'm', 'f'].includes(row['Child 1 Gender (male/female)'].toLowerCase().trim())) {
+      errors.push(`Invalid Child 1 Gender: "${row['Child 1 Gender (male/female)']}" (should be male or female)`);
+    }
+    if (row['Child 2 Gender (male/female)'] && !['male', 'female', 'm', 'f'].includes(row['Child 2 Gender (male/female)'].toLowerCase().trim())) {
+      errors.push(`Invalid Child 2 Gender: "${row['Child 2 Gender (male/female)']}" (should be male or female)`);
     }
 
     // Date validations
@@ -347,29 +382,81 @@ export default function Onboarding() {
         const parsed = parseDateDDMMMYYYY(value);
         if (!parsed) {
           errors.push(`Invalid date format for ${field}: "${value}" (should be DD-MMM-YYYY, e.g., 12-Aug-2025)`);
+        } else {
+          // Date reasonableness checks
+          const today = new Date();
+          const age = (today.getTime() - parsed.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+          
+          if (field === 'Date of Birth (DD-MMM-YYYY)') {
+            if (parsed > today) {
+              errors.push(`Date of Birth cannot be in the future: "${value}"`);
+            } else if (age > 100) {
+              warnings.push(`Date of Birth seems too old (${Math.floor(age)} years): "${value}"`);
+            } else if (age < 18) {
+              warnings.push(`Candidate age is less than 18 years (${Math.floor(age)} years)`);
+            }
+          }
+          
+          // Parent DOB checks
+          if ((field === 'Father DOB (DD-MMM-YYYY)' || field === 'Mother DOB (DD-MMM-YYYY)') && parsed > today) {
+            errors.push(`${field.split(' ')[0]} Date of Birth cannot be in the future: "${value}"`);
+          }
+          
+          // Child DOB checks
+          if ((field === 'Child 1 DOB (DD-MMM-YYYY)' || field === 'Child 2 DOB (DD-MMM-YYYY)') && parsed > today) {
+            errors.push(`${field.split(' ')[0]} ${field.split(' ')[1]} Date of Birth cannot be in the future: "${value}"`);
+          }
         }
       }
     });
 
-    // Aadhar validation (12 digits)
-    if (row['Aadhar Number'] && row['Aadhar Number'].replace(/\s/g, '').length !== 12) {
-      errors.push(`Invalid Aadhar Number: "${row['Aadhar Number']}" (should be 12 digits)`);
+    // Aadhar validation (12 digits, numbers only)
+    if (row['Aadhar Number']) {
+      const aadhar = row['Aadhar Number'].replace(/\s/g, '');
+      if (!/^\d{12}$/.test(aadhar)) {
+        errors.push(`Invalid Aadhar Number: "${row['Aadhar Number']}" (must be exactly 12 digits, numbers only)`);
+      }
     }
 
-    // PAN validation (10 characters)
-    if (row['PAN Number'] && row['PAN Number'].trim().length !== 10) {
-      warnings.push(`PAN Number "${row['PAN Number']}" should be 10 characters`);
+    // PAN validation (format: ABCDE1234F)
+    if (row['PAN Number']) {
+      const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+      if (!panPattern.test(row['PAN Number'].trim().toUpperCase())) {
+        errors.push(`Invalid PAN format: "${row['PAN Number']}" (should be like ABCDE1234F - 5 letters, 4 digits, 1 letter)`);
+      }
     }
 
-    // UAN validation (12 digits)
-    if (row['UAN Number (12 digits)'] && row['UAN Number (12 digits)'].replace(/\s/g, '').length !== 12) {
-      warnings.push(`UAN Number should be 12 digits, got: "${row['UAN Number (12 digits)']}"`);
+    // Account Number validation (9-18 digits)
+    if (row['Account Number']) {
+      const account = row['Account Number'].trim();
+      if (!/^\d{9,18}$/.test(account)) {
+        errors.push(`Invalid Account Number: "${row['Account Number']}" (should be 9-18 digits)`);
+      }
     }
 
-    // ESIC validation (10 digits or N/A)
+    // IFSC Code validation (format: ABCD0123456)
+    if (row['IFSC Code']) {
+      const ifscPattern = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+      if (!ifscPattern.test(row['IFSC Code'].trim().toUpperCase())) {
+        errors.push(`Invalid IFSC Code: "${row['IFSC Code']}" (should be like SBIN0001234 - 4 letters, 0, 6 alphanumeric)`);
+      }
+    }
+
+    // UAN validation (12 digits, numbers only) - CRITICAL ERROR
+    if (row['UAN Number (12 digits)']) {
+      const uan = row['UAN Number (12 digits)'].replace(/\s/g, '');
+      if (!/^\d{12}$/.test(uan)) {
+        errors.push(`Invalid UAN Number: "${row['UAN Number (12 digits)']}" (must be exactly 12 digits, numbers only)`);
+      }
+    }
+
+    // ESIC validation (10 digits or N/A) - CRITICAL ERROR
     const esic = row['ESIC IP Number (10 digits or N/A)'];
-    if (esic && esic.toUpperCase() !== 'N/A' && esic.replace(/\s/g, '').length !== 10) {
-      warnings.push(`ESIC IP Number should be 10 digits or N/A, got: "${esic}"`);
+    if (esic && esic.trim().toUpperCase() !== 'N/A') {
+      const esicDigits = esic.replace(/\s/g, '');
+      if (!/^\d{10}$/.test(esicDigits)) {
+        errors.push(`Invalid ESIC IP Number: "${esic}" (must be exactly 10 digits or N/A)`);
+      }
     }
 
     return { 
@@ -494,46 +581,59 @@ export default function Onboarding() {
           return parsed ? format(parsed, 'yyyy-MM-dd') : null;
         };
 
+        const trimOrNull = (value: any) => {
+          if (!value || value.trim() === '') return null;
+          return value.trim();
+        };
+
+        const normalizeGender = (value: any) => {
+          if (!value) return null;
+          const gender = value.trim().toLowerCase();
+          if (gender === 'm') return 'male';
+          if (gender === 'f') return 'female';
+          return gender;
+        };
+
         return {
-          employee_id: row['Employee ID']?.trim() || null,
-          user_id: row['User ID (numbers only)']?.trim() || null,
-          name: row['Name (DO NOT EDIT)']?.trim(),
-          mobile_number: row['Phone Number (DO NOT EDIT)']?.trim().replace(/\D/g, ''),
-          email: (row['Email (DO NOT EDIT)'] || row['Email'])?.trim().toLowerCase(),
-          gender: row['Gender']?.trim().toLowerCase(),
+          employee_id: trimOrNull(row['Employee ID']),
+          user_id: trimOrNull(row['User ID (numbers only)']),
+          name: trimOrNull(row['Name (DO NOT EDIT)']),
+          mobile_number: row['Phone Number (DO NOT EDIT)']?.trim().replace(/\D/g, '') || null,
+          email: trimOrNull(row['Email (DO NOT EDIT)'] || row['Email'])?.toLowerCase(),
+          gender: normalizeGender(row['Gender']),
           date_of_birth: parseDateField('Date of Birth (DD-MMM-YYYY)'),
-          blood_group: row['Blood Group']?.trim(),
-          marital_status: row['Marital Status']?.trim().toLowerCase(),
-          name_as_per_aadhar: row['Name as per Aadhar']?.trim(),
-          aadhar_number: row['Aadhar Number']?.trim().replace(/\s/g, ''),
-          father_name: row['Father Name']?.trim(),
+          blood_group: trimOrNull(row['Blood Group'])?.toUpperCase().replace('POSITIVE', '+').replace('NEGATIVE', '-').replace(' ', ''),
+          marital_status: trimOrNull(row['Marital Status'])?.toLowerCase(),
+          name_as_per_aadhar: trimOrNull(row['Name as per Aadhar']),
+          aadhar_number: row['Aadhar Number'] ? row['Aadhar Number'].trim().replace(/\s/g, '') : null,
+          father_name: trimOrNull(row['Father Name']),
           father_dob: parseDateField('Father DOB (DD-MMM-YYYY)'),
-          mother_name: row['Mother Name']?.trim(),
+          mother_name: trimOrNull(row['Mother Name']),
           mother_dob: parseDateField('Mother DOB (DD-MMM-YYYY)'),
-          wife_name: row['Wife Name']?.trim(),
+          wife_name: trimOrNull(row['Wife Name']),
           wife_dob: parseDateField('Wife DOB (DD-MMM-YYYY)'),
-          child1_name: row['Child 1 Name']?.trim(),
-          child1_gender: row['Child 1 Gender (male/female)']?.trim().toLowerCase(),
+          child1_name: trimOrNull(row['Child 1 Name']),
+          child1_gender: normalizeGender(row['Child 1 Gender (male/female)']),
           child1_dob: parseDateField('Child 1 DOB (DD-MMM-YYYY)'),
-          child2_name: row['Child 2 Name']?.trim(),
-          child2_gender: row['Child 2 Gender (male/female)']?.trim().toLowerCase(),
+          child2_name: trimOrNull(row['Child 2 Name']),
+          child2_gender: normalizeGender(row['Child 2 Gender (male/female)']),
           child2_dob: parseDateField('Child 2 DOB (DD-MMM-YYYY)'),
-          nominee_name: row['Nominee Name']?.trim(),
-          nominee_relation: row['Nominee Relation']?.trim(),
-          present_address: row['Present Address']?.trim(),
-          permanent_address: row['Permanent Address']?.trim(),
-          emergency_contact_name: row['Emergency Contact Name']?.trim(),
-          emergency_contact_number: row['Emergency Contact Number']?.trim().replace(/\D/g, ''),
-          emergency_contact_relation: row['Relation with Emergency Contact']?.trim(),
-          legal_entity: row['Legal Entity']?.trim(),
-          pan_number: row['PAN Number']?.trim().toUpperCase(),
-          name_as_per_pan: row['Name as Per PAN']?.trim(),
-          account_number: row['Account Number']?.trim(),
-          ifsc_code: row['IFSC Code']?.trim().toUpperCase(),
-          name_as_per_bank: row['Name as per Bank']?.trim(),
-          bank_name: row['Bank Name']?.trim(),
-          uan_number: row['UAN Number (12 digits)']?.trim().replace(/\s/g, ''),
-          esic_ip_number: row['ESIC IP Number (10 digits or N/A)']?.trim()
+          nominee_name: trimOrNull(row['Nominee Name']),
+          nominee_relation: trimOrNull(row['Nominee Relation']),
+          present_address: trimOrNull(row['Present Address']),
+          permanent_address: trimOrNull(row['Permanent Address']),
+          emergency_contact_name: trimOrNull(row['Emergency Contact Name']),
+          emergency_contact_number: row['Emergency Contact Number'] ? row['Emergency Contact Number'].trim().replace(/\D/g, '') : null,
+          emergency_contact_relation: trimOrNull(row['Relation with Emergency Contact']),
+          legal_entity: trimOrNull(row['Legal Entity']),
+          pan_number: trimOrNull(row['PAN Number'])?.toUpperCase(),
+          name_as_per_pan: trimOrNull(row['Name as Per PAN']),
+          account_number: trimOrNull(row['Account Number']),
+          ifsc_code: trimOrNull(row['IFSC Code'])?.toUpperCase(),
+          name_as_per_bank: trimOrNull(row['Name as per Bank']),
+          bank_name: trimOrNull(row['Bank Name']),
+          uan_number: row['UAN Number (12 digits)'] ? row['UAN Number (12 digits)'].trim().replace(/\s/g, '') : null,
+          esic_ip_number: trimOrNull(row['ESIC IP Number (10 digits or N/A)'])
         };
       });
 

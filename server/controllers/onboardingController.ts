@@ -169,9 +169,11 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
         }
         
         // Update the existing onboarding record
-        await query(
+        console.log(`Updating onboarding record for: ${record.name} (ID: ${onboardingRecord.id})`);
+        
+        const updateResult = await query(
           `UPDATE onboarding SET 
-            employee_id = ?, user_id = ?, gender = ?, date_of_birth = ?, blood_group = ?,
+            employee_id = ?, user_id = ?, email = ?, gender = ?, date_of_birth = ?, blood_group = ?,
             marital_status = ?, pan_number = ?, name_as_per_pan = ?,
             aadhar_number = ?, name_as_per_aadhar = ?, account_number = ?,
             ifsc_code = ?, name_as_per_bank = ?, bank_name = ?, present_address = ?,
@@ -184,7 +186,7 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
             nominee_name = ?, nominee_relation = ?, legal_entity = ?
            WHERE id = ?`,
           [
-            record.employee_id, record.user_id, record.gender, record.date_of_birth, record.blood_group,
+            record.employee_id, record.user_id, record.email, record.gender, record.date_of_birth, record.blood_group,
             record.marital_status, record.pan_number, record.name_as_per_pan,
             record.aadhar_number, record.name_as_per_aadhar, record.account_number,
             record.ifsc_code, record.name_as_per_bank, record.bank_name, record.present_address,
@@ -198,6 +200,12 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
             onboardingRecord.id
           ]
         );
+        
+        console.log(`Update result:`, updateResult);
+        
+        if ((updateResult as any).affectedRows === 0) {
+          throw new Error(`No rows updated for record ID: ${onboardingRecord.id}`);
+        }
         
         results.success++;
       } catch (error) {
