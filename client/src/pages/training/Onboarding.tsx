@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X } from "lucide-react";
+import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Onboarding() {
@@ -17,6 +18,8 @@ export default function Onboarding() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [validationErrors, setValidationErrors] = useState<any[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   // Fetch onboarding records
@@ -253,9 +256,60 @@ export default function Onboarding() {
     }
   };
 
+  // Auto-matching: Find similar candidates in the database
+  const findMatchingSuggestions = (row: any) => {
+    const name = row['Name (DO NOT EDIT)']?.trim().toLowerCase();
+    const phone = row['Phone Number (DO NOT EDIT)']?.trim().replace(/\D/g, '');
+    const employeeId = row['Employee ID']?.trim();
+    
+    const suggestions: any[] = [];
+
+    if (!name && !phone && !employeeId) return suggestions;
+
+    onboardingRecords.forEach((record: any) => {
+      const dbName = (record.name || '').toLowerCase();
+      const dbPhone = (record.mobileNumber || record.mobile_number || '').replace(/\D/g, '');
+      const dbEmployeeId = record.employeeId || record.employee_id;
+
+      let score = 0;
+      const reasons: string[] = [];
+
+      // Exact matches
+      if (employeeId && dbEmployeeId === employeeId) {
+        score += 100;
+        reasons.push('Exact Employee ID match');
+      }
+      if (phone && dbPhone === phone) {
+        score += 80;
+        reasons.push('Exact phone match');
+      }
+      
+      // Name similarity (contains)
+      if (name && dbName.includes(name)) {
+        score += 50;
+        reasons.push('Name contains match');
+      } else if (name && name.includes(dbName)) {
+        score += 40;
+        reasons.push('Partial name match');
+      }
+
+      if (score > 0) {
+        suggestions.push({
+          record,
+          score,
+          reasons: reasons.join(', ')
+        });
+      }
+    });
+
+    // Sort by score and return top 3
+    return suggestions.sort((a, b) => b.score - a.score).slice(0, 3);
+  };
+
   const validateRecord = (row: any, index: number) => {
     const errors: string[] = [];
     const warnings: string[] = [];
+    const suggestions = findMatchingSuggestions(row);
 
     // Required field: Name or Employee ID
     if (!row['Name (DO NOT EDIT)']?.trim() && !row['Employee ID']?.trim()) {
@@ -265,6 +319,11 @@ export default function Onboarding() {
     // Phone number validation
     if (!row['Phone Number (DO NOT EDIT)']?.trim()) {
       errors.push('Phone Number is required');
+    }
+
+    // Check if no matching record found (for informational purposes)
+    if (suggestions.length === 0 && row['Name (DO NOT EDIT)']?.trim()) {
+      warnings.push('No matching candidate found in database. Make sure this candidate completed Field Training.');
     }
 
     // Gender validation
@@ -313,7 +372,14 @@ export default function Onboarding() {
       warnings.push(`ESIC IP Number should be 10 digits or N/A, got: "${esic}"`);
     }
 
-    return { rowIndex: index + 1, row, errors, warnings, status: errors.length > 0 ? 'error' : warnings.length > 0 ? 'warning' : 'success' };
+    return { 
+      rowIndex: index + 1, 
+      row, 
+      errors, 
+      warnings, 
+      suggestions,
+      status: errors.length > 0 ? 'error' : warnings.length > 0 ? 'warning' : 'success' 
+    };
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -407,6 +473,17 @@ export default function Onboarding() {
     }
 
     setUploading(true);
+    setIsProcessing(true);
+    setUploadProgress(0);
+
+    // Simulate progress for user feedback
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + 10;
+      });
+    }, 200);
+
     try {
       // Transform validated data to backend format
       const records = validRows.map(({ row }) => {
@@ -465,6 +542,10 @@ export default function Onboarding() {
         body: { records }
       });
 
+      // Complete progress
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/onboarding"] });
 
       toast({
@@ -476,10 +557,18 @@ export default function Onboarding() {
         console.error('Upload errors:', (response as any).results.errors);
       }
 
-      setShowPreview(false);
-      setPreviewData([]);
-      setValidationErrors([]);
+      // Wait a moment to show 100% before closing
+      setTimeout(() => {
+        setShowPreview(false);
+        setPreviewData([]);
+        setValidationErrors([]);
+        setUploadProgress(0);
+        setIsProcessing(false);
+      }, 500);
     } catch (error) {
+      clearInterval(progressInterval);
+      setUploadProgress(0);
+      setIsProcessing(false);
       toast({
         title: "Upload Failed",
         description: (error as Error).message,
@@ -895,29 +984,50 @@ export default function Onboarding() {
                         {validation.row['Phone Number (DO NOT EDIT)'] || '-'}
                       </TableCell>
                       <TableCell>
-                        {validation.errors.length > 0 && (
-                          <div className="space-y-1">
-                            {validation.errors.map((error: string, idx: number) => (
-                              <div key={idx} className="text-sm text-red-700 flex items-start gap-1">
-                                <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                <span>{error}</span>
+                        <div className="space-y-2">
+                          {/* Errors */}
+                          {validation.errors.length > 0 && (
+                            <div className="space-y-1">
+                              {validation.errors.map((error: string, idx: number) => (
+                                <div key={idx} className="text-sm text-red-700 flex items-start gap-1">
+                                  <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                  <span>{error}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {/* Warnings */}
+                          {validation.warnings.length > 0 && (
+                            <div className="space-y-1">
+                              {validation.warnings.map((warning: string, idx: number) => (
+                                <div key={idx} className="text-sm text-yellow-700 flex items-start gap-1">
+                                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                  <span>{warning}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {/* Auto-Match Suggestions */}
+                          {validation.suggestions && validation.suggestions.length > 0 && (
+                            <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
+                              <div className="flex items-center gap-1 text-xs font-medium text-blue-700 mb-1">
+                                <UserCheck className="h-3 w-3" />
+                                Matching Candidates Found:
                               </div>
-                            ))}
-                          </div>
-                        )}
-                        {validation.warnings.length > 0 && (
-                          <div className="space-y-1">
-                            {validation.warnings.map((warning: string, idx: number) => (
-                              <div key={idx} className="text-sm text-yellow-700 flex items-start gap-1">
-                                <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                <span>{warning}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {validation.status === 'success' && (
-                          <span className="text-sm text-green-700">No issues</span>
-                        )}
+                              {validation.suggestions.slice(0, 2).map((suggestion: any, idx: number) => (
+                                <div key={idx} className="text-xs text-blue-600 ml-4 mt-1">
+                                  ✓ {suggestion.record.name} | {suggestion.record.mobileNumber || suggestion.record.mobile_number}
+                                  <br />
+                                  <span className="text-blue-500 text-[10px]">({suggestion.reasons})</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {/* Success */}
+                          {validation.status === 'success' && validation.errors.length === 0 && validation.warnings.length === 0 && (
+                            <span className="text-sm text-green-700">No issues</span>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -926,20 +1036,34 @@ export default function Onboarding() {
             </div>
           </div>
 
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowPreview(false)}
-              disabled={uploading}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={confirmUpload}
-              disabled={uploading || validationErrors.filter(v => v.status !== 'error').length === 0}
-            >
-              {uploading ? 'Uploading...' : `Upload ${validationErrors.filter(v => v.status !== 'error').length} Valid Rows`}
-            </Button>
+          <DialogFooter className="flex-col items-stretch gap-4">
+            {/* Progress Bar */}
+            {isProcessing && (
+              <div className="w-full">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">Upload Progress</span>
+                  <span className="font-medium">{uploadProgress}%</span>
+                </div>
+                <Progress value={uploadProgress} className="h-2" />
+              </div>
+            )}
+            
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowPreview(false)}
+                disabled={uploading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmUpload}
+                disabled={uploading || validationErrors.filter(v => v.status !== 'error').length === 0}
+              >
+                {uploading ? 'Uploading...' : `Upload ${validationErrors.filter(v => v.status !== 'error').length} Valid Rows`}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
