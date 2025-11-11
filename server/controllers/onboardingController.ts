@@ -182,6 +182,7 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
         
         // Update the existing onboarding record
         console.log(`Updating onboarding record for: ${record.name} (ID: ${onboardingRecord.id})`);
+        console.log('Record data being saved:', JSON.stringify(record, null, 2));
         
         const updateResult = await query(
           `UPDATE onboarding SET 
@@ -219,6 +220,13 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
           console.error(`❌ No rows updated for record ID: ${onboardingRecord.id}`);
           throw new Error(`No rows updated for record ID: ${onboardingRecord.id}`);
         }
+        
+        // Verify what was actually saved
+        const verifyResult = await query(
+          'SELECT employee_id, user_id, bank_name, legal_entity, uan_number, father_name FROM onboarding WHERE id = ?',
+          [onboardingRecord.id]
+        );
+        console.log('Verified saved data:', verifyResult.rows[0]);
         
         console.log(`✅ Successfully updated: ${record.name}`);
         results.success++;

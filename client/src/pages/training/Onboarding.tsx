@@ -625,7 +625,9 @@ export default function Onboarding() {
           return status;
         };
 
-        return {
+        console.log('Raw CSV row:', row);
+        
+        const transformedRecord = {
           employee_id: trimOrNull(row['Employee ID']),
           user_id: trimOrNull(row['User ID (numbers only)']),
           name: trimOrNull(row['Name (DO NOT EDIT)']),
@@ -666,6 +668,9 @@ export default function Onboarding() {
           uan_number: row['UAN Number (12 digits)'] ? row['UAN Number (12 digits)'].trim().replace(/\s/g, '') : null,
           esic_ip_number: trimOrNull(row['ESIC IP Number (10 digits or N/A)'])
         };
+        
+        console.log('Transformed record:', transformedRecord);
+        return transformedRecord;
       });
 
       console.log('=== FRONTEND: Sending upload request ===');
