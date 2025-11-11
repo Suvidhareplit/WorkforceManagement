@@ -184,6 +184,24 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
         console.log(`Updating onboarding record for: ${record.name} (ID: ${onboardingRecord.id})`);
         console.log('Record data being saved:', JSON.stringify(record, null, 2));
         
+        // Prepare update values with explicit logging
+        const updateValues = [
+          record.employee_id, record.user_id, record.email, record.gender, record.date_of_birth, record.blood_group,
+          record.marital_status, record.pan_number, record.name_as_per_pan,
+          record.aadhar_number, record.name_as_per_aadhar, record.account_number,
+          record.ifsc_code, record.name_as_per_bank, record.bank_name, record.present_address,
+          record.permanent_address, record.emergency_contact_number,
+          record.emergency_contact_name, record.emergency_contact_relation,
+          record.father_name, record.father_dob, record.mother_name, record.mother_dob,
+          record.uan_number, record.esic_ip_number, record.wife_name, record.wife_dob,
+          record.child1_name, record.child1_gender, record.child1_dob,
+          record.child2_name, record.child2_gender, record.child2_dob,
+          record.nominee_name, record.nominee_relation, record.legal_entity,
+          onboardingRecord.id
+        ];
+        
+        console.log('Update values array:', updateValues);
+        
         const updateResult = await query(
           `UPDATE onboarding SET 
             employee_id = ?, user_id = ?, email = ?, gender = ?, date_of_birth = ?, blood_group = ?,
@@ -198,20 +216,7 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
             child2_name = ?, child2_gender = ?, child2_dob = ?,
             nominee_name = ?, nominee_relation = ?, legal_entity = ?
            WHERE id = ?`,
-          [
-            record.employee_id, record.user_id, record.email, record.gender, record.date_of_birth, record.blood_group,
-            record.marital_status, record.pan_number, record.name_as_per_pan,
-            record.aadhar_number, record.name_as_per_aadhar, record.account_number,
-            record.ifsc_code, record.name_as_per_bank, record.bank_name, record.present_address,
-            record.permanent_address, record.emergency_contact_number,
-            record.emergency_contact_name, record.emergency_contact_relation,
-            record.father_name, record.father_dob, record.mother_name, record.mother_dob,
-            record.uan_number, record.esic_ip_number, record.wife_name, record.wife_dob,
-            record.child1_name, record.child1_gender, record.child1_dob,
-            record.child2_name, record.child2_gender, record.child2_dob,
-            record.nominee_name, record.nominee_relation, record.legal_entity,
-            onboardingRecord.id
-          ]
+          updateValues
         );
         
         console.log(`Update result:`, updateResult);
