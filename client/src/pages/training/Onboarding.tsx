@@ -330,8 +330,9 @@ export default function Onboarding() {
     }
 
     // Marital Status validation
-    if (row['Marital Status'] && !['single', 'married', 'divorced', 'widowed'].includes(row['Marital Status'].toLowerCase().trim())) {
-      errors.push(`Invalid Marital Status: "${row['Marital Status']}" (should be single/married/divorced/widowed)`);
+    const validMaritalStatuses = ['single', 'married', 'divorced', 'widowed', 'unmarried'];
+    if (row['Marital Status'] && !validMaritalStatuses.includes(row['Marital Status'].toLowerCase().trim())) {
+      errors.push(`Invalid Marital Status: "${row['Marital Status']}" (should be single/unmarried/married/divorced/widowed)`);
     }
 
     // Blood Group validation
@@ -348,10 +349,10 @@ export default function Onboarding() {
     const maritalStatus = row['Marital Status']?.toLowerCase().trim();
     if (maritalStatus === 'married') {
       // If married, wife name and DOB are mandatory
-      if (!row['Wife Name']?.trim()) {
+      if (!row['Wife Name']?.trim() || row['Wife Name']?.trim().toLowerCase() === 'n/a') {
         errors.push('Wife Name is required when Marital Status is Married');
       }
-      if (!row['Wife DOB (DD-MMM-YYYY)']?.trim()) {
+      if (!row['Wife DOB (DD-MMM-YYYY)']?.trim() || row['Wife DOB (DD-MMM-YYYY)']?.trim().toLowerCase() === 'n/a') {
         errors.push('Wife DOB is required when Marital Status is Married');
       }
     }
@@ -446,11 +447,13 @@ export default function Onboarding() {
       }
     }
 
-    // IFSC Code validation (format: ABCD0123456)
+    // IFSC Code validation (format: ABCD0123456 - typically 11 characters, 4 letters + rest alphanumeric)
     if (row['IFSC Code']) {
-      const ifscPattern = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-      if (!ifscPattern.test(row['IFSC Code'].trim().toUpperCase())) {
-        errors.push(`Invalid IFSC Code: "${row['IFSC Code']}" (should be like SBIN0001234 - 4 letters, 0, 6 alphanumeric)`);
+      const ifscTrimmed = row['IFSC Code'].trim().toUpperCase();
+      // Accept 11 character standard IFSC: 4 letters + 7 alphanumeric
+      const ifscPattern = /^[A-Z]{4}[0-9A-Z]{7,11}$/;
+      if (!ifscPattern.test(ifscTrimmed) || ifscTrimmed.length < 11) {
+        errors.push(`Invalid IFSC Code: "${row['IFSC Code']}" (should be 4 letters + 7-11 alphanumeric characters, e.g., SBIN0001234)`);
       }
     }
 
@@ -614,6 +617,14 @@ export default function Onboarding() {
           return gender;
         };
 
+        const normalizeMaritalStatus = (value: any) => {
+          if (!value || value.trim() === '') return null;
+          const status = value.trim().toLowerCase();
+          // Convert "unmarried" to "single" for database compatibility
+          if (status === 'unmarried') return 'single';
+          return status;
+        };
+
         return {
           employee_id: trimOrNull(row['Employee ID']),
           user_id: trimOrNull(row['User ID (numbers only)']),
@@ -623,7 +634,7 @@ export default function Onboarding() {
           gender: normalizeGender(row['Gender']),
           date_of_birth: parseDateField('Date of Birth (DD-MMM-YYYY)'),
           blood_group: trimOrNull(row['Blood Group'])?.toUpperCase().replace('POSITIVE', '+').replace('NEGATIVE', '-').replace(' ', ''),
-          marital_status: trimOrNull(row['Marital Status'])?.toLowerCase(),
+          marital_status: normalizeMaritalStatus(row['Marital Status']),
           name_as_per_aadhar: trimOrNull(row['Name as per Aadhar']),
           aadhar_number: row['Aadhar Number'] ? row['Aadhar Number'].trim().replace(/\s/g, '') : null,
           father_name: trimOrNull(row['Father Name']),
