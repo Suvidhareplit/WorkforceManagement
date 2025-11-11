@@ -425,13 +425,8 @@ export default function Onboarding() {
     const isFatherLate = fatherName.includes('late');
     const isMotherLate = motherName.includes('late');
     
-    // Add info message if Late parent detected
-    if (isFatherLate) {
-      warnings.push('Father name contains "Late" - Father DOB is optional');
-    }
-    if (isMotherLate) {
-      warnings.push('Mother name contains "Late" - Mother DOB is optional');
-    }
+    // Note: We detect "Late" but don't add warnings - it's handled silently
+    // The validation logic below will skip DOB requirement if "Late" is detected
     
     // Date of Birth - always mandatory (use flexible column matching)
     if (!dobValue || dobValue.trim() === '' || dobValue.trim().toLowerCase() === 'n/a' || dobValue.trim().toLowerCase() === 'na') {
