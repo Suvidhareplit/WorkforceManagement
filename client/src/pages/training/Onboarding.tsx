@@ -316,22 +316,8 @@ export default function Onboarding() {
       errors.push('Either Name or Employee ID is required');
     }
 
-    // Phone number validation (10 digits, required)
-    const phone = row['Phone Number (DO NOT EDIT)']?.trim();
-    if (!phone) {
-      errors.push('Phone Number is required');
-    } else {
-      const phoneDigits = phone.replace(/\D/g, '');
-      if (phoneDigits.length !== 10) {
-        errors.push(`Phone Number must be exactly 10 digits, got: "${phone}" (${phoneDigits.length} digits)`);
-      }
-    }
-
-    // Email validation
-    const email = row['Email (DO NOT EDIT)']?.trim();
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.push(`Invalid Email format: "${email}" (should be like user@example.com)`);
-    }
+    // Phone number - already validated in candidate stage, skip validation
+    // Email - already validated in candidate stage, skip validation
 
     // Check if no matching record found (for informational purposes)
     if (suggestions.length === 0 && row['Name (DO NOT EDIT)']?.trim()) {
@@ -358,12 +344,24 @@ export default function Onboarding() {
       }
     }
 
-    // Child Gender validation
-    if (row['Child 1 Gender (male/female)'] && !['male', 'female', 'm', 'f'].includes(row['Child 1 Gender (male/female)'].toLowerCase().trim())) {
-      errors.push(`Invalid Child 1 Gender: "${row['Child 1 Gender (male/female)']}" (should be male or female)`);
+    // Marital Status Conditional Validations
+    const maritalStatus = row['Marital Status']?.toLowerCase().trim();
+    if (maritalStatus === 'married') {
+      // If married, wife name and DOB are mandatory
+      if (!row['Wife Name']?.trim()) {
+        errors.push('Wife Name is required when Marital Status is Married');
+      }
+      if (!row['Wife DOB (DD-MMM-YYYY)']?.trim()) {
+        errors.push('Wife DOB is required when Marital Status is Married');
+      }
     }
-    if (row['Child 2 Gender (male/female)'] && !['male', 'female', 'm', 'f'].includes(row['Child 2 Gender (male/female)'].toLowerCase().trim())) {
-      errors.push(`Invalid Child 2 Gender: "${row['Child 2 Gender (male/female)']}" (should be male or female)`);
+
+    // Child Gender validation (only if provided)
+    if (row['Child 1 Gender (male/female)']?.trim() && !['male', 'female', 'm', 'f', 'n/a'].includes(row['Child 1 Gender (male/female)'].toLowerCase().trim())) {
+      errors.push(`Invalid Child 1 Gender: "${row['Child 1 Gender (male/female)']}" (should be male, female, or N/A)`);
+    }
+    if (row['Child 2 Gender (male/female)']?.trim() && !['male', 'female', 'm', 'f', 'n/a'].includes(row['Child 2 Gender (male/female)'].toLowerCase().trim())) {
+      errors.push(`Invalid Child 2 Gender: "${row['Child 2 Gender (male/female)']}" (should be male, female, or N/A)`);
     }
 
     // Date validations
@@ -379,9 +377,15 @@ export default function Onboarding() {
     dateFields.forEach(field => {
       const value = row[field];
       if (value && value.trim() !== '') {
+        // Skip N/A values
+        const normalizedValue = value.trim().toLowerCase();
+        if (normalizedValue === 'n/a' || normalizedValue === 'na') {
+          return; // Skip validation for N/A
+        }
+        
         const parsed = parseDateDDMMMYYYY(value);
         if (!parsed) {
-          errors.push(`Invalid date format for ${field}: "${value}" (should be DD-MMM-YYYY, e.g., 12-Aug-2025)`);
+          errors.push(`Invalid date format for ${field}: "${value}" (should be DD-MMM-YYYY, e.g., 12-Aug-2025, or N/A)`);
         } else {
           // Date reasonableness checks
           const today = new Date();
@@ -397,12 +401,20 @@ export default function Onboarding() {
             }
           }
           
-          // Parent DOB checks
+          // Parent DOB checks (optional fields)
           if ((field === 'Father DOB (DD-MMM-YYYY)' || field === 'Mother DOB (DD-MMM-YYYY)') && parsed > today) {
             errors.push(`${field.split(' ')[0]} Date of Birth cannot be in the future: "${value}"`);
           }
           
-          // Child DOB checks
+          // Wife DOB checks
+          if (field === 'Wife DOB (DD-MMM-YYYY)') {
+            if (parsed > today) {
+              errors.push(`Wife Date of Birth cannot be in the future: "${value}"`);
+            }
+            // Additional check: If married, wife DOB already validated as required above
+          }
+          
+          // Child DOB checks (optional fields)
           if ((field === 'Child 1 DOB (DD-MMM-YYYY)' || field === 'Child 2 DOB (DD-MMM-YYYY)') && parsed > today) {
             errors.push(`${field.split(' ')[0]} ${field.split(' ')[1]} Date of Birth cannot be in the future: "${value}"`);
           }
@@ -577,18 +589,26 @@ export default function Onboarding() {
         const parseDateField = (fieldName: string) => {
           const value = row[fieldName];
           if (!value || value.trim() === '') return null;
+          // Handle N/A values
+          const normalizedValue = value.trim().toLowerCase();
+          if (normalizedValue === 'n/a' || normalizedValue === 'na') return null;
+          
           const parsed = parseDateDDMMMYYYY(value);
           return parsed ? format(parsed, 'yyyy-MM-dd') : null;
         };
 
         const trimOrNull = (value: any) => {
           if (!value || value.trim() === '') return null;
-          return value.trim();
+          const trimmed = value.trim();
+          // Handle N/A values
+          if (trimmed.toLowerCase() === 'n/a' || trimmed.toLowerCase() === 'na') return null;
+          return trimmed;
         };
 
         const normalizeGender = (value: any) => {
-          if (!value) return null;
+          if (!value || value.trim() === '') return null;
           const gender = value.trim().toLowerCase();
+          if (gender === 'n/a' || gender === 'na') return null;
           if (gender === 'm') return 'male';
           if (gender === 'f') return 'female';
           return gender;
