@@ -99,6 +99,7 @@ export default function Onboarding() {
       "Emergency Contact Name", 
       "Relation with Emergency Contact",
       "Father Name",
+      "Father DOB (YYYY-MM-DD)",
       "Mother Name",
       "Mother DOB (YYYY-MM-DD)",
       "UAN Number (12 digits)",
@@ -172,6 +173,7 @@ export default function Onboarding() {
         record.emergencyContactName || record.emergency_contact_name || '',
         record.emergencyContactRelation || record.emergency_contact_relation || '',
         record.fatherName || record.father_name || '',
+        record.fatherDob || record.father_dob ? format(new Date(record.fatherDob || record.father_dob), 'yyyy-MM-dd') : '',
         record.motherName || record.mother_name || '',
         record.motherDob || record.mother_dob ? format(new Date(record.motherDob || record.mother_dob), 'yyyy-MM-dd') : '',
         record.uanNumber || record.uan_number || '',
@@ -391,6 +393,7 @@ export default function Onboarding() {
                   <TableHead className="font-semibold">Emergency Number</TableHead>
                   <TableHead className="font-semibold">Emergency Relation</TableHead>
                   <TableHead className="font-semibold">Father Name</TableHead>
+                  <TableHead className="font-semibold">Father DOB</TableHead>
                   <TableHead className="font-semibold">Mother Name</TableHead>
                   <TableHead className="font-semibold">Mother DOB</TableHead>
                   <TableHead className="font-semibold">UAN Number</TableHead>
@@ -412,13 +415,13 @@ export default function Onboarding() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={49} className="text-center py-8">
+                    <TableCell colSpan={50} className="text-center py-8">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : onboardingRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={49} className="text-center py-8">
+                    <TableCell colSpan={50} className="text-center py-8">
                       No onboarding records found
                     </TableCell>
                   </TableRow>
@@ -500,6 +503,11 @@ export default function Onboarding() {
                       <TableCell>{record.emergencyContactNumber || record.emergency_contact_number || '-'}</TableCell>
                       <TableCell>{record.emergencyContactRelation || record.emergency_contact_relation || '-'}</TableCell>
                       <TableCell>{record.fatherName || record.father_name || '-'}</TableCell>
+                      <TableCell>
+                        {(record.fatherDob || record.father_dob)
+                          ? format(new Date(record.fatherDob || record.father_dob), "dd-MMM-yyyy")
+                          : "-"}
+                      </TableCell>
                       <TableCell>{record.motherName || record.mother_name || '-'}</TableCell>
                       <TableCell>
                         {(record.motherDob || record.mother_dob)
