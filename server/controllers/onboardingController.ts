@@ -136,101 +136,68 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
     
     for (const record of records) {
       try {
-        // Identify candidate: prefer candidate_id from CSV, else fallback to name+phone
-        let candidateId: number | null = null;
-        if (record.candidate_id) {
-          const candById = await query('SELECT id FROM candidates WHERE id = ?', [record.candidate_id]);
-          if (candById.rows && candById.rows.length > 0) {
-            candidateId = (candById.rows[0] as any).id;
+        // Find onboarding record by employee_id or name+phone
+        let onboardingRecord: any = null;
+        
+        if (record.employee_id) {
+          const onboardingResult = await query(
+            'SELECT id, candidate_id, field_training_id FROM onboarding WHERE employee_id = ?',
+            [record.employee_id]
+          );
+          if (onboardingResult.rows && onboardingResult.rows.length > 0) {
+            onboardingRecord = onboardingResult.rows[0];
           }
         }
         
-        if (!candidateId) {
-          const candidateResult = await query(
-            'SELECT id FROM candidates WHERE name = ? AND phone = ?',
+        if (!onboardingRecord) {
+          const onboardingResult = await query(
+            'SELECT id, candidate_id, field_training_id FROM onboarding WHERE name = ? AND mobile_number = ?',
             [record.name, record.mobile_number]
           );
-          if (candidateResult.rows && candidateResult.rows.length > 0) {
-            candidateId = (candidateResult.rows[0] as any).id;
+          if (onboardingResult.rows && onboardingResult.rows.length > 0) {
+            onboardingRecord = onboardingResult.rows[0];
           }
         }
         
-        if (!candidateId) {
+        if (!onboardingRecord) {
           results.failed++;
           results.errors.push({
             name: record.name,
-            error: 'Candidate not found'
+            error: 'Onboarding record not found'
           });
           continue;
         }
         
-        
-        // Find field training record
-        const ftResult = await query(
-          'SELECT id FROM field_training WHERE candidate_id = ?',
-          [candidateId]
+        // Update the existing onboarding record
+        await query(
+          `UPDATE onboarding SET 
+            employee_id = ?, user_id = ?, gender = ?, date_of_birth = ?, blood_group = ?,
+            marital_status = ?, pan_number = ?, name_as_per_pan = ?,
+            aadhar_number = ?, name_as_per_aadhar = ?, account_number = ?,
+            ifsc_code = ?, name_as_per_bank = ?, bank_name = ?, present_address = ?,
+            permanent_address = ?, emergency_contact_number = ?,
+            emergency_contact_name = ?, emergency_contact_relation = ?,
+            father_name = ?, father_dob = ?, mother_name = ?, mother_dob = ?,
+            uan_number = ?, esic_ip_number = ?, wife_name = ?, wife_dob = ?,
+            child1_name = ?, child1_gender = ?, child1_dob = ?,
+            child2_name = ?, child2_gender = ?, child2_dob = ?,
+            nominee_name = ?, nominee_relation = ?, legal_entity = ?
+           WHERE id = ?`,
+          [
+            record.employee_id, record.user_id, record.gender, record.date_of_birth, record.blood_group,
+            record.marital_status, record.pan_number, record.name_as_per_pan,
+            record.aadhar_number, record.name_as_per_aadhar, record.account_number,
+            record.ifsc_code, record.name_as_per_bank, record.bank_name, record.present_address,
+            record.permanent_address, record.emergency_contact_number,
+            record.emergency_contact_name, record.emergency_contact_relation,
+            record.father_name, record.father_dob, record.mother_name, record.mother_dob,
+            record.uan_number, record.esic_ip_number, record.wife_name, record.wife_dob,
+            record.child1_name, record.child1_gender, record.child1_dob,
+            record.child2_name, record.child2_gender, record.child2_dob,
+            record.nominee_name, record.nominee_relation, record.legal_entity,
+            onboardingRecord.id
+          ]
         );
-        
-        if (!ftResult.rows || ftResult.rows.length === 0) {
-          results.failed++;
-          results.errors.push({
-            name: record.name,
-            error: 'Field training record not found'
-          });
-          continue;
-        }
-        
-        const fieldTrainingId = (ftResult.rows[0] as any).id;
-        
-        // Check if onboarding already exists
-        const existingOnboarding = await query(
-          'SELECT id FROM onboarding WHERE candidate_id = ?',
-          [candidateId]
-        );
-        
-        if (existingOnboarding.rows && existingOnboarding.rows.length > 0) {
-          // Update existing record
-          await query(
-            `UPDATE onboarding SET 
-              email = ?, gender = ?, date_of_birth = ?, blood_group = ?,
-              marital_status = ?, pan_number = ?, name_as_per_pan = ?,
-              aadhar_number = ?, name_as_per_aadhar = ?, account_number = ?,
-              ifsc_code = ?, name_as_per_bank = ?, present_address = ?,
-              permanent_address = ?, emergency_contact_number = ?,
-              emergency_contact_name = ?, emergency_contact_relation = ?
-             WHERE candidate_id = ?`,
-            [
-              record.email, record.gender, record.date_of_birth, record.blood_group,
-              record.marital_status, record.pan_number, record.name_as_per_pan,
-              record.aadhar_number, record.name_as_per_aadhar, record.account_number,
-              record.ifsc_code, record.name_as_per_bank, record.present_address,
-              record.permanent_address, record.emergency_contact_number,
-              record.emergency_contact_name, record.emergency_contact_relation,
-              candidateId
-            ]
-          );
-        } else {
-          // Insert new record
-          await query(
-            `INSERT INTO onboarding (
-              field_training_id, candidate_id, name, mobile_number,
-              email, gender, date_of_birth, blood_group, marital_status,
-              pan_number, name_as_per_pan, aadhar_number, name_as_per_aadhar,
-              account_number, ifsc_code, name_as_per_bank, present_address,
-              permanent_address, emergency_contact_number, emergency_contact_name,
-              emergency_contact_relation
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              fieldTrainingId, candidateId, record.name, record.mobile_number,
-              record.email, record.gender, record.date_of_birth, record.blood_group,
-              record.marital_status, record.pan_number, record.name_as_per_pan,
-              record.aadhar_number, record.name_as_per_aadhar, record.account_number,
-              record.ifsc_code, record.name_as_per_bank, record.present_address,
-              record.permanent_address, record.emergency_contact_number,
-              record.emergency_contact_name, record.emergency_contact_relation
-            ]
-          );
-        }
         
         results.success++;
       } catch (error) {

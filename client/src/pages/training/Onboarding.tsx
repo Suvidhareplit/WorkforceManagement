@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Download } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Onboarding() {
@@ -65,7 +65,6 @@ export default function Onboarding() {
     }
 
     const headers = [
-      "Candidate ID (DO NOT EDIT)",
       // BASIC DETAILS
       "Employee ID",
       "User ID (numbers only)",
@@ -146,7 +145,6 @@ export default function Onboarding() {
       }
 
       return [
-        record.candidateId || record.candidate_id || '',
         // BASIC DETAILS
         record.employeeId || record.employee_id || '',
         record.userId || record.user_id || '',
@@ -270,9 +268,8 @@ export default function Onboarding() {
         return obj;
       });
 
-      // Transform data - only editable fields, include candidate_id for matching
+      // Transform data - only editable fields, match by employee_id
       const records = jsonData.map((row: any) => ({
-        candidate_id: row['Candidate ID (DO NOT EDIT)'],
         employee_id: row['Employee ID'],
         user_id: row['User ID (numbers only)'],
         name: row['Name (DO NOT EDIT)'],
@@ -365,21 +362,30 @@ export default function Onboarding() {
           <div className="flex gap-4">
             <Button onClick={downloadTemplate} variant="outline" className="flex items-center gap-2">
               <Download className="h-4 w-4" />
-              Download Template
+              Download Yet to be Onboarded Candidates
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="file-upload" className="cursor-pointer">
+                <Button variant="outline" className="flex items-center gap-2" asChild>
+                  <span>
+                    <Upload className="h-4 w-4" />
+                    Upload Onboarding Details
+                  </span>
+                </Button>
+              </label>
               <Input
+                id="file-upload"
                 type="file"
                 accept=".csv"
                 onChange={handleFileUpload}
                 disabled={uploading}
-                className="max-w-xs"
+                className="hidden"
               />
               {uploading && <span className="text-sm text-slate-600">Uploading...</span>}
             </div>
           </div>
           <p className="text-sm text-slate-600">
-            Download the template, fill in the candidate details, and upload the completed file.
+            Download the list of candidates yet to be onboarded, fill in their details, and upload the completed file.
           </p>
         </CardContent>
       </Card>
@@ -495,9 +501,13 @@ export default function Onboarding() {
                       {/* BASIC DETAILS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.employeeId || record.employee_id || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.userId || record.user_id || '-'}</TableCell>
-                      <TableCell className="font-medium text-slate-900 border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.name}</TableCell>
+                      <TableCell className="font-medium text-slate-900 border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[150px] break-words">{record.name}</div>
+                      </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.mobileNumber || record.mobile_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">{record.email || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[180px] break-words">{record.email || '-'}</div>
+                      </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.gender || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.dateOfBirth || record.date_of_birth)
@@ -543,12 +553,12 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeName || record.nominee_name || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[200px]">
+                        <div className="max-w-[200px] break-words">
                           {record.presentAddress || record.present_address || '-'}
                         </div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[200px]">
+                        <div className="max-w-[200px] break-words">
                           {record.permanentAddress || record.permanent_address || '-'}
                         </div>
                       </TableCell>
@@ -558,8 +568,12 @@ export default function Onboarding() {
                       {/* JOB DETAILS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.city || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.cluster || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.role || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.managerName || record.manager_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[180px] break-words">{record.role || '-'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[150px] break-words">{record.managerName || record.manager_name || '-'}</div>
+                      </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.dateOfJoining || record.date_of_joining)
                           ? format(new Date(record.dateOfJoining || record.date_of_joining), "dd-MMM-yyyy")
@@ -571,13 +585,27 @@ export default function Onboarding() {
                           : "-"}
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceType}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceName}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.costCentre || record.cost_centre || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.functionName || record.function_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.businessUnitName || record.business_unit_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.departmentName || record.department_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.subDepartmentName || record.sub_department_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.legalEntity || record.legal_entity || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[170px] break-words">{resumeSourceName}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[120px] break-words">{record.costCentre || record.cost_centre || '-'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[180px] break-words">{record.functionName || record.function_name || '-'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[150px] break-words">{record.businessUnitName || record.business_unit_name || '-'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[150px] break-words">{record.departmentName || record.department_name || '-'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[150px] break-words">{record.subDepartmentName || record.sub_department_name || '-'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[130px] break-words">{record.legalEntity || record.legal_entity || '-'}</div>
+                      </TableCell>
                       {/* FINANCIAL DETAILS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.panNumber || record.pan_number || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerPan || record.name_as_per_pan || '-'}</TableCell>
