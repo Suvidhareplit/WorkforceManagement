@@ -416,18 +416,19 @@ export class SqlStorage implements IStorage {
     const business_unit_id = roleData.business_unit_id || roleData.businessUnitId;
     const department_id = roleData.department_id || roleData.departmentId;
     const sub_department_id = roleData.sub_department_id || roleData.subDepartmentId;
+    const skill_level = roleData.skill_level || roleData.skillLevel;
     const is_active = roleData.is_active !== undefined ? roleData.is_active : (roleData.isActive !== undefined ? roleData.isActive : true);
     
     console.log('Prepared values for insertion:', {
       name, code, job_description_file, paygroup_id, 
-      business_unit_id, department_id, sub_department_id, is_active
+      business_unit_id, department_id, sub_department_id, skill_level, is_active
     });
     
     try {
       const insertResult = await query(`
-        INSERT INTO roles (name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, is_active, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
-      `, [name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, is_active]);
+        INSERT INTO roles (name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, skill_level, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      `, [name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, skill_level, is_active]);
       
       console.log('Insert result:', insertResult);
       
@@ -460,6 +461,8 @@ export class SqlStorage implements IStorage {
       'departmentId': 'department_id',
       'sub_department_id': 'sub_department_id',
       'subDepartmentId': 'sub_department_id',
+      'skill_level': 'skill_level',
+      'skillLevel': 'skill_level',
       'job_description_file': 'job_description_file',
       'jobDescriptionFile': 'job_description_file',
       'is_active': 'is_active',

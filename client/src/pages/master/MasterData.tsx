@@ -51,6 +51,7 @@ export default function MasterData() {
     businessUnit: "",
     department: "",
     subDepartment: "",
+    skillLevel: "",
     // Commercial terms
     managementFees: "",
     sourcingFee: "",
@@ -80,6 +81,7 @@ export default function MasterData() {
     businessUnit: "",
     department: "",
     subDepartment: "",
+    skillLevel: "",
     // Commercial terms
     managementFees: "",
     sourcingFee: "",
@@ -368,6 +370,7 @@ export default function MasterData() {
     if (formData.businessUnit) roleData.append('businessUnitId', formData.businessUnit);
     if (formData.department) roleData.append('departmentId', formData.department);
     if (formData.subDepartment) roleData.append('subDepartmentId', formData.subDepartment);
+    if (formData.skillLevel) roleData.append('skillLevel', formData.skillLevel);
     if (formData.jobDescriptionFile) {
       roleData.append('jobDescriptionFile', formData.jobDescriptionFile);
     }
@@ -381,7 +384,7 @@ export default function MasterData() {
       console.log('Sending API request...');
       const result = await createRoleMutation.mutateAsync(roleData);
       console.log('API response:', result);
-      setFormData({ ...formData, name: "", code: "", function: "", businessUnit: "", department: "", subDepartment: "", jobDescriptionFile: null });
+      setFormData({ ...formData, name: "", code: "", function: "", businessUnit: "", department: "", subDepartment: "", skillLevel: "", jobDescriptionFile: null });
       // Reset file input
       const fileInput = document.getElementById('roleJD') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -491,6 +494,7 @@ export default function MasterData() {
         if (editFormData.businessUnit) formData.append('businessUnitId', editFormData.businessUnit);
         if (editFormData.department) formData.append('departmentId', editFormData.department);
         if (editFormData.subDepartment) formData.append('subDepartmentId', editFormData.subDepartment);
+        if (editFormData.skillLevel) formData.append('skillLevel', editFormData.skillLevel);
         formData.append('jobDescriptionFile', editFormData.jobDescriptionFile);
         
         await apiRequest(endpoint, {
@@ -506,7 +510,8 @@ export default function MasterData() {
             functionId: editFormData.function ? parseInt(editFormData.function) : undefined,
             businessUnitId: editFormData.businessUnit ? parseInt(editFormData.businessUnit) : undefined,
             departmentId: editFormData.department ? parseInt(editFormData.department) : undefined,
-            subDepartmentId: editFormData.subDepartment ? parseInt(editFormData.subDepartment) : undefined
+            subDepartmentId: editFormData.subDepartment ? parseInt(editFormData.subDepartment) : undefined,
+            skillLevel: editFormData.skillLevel || undefined
           }),
           ...(editType === 'vendor' && (() => {
             // Extract city SPOC fields
@@ -663,6 +668,7 @@ export default function MasterData() {
       businessUnit: role.businessUnitId?.toString() || "",
       department: role.departmentId?.toString() || "",
       subDepartment: role.subDepartmentId?.toString() || "",
+      skillLevel: (role as any).skillLevel || "",
     });
   };
 
@@ -1711,6 +1717,7 @@ export default function MasterData() {
                         <TableHead>Function</TableHead>
                         <TableHead>Department</TableHead>
                         <TableHead>Sub Department</TableHead>
+                        <TableHead>Skill Level</TableHead>
                         <TableHead>Job Description</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
@@ -1719,13 +1726,13 @@ export default function MasterData() {
                     <TableBody>
                       {loadingRoles ? (
                         <TableRow>
-                          <TableCell colSpan={9} className="text-center py-8">
+                          <TableCell colSpan={10} className="text-center py-8">
                             Loading...
                           </TableCell>
                         </TableRow>
                       ) : safeRoles.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={9} className="text-center py-8">
+                          <TableCell colSpan={10} className="text-center py-8">
                             No roles found
                           </TableCell>
                         </TableRow>
@@ -1738,6 +1745,7 @@ export default function MasterData() {
                             <TableCell className="text-sm">{role.functionName || '-'}</TableCell>
                             <TableCell className="text-sm">{role.departmentName || '-'}</TableCell>
                             <TableCell className="text-sm">{role.subDepartmentName || '-'}</TableCell>
+                            <TableCell className="text-sm">{(role as any).skillLevel || '-'}</TableCell>
                             <TableCell>
                               {(role as any).jobDescriptionFile ? (
                                 <div className="flex items-center space-x-2">
@@ -1882,6 +1890,15 @@ export default function MasterData() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label htmlFor="roleSkillLevel">Skill Level</Label>
+                  <Input
+                    id="roleSkillLevel"
+                    placeholder="e.g., Entry Level, Mid Level, Senior Level"
+                    value={formData.skillLevel}
+                    onChange={(e) => setFormData({ ...formData, skillLevel: e.target.value })}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="roleJD">Job Description (PDF/DOC)</Label>
@@ -2674,6 +2691,15 @@ export default function MasterData() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editSkillLevel">Skill Level</Label>
+                  <Input
+                    id="editSkillLevel"
+                    placeholder="e.g., Entry Level, Mid Level, Senior Level"
+                    value={editFormData.skillLevel}
+                    onChange={(e) => setEditFormData({ ...editFormData, skillLevel: e.target.value })}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="editJobDescription">Job Description (PDF/DOC)</Label>
