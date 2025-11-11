@@ -65,10 +65,39 @@ export default function Onboarding() {
     }
 
     const headers = [
-      "Candidate ID (DO NOT EDIT)", 
+      "Candidate ID (DO NOT EDIT)",
+      // BASIC DETAILS
+      "Employee ID",
+      "User ID (numbers only)",
       "Name (DO NOT EDIT)", 
       "Phone Number (DO NOT EDIT)", 
       "Email (DO NOT EDIT)", 
+      "Gender", 
+      "Date of Birth (YYYY-MM-DD)",
+      "Blood Group", 
+      "Marital Status",
+      "Name as per Aadhar", 
+      "Aadhar Number",
+      "Father Name",
+      "Father DOB (YYYY-MM-DD)",
+      "Mother Name",
+      "Mother DOB (YYYY-MM-DD)",
+      "Wife Name",
+      "Wife DOB (YYYY-MM-DD)",
+      "Child 1 Name",
+      "Child 1 Gender (male/female)",
+      "Child 1 DOB (YYYY-MM-DD)",
+      "Child 2 Name",
+      "Child 2 Gender (male/female)",
+      "Child 2 DOB (YYYY-MM-DD)",
+      "Nominee Name",
+      "Nominee Relation",
+      "Present Address", 
+      "Permanent Address",
+      "Emergency Contact Name", 
+      "Emergency Contact Number", 
+      "Relation with Emergency Contact",
+      // JOB DETAILS
       "City (DO NOT EDIT)", 
       "Cluster (DO NOT EDIT)", 
       "Role (DO NOT EDIT)", 
@@ -82,42 +111,16 @@ export default function Onboarding() {
       "Business Unit (DO NOT EDIT)",
       "Department (DO NOT EDIT)",
       "Sub Department (DO NOT EDIT)",
-      "Gender", 
-      "Date of Birth (YYYY-MM-DD)",
-      "Blood Group", 
-      "Marital Status", 
+      "Legal Entity",
+      // FINANCIAL DETAILS
       "PAN Number", 
       "Name as Per PAN",
       "Account Number", 
-      "IFSC Code", 
-      "Bank Name",
+      "IFSC Code",
       "Name as per Bank", 
-      "Aadhar Number",
-      "Name as per Aadhar", 
-      "Present Address", 
-      "Permanent Address",
-      "Emergency Contact Number", 
-      "Emergency Contact Name", 
-      "Relation with Emergency Contact",
-      "Father Name",
-      "Father DOB (YYYY-MM-DD)",
-      "Mother Name",
-      "Mother DOB (YYYY-MM-DD)",
+      "Bank Name",
       "UAN Number (12 digits)",
-      "ESIC IP Number (10 digits or N/A)",
-      "Wife Name",
-      "Wife DOB (YYYY-MM-DD)",
-      "Child 1 Name",
-      "Child 1 Gender (male/female)",
-      "Child 1 DOB (YYYY-MM-DD)",
-      "Child 2 Name",
-      "Child 2 Gender (male/female)",
-      "Child 2 DOB (YYYY-MM-DD)",
-      "Nominee Name",
-      "Nominee Relation",
-      "User ID (numbers only)",
-      "Employee ID",
-      "Legal Entity"
+      "ESIC IP Number (10 digits or N/A)"
     ];
 
     const rows = pendingCandidates.map((record: any) => {
@@ -144,9 +147,38 @@ export default function Onboarding() {
 
       return [
         record.candidateId || record.candidate_id || '',
+        // BASIC DETAILS
+        record.employeeId || record.employee_id || '',
+        record.userId || record.user_id || '',
         record.name || '',
         record.mobileNumber || record.mobile_number || '',
         record.candidateEmail || record.candidate_email || record.email || '',
+        record.gender || '',
+        record.dateOfBirth || record.date_of_birth ? format(new Date(record.dateOfBirth || record.date_of_birth), 'yyyy-MM-dd') : '',
+        record.bloodGroup || record.blood_group || '',
+        record.maritalStatus || record.marital_status || '',
+        record.nameAsPerAadhar || record.name_as_per_aadhar || '',
+        record.aadharNumber || record.aadhar_number || '',
+        record.fatherName || record.father_name || '',
+        record.fatherDob || record.father_dob ? format(new Date(record.fatherDob || record.father_dob), 'yyyy-MM-dd') : '',
+        record.motherName || record.mother_name || '',
+        record.motherDob || record.mother_dob ? format(new Date(record.motherDob || record.mother_dob), 'yyyy-MM-dd') : '',
+        record.wifeName || record.wife_name || '',
+        record.wifeDob || record.wife_dob ? format(new Date(record.wifeDob || record.wife_dob), 'yyyy-MM-dd') : '',
+        record.child1Name || record.child1_name || '',
+        record.child1Gender || record.child1_gender || '',
+        record.child1Dob || record.child1_dob ? format(new Date(record.child1Dob || record.child1_dob), 'yyyy-MM-dd') : '',
+        record.child2Name || record.child2_name || '',
+        record.child2Gender || record.child2_gender || '',
+        record.child2Dob || record.child2_dob ? format(new Date(record.child2Dob || record.child2_dob), 'yyyy-MM-dd') : '',
+        record.nomineeName || record.nominee_name || '',
+        record.nomineeRelation || record.nominee_relation || '',
+        record.presentAddress || record.present_address || '',
+        record.permanentAddress || record.permanent_address || '',
+        record.emergencyContactName || record.emergency_contact_name || '',
+        record.emergencyContactNumber || record.emergency_contact_number || '',
+        record.emergencyContactRelation || record.emergency_contact_relation || '',
+        // JOB DETAILS
         record.city || '',
         record.cluster || '',
         record.role || '',
@@ -160,42 +192,16 @@ export default function Onboarding() {
         record.businessUnitName || record.business_unit_name || '',
         record.departmentName || record.department_name || '',
         record.subDepartmentName || record.sub_department_name || '',
-        record.gender || '',
-        record.dateOfBirth || record.date_of_birth ? format(new Date(record.dateOfBirth || record.date_of_birth), 'yyyy-MM-dd') : '',
-        record.bloodGroup || record.blood_group || '',
-        record.maritalStatus || record.marital_status || '',
+        record.legalEntity || record.legal_entity || '',
+        // FINANCIAL DETAILS
         record.panNumber || record.pan_number || '',
         record.nameAsPerPan || record.name_as_per_pan || '',
         record.accountNumber || record.account_number || '',
         record.ifscCode || record.ifsc_code || '',
-        record.bankName || record.bank_name || '',
         record.nameAsPerBank || record.name_as_per_bank || '',
-        record.aadharNumber || record.aadhar_number || '',
-        record.nameAsPerAadhar || record.name_as_per_aadhar || '',
-        record.presentAddress || record.present_address || '',
-        record.permanentAddress || record.permanent_address || '',
-        record.emergencyContactNumber || record.emergency_contact_number || '',
-        record.emergencyContactName || record.emergency_contact_name || '',
-        record.emergencyContactRelation || record.emergency_contact_relation || '',
-        record.fatherName || record.father_name || '',
-        record.fatherDob || record.father_dob ? format(new Date(record.fatherDob || record.father_dob), 'yyyy-MM-dd') : '',
-        record.motherName || record.mother_name || '',
-        record.motherDob || record.mother_dob ? format(new Date(record.motherDob || record.mother_dob), 'yyyy-MM-dd') : '',
+        record.bankName || record.bank_name || '',
         record.uanNumber || record.uan_number || '',
-        record.esicIpNumber || record.esic_ip_number || '',
-        record.wifeName || record.wife_name || '',
-        record.wifeDob || record.wife_dob ? format(new Date(record.wifeDob || record.wife_dob), 'yyyy-MM-dd') : '',
-        record.child1Name || record.child1_name || '',
-        record.child1Gender || record.child1_gender || '',
-        record.child1Dob || record.child1_dob ? format(new Date(record.child1Dob || record.child1_dob), 'yyyy-MM-dd') : '',
-        record.child2Name || record.child2_name || '',
-        record.child2Gender || record.child2_gender || '',
-        record.child2Dob || record.child2_dob ? format(new Date(record.child2Dob || record.child2_dob), 'yyyy-MM-dd') : '',
-        record.nomineeName || record.nominee_name || '',
-        record.nomineeRelation || record.nominee_relation || '',
-        record.userId || record.user_id || '',
-        record.employeeId || record.employee_id || '',
-        record.legalEntity || record.legal_entity || ''
+        record.esicIpNumber || record.esic_ip_number || ''
       ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
     });
 
@@ -267,6 +273,8 @@ export default function Onboarding() {
       // Transform data - only editable fields, include candidate_id for matching
       const records = jsonData.map((row: any) => ({
         candidate_id: row['Candidate ID (DO NOT EDIT)'],
+        employee_id: row['Employee ID'],
+        user_id: row['User ID (numbers only)'],
         name: row['Name (DO NOT EDIT)'],
         mobile_number: row['Phone Number (DO NOT EDIT)'],
         email: row['Email (DO NOT EDIT)'] || row['Email'],
@@ -274,25 +282,12 @@ export default function Onboarding() {
         date_of_birth: row['Date of Birth (YYYY-MM-DD)'],
         blood_group: row['Blood Group'],
         marital_status: row['Marital Status']?.toLowerCase(),
-        pan_number: row['PAN Number'],
-        name_as_per_pan: row['Name as Per PAN'],
-        account_number: row['Account Number'],
-        ifsc_code: row['IFSC Code'],
-        bank_name: row['Bank Name'],
-        name_as_per_bank: row['Name as per Bank'],
-        aadhar_number: row['Aadhar Number'],
         name_as_per_aadhar: row['Name as per Aadhar'],
-        present_address: row['Present Address'],
-        permanent_address: row['Permanent Address'],
-        emergency_contact_number: row['Emergency Contact Number'],
-        emergency_contact_name: row['Emergency Contact Name'],
-        emergency_contact_relation: row['Relation with Emergency Contact'],
+        aadhar_number: row['Aadhar Number'],
         father_name: row['Father Name'],
         father_dob: row['Father DOB (YYYY-MM-DD)'],
         mother_name: row['Mother Name'],
         mother_dob: row['Mother DOB (YYYY-MM-DD)'],
-        uan_number: row['UAN Number (12 digits)'],
-        esic_ip_number: row['ESIC IP Number (10 digits or N/A)'],
         wife_name: row['Wife Name'],
         wife_dob: row['Wife DOB (YYYY-MM-DD)'],
         child1_name: row['Child 1 Name'],
@@ -303,9 +298,20 @@ export default function Onboarding() {
         child2_dob: row['Child 2 DOB (YYYY-MM-DD)'],
         nominee_name: row['Nominee Name'],
         nominee_relation: row['Nominee Relation'],
-        user_id: row['User ID (numbers only)'],
-        employee_id: row['Employee ID'],
-        legal_entity: row['Legal Entity']
+        present_address: row['Present Address'],
+        permanent_address: row['Permanent Address'],
+        emergency_contact_name: row['Emergency Contact Name'],
+        emergency_contact_number: row['Emergency Contact Number'],
+        emergency_contact_relation: row['Relation with Emergency Contact'],
+        legal_entity: row['Legal Entity'],
+        pan_number: row['PAN Number'],
+        name_as_per_pan: row['Name as Per PAN'],
+        account_number: row['Account Number'],
+        ifsc_code: row['IFSC Code'],
+        name_as_per_bank: row['Name as per Bank'],
+        bank_name: row['Bank Name'],
+        uan_number: row['UAN Number (12 digits)'],
+        esic_ip_number: row['ESIC IP Number (10 digits or N/A)']
       }));
 
       // Send to backend
@@ -384,64 +390,68 @@ export default function Onboarding() {
           <CardTitle className="text-xl font-semibold text-slate-800">Onboarding Records</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="border rounded-lg overflow-hidden">
+            <Table className="border-collapse">
               <TableHeader>
-                <TableRow className="bg-slate-50">
-                  <TableHead className="font-semibold">Name</TableHead>
-                  <TableHead className="font-semibold">Mobile</TableHead>
-                  <TableHead className="font-semibold">Email</TableHead>
-                  <TableHead className="font-semibold">City</TableHead>
-                  <TableHead className="font-semibold">Cluster</TableHead>
-                  <TableHead className="font-semibold">Role</TableHead>
-                  <TableHead className="font-semibold">Manager</TableHead>
-                  <TableHead className="font-semibold">DOJ</TableHead>
-                  <TableHead className="font-semibold">Gross Salary</TableHead>
-                  <TableHead className="font-semibold">Resume Source Type</TableHead>
-                  <TableHead className="font-semibold">Resume Source Name</TableHead>
-                  <TableHead className="font-semibold">Cost Centre</TableHead>
-                  <TableHead className="font-semibold">Function</TableHead>
-                  <TableHead className="font-semibold">Business Unit</TableHead>
-                  <TableHead className="font-semibold">Department</TableHead>
-                  <TableHead className="font-semibold">Sub Department</TableHead>
-                  <TableHead className="font-semibold">Gender</TableHead>
-                  <TableHead className="font-semibold">DOB</TableHead>
-                  <TableHead className="font-semibold">Blood Group</TableHead>
-                  <TableHead className="font-semibold">Marital Status</TableHead>
-                  <TableHead className="font-semibold">PAN Number</TableHead>
-                  <TableHead className="font-semibold">Name as Per PAN</TableHead>
-                  <TableHead className="font-semibold">Aadhar Number</TableHead>
-                  <TableHead className="font-semibold">Name as Per Aadhar</TableHead>
-                  <TableHead className="font-semibold">Account Number</TableHead>
-                  <TableHead className="font-semibold">IFSC Code</TableHead>
-                  <TableHead className="font-semibold">Bank Name</TableHead>
-                  <TableHead className="font-semibold">Name as per Bank</TableHead>
-                  <TableHead className="font-semibold">Present Address</TableHead>
-                  <TableHead className="font-semibold">Permanent Address</TableHead>
-                  <TableHead className="font-semibold">Emergency Name</TableHead>
-                  <TableHead className="font-semibold">Emergency Number</TableHead>
-                  <TableHead className="font-semibold">Emergency Relation</TableHead>
-                  <TableHead className="font-semibold">Father Name</TableHead>
-                  <TableHead className="font-semibold">Father DOB</TableHead>
-                  <TableHead className="font-semibold">Mother Name</TableHead>
-                  <TableHead className="font-semibold">Mother DOB</TableHead>
-                  <TableHead className="font-semibold">UAN Number</TableHead>
-                  <TableHead className="font-semibold">ESIC IP Number</TableHead>
-                  <TableHead className="font-semibold">Wife Name</TableHead>
-                  <TableHead className="font-semibold">Wife DOB</TableHead>
-                  <TableHead className="font-semibold">Child 1 Name</TableHead>
-                  <TableHead className="font-semibold">Child 1 Gender</TableHead>
-                  <TableHead className="font-semibold">Child 1 DOB</TableHead>
-                  <TableHead className="font-semibold">Child 2 Name</TableHead>
-                  <TableHead className="font-semibold">Child 2 Gender</TableHead>
-                  <TableHead className="font-semibold">Child 2 DOB</TableHead>
-                  <TableHead className="font-semibold">Nominee Name</TableHead>
-                  <TableHead className="font-semibold">Nominee Relation</TableHead>
-                  <TableHead className="font-semibold">User ID</TableHead>
-                  <TableHead className="font-semibold">Employee ID</TableHead>
-                  <TableHead className="font-semibold">Legal Entity</TableHead>
-                  <TableHead className="font-semibold">Onboarded</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
+                <TableRow className="bg-muted/50">
+                  {/* BASIC DETAILS */}
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Employee ID</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">User ID</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Mobile</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Email</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Gender</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Blood Group</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Marital Status</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Name as Per Aadhar</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Aadhar Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Father Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Father DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Mother Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Mother DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Wife Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Wife DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 1 Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 1 Gender</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 1 DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 2 Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 2 Gender</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 2 DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Nominee Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Nominee Relation</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Present Address</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Permanent Address</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Emergency Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Emergency Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Emergency Relation</TableHead>
+                  {/* JOB DETAILS */}
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">City</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Cluster</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Role</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Manager</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">DOJ</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Gross Salary</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Resume Source Type</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Resume Source Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Cost Centre</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Function</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Business Unit</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Department</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Sub Department</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Legal Entity</TableHead>
+                  {/* FINANCIAL DETAILS */}
+                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">PAN Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">Name as Per PAN</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">Account Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">IFSC Code</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">Name as per Bank</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">Bank Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">UAN Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">ESIC IP Number</TableHead>
+                  {/* STATUS */}
+                  <TableHead className="font-semibold border border-gray-300">Onboarded</TableHead>
+                  <TableHead className="font-semibold border border-gray-300">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -482,105 +492,109 @@ export default function Onboarding() {
 
                     return (
                     <TableRow key={record.id} className="hover:bg-slate-50 transition-colors">
-                      <TableCell className="font-medium text-slate-900">{record.name}</TableCell>
-                      <TableCell>{record.mobileNumber || record.mobile_number || '-'}</TableCell>
-                      <TableCell>{record.email || '-'}</TableCell>
-                      <TableCell>{record.city || '-'}</TableCell>
-                      <TableCell>{record.cluster || '-'}</TableCell>
-                      <TableCell>{record.role || '-'}</TableCell>
-                      <TableCell>{record.managerName || record.manager_name || '-'}</TableCell>
-                      <TableCell>
-                        {(record.dateOfJoining || record.date_of_joining)
-                          ? format(new Date(record.dateOfJoining || record.date_of_joining), "dd-MMM-yyyy")
-                          : "-"}
-                      </TableCell>
-                      <TableCell>
-                        {record.grossSalary || record.gross_salary
-                          ? Number(record.grossSalary || record.gross_salary).toLocaleString()
-                          : "-"}
-                      </TableCell>
-                      <TableCell>{resumeSourceType}</TableCell>
-                      <TableCell>{resumeSourceName}</TableCell>
-                      <TableCell>{record.costCentre || record.cost_centre || '-'}</TableCell>
-                      <TableCell>{record.functionName || record.function_name || '-'}</TableCell>
-                      <TableCell>{record.businessUnitName || record.business_unit_name || '-'}</TableCell>
-                      <TableCell>{record.departmentName || record.department_name || '-'}</TableCell>
-                      <TableCell>{record.subDepartmentName || record.sub_department_name || '-'}</TableCell>
-                      <TableCell>{record.gender || '-'}</TableCell>
-                      <TableCell>
+                      {/* BASIC DETAILS */}
+                      <TableCell className="border border-gray-300">{record.employeeId || record.employee_id || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.userId || record.user_id || '-'}</TableCell>
+                      <TableCell className="font-medium text-slate-900 border border-gray-300">{record.name}</TableCell>
+                      <TableCell className="border border-gray-300">{record.mobileNumber || record.mobile_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.email || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">
                         {(record.dateOfBirth || record.date_of_birth)
                           ? format(new Date(record.dateOfBirth || record.date_of_birth), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell>{record.bloodGroup || record.blood_group || '-'}</TableCell>
-                      <TableCell>{record.maritalStatus || record.marital_status || '-'}</TableCell>
-                      <TableCell>{record.panNumber || record.pan_number || '-'}</TableCell>
-                      <TableCell>{record.nameAsPerPan || record.name_as_per_pan || '-'}</TableCell>
-                      <TableCell>{record.aadharNumber || record.aadhar_number || '-'}</TableCell>
-                      <TableCell>{record.nameAsPerAadhar || record.name_as_per_aadhar || '-'}</TableCell>
-                      <TableCell>{record.accountNumber || record.account_number || '-'}</TableCell>
-                      <TableCell>{record.ifscCode || record.ifsc_code || '-'}</TableCell>
-                      <TableCell>{record.bankName || record.bank_name || '-'}</TableCell>
-                      <TableCell>{record.nameAsPerBank || record.name_as_per_bank || '-'}</TableCell>
-                      <TableCell>
-                        <div className="text-sm max-w-xs truncate">
-                          {record.presentAddress || record.present_address || '-'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm max-w-xs truncate">
-                          {record.permanentAddress || record.permanent_address || '-'}
-                        </div>
-                      </TableCell>
-                      <TableCell>{record.emergencyContactName || record.emergency_contact_name || '-'}</TableCell>
-                      <TableCell>{record.emergencyContactNumber || record.emergency_contact_number || '-'}</TableCell>
-                      <TableCell>{record.emergencyContactRelation || record.emergency_contact_relation || '-'}</TableCell>
-                      <TableCell>{record.fatherName || record.father_name || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="border border-gray-300">{record.bloodGroup || record.blood_group || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.maritalStatus || record.marital_status || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.nameAsPerAadhar || record.name_as_per_aadhar || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.aadharNumber || record.aadhar_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.fatherName || record.father_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">
                         {(record.fatherDob || record.father_dob)
                           ? format(new Date(record.fatherDob || record.father_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell>{record.motherName || record.mother_name || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="border border-gray-300">{record.motherName || record.mother_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">
                         {(record.motherDob || record.mother_dob)
                           ? format(new Date(record.motherDob || record.mother_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell>{record.uanNumber || record.uan_number || '-'}</TableCell>
-                      <TableCell>{record.esicIpNumber || record.esic_ip_number || '-'}</TableCell>
-                      <TableCell>{record.wifeName || record.wife_name || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="border border-gray-300">{record.wifeName || record.wife_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">
                         {(record.wifeDob || record.wife_dob)
                           ? format(new Date(record.wifeDob || record.wife_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell>{record.child1Name || record.child1_name || '-'}</TableCell>
-                      <TableCell>{record.child1Gender || record.child1_gender || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="border border-gray-300">{record.child1Name || record.child1_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.child1Gender || record.child1_gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">
                         {(record.child1Dob || record.child1_dob)
                           ? format(new Date(record.child1Dob || record.child1_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell>{record.child2Name || record.child2_name || '-'}</TableCell>
-                      <TableCell>{record.child2Gender || record.child2_gender || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="border border-gray-300">{record.child2Name || record.child2_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.child2Gender || record.child2_gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">
                         {(record.child2Dob || record.child2_dob)
                           ? format(new Date(record.child2Dob || record.child2_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell>{record.nomineeName || record.nominee_name || '-'}</TableCell>
-                      <TableCell>{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
-                      <TableCell>{record.userId || record.user_id || '-'}</TableCell>
-                      <TableCell>{record.employeeId || record.employee_id || '-'}</TableCell>
-                      <TableCell>{record.legalEntity || record.legal_entity || '-'}</TableCell>
-                      <TableCell>
+                      <TableCell className="border border-gray-300">{record.nomineeName || record.nominee_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">
+                        <div className="text-sm max-w-xs truncate">
+                          {record.presentAddress || record.present_address || '-'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300">
+                        <div className="text-sm max-w-xs truncate">
+                          {record.permanentAddress || record.permanent_address || '-'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300">{record.emergencyContactName || record.emergency_contact_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.emergencyContactNumber || record.emergency_contact_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.emergencyContactRelation || record.emergency_contact_relation || '-'}</TableCell>
+                      {/* JOB DETAILS */}
+                      <TableCell className="border border-gray-300">{record.city || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.cluster || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.role || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.managerName || record.manager_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">
+                        {(record.dateOfJoining || record.date_of_joining)
+                          ? format(new Date(record.dateOfJoining || record.date_of_joining), "dd-MMM-yyyy")
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="border border-gray-300">
+                        {record.grossSalary || record.gross_salary
+                          ? Number(record.grossSalary || record.gross_salary).toLocaleString()
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="border border-gray-300">{resumeSourceType}</TableCell>
+                      <TableCell className="border border-gray-300">{resumeSourceName}</TableCell>
+                      <TableCell className="border border-gray-300">{record.costCentre || record.cost_centre || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.functionName || record.function_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.businessUnitName || record.business_unit_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.departmentName || record.department_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.subDepartmentName || record.sub_department_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.legalEntity || record.legal_entity || '-'}</TableCell>
+                      {/* FINANCIAL DETAILS */}
+                      <TableCell className="border border-gray-300">{record.panNumber || record.pan_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.nameAsPerPan || record.name_as_per_pan || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.accountNumber || record.account_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.ifscCode || record.ifsc_code || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.nameAsPerBank || record.name_as_per_bank || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.bankName || record.bank_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.uanNumber || record.uan_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300">{record.esicIpNumber || record.esic_ip_number || '-'}</TableCell>
+                      {/* STATUS */}
+                      <TableCell className="border border-gray-300">
                         <Checkbox
                           checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
                           onCheckedChange={(checked) => handleStatusChange(record.id, checked as boolean)}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="border border-gray-300">
                         <Badge
                           variant={
                             (record.onboardingStatus || record.onboarding_status) === 'onboarded'
