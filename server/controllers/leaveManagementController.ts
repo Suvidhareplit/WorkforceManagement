@@ -185,7 +185,7 @@ export class LeaveManagementController {
       
       const userInfo = this.getUserInfo(req);
       const oldResult = await query('SELECT * FROM leave_policy_master WHERE id = ?', [id]);
-      const oldValue = oldResult.rows[0];
+      const oldValue = (oldResult.rows as any)[0];
       
       await query('UPDATE leave_policy_master SET is_active = NOT is_active WHERE id = ?', [id]);
       
@@ -257,7 +257,7 @@ export class LeaveManagementController {
       
       const userInfo = this.getUserInfo(req);
       const oldResult = await query('SELECT * FROM leave_holidays WHERE id = ?', [id]);
-      const oldValue = oldResult.rows[0];
+      const oldValue = (oldResult.rows as any)[0];
       
       await query('DELETE FROM leave_holidays WHERE id = ?', [id]);
       
@@ -296,7 +296,7 @@ export class LeaveManagementController {
       }
       
       const countResult = await query(sql.replace('SELECT *', 'SELECT COUNT(*) as total'), params);
-      const total = countResult.rows[0].total;
+      const total = (countResult.rows as any)[0].total;
       
       sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
       const offset = (Number(page) - 1) * Number(limit);
