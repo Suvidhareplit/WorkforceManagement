@@ -378,6 +378,20 @@ export default function Onboarding() {
       errors.push(`Invalid Child 2 Gender: "${row['Child 2 Gender (male/female)']}" (should be male, female, or N/A)`);
     }
 
+    // Mandatory date fields validation (cannot be empty or N/A)
+    const mandatoryDateFields = [
+      'Date of Birth (DD-MMM-YYYY)',
+      'Father DOB (DD-MMM-YYYY)',
+      'Mother DOB (DD-MMM-YYYY)'
+    ];
+    
+    mandatoryDateFields.forEach(field => {
+      const value = row[field];
+      if (!value || value.trim() === '' || value.trim().toLowerCase() === 'n/a' || value.trim().toLowerCase() === 'na') {
+        errors.push(`${field} is required and cannot be N/A`);
+      }
+    });
+
     // Date validations
     const dateFields = [
       'Date of Birth (DD-MMM-YYYY)',
@@ -391,10 +405,11 @@ export default function Onboarding() {
     dateFields.forEach(field => {
       const value = row[field];
       if (value && value.trim() !== '') {
-        // Skip N/A values
+        // Skip N/A values for optional dates (Wife, Children)
         const normalizedValue = value.trim().toLowerCase();
-        if (normalizedValue === 'n/a' || normalizedValue === 'na') {
-          return; // Skip validation for N/A
+        if ((normalizedValue === 'n/a' || normalizedValue === 'na') && 
+            !mandatoryDateFields.includes(field)) {
+          return; // Skip validation for N/A in optional fields only
         }
         
         const parsed = parseDateDDMMMYYYY(value);
