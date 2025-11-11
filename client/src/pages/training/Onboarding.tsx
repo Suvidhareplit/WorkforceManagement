@@ -390,68 +390,68 @@ export default function Onboarding() {
           <CardTitle className="text-xl font-semibold text-slate-800">Onboarding Records</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="border rounded-lg overflow-hidden">
+          <div className="border rounded-lg overflow-x-auto">
             <Table className="border-collapse">
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   {/* BASIC DETAILS */}
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Employee ID</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">User ID</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Mobile</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Email</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Gender</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">DOB</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Blood Group</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Marital Status</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Name as Per Aadhar</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Aadhar Number</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Father Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Father DOB</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Mother Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Mother DOB</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Wife Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Wife DOB</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 1 Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 1 Gender</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 1 DOB</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 2 Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 2 Gender</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Child 2 DOB</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Nominee Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Nominee Relation</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Present Address</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Permanent Address</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Emergency Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Emergency Number</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-50">Emergency Relation</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Employee ID</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">User ID</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Mobile</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Email</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[80px] whitespace-nowrap px-3 py-2">Gender</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">Blood Group</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Marital Status</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[160px] whitespace-nowrap px-3 py-2">Name as Per Aadhar</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Aadhar Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Father Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">Father DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Mother Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">Mother DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Wife Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">Wife DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Child 1 Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Child 1 Gender</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">Child 1 DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Child 2 Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Child 2 Gender</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">Child 2 DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Nominee Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Nominee Relation</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[200px] px-3 py-2">Present Address</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[200px] px-3 py-2">Permanent Address</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Emergency Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Emergency Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Emergency Relation</TableHead>
                   {/* JOB DETAILS */}
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">City</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Cluster</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Role</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Manager</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">DOJ</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Gross Salary</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Resume Source Type</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Resume Source Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Cost Centre</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Function</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Business Unit</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Department</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Sub Department</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-50">Legal Entity</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">City</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Cluster</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Role</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Manager</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">DOJ</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Gross Salary</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[160px] whitespace-nowrap px-3 py-2">Resume Source Type</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[170px] whitespace-nowrap px-3 py-2">Resume Source Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Cost Centre</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Function</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Business Unit</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Department</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Sub Department</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Legal Entity</TableHead>
                   {/* FINANCIAL DETAILS */}
-                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">PAN Number</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">Name as Per PAN</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">Account Number</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">IFSC Code</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">Name as per Bank</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">Bank Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">UAN Number</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-yellow-50">ESIC IP Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">PAN Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Name as Per PAN</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Account Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">IFSC Code</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Name as per Bank</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Bank Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">UAN Number</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">ESIC IP Number</TableHead>
                   {/* STATUS */}
-                  <TableHead className="font-semibold border border-gray-300">Onboarded</TableHead>
-                  <TableHead className="font-semibold border border-gray-300">Status</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Onboarded</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -493,108 +493,108 @@ export default function Onboarding() {
                     return (
                     <TableRow key={record.id} className="hover:bg-slate-50 transition-colors">
                       {/* BASIC DETAILS */}
-                      <TableCell className="border border-gray-300">{record.employeeId || record.employee_id || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.userId || record.user_id || '-'}</TableCell>
-                      <TableCell className="font-medium text-slate-900 border border-gray-300">{record.name}</TableCell>
-                      <TableCell className="border border-gray-300">{record.mobileNumber || record.mobile_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.email || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.gender || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.employeeId || record.employee_id || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.userId || record.user_id || '-'}</TableCell>
+                      <TableCell className="font-medium text-slate-900 border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.name}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.mobileNumber || record.mobile_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">{record.email || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.dateOfBirth || record.date_of_birth)
                           ? format(new Date(record.dateOfBirth || record.date_of_birth), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell className="border border-gray-300">{record.bloodGroup || record.blood_group || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.maritalStatus || record.marital_status || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.nameAsPerAadhar || record.name_as_per_aadhar || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.aadharNumber || record.aadhar_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.fatherName || record.father_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bloodGroup || record.blood_group || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.maritalStatus || record.marital_status || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerAadhar || record.name_as_per_aadhar || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.aadharNumber || record.aadhar_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.fatherName || record.father_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.fatherDob || record.father_dob)
                           ? format(new Date(record.fatherDob || record.father_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell className="border border-gray-300">{record.motherName || record.mother_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.motherName || record.mother_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.motherDob || record.mother_dob)
                           ? format(new Date(record.motherDob || record.mother_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell className="border border-gray-300">{record.wifeName || record.wife_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.wifeName || record.wife_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.wifeDob || record.wife_dob)
                           ? format(new Date(record.wifeDob || record.wife_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell className="border border-gray-300">{record.child1Name || record.child1_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.child1Gender || record.child1_gender || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child1Name || record.child1_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child1Gender || record.child1_gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.child1Dob || record.child1_dob)
                           ? format(new Date(record.child1Dob || record.child1_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell className="border border-gray-300">{record.child2Name || record.child2_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.child2Gender || record.child2_gender || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child2Name || record.child2_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child2Gender || record.child2_gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.child2Dob || record.child2_dob)
                           ? format(new Date(record.child2Dob || record.child2_dob), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell className="border border-gray-300">{record.nomineeName || record.nominee_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">
-                        <div className="text-sm max-w-xs truncate">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeName || record.nominee_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[200px]">
                           {record.presentAddress || record.present_address || '-'}
                         </div>
                       </TableCell>
-                      <TableCell className="border border-gray-300">
-                        <div className="text-sm max-w-xs truncate">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[200px]">
                           {record.permanentAddress || record.permanent_address || '-'}
                         </div>
                       </TableCell>
-                      <TableCell className="border border-gray-300">{record.emergencyContactName || record.emergency_contact_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.emergencyContactNumber || record.emergency_contact_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.emergencyContactRelation || record.emergency_contact_relation || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactName || record.emergency_contact_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactNumber || record.emergency_contact_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactRelation || record.emergency_contact_relation || '-'}</TableCell>
                       {/* JOB DETAILS */}
-                      <TableCell className="border border-gray-300">{record.city || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.cluster || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.role || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.managerName || record.manager_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.city || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.cluster || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.role || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.managerName || record.manager_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.dateOfJoining || record.date_of_joining)
                           ? format(new Date(record.dateOfJoining || record.date_of_joining), "dd-MMM-yyyy")
                           : "-"}
                       </TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {record.grossSalary || record.gross_salary
                           ? Number(record.grossSalary || record.gross_salary).toLocaleString()
                           : "-"}
                       </TableCell>
-                      <TableCell className="border border-gray-300">{resumeSourceType}</TableCell>
-                      <TableCell className="border border-gray-300">{resumeSourceName}</TableCell>
-                      <TableCell className="border border-gray-300">{record.costCentre || record.cost_centre || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.functionName || record.function_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.businessUnitName || record.business_unit_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.departmentName || record.department_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.subDepartmentName || record.sub_department_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.legalEntity || record.legal_entity || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceType}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceName}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.costCentre || record.cost_centre || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.functionName || record.function_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.businessUnitName || record.business_unit_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.departmentName || record.department_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.subDepartmentName || record.sub_department_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.legalEntity || record.legal_entity || '-'}</TableCell>
                       {/* FINANCIAL DETAILS */}
-                      <TableCell className="border border-gray-300">{record.panNumber || record.pan_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.nameAsPerPan || record.name_as_per_pan || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.accountNumber || record.account_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.ifscCode || record.ifsc_code || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.nameAsPerBank || record.name_as_per_bank || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.bankName || record.bank_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.uanNumber || record.uan_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300">{record.esicIpNumber || record.esic_ip_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.panNumber || record.pan_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerPan || record.name_as_per_pan || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.accountNumber || record.account_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.ifscCode || record.ifsc_code || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerBank || record.name_as_per_bank || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bankName || record.bank_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.uanNumber || record.uan_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.esicIpNumber || record.esic_ip_number || '-'}</TableCell>
                       {/* STATUS */}
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <Checkbox
                           checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
                           onCheckedChange={(checked) => handleStatusChange(record.id, checked as boolean)}
                         />
                       </TableCell>
-                      <TableCell className="border border-gray-300">
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <Badge
                           variant={
                             (record.onboardingStatus || record.onboarding_status) === 'onboarded'
