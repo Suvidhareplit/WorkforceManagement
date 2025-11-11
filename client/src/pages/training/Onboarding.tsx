@@ -324,6 +324,15 @@ export default function Onboarding() {
     const warnings: string[] = [];
     const suggestions = findMatchingSuggestions(row);
 
+    // DEBUG: Log actual column values
+    console.log(`\n=== Validating Row ${index + 1} ===`);
+    console.log('Date of Birth value:', row['Date of Birth (DD-MMM-YYYY)']);
+    console.log('Father DOB value:', row['Father DOB (DD-MMM-YYYY)']);
+    console.log('Mother DOB value:', row['Mother DOB (DD-MMM-YYYY)']);
+    console.log('Father Name:', row['Father Name']);
+    console.log('Mother Name:', row['Mother Name']);
+    console.log('All columns in row:', Object.keys(row));
+
     // Required field: Name or Employee ID
     if (!row['Name (DO NOT EDIT)']?.trim() && !row['Employee ID']?.trim()) {
       errors.push('Either Name or Employee ID is required');
