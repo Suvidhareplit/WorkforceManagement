@@ -214,7 +214,7 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
             uan_number = ?, esic_ip_number = ?, wife_name = ?, wife_dob = ?,
             child1_name = ?, child1_gender = ?, child1_dob = ?,
             child2_name = ?, child2_gender = ?, child2_dob = ?,
-            nominee_name = ?, nominee_relation = ?, legal_entity = ?
+            nominee_name = ?, nominee_relation = ?, legal_entity = ?, migrated_data = 'NO'
            WHERE id = ?`,
           updateValues
         );
@@ -261,9 +261,143 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
   }
 };
 
+// Migration bulk upload - Creates complete candidate journey for existing employees
+const bulkUploadMigration = async (req: Request, res: Response) => {
+  try {
+    console.log('=== BACKEND: Received MIGRATION bulk upload request ===');
+    const { records } = req.body;
+    
+    console.log('Number of migration records:', records?.length || 0);
+    
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: [] as { name: string; error: string }[]
+    };
+    
+    for (const record of records) {
+      try {
+        console.log(`\n--- Processing migration for: ${record.name} ---`);
+        
+        // Step 1: Create candidate record
+        const candidateResult = await query(
+          `INSERT INTO candidates (name, mobile_number, email, status, resume_source_type, resume_source_name, created_at, updated_at)
+           VALUES (?, ?, ?, 'approved', 'migration', 'Data Migration', NOW(), NOW())`,
+          [record.name, record.mobile_number, record.email]
+        );
+        const candidateId = (candidateResult as any).insertId;
+        console.log(`Created candidate ID: ${candidateId}`);
+        
+        // Step 2: Create pre_screening record
+        const prescreeningResult = await query(
+          `INSERT INTO pre_screening (candidate_id, status, approved_by, approved_at, created_at, updated_at)
+           VALUES (?, 'approved', 'Migration', NOW(), NOW(), NOW())`,
+          [candidateId]
+        );
+        const prescreeningId = (prescreeningResult as any).insertId;
+        
+        // Step 3: Create technical_rounds record
+        const technicalResult = await query(
+          `INSERT INTO technical_rounds (candidate_id, pre_screening_id, overall_status, created_at, updated_at)
+           VALUES (?, ?, 'passed', NOW(), NOW())`,
+          [candidateId, prescreeningId]
+        );
+        const technicalId = (technicalResult as any).insertId;
+        
+        // Step 4: Create offers record
+        const offersResult = await query(
+          `INSERT INTO offers (candidate_id, technical_id, status, offer_status, city, cluster, role, manager_name, 
+            date_of_joining, gross_salary, cost_centre, function_name, business_unit_name, department_name, 
+            sub_department_name, created_at, updated_at)
+           VALUES (?, ?, 'accepted', 'accepted', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+          [candidateId, technicalId, record.city || 'N/A', record.cluster || 'N/A', record.role || 'N/A',
+           record.manager_name || 'N/A', record.date_of_joining || null, record.gross_salary || null,
+           record.cost_centre || 'N/A', record.function_name || 'N/A', record.business_unit_name || 'N/A',
+           record.department_name || 'N/A', record.sub_department_name || 'N/A']
+        );
+        const offerId = (offersResult as any).insertId;
+        
+        // Step 5: Create induction_training record
+        const inductionResult = await query(
+          `INSERT INTO induction_training (candidate_id, offer_id, induction_status, created_at, updated_at)
+           VALUES (?, ?, 'completed', NOW(), NOW())`,
+          [candidateId, offerId]
+        );
+        const inductionId = (inductionResult as any).insertId;
+        
+        // Step 6: Create classroom_training record
+        const classroomResult = await query(
+          `INSERT INTO classroom_training (candidate_id, induction_id, training_status, created_at, updated_at)
+           VALUES (?, ?, 'completed', NOW(), NOW())`,
+          [candidateId, inductionId]
+        );
+        const classroomId = (classroomResult as any).insertId;
+        
+        // Step 7: Create field_training record
+        const fieldResult = await query(
+          `INSERT INTO field_training (candidate_id, classroom_training_id, ft_status, ft_feedback, created_at, updated_at)
+           VALUES (?, ?, 'completed', 'Migration - No feedback available', NOW(), NOW())`,
+          [candidateId, classroomId]
+        );
+        const fieldTrainingId = (fieldResult as any).insertId;
+        
+        // Step 8: Create onboarding record with migrated_data = 'YES'
+        const onboardingResult = await query(
+          `INSERT INTO onboarding (
+            candidate_id, field_training_id, name, mobile_number, email, employee_id, user_id,
+            gender, date_of_birth, blood_group, marital_status, name_as_per_aadhar, aadhar_number,
+            father_name, father_dob, mother_name, mother_dob, wife_name, wife_dob,
+            child1_name, child1_gender, child1_dob, child2_name, child2_gender, child2_dob,
+            nominee_name, nominee_relation, present_address, permanent_address,
+            emergency_contact_name, emergency_contact_number, emergency_contact_relation,
+            pan_number, name_as_per_pan, account_number, ifsc_code, name_as_per_bank, bank_name,
+            uan_number, esic_ip_number, legal_entity, onboarding_status, migrated_data,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'yet_to_be_onboarded', 'YES', NOW(), NOW())`,
+          [
+            candidateId, fieldTrainingId, record.name, record.mobile_number, record.email,
+            record.employee_id, record.user_id, record.gender, record.date_of_birth, record.blood_group,
+            record.marital_status, record.name_as_per_aadhar, record.aadhar_number,
+            record.father_name, record.father_dob, record.mother_name, record.mother_dob,
+            record.wife_name, record.wife_dob, record.child1_name, record.child1_gender, record.child1_dob,
+            record.child2_name, record.child2_gender, record.child2_dob,
+            record.nominee_name, record.nominee_relation, record.present_address, record.permanent_address,
+            record.emergency_contact_name, record.emergency_contact_number, record.emergency_contact_relation,
+            record.pan_number, record.name_as_per_pan, record.account_number, record.ifsc_code,
+            record.name_as_per_bank, record.bank_name, record.uan_number, record.esic_ip_number, record.legal_entity
+          ]
+        );
+        
+        console.log(`✅ Migration successful for: ${record.name} (Onboarding ID: ${(onboardingResult as any).insertId})`);
+        results.success++;
+        
+      } catch (error) {
+        console.error(`❌ Migration failed for ${record.name}:`, error);
+        results.failed++;
+        results.errors.push({
+          name: record.name,
+          error: (error as Error).message
+        });
+      }
+    }
+    
+    console.log('\n=== BACKEND: Migration upload complete ===');
+    console.log(`Success: ${results.success}, Failed: ${results.failed}`);
+    
+    res.json({
+      message: "Migration upload completed",
+      results
+    });
+  } catch (error) {
+    console.error('Migration upload error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const onboardingController = {
   getOnboardingRecords,
   createOnboarding,
   updateOnboarding,
-  bulkUploadOnboarding
+  bulkUploadOnboarding,
+  bulkUploadMigration
 };

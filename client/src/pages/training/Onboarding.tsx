@@ -20,6 +20,7 @@ export default function Onboarding() {
   const [validationErrors, setValidationErrors] = useState<any[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isMigrationMode, setIsMigrationMode] = useState(false);
   const { toast } = useToast();
 
   // Fetch onboarding records
@@ -496,9 +497,12 @@ export default function Onboarding() {
     };
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, isMigration: boolean = false) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    
+    // Set migration mode
+    setIsMigrationMode(isMigration);
 
     setUploading(true);
 
@@ -694,12 +698,17 @@ export default function Onboarding() {
         return transformedRecord;
       });
 
+      const apiEndpoint = isMigrationMode 
+        ? '/api/onboarding/onboarding/migration-upload'
+        : '/api/onboarding/onboarding/bulk-upload';
+      
       console.log('=== FRONTEND: Sending upload request ===');
+      console.log('Upload mode:', isMigrationMode ? 'MIGRATION' : 'REGULAR');
       console.log('Number of records:', records.length);
       console.log('First record sample:', records[0]);
-      console.log('API endpoint:', '/api/onboarding/onboarding/bulk-upload');
+      console.log('API endpoint:', apiEndpoint);
       
-      const response = await apiRequest('/api/onboarding/onboarding/bulk-upload', {
+      const response = await apiRequest(apiEndpoint, {
         method: 'POST',
         body: { records }
       });
@@ -763,7 +772,7 @@ export default function Onboarding() {
           <CardTitle>Bulk Upload Onboarding Data</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <Button onClick={downloadTemplate} variant="outline" className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Download Yet to be Onboarded Candidates
@@ -787,7 +796,29 @@ export default function Onboarding() {
               />
               {uploading && <span className="text-sm text-slate-600">Uploading...</span>}
             </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="migration-upload" className="cursor-pointer">
+                <Button variant="default" className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700" asChild>
+                  <span>
+                    <UserCheck className="h-4 w-4" />
+                    Migration Upload (Existing Employees)
+                  </span>
+                </Button>
+              </label>
+              <Input
+                id="migration-upload"
+                type="file"
+                accept=".csv"
+                onChange={(e) => handleFileUpload(e, true)}
+                disabled={uploading}
+                className="hidden"
+              />
+            </div>
           </div>
+          <p className="text-xs text-slate-500 mt-2">
+            <strong>Regular Upload:</strong> For new candidates who completed all stages.<br/>
+            <strong>Migration Upload:</strong> For existing employees - auto-creates all previous stage records.
+          </p>
           <p className="text-sm text-slate-600">
             Download the list of candidates yet to be onboarded, fill in their details, and upload the completed file.
           </p>
@@ -886,16 +917,16 @@ export default function Onboarding() {
                     
                     if (sourceType === 'vendor') {
                       resumeSourceType = 'Vendor';
-                      resumeSourceName = record.vendorName || record.vendor_name || '-';
+                      resumeSourceName = record.vendorName || record.vendor_name || 'N/A';
                     } else if (sourceType === 'field_recruiter') {
                       resumeSourceType = 'Field Recruiter';
-                      resumeSourceName = record.recruiterName || record.recruiter_name || '-';
+                      resumeSourceName = record.recruiterName || record.recruiter_name || 'N/A';
                     } else if (sourceType === 'referral') {
                       resumeSourceType = 'Referral';
-                      resumeSourceName = record.referralName || record.referral_name || '-';
+                      resumeSourceName = record.referralName || record.referral_name || 'N/A';
                     } else if (sourceType === 'direct') {
                       resumeSourceType = 'Direct';
-                      resumeSourceName = record.directSource || record.direct_source || '-';
+                      resumeSourceName = record.directSource || record.direct_source || 'N/A';
                     } else if (sourceType) {
                       resumeSourceType = sourceType;
                     }
@@ -903,122 +934,122 @@ export default function Onboarding() {
                     return (
                     <TableRow key={record.id} className="hover:bg-slate-50 transition-colors">
                       {/* BASIC DETAILS */}
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.employeeId || record.employee_id || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.userId || record.user_id || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.employeeId || record.employee_id || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.userId || record.user_id || 'N/A'}</TableCell>
                       <TableCell className="font-medium text-slate-900 border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[150px] break-words leading-tight">{record.name}</div>
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.mobileNumber || record.mobile_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.mobileNumber || record.mobile_number || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] break-words leading-tight text-sm">{record.email || '-'}</div>
+                        <div className="max-w-[180px] break-words leading-tight text-sm">{record.email || 'N/A'}</div>
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.gender || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.dateOfBirth || record.date_of_birth)
                           ? format(new Date(record.dateOfBirth || record.date_of_birth), "dd-MMM-yyyy")
-                          : "-"}
+                          : "N/A"}
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bloodGroup || record.blood_group || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.maritalStatus || record.marital_status || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerAadhar || record.name_as_per_aadhar || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.aadharNumber || record.aadhar_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.fatherName || record.father_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bloodGroup || record.blood_group || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.maritalStatus || record.marital_status || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerAadhar || record.name_as_per_aadhar || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.aadharNumber || record.aadhar_number || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.fatherName || record.father_name || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.fatherDob || record.father_dob)
                           ? format(new Date(record.fatherDob || record.father_dob), "dd-MMM-yyyy")
-                          : "-"}
+                          : "N/A"}
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.motherName || record.mother_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.motherName || record.mother_name || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.motherDob || record.mother_dob)
                           ? format(new Date(record.motherDob || record.mother_dob), "dd-MMM-yyyy")
-                          : "-"}
+                          : "N/A"}
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.wifeName || record.wife_name || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.wifeName || record.wife_name || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.wifeDob || record.wife_dob)
                           ? format(new Date(record.wifeDob || record.wife_dob), "dd-MMM-yyyy")
-                          : "-"}
+                          : "N/A"}
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child1Name || record.child1_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child1Gender || record.child1_gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child1Name || record.child1_name || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child1Gender || record.child1_gender || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.child1Dob || record.child1_dob)
                           ? format(new Date(record.child1Dob || record.child1_dob), "dd-MMM-yyyy")
-                          : "-"}
+                          : "N/A"}
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child2Name || record.child2_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child2Gender || record.child2_gender || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child2Name || record.child2_name || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.child2Gender || record.child2_gender || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.child2Dob || record.child2_dob)
                           ? format(new Date(record.child2Dob || record.child2_dob), "dd-MMM-yyyy")
-                          : "-"}
+                          : "N/A"}
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeName || record.nominee_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeName || record.nominee_name || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeRelation || record.nominee_relation || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[200px] text-xs leading-tight break-words line-clamp-3">
-                          {record.presentAddress || record.present_address || '-'}
+                        <div className="max-w-[400px] text-xs leading-tight break-words line-clamp-3">
+                          {record.presentAddress || record.present_address || 'N/A'}
                         </div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[200px] text-xs leading-tight break-words line-clamp-3">
-                          {record.permanentAddress || record.permanent_address || '-'}
+                        <div className="max-w-[400px] text-xs leading-tight break-words line-clamp-3">
+                          {record.permanentAddress || record.permanent_address || 'N/A'}
                         </div>
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactName || record.emergency_contact_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactNumber || record.emergency_contact_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactRelation || record.emergency_contact_relation || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactName || record.emergency_contact_name || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactNumber || record.emergency_contact_number || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactRelation || record.emergency_contact_relation || 'N/A'}</TableCell>
                       {/* JOB DETAILS */}
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.city || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.cluster || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.city || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.cluster || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.role || '-'}</div>
+                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.role || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.managerName || record.manager_name || '-'}</div>
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.managerName || record.manager_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.dateOfJoining || record.date_of_joining)
                           ? format(new Date(record.dateOfJoining || record.date_of_joining), "dd-MMM-yyyy")
-                          : "-"}
+                          : "N/A"}
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {record.grossSalary || record.gross_salary
                           ? Number(record.grossSalary || record.gross_salary).toLocaleString()
-                          : "-"}
+                          : "N/A"}
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceType}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[170px] text-sm leading-tight break-words">{resumeSourceName}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[120px] text-sm leading-tight break-words">{record.costCentre || record.cost_centre || '-'}</div>
+                        <div className="max-w-[120px] text-sm leading-tight break-words">{record.costCentre || record.cost_centre || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.functionName || record.function_name || '-'}</div>
+                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.functionName || record.function_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.businessUnitName || record.business_unit_name || '-'}</div>
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.businessUnitName || record.business_unit_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.departmentName || record.department_name || '-'}</div>
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.departmentName || record.department_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.subDepartmentName || record.sub_department_name || '-'}</div>
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.subDepartmentName || record.sub_department_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[130px] text-sm leading-tight break-words">{record.legalEntity || record.legal_entity || '-'}</div>
+                        <div className="max-w-[130px] text-sm leading-tight break-words">{record.legalEntity || record.legal_entity || 'N/A'}</div>
                       </TableCell>
                       {/* FINANCIAL DETAILS */}
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.panNumber || record.pan_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerPan || record.name_as_per_pan || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.accountNumber || record.account_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.ifscCode || record.ifsc_code || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerBank || record.name_as_per_bank || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bankName || record.bank_name || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.uanNumber || record.uan_number || '-'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.esicIpNumber || record.esic_ip_number || '-'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.panNumber || record.pan_number || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerPan || record.name_as_per_pan || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.accountNumber || record.account_number || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.ifscCode || record.ifsc_code || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerBank || record.name_as_per_bank || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bankName || record.bank_name || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.uanNumber || record.uan_number || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.esicIpNumber || record.esic_ip_number || 'N/A'}</TableCell>
                       {/* STATUS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <Badge
@@ -1143,10 +1174,10 @@ export default function Onboarding() {
                         )}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {validation.row['Name (DO NOT EDIT)'] || '-'}
+                        {validation.row['Name (DO NOT EDIT)'] || 'N/A'}
                       </TableCell>
                       <TableCell>
-                        {validation.row['Phone Number (DO NOT EDIT)'] || '-'}
+                        {validation.row['Phone Number (DO NOT EDIT)'] || 'N/A'}
                       </TableCell>
                       <TableCell>
                         <div className="space-y-2">
