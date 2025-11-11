@@ -16,6 +16,7 @@ import {
   UserCheck,
   LogOut,
   Database,
+  Calendar,
 } from "lucide-react";
 
 const menuItems = [
@@ -126,6 +127,11 @@ const menuItems = [
         icon: Database,
         label: "Master Data",
         href: "/master-data",
+      },
+      {
+        icon: Calendar,
+        label: "Leave Management",
+        href: "/leave-management",
       },
     ],
   },

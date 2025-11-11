@@ -19,6 +19,7 @@ import Onboarding from "./pages/training/Onboarding";
 import EmployeeLifecycle from "./pages/employee/EmployeeLifecycle";
 import ExitManagement from "./pages/employee/ExitManagement";
 import MasterData from "./pages/master/MasterData";
+import LeaveManagement from "./pages/leave/LeaveManagement";
 import UserManagement from "./pages/management/UserManagement";
 import Analytics from "./pages/analytics/Analytics";
 import HiringAnalytics from "./pages/analytics/HiringAnalytics";
@@ -42,6 +43,7 @@ function Router() {
         <Route path="/employees/lifecycle" component={EmployeeLifecycle} />
         <Route path="/employees/exit" component={ExitManagement} />
         <Route path="/master-data" component={MasterData} />
+        <Route path="/leave-management" component={LeaveManagement} />
         <Route path="/management/users" component={UserManagement} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/analytics/hiring" component={HiringAnalytics} />
