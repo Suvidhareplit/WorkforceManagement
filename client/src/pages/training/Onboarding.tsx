@@ -230,21 +230,49 @@ export default function Onboarding() {
   };
 
   // Handle CSV file upload
+  // Helper function to get value from row with flexible column name matching
+  const getColumnValue = (row: any, ...possibleNames: string[]): any => {
+    for (const name of possibleNames) {
+      if (row[name] !== undefined) {
+        return row[name];
+      }
+    }
+    return undefined;
+  };
+
   // Validation functions
   const parseDateDDMMMYYYY = (dateStr: string): Date | null => {
     if (!dateStr || dateStr.trim() === '') return null;
     try {
-      // Parse both DD-MMM-YYYY (e.g., 12-Aug-2025) and DD-MM-YYYY (e.g., 25-08-1995)
-      const parts = dateStr.trim().split('-');
+      // Parse multiple formats:
+      // - DD-MMM-YYYY (e.g., 12-Aug-2025)
+      // - DD-MM-YYYY (e.g., 25-08-1995)
+      // - DD/MM/YYYY (e.g., 25/08/1995)
+      // - YYYY-MM-DD (e.g., 1995-08-25)
+      const trimmed = dateStr.trim();
+      
+      // Split by dash or slash
+      let parts = trimmed.includes('-') ? trimmed.split('-') : trimmed.split('/');
       if (parts.length !== 3) return null;
       
-      const day = parseInt(parts[0]);
-      const monthStr = parts[1];
-      const year = parseInt(parts[2]);
+      let day: number, monthStr: string, year: number;
+      
+      // Check if it's YYYY-MM-DD format (year > 1000 in first position)
+      if (parseInt(parts[0]) > 1000) {
+        // YYYY-MM-DD format
+        year = parseInt(parts[0]);
+        monthStr = parts[1];
+        day = parseInt(parts[2]);
+      } else {
+        // DD-MM-YYYY or DD/MM/YYYY format
+        day = parseInt(parts[0]);
+        monthStr = parts[1];
+        year = parseInt(parts[2]);
+      }
       
       let month: number;
       
-      // Check if month is numeric (DD-MM-YYYY format)
+      // Check if month is numeric (DD-MM-YYYY or YYYY-MM-DD format)
       const monthNum = parseInt(monthStr);
       if (!isNaN(monthNum)) {
         // Numeric month: 01-12 → 0-11 for Date constructor
@@ -326,9 +354,12 @@ export default function Onboarding() {
 
     // DEBUG: Log actual column values
     console.log(`\n=== Validating Row ${index + 1} ===`);
-    console.log('Date of Birth value:', row['Date of Birth (DD-MMM-YYYY)']);
-    console.log('Father DOB value:', row['Father DOB (DD-MMM-YYYY)']);
-    console.log('Mother DOB value:', row['Mother DOB (DD-MMM-YYYY)']);
+    const dobValue = getColumnValue(row, 'Date of Birth (DD-MMM-YYYY)', 'Date of Birth (YYYY-MM-DD)', 'Date of Birth', 'DOB');
+    const fatherDobValue = getColumnValue(row, 'Father DOB (DD-MMM-YYYY)', 'Father DOB (YYYY-MM-DD)', 'Father DOB');
+    const motherDobValue = getColumnValue(row, 'Mother DOB (DD-MMM-YYYY)', 'Mother DOB (YYYY-MM-DD)', 'Mother DOB');
+    console.log('Date of Birth value:', dobValue);
+    console.log('Father DOB value:', fatherDobValue);
+    console.log('Mother DOB value:', motherDobValue);
     console.log('Father Name:', row['Father Name']);
     console.log('Mother Name:', row['Mother Name']);
     console.log('All columns in row:', Object.keys(row));
@@ -402,25 +433,22 @@ export default function Onboarding() {
       warnings.push('Mother name contains "Late" - Mother DOB is optional');
     }
     
-    // Date of Birth - always mandatory
-    const dobValue = row['Date of Birth (DD-MMM-YYYY)'];
+    // Date of Birth - always mandatory (use flexible column matching)
     if (!dobValue || dobValue.trim() === '' || dobValue.trim().toLowerCase() === 'n/a' || dobValue.trim().toLowerCase() === 'na') {
-      errors.push('Date of Birth (DD-MMM-YYYY) is required and cannot be N/A');
+      errors.push('Date of Birth is required and cannot be N/A');
     }
     
     // Father DOB - mandatory unless Father name contains "Late"
-    const fatherDobValue = row['Father DOB (DD-MMM-YYYY)'];
     if (!isFatherLate) {
       if (!fatherDobValue || fatherDobValue.trim() === '' || fatherDobValue.trim().toLowerCase() === 'n/a' || fatherDobValue.trim().toLowerCase() === 'na') {
-        errors.push('Father DOB (DD-MMM-YYYY) is required and cannot be N/A (unless Father name contains "Late")');
+        errors.push('Father DOB is required and cannot be N/A (unless Father name contains "Late")');
       }
     }
     
     // Mother DOB - mandatory unless Mother name contains "Late"
-    const motherDobValue = row['Mother DOB (DD-MMM-YYYY)'];
     if (!isMotherLate) {
       if (!motherDobValue || motherDobValue.trim() === '' || motherDobValue.trim().toLowerCase() === 'n/a' || motherDobValue.trim().toLowerCase() === 'na') {
-        errors.push('Mother DOB (DD-MMM-YYYY) is required and cannot be N/A (unless Mother name contains "Late")');
+        errors.push('Mother DOB is required and cannot be N/A (unless Mother name contains "Late")');
       }
     }
 
@@ -660,9 +688,9 @@ export default function Onboarding() {
     try {
       // Transform validated data to backend format
       const records = validRows.map(({ row }) => {
-        const parseDateField = (fieldName: string) => {
-          const value = row[fieldName];
-          console.log(`Parsing date field "${fieldName}":`, value);
+        const parseDateField = (...possibleFieldNames: string[]) => {
+          const value = getColumnValue(row, ...possibleFieldNames);
+          console.log(`Parsing date field (tried: ${possibleFieldNames.join(', ')}):`, value);
           if (!value || value.trim() === '') {
             console.log(`  → Empty, returning null`);
             return null;
@@ -714,23 +742,23 @@ export default function Onboarding() {
           mobile_number: row['Phone Number (DO NOT EDIT)']?.trim().replace(/\D/g, '') || null,
           email: trimOrNull(row['Email (DO NOT EDIT)'] || row['Email'])?.toLowerCase(),
           gender: normalizeGender(row['Gender']),
-          date_of_birth: parseDateField('Date of Birth (DD-MMM-YYYY)'),
+          date_of_birth: parseDateField('Date of Birth (DD-MMM-YYYY)', 'Date of Birth (YYYY-MM-DD)', 'Date of Birth', 'DOB'),
           blood_group: trimOrNull(row['Blood Group'])?.toUpperCase().replace('POSITIVE', '+').replace('NEGATIVE', '-').replace(' ', ''),
           marital_status: normalizeMaritalStatus(row['Marital Status']),
           name_as_per_aadhar: trimOrNull(row['Name as per Aadhar']),
           aadhar_number: row['Aadhar Number'] ? row['Aadhar Number'].trim().replace(/\s/g, '') : null,
           father_name: trimOrNull(row['Father Name']),
-          father_dob: parseDateField('Father DOB (DD-MMM-YYYY)'),
+          father_dob: parseDateField('Father DOB (DD-MMM-YYYY)', 'Father DOB (YYYY-MM-DD)', 'Father DOB'),
           mother_name: trimOrNull(row['Mother Name']),
-          mother_dob: parseDateField('Mother DOB (DD-MMM-YYYY)'),
+          mother_dob: parseDateField('Mother DOB (DD-MMM-YYYY)', 'Mother DOB (YYYY-MM-DD)', 'Mother DOB'),
           wife_name: trimOrNull(row['Wife Name']),
-          wife_dob: parseDateField('Wife DOB (DD-MMM-YYYY)'),
+          wife_dob: parseDateField('Wife DOB (DD-MMM-YYYY)', 'Wife DOB (YYYY-MM-DD)', 'Wife DOB'),
           child1_name: trimOrNull(row['Child 1 Name']),
           child1_gender: normalizeGender(row['Child 1 Gender (male/female)']),
-          child1_dob: parseDateField('Child 1 DOB (DD-MMM-YYYY)'),
+          child1_dob: parseDateField('Child 1 DOB (DD-MMM-YYYY)', 'Child 1 DOB (YYYY-MM-DD)', 'Child 1 DOB'),
           child2_name: trimOrNull(row['Child 2 Name']),
           child2_gender: normalizeGender(row['Child 2 Gender (male/female)']),
-          child2_dob: parseDateField('Child 2 DOB (DD-MMM-YYYY)'),
+          child2_dob: parseDateField('Child 2 DOB (DD-MMM-YYYY)', 'Child 2 DOB (YYYY-MM-DD)', 'Child 2 DOB'),
           nominee_name: trimOrNull(row['Nominee Name']),
           nominee_relation: trimOrNull(row['Nominee Relation']),
           present_address: trimOrNull(row['Present Address']),
