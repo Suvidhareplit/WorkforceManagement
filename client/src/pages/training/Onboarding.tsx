@@ -657,10 +657,18 @@ export default function Onboarding() {
         };
       });
 
+      console.log('=== FRONTEND: Sending upload request ===');
+      console.log('Number of records:', records.length);
+      console.log('First record sample:', records[0]);
+      console.log('API endpoint:', '/api/onboarding/onboarding/bulk-upload');
+      
       const response = await apiRequest('/api/onboarding/onboarding/bulk-upload', {
         method: 'POST',
         body: { records }
       });
+
+      console.log('=== FRONTEND: Received response ===');
+      console.log('Response:', response);
 
       // Complete progress
       clearInterval(progressInterval);

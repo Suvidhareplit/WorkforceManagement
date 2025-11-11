@@ -122,44 +122,56 @@ const updateOnboarding = async (req: Request, res: Response) => {
 // Bulk upload onboarding data
 const bulkUploadOnboarding = async (req: Request, res: Response) => {
   try {
+    console.log('=== BACKEND: Received bulk upload request ===');
+    console.log('Request body keys:', Object.keys(req.body));
+    
     const { records } = req.body;
     
-    if (!Array.isArray(records) || records.length === 0) {
-      return res.status(400).json({ message: "Records array is required" });
+    console.log('Number of records received:', records?.length || 0);
+    if (records && records.length > 0) {
+      console.log('First record sample:', JSON.stringify(records[0], null, 2));
     }
     
     const results = {
       success: 0,
       failed: 0,
-      errors: [] as any[]
+      errors: [] as { name: string; error: string }[]
     };
     
     for (const record of records) {
       try {
+        console.log(`\n--- Processing record: ${record.name} ---`);
         // Find onboarding record by employee_id or name+phone
         let onboardingRecord: any = null;
         
         if (record.employee_id) {
+          console.log(`Searching by employee_id: ${record.employee_id}`);
           const onboardingResult = await query(
             'SELECT id, candidate_id, field_training_id FROM onboarding WHERE employee_id = ?',
             [record.employee_id]
           );
           if (onboardingResult.rows && onboardingResult.rows.length > 0) {
             onboardingRecord = onboardingResult.rows[0];
+            console.log(`Found by employee_id: ${onboardingRecord.id}`);
           }
         }
         
         if (!onboardingRecord) {
+          console.log(`Searching by name and phone: ${record.name}, ${record.mobile_number}`);
           const onboardingResult = await query(
             'SELECT id, candidate_id, field_training_id FROM onboarding WHERE name = ? AND mobile_number = ?',
             [record.name, record.mobile_number]
           );
           if (onboardingResult.rows && onboardingResult.rows.length > 0) {
             onboardingRecord = onboardingResult.rows[0];
+            console.log(`Found by name+phone: ${onboardingRecord.id}`);
+          } else {
+            console.log(`No match found with name: ${record.name}, phone: ${record.mobile_number}`);
           }
         }
         
         if (!onboardingRecord) {
+          console.error(`❌ Onboarding record not found for: ${record.name}`);
           results.failed++;
           results.errors.push({
             name: record.name,
@@ -204,17 +216,26 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
         console.log(`Update result:`, updateResult);
         
         if ((updateResult as any).affectedRows === 0) {
+          console.error(`❌ No rows updated for record ID: ${onboardingRecord.id}`);
           throw new Error(`No rows updated for record ID: ${onboardingRecord.id}`);
         }
         
+        console.log(`✅ Successfully updated: ${record.name}`);
         results.success++;
       } catch (error) {
+        console.error(`❌ Error processing ${record.name}:`, error);
         results.failed++;
         results.errors.push({
           name: record.name,
           error: (error as Error).message
         });
       }
+    }
+    
+    console.log('\n=== BACKEND: Upload complete ===');
+    console.log(`Success: ${results.success}, Failed: ${results.failed}`);
+    if (results.errors.length > 0) {
+      console.log('Errors:', results.errors);
     }
     
     res.json({
