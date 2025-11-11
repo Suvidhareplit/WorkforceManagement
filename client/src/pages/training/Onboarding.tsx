@@ -502,11 +502,11 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.employeeId || record.employee_id || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.userId || record.user_id || '-'}</TableCell>
                       <TableCell className="font-medium text-slate-900 border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] break-words">{record.name}</div>
+                        <div className="max-w-[150px] break-words leading-tight">{record.name}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.mobileNumber || record.mobile_number || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] break-words">{record.email || '-'}</div>
+                        <div className="max-w-[180px] break-words leading-tight text-sm">{record.email || '-'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.gender || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
@@ -553,12 +553,12 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeName || record.nominee_name || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nomineeRelation || record.nominee_relation || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[200px] break-words">
+                        <div className="max-w-[200px] text-xs leading-tight break-words line-clamp-3">
                           {record.presentAddress || record.present_address || '-'}
                         </div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[200px] break-words">
+                        <div className="max-w-[200px] text-xs leading-tight break-words line-clamp-3">
                           {record.permanentAddress || record.permanent_address || '-'}
                         </div>
                       </TableCell>
@@ -569,10 +569,10 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.city || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.cluster || '-'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] break-words">{record.role || '-'}</div>
+                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.role || '-'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] break-words">{record.managerName || record.manager_name || '-'}</div>
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.managerName || record.manager_name || '-'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">
                         {(record.dateOfJoining || record.date_of_joining)
@@ -586,25 +586,25 @@ export default function Onboarding() {
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceType}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[170px] break-words">{resumeSourceName}</div>
+                        <div className="max-w-[170px] text-sm leading-tight break-words">{resumeSourceName}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[120px] break-words">{record.costCentre || record.cost_centre || '-'}</div>
+                        <div className="max-w-[120px] text-sm leading-tight break-words">{record.costCentre || record.cost_centre || '-'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] break-words">{record.functionName || record.function_name || '-'}</div>
+                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.functionName || record.function_name || '-'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] break-words">{record.businessUnitName || record.business_unit_name || '-'}</div>
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.businessUnitName || record.business_unit_name || '-'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] break-words">{record.departmentName || record.department_name || '-'}</div>
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.departmentName || record.department_name || '-'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] break-words">{record.subDepartmentName || record.sub_department_name || '-'}</div>
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.subDepartmentName || record.sub_department_name || '-'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[130px] break-words">{record.legalEntity || record.legal_entity || '-'}</div>
+                        <div className="max-w-[130px] text-sm leading-tight break-words">{record.legalEntity || record.legal_entity || '-'}</div>
                       </TableCell>
                       {/* FINANCIAL DETAILS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.panNumber || record.pan_number || '-'}</TableCell>
