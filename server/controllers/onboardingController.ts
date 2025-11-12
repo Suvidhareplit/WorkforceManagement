@@ -411,10 +411,97 @@ const bulkUploadMigration = async (req: Request, res: Response) => {
   }
 };
 
+// Bulk onboard submission - marks records as onboarded and locks them
+const bulkOnboardSubmission = async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    const userId = (req as any).user?.id; // Get user ID from auth middleware
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "Invalid request: ids array is required" });
+    }
+
+    const results = {
+      success: 0,
+      failed: 0,
+      locked: 0,
+      alreadyOnboarded: 0,
+      errors: [] as any[]
+    };
+
+    for (const id of ids) {
+      try {
+        // Check if record exists and is not already locked
+        const checkResult = await query(
+          'SELECT id, onboarding_status, is_locked FROM onboarding WHERE id = ?',
+          [id]
+        );
+
+        if (!checkResult.rows || checkResult.rows.length === 0) {
+          results.failed++;
+          results.errors.push({
+            id,
+            error: 'Record not found'
+          });
+          continue;
+        }
+
+        const record = checkResult.rows[0] as any;
+
+        // Check if already locked
+        if (record.is_locked) {
+          results.locked++;
+          results.errors.push({
+            id,
+            error: 'Record is already locked'
+          });
+          continue;
+        }
+
+        // Check if already onboarded
+        if (record.onboarding_status === 'onboarded') {
+          results.alreadyOnboarded++;
+          continue;
+        }
+
+        // Update status to onboarded and lock the record
+        await query(
+          `UPDATE onboarding 
+           SET onboarding_status = 'onboarded',
+               is_locked = TRUE,
+               locked_at = NOW(),
+               locked_by = ?
+           WHERE id = ?`,
+          [userId || null, id]
+        );
+
+        results.success++;
+      } catch (error) {
+        console.error(`Failed to onboard record ${id}:`, error);
+        results.failed++;
+        results.errors.push({
+          id,
+          error: (error as Error).message
+        });
+      }
+    }
+
+    res.json({
+      message: `Onboarding submission complete`,
+      successCount: results.success,
+      results
+    });
+  } catch (error) {
+    console.error('Bulk onboard submission error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const onboardingController = {
   getOnboardingRecords,
   createOnboarding,
   updateOnboarding,
   bulkUploadOnboarding,
-  bulkUploadMigration
+  bulkUploadMigration,
+  bulkOnboardSubmission
 };

@@ -21,6 +21,10 @@ export default function Onboarding() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMigrationMode, setIsMigrationMode] = useState(false);
+  const [selectedRecords, setSelectedRecords] = useState<Set<number>>(new Set());
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'single' | 'bulk'>('single');
+  const [singleRecordId, setSingleRecordId] = useState<number | null>(null);
   const { toast } = useToast();
 
   // Fetch onboarding records
@@ -52,6 +56,32 @@ export default function Onboarding() {
       toast({
         title: "Error",
         description: error.message || "Failed to update status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk onboarding submission mutation (with locking)
+  const bulkOnboardingMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      return await apiRequest('/api/onboarding/bulk-onboard', {
+        method: "POST",
+        body: { ids }
+      });
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/onboarding/onboarding"] });
+      setSelectedRecords(new Set());
+      setShowConfirmDialog(false);
+      toast({
+        title: "Success",
+        description: `${data.successCount || 0} record(s) marked as onboarded and locked`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit onboarding",
         variant: "destructive",
       });
     },
@@ -870,9 +900,74 @@ export default function Onboarding() {
   };
 
   const handleStatusChange = (id: number, checked: boolean) => {
-    const status = checked ? 'onboarded' : 'yet_to_be_onboarded';
-    updateOnboardingMutation.mutate({ id, status });
+    if (checked) {
+      // Show confirmation dialog before marking as onboarded
+      setSingleRecordId(id);
+      setConfirmAction('single');
+      setShowConfirmDialog(true);
+    } else {
+      // Allow unchecking without confirmation (if not locked)
+      updateOnboardingMutation.mutate({ id, status: 'yet_to_be_onboarded' });
+    }
   };
+
+  // Toggle single record selection
+  const toggleRecordSelection = (id: number) => {
+    const newSelected = new Set(selectedRecords);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedRecords(newSelected);
+  };
+
+  // Select all unlocked pending records
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const unlockedPending = onboardingRecords
+        .filter((r: any) => 
+          (r.onboardingStatus || r.onboarding_status) === 'yet_to_be_onboarded' && 
+          !(r.isLocked || r.is_locked)
+        )
+        .map((r: any) => r.id);
+      setSelectedRecords(new Set(unlockedPending));
+    } else {
+      setSelectedRecords(new Set());
+    }
+  };
+
+  // Handle bulk submission
+  const handleBulkSubmit = () => {
+    if (selectedRecords.size === 0) {
+      toast({
+        title: "No Records Selected",
+        description: "Please select at least one record to submit",
+        variant: "destructive",
+      });
+      return;
+    }
+    setConfirmAction('bulk');
+    setShowConfirmDialog(true);
+  };
+
+  // Confirm and submit
+  const handleConfirmSubmit = () => {
+    if (confirmAction === 'single' && singleRecordId) {
+      bulkOnboardingMutation.mutate([singleRecordId]);
+    } else if (confirmAction === 'bulk') {
+      bulkOnboardingMutation.mutate(Array.from(selectedRecords));
+    }
+  };
+
+  // Get count of unlocked pending records
+  const unlockedPendingCount = onboardingRecords.filter((r: any) =>
+    (r.onboardingStatus || r.onboarding_status) === 'yet_to_be_onboarded' &&
+    !(r.isLocked || r.is_locked)
+  ).length;
+
+  const allSelectedCount = selectedRecords.size;
+  const allUnlockedSelected = unlockedPendingCount > 0 && allSelectedCount === unlockedPendingCount;
 
   return (
     <div className="p-6 space-y-6">
@@ -944,7 +1039,24 @@ export default function Onboarding() {
       {/* Onboarding Records Table */}
       <Card className="shadow-sm border-slate-200">
         <CardHeader className="bg-white border-b border-slate-100">
-          <CardTitle className="text-xl font-semibold text-slate-800">Onboarding Records</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl font-semibold text-slate-800">Onboarding Records</CardTitle>
+            {selectedRecords.size > 0 && (
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="text-sm px-3 py-1">
+                  {selectedRecords.size} selected
+                </Badge>
+                <Button 
+                  onClick={handleBulkSubmit} 
+                  className="flex items-center gap-2"
+                  disabled={bulkOnboardingMutation.isPending}
+                >
+                  <UserCheck className="h-4 w-4" />
+                  Submit {selectedRecords.size} for Onboarding
+                </Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="border rounded-lg overflow-x-auto">
@@ -1010,7 +1122,18 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Bank Name</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">UAN Number</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">ESIC IP Number</TableHead>
-                  {/* STATUS */}
+                  {/* SELECTION & STATUS */}
+                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-center align-top min-w-[80px] whitespace-nowrap px-3 py-2">
+                    <div className="flex flex-col items-center gap-1">
+                      <span>Select</span>
+                      <Checkbox 
+                        checked={allUnlockedSelected}
+                        onCheckedChange={handleSelectAll}
+                        disabled={unlockedPendingCount === 0}
+                        title={unlockedPendingCount === 0 ? "No unlocked records to select" : "Select all unlocked pending records"}
+                      />
+                    </div>
+                  </TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Status</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Onboarded</TableHead>
                 </TableRow>
@@ -1177,24 +1300,50 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bankName || record.bank_name || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.uanNumber || record.uan_number || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.esicIpNumber || record.esic_ip_number || 'N/A'}</TableCell>
-                      {/* STATUS */}
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <Badge
-                          variant={
-                            (record.onboardingStatus || record.onboarding_status) === 'onboarded'
-                              ? 'default'
-                              : 'outline'
+                      {/* SELECTION & STATUS */}
+                      <TableCell className="border border-gray-300 text-center align-top px-3 py-2">
+                        <Checkbox
+                          checked={selectedRecords.has(record.id)}
+                          onCheckedChange={() => toggleRecordSelection(record.id)}
+                          disabled={
+                            (record.onboardingStatus || record.onboarding_status) === 'onboarded' ||
+                            (record.isLocked || record.is_locked)
                           }
-                        >
-                          {(record.onboardingStatus || record.onboarding_status) === 'onboarded'
-                            ? 'Onboarded'
-                            : 'Yet to be Onboarded'}
-                        </Badge>
+                          title={
+                            (record.isLocked || record.is_locked) 
+                              ? "Record is locked" 
+                              : (record.onboardingStatus || record.onboarding_status) === 'onboarded'
+                              ? "Already onboarded"
+                              : "Select for bulk submission"
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={
+                              (record.onboardingStatus || record.onboarding_status) === 'onboarded'
+                                ? 'default'
+                                : 'outline'
+                            }
+                          >
+                            {(record.onboardingStatus || record.onboarding_status) === 'onboarded'
+                              ? 'Onboarded'
+                              : 'Yet to be Onboarded'}
+                          </Badge>
+                          {(record.isLocked || record.is_locked) && (
+                            <Badge variant="destructive" className="text-xs">
+                              🔒 Locked
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <Checkbox
                           checked={(record.onboardingStatus || record.onboarding_status) === 'onboarded'}
                           onCheckedChange={(checked) => handleStatusChange(record.id, checked as boolean)}
+                          disabled={(record.isLocked || record.is_locked)}
+                          title={(record.isLocked || record.is_locked) ? "Record is locked and cannot be modified" : "Mark as onboarded"}
                         />
                       </TableCell>
                     </TableRow>
@@ -1387,6 +1536,102 @@ export default function Onboarding() {
                 {uploading ? 'Uploading...' : `Upload ${validationErrors.filter(v => v.status !== 'error').length} Valid Rows`}
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Onboarding Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <AlertTriangle className="h-6 w-6 text-amber-500" />
+              Confirm Onboarding Submission
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              Please review the following disclaimer before proceeding.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Summary */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 mb-2">Submission Summary</h4>
+              <p className="text-blue-800">
+                {confirmAction === 'single' 
+                  ? 'You are about to mark 1 candidate as onboarded.'
+                  : `You are about to mark ${selectedRecords.size} candidates as onboarded.`}
+              </p>
+            </div>
+
+            {/* Disclaimer */}
+            <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-4">
+              <h4 className="font-bold text-amber-900 mb-3 flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                IMPORTANT DISCLAIMER
+              </h4>
+              <ul className="space-y-2 text-sm text-amber-900">
+                <li className="flex items-start gap-2">
+                  <span className="font-bold mt-1">🔒</span>
+                  <span><strong>Record Locking:</strong> Once submitted, the record(s) will be <strong>permanently locked</strong> and cannot be edited or reversed.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold mt-1">✓</span>
+                  <span><strong>Data Verification:</strong> Ensure all candidate information is accurate and complete before proceeding.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold mt-1">📋</span>
+                  <span><strong>Compliance:</strong> By submitting, you confirm that all required documents and verifications are completed.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="font-bold mt-1">⚠️</span>
+                  <span><strong>No Undo:</strong> This action cannot be undone. Contact system administrator if changes are needed after submission.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Confirmation Text */}
+            <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+              <p className="text-sm text-gray-700">
+                By clicking <strong>"Confirm & Submit"</strong> below, you acknowledge that you have:
+              </p>
+              <ul className="mt-2 space-y-1 text-sm text-gray-700 list-disc list-inside">
+                <li>Verified all candidate information is accurate</li>
+                <li>Completed all required documentation</li>
+                <li>Understand that records will be locked permanently</li>
+                <li>Accept responsibility for this submission</li>
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowConfirmDialog(false);
+                setSingleRecordId(null);
+              }}
+              disabled={bulkOnboardingMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleConfirmSubmit}
+              disabled={bulkOnboardingMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {bulkOnboardingMutation.isPending ? (
+                <>
+                  <span className="animate-spin mr-2">⏳</span>
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Confirm & Submit
+                </>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
