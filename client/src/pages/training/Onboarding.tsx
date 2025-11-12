@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X, UserCheck } from "lucide-react";
+import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X, UserCheck, Lock, Check, FileCheck, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Onboarding() {
@@ -1334,8 +1334,9 @@ export default function Onboarding() {
                               : 'Yet to be Onboarded'}
                           </Badge>
                           {(record.isLocked || record.is_locked) && (
-                            <Badge variant="destructive" className="text-xs">
-                              🔒 Locked
+                            <Badge variant="secondary" className="text-xs font-medium flex items-center gap-1 bg-slate-700 text-white">
+                              <Lock className="h-3 w-3" />
+                              Locked
                             </Badge>
                           )}
                         </div>
@@ -1574,19 +1575,19 @@ export default function Onboarding() {
               </h4>
               <ul className="space-y-2 text-sm text-amber-900">
                 <li className="flex items-start gap-2">
-                  <span className="font-bold mt-1">🔒</span>
+                  <Lock className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Record Locking:</strong> Once submitted, the record(s) will be <strong>permanently locked</strong> and cannot be edited or reversed.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold mt-1">✓</span>
+                  <Check className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Data Verification:</strong> Ensure all candidate information is accurate and complete before proceeding.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold mt-1">📋</span>
+                  <FileCheck className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span><strong>Compliance:</strong> By submitting, you confirm that all required documents and verifications are completed.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold mt-1">⚠️</span>
+                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span><strong>No Undo:</strong> This action cannot be undone. Contact system administrator if changes are needed after submission.</span>
                 </li>
               </ul>
@@ -1624,7 +1625,7 @@ export default function Onboarding() {
             >
               {bulkOnboardingMutation.isPending ? (
                 <>
-                  <span className="animate-spin mr-2">⏳</span>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Submitting...
                 </>
               ) : (
