@@ -84,6 +84,9 @@ export default function Onboarding() {
       "Date of Birth (DD-MMM-YYYY)",
       "Blood Group", 
       "Marital Status",
+      "Physically Handicapped (Yes/No/NA)",
+      "Nationality",
+      "International Worker (Yes/No/NA)",
       "Name as per Aadhar", 
       "Aadhar Number",
       "Father Name",
@@ -106,17 +109,18 @@ export default function Onboarding() {
       "Emergency Contact Number", 
       "Relation with Emergency Contact",
       // JOB DETAILS
+      "Legal Entity",
+      "Business Unit (DO NOT EDIT)",
+      "Function (DO NOT EDIT)",
+      "Department (DO NOT EDIT)",
+      "Sub Department (DO NOT EDIT)",
+      "Employment Type (DO NOT EDIT)",
       "City (DO NOT EDIT)", 
       "Cluster (DO NOT EDIT)", 
       "Role (DO NOT EDIT)", 
       "Reporting Manager (DO NOT EDIT)", 
       "Date of Joining (DO NOT EDIT)", 
       "Gross Salary (DO NOT EDIT)",
-      "Legal Entity",
-      "Business Unit (DO NOT EDIT)",
-      "Function (DO NOT EDIT)",
-      "Department (DO NOT EDIT)",
-      "Sub Department (DO NOT EDIT)",
       "Resume Source Type (DO NOT EDIT)",
       "Resume Source Name (DO NOT EDIT)",
       "Cost Centre (DO NOT EDIT)",
@@ -164,6 +168,9 @@ export default function Onboarding() {
         record.dateOfBirth || record.date_of_birth ? format(new Date(record.dateOfBirth || record.date_of_birth), 'dd-MMM-yyyy') : '',
         record.bloodGroup || record.blood_group || '',
         record.maritalStatus || record.marital_status || '',
+        record.physicallyHandicapped || record.physically_handicapped || '',
+        record.nationality || 'Indian',
+        record.internationalWorker || record.international_worker || '',
         record.nameAsPerAadhar || record.name_as_per_aadhar || '',
         record.aadharNumber || record.aadhar_number || '',
         record.fatherName || record.father_name || '',
@@ -186,17 +193,18 @@ export default function Onboarding() {
         record.emergencyContactNumber || record.emergency_contact_number || '',
         record.emergencyContactRelation || record.emergency_contact_relation || '',
         // JOB DETAILS
+        record.legalEntity || record.legal_entity || '',
+        record.businessUnitName || record.business_unit_name || '',
+        record.functionName || record.function_name || '',
+        record.departmentName || record.department_name || '',
+        record.subDepartmentName || record.sub_department_name || '',
+        record.employmentType || record.employment_type || '',
         record.city || '',
         record.cluster || '',
         record.role || '',
         record.managerName || record.manager_name || '',
         record.dateOfJoining || record.date_of_joining ? format(new Date(record.dateOfJoining || record.date_of_joining), 'yyyy-MM-dd') : '',
         record.grossSalary || record.gross_salary || '',
-        record.legalEntity || record.legal_entity || '',
-        record.businessUnitName || record.business_unit_name || '',
-        record.functionName || record.function_name || '',
-        record.departmentName || record.department_name || '',
-        record.subDepartmentName || record.sub_department_name || '',
         resumeSourceType,
         resumeSourceName,
         record.costCentre || record.cost_centre || '',
@@ -919,10 +927,13 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Name</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Mobile</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Email</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[80px] whitespace-nowrap px-3 py-2">Gender</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">DOB</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">Blood Group</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Marital Status</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Gender</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Blood Group</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Marital Status</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Physically Handicapped</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Nationality</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">International Worker</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[160px] whitespace-nowrap px-3 py-2">Name as Per Aadhar</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Aadhar Number</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Father Name</TableHead>
@@ -945,17 +956,18 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Emergency Number</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Emergency Relation</TableHead>
                   {/* JOB DETAILS */}
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Entity</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Business Unit</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Function</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Department</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Sub Department</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Employment Type</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">City</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Cluster</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Role</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Manager</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">DOJ</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Gross Salary</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Entity</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Business Unit</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Function</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Department</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Sub Department</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[160px] whitespace-nowrap px-3 py-2">Resume Source Type</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[170px] whitespace-nowrap px-3 py-2">Resume Source Name</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Cost Centre</TableHead>
@@ -1029,6 +1041,9 @@ export default function Onboarding() {
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bloodGroup || record.blood_group || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.maritalStatus || record.marital_status || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.physicallyHandicapped || record.physically_handicapped || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nationality || 'Indian'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.internationalWorker || record.international_worker || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.nameAsPerAadhar || record.name_as_per_aadhar || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.aadharNumber || record.aadhar_number || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.fatherName || record.father_name || 'N/A'}</TableCell>
@@ -1079,6 +1094,22 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactNumber || record.emergency_contact_number || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.emergencyContactRelation || record.emergency_contact_relation || 'N/A'}</TableCell>
                       {/* JOB DETAILS */}
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[130px] text-sm leading-tight break-words">{record.legalEntity || record.legal_entity || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.businessUnitName || record.business_unit_name || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.functionName || record.function_name || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.departmentName || record.department_name || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.subDepartmentName || record.sub_department_name || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.employmentType || record.employment_type || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.city || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.cluster || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
@@ -1096,21 +1127,6 @@ export default function Onboarding() {
                         {record.grossSalary || record.gross_salary
                           ? Number(record.grossSalary || record.gross_salary).toLocaleString()
                           : "N/A"}
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[130px] text-sm leading-tight break-words">{record.legalEntity || record.legal_entity || 'N/A'}</div>
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.businessUnitName || record.business_unit_name || 'N/A'}</div>
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.functionName || record.function_name || 'N/A'}</div>
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.departmentName || record.department_name || 'N/A'}</div>
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[150px] text-sm leading-tight break-words">{record.subDepartmentName || record.sub_department_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceType}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">

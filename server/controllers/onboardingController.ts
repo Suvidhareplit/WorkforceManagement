@@ -184,10 +184,15 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
         console.log(`Updating onboarding record for: ${record.name} (ID: ${onboardingRecord.id})`);
         console.log('Record data being saved:', JSON.stringify(record, null, 2));
         
+        // Calculate employment type based on resume source
+        const employmentType = onboardingRecord.resume_source === 'vendor' ? 'Contract' : 'Permanent';
+        
         // Prepare update values with explicit logging
         const updateValues = [
           record.employee_id, record.user_id, record.email, record.gender, record.date_of_birth, record.blood_group,
-          record.marital_status, record.pan_number, record.name_as_per_pan,
+          record.marital_status,
+          record.physically_handicapped, record.nationality || 'Indian', record.international_worker,
+          record.pan_number, record.name_as_per_pan,
           record.aadhar_number, record.name_as_per_aadhar, record.account_number,
           record.ifsc_code, record.name_as_per_bank, record.bank_name, record.present_address,
           record.permanent_address, record.emergency_contact_number,
@@ -197,6 +202,7 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
           record.child1_name, record.child1_gender, record.child1_dob,
           record.child2_name, record.child2_gender, record.child2_dob,
           record.nominee_name, record.nominee_relation, record.legal_entity,
+          employmentType,
           onboardingRecord.id
         ];
         
@@ -205,7 +211,9 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
         const updateResult = await query(
           `UPDATE onboarding SET 
             employee_id = ?, user_id = ?, email = ?, gender = ?, date_of_birth = ?, blood_group = ?,
-            marital_status = ?, pan_number = ?, name_as_per_pan = ?,
+            marital_status = ?,
+            physically_handicapped = ?, nationality = ?, international_worker = ?,
+            pan_number = ?, name_as_per_pan = ?,
             aadhar_number = ?, name_as_per_aadhar = ?, account_number = ?,
             ifsc_code = ?, name_as_per_bank = ?, bank_name = ?, present_address = ?,
             permanent_address = ?, emergency_contact_number = ?,
@@ -214,7 +222,8 @@ const bulkUploadOnboarding = async (req: Request, res: Response) => {
             uan_number = ?, esic_ip_number = ?, wife_name = ?, wife_dob = ?,
             child1_name = ?, child1_gender = ?, child1_dob = ?,
             child2_name = ?, child2_gender = ?, child2_dob = ?,
-            nominee_name = ?, nominee_relation = ?, legal_entity = ?, migrated_data = 'NO'
+            nominee_name = ?, nominee_relation = ?, legal_entity = ?,
+            employment_type = ?, migrated_data = 'NO'
            WHERE id = ?`,
           updateValues
         );
@@ -342,29 +351,37 @@ const bulkUploadMigration = async (req: Request, res: Response) => {
         const fieldTrainingId = (fieldResult as any).insertId;
         
         // Step 8: Create onboarding record with migrated_data = 'YES'
+        // Calculate employment type (migrate data is always Permanent since no vendor info)
+        const employmentType = 'Permanent';
+        
         const onboardingResult = await query(
           `INSERT INTO onboarding (
             candidate_id, field_training_id, name, mobile_number, email, employee_id, user_id,
-            gender, date_of_birth, blood_group, marital_status, name_as_per_aadhar, aadhar_number,
+            gender, date_of_birth, blood_group, marital_status,
+            physically_handicapped, nationality, international_worker,
+            name_as_per_aadhar, aadhar_number,
             father_name, father_dob, mother_name, mother_dob, wife_name, wife_dob,
             child1_name, child1_gender, child1_dob, child2_name, child2_gender, child2_dob,
             nominee_name, nominee_relation, present_address, permanent_address,
             emergency_contact_name, emergency_contact_number, emergency_contact_relation,
             pan_number, name_as_per_pan, account_number, ifsc_code, name_as_per_bank, bank_name,
-            uan_number, esic_ip_number, legal_entity, onboarding_status, migrated_data,
+            uan_number, esic_ip_number, legal_entity, employment_type, onboarding_status, migrated_data,
             created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'yet_to_be_onboarded', 'YES', NOW(), NOW())`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'yet_to_be_onboarded', 'YES', NOW(), NOW())`,
           [
             candidateId, fieldTrainingId, record.name, record.mobile_number, record.email,
             record.employee_id, record.user_id, record.gender, record.date_of_birth, record.blood_group,
-            record.marital_status, record.name_as_per_aadhar, record.aadhar_number,
+            record.marital_status,
+            record.physically_handicapped, record.nationality || 'Indian', record.international_worker,
+            record.name_as_per_aadhar, record.aadhar_number,
             record.father_name, record.father_dob, record.mother_name, record.mother_dob,
             record.wife_name, record.wife_dob, record.child1_name, record.child1_gender, record.child1_dob,
             record.child2_name, record.child2_gender, record.child2_dob,
             record.nominee_name, record.nominee_relation, record.present_address, record.permanent_address,
             record.emergency_contact_name, record.emergency_contact_number, record.emergency_contact_relation,
             record.pan_number, record.name_as_per_pan, record.account_number, record.ifsc_code,
-            record.name_as_per_bank, record.bank_name, record.uan_number, record.esic_ip_number, record.legal_entity
+            record.name_as_per_bank, record.bank_name, record.uan_number, record.esic_ip_number, record.legal_entity,
+            employmentType
           ]
         );
         
