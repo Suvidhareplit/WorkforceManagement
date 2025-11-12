@@ -112,14 +112,14 @@ export default function Onboarding() {
       "Reporting Manager (DO NOT EDIT)", 
       "Date of Joining (DO NOT EDIT)", 
       "Gross Salary (DO NOT EDIT)",
+      "Legal Entity",
+      "Business Unit (DO NOT EDIT)",
+      "Function (DO NOT EDIT)",
+      "Department (DO NOT EDIT)",
+      "Sub Department (DO NOT EDIT)",
       "Resume Source Type (DO NOT EDIT)",
       "Resume Source Name (DO NOT EDIT)",
       "Cost Centre (DO NOT EDIT)",
-      "Function (DO NOT EDIT)",
-      "Business Unit (DO NOT EDIT)",
-      "Department (DO NOT EDIT)",
-      "Sub Department (DO NOT EDIT)",
-      "Legal Entity",
       // FINANCIAL DETAILS
       "PAN Number", 
       "Name as Per PAN",
@@ -192,14 +192,14 @@ export default function Onboarding() {
         record.managerName || record.manager_name || '',
         record.dateOfJoining || record.date_of_joining ? format(new Date(record.dateOfJoining || record.date_of_joining), 'yyyy-MM-dd') : '',
         record.grossSalary || record.gross_salary || '',
+        record.legalEntity || record.legal_entity || '',
+        record.businessUnitName || record.business_unit_name || '',
+        record.functionName || record.function_name || '',
+        record.departmentName || record.department_name || '',
+        record.subDepartmentName || record.sub_department_name || '',
         resumeSourceType,
         resumeSourceName,
         record.costCentre || record.cost_centre || '',
-        record.functionName || record.function_name || '',
-        record.businessUnitName || record.business_unit_name || '',
-        record.departmentName || record.department_name || '',
-        record.subDepartmentName || record.sub_department_name || '',
-        record.legalEntity || record.legal_entity || '',
         // FINANCIAL DETAILS
         record.panNumber || record.pan_number || '',
         record.nameAsPerPan || record.name_as_per_pan || '',
@@ -951,14 +951,14 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Manager</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">DOJ</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Gross Salary</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Entity</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Business Unit</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Function</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Department</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Sub Department</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[160px] whitespace-nowrap px-3 py-2">Resume Source Type</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[170px] whitespace-nowrap px-3 py-2">Resume Source Name</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Cost Centre</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Function</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Business Unit</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Department</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Sub Department</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Legal Entity</TableHead>
                   {/* FINANCIAL DETAILS */}
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">PAN Number</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Name as Per PAN</TableHead>
@@ -1097,18 +1097,14 @@ export default function Onboarding() {
                           ? Number(record.grossSalary || record.gross_salary).toLocaleString()
                           : "N/A"}
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceType}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[170px] text-sm leading-tight break-words">{resumeSourceName}</div>
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[120px] text-sm leading-tight break-words">{record.costCentre || record.cost_centre || 'N/A'}</div>
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.functionName || record.function_name || 'N/A'}</div>
+                        <div className="max-w-[130px] text-sm leading-tight break-words">{record.legalEntity || record.legal_entity || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[150px] text-sm leading-tight break-words">{record.businessUnitName || record.business_unit_name || 'N/A'}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.functionName || record.function_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[150px] text-sm leading-tight break-words">{record.departmentName || record.department_name || 'N/A'}</div>
@@ -1116,8 +1112,12 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[150px] text-sm leading-tight break-words">{record.subDepartmentName || record.sub_department_name || 'N/A'}</div>
                       </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{resumeSourceType}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[130px] text-sm leading-tight break-words">{record.legalEntity || record.legal_entity || 'N/A'}</div>
+                        <div className="max-w-[170px] text-sm leading-tight break-words">{resumeSourceName}</div>
+                      </TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        <div className="max-w-[120px] text-sm leading-tight break-words">{record.costCentre || record.cost_centre || 'N/A'}</div>
                       </TableCell>
                       {/* FINANCIAL DETAILS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.panNumber || record.pan_number || 'N/A'}</TableCell>
