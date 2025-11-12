@@ -495,7 +495,7 @@ export default function LeaveManagement() {
           <Card>
             <CardHeader className="space-y-4">
               <div className="flex flex-row items-center justify-between">
-                <CardTitle>Restricted Holiday Calendar</CardTitle>
+                <CardTitle>Holiday Management</CardTitle>
                 <Button onClick={() => setAddHolidayModalOpen(true)}>
                   <Calendar className="h-4 w-4 mr-2" />
                   Add Holiday
@@ -538,17 +538,38 @@ export default function LeaveManagement() {
               </div>
             </CardHeader>
             <CardContent>
-              {holidaysLoading ? (
-                <div className="text-center py-12">Loading holidays...</div>
-              ) : holidays.length === 0 ? (
-                <div className="text-center py-12 text-slate-600">
-                  <Calendar className="h-16 w-16 mx-auto mb-4 text-slate-400" />
-                  <p className="font-semibold">No holidays configured for {selectedYear}</p>
-                  <p className="text-sm mt-2">Click "Add Holiday" to configure RH dates</p>
-                </div>
-              ) : (
-                <div className="border rounded-lg overflow-hidden">
-                  <Table>
+              <Tabs defaultValue="rh" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="rh">
+                    Restricted Holidays (RH)
+                  </TabsTrigger>
+                  <TabsTrigger value="govt">
+                    Government Holidays
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* RH Holidays Sub-tab */}
+                <TabsContent value="rh">
+                  {holidaysLoading ? (
+                    <div className="text-center py-12">Loading holidays...</div>
+                  ) : holidays.filter((h: any) => (h.holidayType || h.holiday_type) === 'RH').length === 0 ? (
+                    <div className="text-center py-12 text-slate-600">
+                      <Calendar className="h-16 w-16 mx-auto mb-4 text-slate-400" />
+                      <p className="font-semibold">No RH holidays configured for {selectedYear}</p>
+                      <p className="text-sm mt-2">Click "Add Holiday" and select type "RH"</p>
+                      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left max-w-2xl mx-auto">
+                        <p className="text-sm text-blue-900 font-semibold mb-2">💡 How RH Selection Works:</p>
+                        <ul className="text-xs text-blue-800 space-y-1">
+                          <li>• Bangalore/Hyderabad employees: Can select <strong>5 RH holidays</strong></li>
+                          <li>• Mumbai/Delhi/Chennai/TN employees: Can select <strong>6 RH holidays</strong></li>
+                          <li>• Employees choose which specific holidays to take from the list</li>
+                          <li>• If employee joins mid-year, allocation is prorated</li>
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
                     <TableHeader>
                       <TableRow className="bg-slate-50 border-b-2">
                         <TableHead className="font-bold text-slate-700">Holiday Name</TableHead>
@@ -560,7 +581,7 @@ export default function LeaveManagement() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {holidays.map((holiday: any) => (
+                      {holidays.filter((h: any) => (h.holidayType || h.holiday_type) === 'RH').map((holiday: any) => (
                         <TableRow key={holiday.id} className="hover:bg-slate-50 transition-colors">
                           <TableCell className="font-semibold">
                             {holiday.holidayName || holiday.holiday_name}
@@ -575,7 +596,7 @@ export default function LeaveManagement() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={(holiday.holidayType || holiday.holiday_type) === 'RH' ? 'default' : 'secondary'}>
+                            <Badge variant="default" className="bg-blue-600">
                               {holiday.holidayType || holiday.holiday_type}
                             </Badge>
                           </TableCell>
@@ -595,7 +616,71 @@ export default function LeaveManagement() {
                     </TableBody>
                   </Table>
                 </div>
-              )}
+                  )}
+                </TabsContent>
+
+                {/* Government Holidays Sub-tab */}
+                <TabsContent value="govt">
+                  {holidaysLoading ? (
+                    <div className="text-center py-12">Loading holidays...</div>
+                  ) : holidays.filter((h: any) => (h.holidayType || h.holiday_type) === 'GOVT').length === 0 ? (
+                    <div className="text-center py-12 text-slate-600">
+                      <Calendar className="h-16 w-16 mx-auto mb-4 text-slate-400" />
+                      <p className="font-semibold">No Government holidays configured for {selectedYear}</p>
+                      <p className="text-sm mt-2">Click "Add Holiday" and select type "Government Holiday"</p>
+                    </div>
+                  ) : (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-slate-50 border-b-2">
+                            <TableHead className="font-bold text-slate-700">Holiday Name</TableHead>
+                            <TableHead className="font-bold text-slate-700">Date</TableHead>
+                            <TableHead className="font-bold text-slate-700">Type</TableHead>
+                            <TableHead className="font-bold text-slate-700">City</TableHead>
+                            <TableHead className="font-bold text-slate-700">State</TableHead>
+                            <TableHead className="font-bold text-slate-700">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {holidays.filter((h: any) => (h.holidayType || h.holiday_type) === 'GOVT').map((holiday: any) => (
+                            <TableRow key={holiday.id} className="hover:bg-slate-50 transition-colors">
+                              <TableCell className="font-semibold">
+                                {holiday.holidayName || holiday.holiday_name}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono">
+                                  {new Date(holiday.holidayDate || holiday.holiday_date).toLocaleDateString('en-GB', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="secondary" className="bg-green-600 text-white">
+                                  {holiday.holidayType || holiday.holiday_type}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{holiday.city || 'All'}</TableCell>
+                              <TableCell>{holiday.state || 'All'}</TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDeleteHoliday(holiday)}
+                                >
+                                  Delete
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </TabsContent>
