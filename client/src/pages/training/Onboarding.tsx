@@ -157,6 +157,9 @@ export default function Onboarding() {
         resumeSourceType = sourceType;
       }
 
+      // Calculate employment type based on resume source
+      const employmentType = sourceType === 'vendor' ? 'Contract' : 'Permanent';
+
       return [
         // BASIC DETAILS
         record.employeeId || record.employee_id || '',
@@ -198,7 +201,7 @@ export default function Onboarding() {
         record.functionName || record.function_name || '',
         record.departmentName || record.department_name || '',
         record.subDepartmentName || record.sub_department_name || '',
-        record.employmentType || record.employment_type || '',
+        employmentType,
         record.city || '',
         record.cluster || '',
         record.role || '',
@@ -394,6 +397,22 @@ export default function Onboarding() {
     const validMaritalStatuses = ['single', 'married', 'divorced', 'widowed', 'unmarried'];
     if (row['Marital Status'] && !validMaritalStatuses.includes(row['Marital Status'].toLowerCase().trim())) {
       errors.push(`Invalid Marital Status: "${row['Marital Status']}" (should be single/unmarried/married/divorced/widowed)`);
+    }
+
+    // Physically Handicapped validation (Yes/No only)
+    if (row['Physically Handicapped (Yes/No)']) {
+      const physicallyHandicapped = row['Physically Handicapped (Yes/No)'].toLowerCase().trim();
+      if (!['yes', 'no'].includes(physicallyHandicapped)) {
+        errors.push(`Invalid Physically Handicapped: "${row['Physically Handicapped (Yes/No)']}" (should be Yes or No only)`);
+      }
+    }
+
+    // International Worker validation (Yes/No only)
+    if (row['International Worker (Yes/No)']) {
+      const internationalWorker = row['International Worker (Yes/No)'].toLowerCase().trim();
+      if (!['yes', 'no'].includes(internationalWorker)) {
+        errors.push(`Invalid International Worker: "${row['International Worker (Yes/No)']}" (should be Yes or No only)`);
+      }
     }
 
     // Blood Group validation
@@ -723,9 +742,17 @@ export default function Onboarding() {
           if (!value || value.trim() === '') return null;
           const gender = value.trim().toLowerCase();
           if (gender === 'n/a' || gender === 'na') return null;
-          if (gender === 'm') return 'male';
-          if (gender === 'f') return 'female';
+          if (gender === 'm' || gender === 'male') return 'male';
+          if (gender === 'f' || gender === 'female') return 'female';
           return gender;
+        };
+
+        const normalizeYesNo = (value: any) => {
+          if (!value || value.trim() === '') return null;
+          const normalized = value.trim().toLowerCase();
+          if (normalized === 'yes' || normalized === 'y') return 'Yes';
+          if (normalized === 'no' || normalized === 'n') return 'No';
+          return value.trim(); // Return as-is if not recognized
         };
 
         const normalizeMaritalStatus = (value: any) => {
@@ -748,6 +775,9 @@ export default function Onboarding() {
           date_of_birth: parseDateField('Date of Birth (DD-MMM-YYYY)', 'Date of Birth (YYYY-MM-DD)', 'Date of Birth', 'DOB'),
           blood_group: trimOrNull(row['Blood Group'])?.toUpperCase().replace('POSITIVE', '+').replace('NEGATIVE', '-').replace(' ', ''),
           marital_status: normalizeMaritalStatus(row['Marital Status']),
+          physically_handicapped: normalizeYesNo(row['Physically Handicapped (Yes/No)']),
+          nationality: trimOrNull(row['Nationality']) || 'Indian',
+          international_worker: normalizeYesNo(row['International Worker (Yes/No)']),
           name_as_per_aadhar: trimOrNull(row['Name as per Aadhar']),
           aadhar_number: row['Aadhar Number'] ? row['Aadhar Number'].trim().replace(/\s/g, '') : null,
           father_name: trimOrNull(row['Father Name']),
@@ -1021,6 +1051,9 @@ export default function Onboarding() {
                       resumeSourceType = sourceType;
                     }
 
+                    // Calculate employment type based on resume source
+                    const employmentType = sourceType === 'vendor' ? 'Contract' : 'Permanent';
+
                     return (
                     <TableRow key={record.id} className="hover:bg-slate-50 transition-colors">
                       {/* BASIC DETAILS */}
@@ -1109,7 +1142,7 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[150px] text-sm leading-tight break-words">{record.subDepartmentName || record.sub_department_name || 'N/A'}</div>
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.employmentType || record.employment_type || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{employmentType}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.city || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.cluster || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
