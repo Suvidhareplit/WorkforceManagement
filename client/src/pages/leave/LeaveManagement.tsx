@@ -37,7 +37,7 @@ export default function LeaveManagement() {
     queryKey: ["/api/leave/config"],
     queryFn: async () => {
       console.log("Fetching leave configs from /api/leave/config");
-      const res = await apiRequest("/api/leave/config");
+      const res = await apiRequest("/api/leave/config", { method: "GET" });
       console.log("Leave configs response:", res);
       return res.configs || [];
     },
@@ -48,7 +48,7 @@ export default function LeaveManagement() {
   const { data: policies = [], isLoading: policiesLoading } = useQuery({
     queryKey: ["/api/leave/policy"],
     queryFn: async () => {
-      const res = await apiRequest("/api/leave/policy");
+      const res = await apiRequest("/api/leave/policy", { method: "GET" });
       return res.policies || [];
     },
   });
@@ -57,7 +57,7 @@ export default function LeaveManagement() {
   const { data: rhAllocations = [] } = useQuery({
     queryKey: ["/api/leave/rh-allocation"],
     queryFn: async () => {
-      const res = await apiRequest("/api/leave/rh-allocation");
+      const res = await apiRequest("/api/leave/rh-allocation", { method: "GET" });
       return res.allocations || [];
     },
   });
