@@ -20,6 +20,17 @@ export default function LeaveManagement() {
   const [reasonModalOpen, setReasonModalOpen] = useState(false);
   const [reasonModalData, setReasonModalData] = useState<any>(null);
   const [changeReason, setChangeReason] = useState("");
+  const [createPolicyModalOpen, setCreatePolicyModalOpen] = useState(false);
+  const [policyFormData, setPolicyFormData] = useState({
+    policy_name: "",
+    policy_code: "",
+    description: "",
+    effective_from: "",
+    city: "",
+    employee_type: "ALL",
+  });
+  const [confirmAction, setConfirmAction] = useState<any>(null);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   // Load leave configs
   const { data: configs = [], isLoading: configsLoading } = useQuery({
@@ -27,6 +38,15 @@ export default function LeaveManagement() {
     queryFn: async () => {
       const res = await apiRequest("/api/leave/config");
       return res.configs || [];
+    },
+  });
+
+  // Load policies
+  const { data: policies = [], isLoading: policiesLoading } = useQuery({
+    queryKey: ["/api/leave/policy"],
+    queryFn: async () => {
+      const res = await apiRequest("/api/leave/policy");
+      return res.policies || [];
     },
   });
 
@@ -68,6 +88,59 @@ export default function LeaveManagement() {
     setReasonModalOpen(true);
   };
 
+  // Create policy mutation
+  const createPolicyMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const mappings = configs.map((config: any) => ({
+        leave_type: config.leave_type,
+        is_enabled: true,
+        allocation_override: null,
+      }));
+      return await apiRequest("/api/leave/policy", {
+        method: "POST",
+        body: JSON.stringify({ ...data, leave_mappings: mappings, change_reason: changeReason }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leave/policy"] });
+      toast({ title: "Success", description: "Policy created successfully" });
+      setCreatePolicyModalOpen(false);
+      setReasonModalOpen(false);
+      setChangeReason("");
+      setPolicyFormData({
+        policy_name: "",
+        policy_code: "",
+        description: "",
+        effective_from: "",
+        city: "",
+        employee_type: "ALL",
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message || "Failed to create policy", variant: "destructive" });
+    },
+  });
+
+  // Toggle policy mutation
+  const togglePolicyMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest(`/api/leave/policy/${id}/toggle-status`, {
+        method: "PATCH",
+        body: JSON.stringify({ change_reason: changeReason }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leave/policy"] });
+      toast({ title: "Success", description: "Policy status updated" });
+      setConfirmModalOpen(false);
+      setReasonModalOpen(false);
+      setChangeReason("");
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const handleReasonSubmit = () => {
     if (!changeReason || changeReason.length < 10) {
       toast({ 
@@ -79,7 +152,30 @@ export default function LeaveManagement() {
     }
     if (reasonModalData) {
       updateConfigMutation.mutate(reasonModalData);
+    } else if (policyFormData.policy_name) {
+      createPolicyMutation.mutate(policyFormData);
+    } else if (confirmAction) {
+      confirmAction.execute();
     }
+  };
+
+  const handleCreatePolicy = () => {
+    setCreatePolicyModalOpen(true);
+  };
+
+  const handleTogglePolicy = (policy: any) => {
+    setConfirmAction({
+      title: policy.is_active ? "Deactivate Policy" : "Activate Policy",
+      message: `Are you sure you want to ${policy.is_active ? 'deactivate' : 'activate'} "${policy.policy_name}"?`,
+      execute: () => togglePolicyMutation.mutate(policy.id),
+    });
+    setConfirmModalOpen(true);
+  };
+
+  const confirmWithReason = () => {
+    setConfirmModalOpen(false);
+    setReasonModalData(null);
+    setReasonModalOpen(true);
   };
 
   return (
@@ -211,16 +307,63 @@ export default function LeaveManagement() {
           </Card>
         </TabsContent>
 
-        {/* POLICY TAB - Coming in Step 2 */}
+        {/* POLICY TAB - FULLY FUNCTIONAL */}
         <TabsContent value="policy">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <CardTitle>Leave Policies</CardTitle>
+              <Button onClick={handleCreatePolicy}>
+                <FileText className="h-4 w-4 mr-2" />
+                Create Policy
+              </Button>
             </CardHeader>
             <CardContent>
-              <p className="text-center py-12 text-slate-600">
-                Policy management UI - Next step...
-              </p>
+              {policiesLoading ? (
+                <div className="text-center py-12">Loading policies...</div>
+              ) : policies.length === 0 ? (
+                <div className="text-center py-12 text-slate-600">
+                  No policies found. Create your first policy!
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Policy Name</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>City</TableHead>
+                      <TableHead>Employee Type</TableHead>
+                      <TableHead>Effective From</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {policies.map((policy: any) => (
+                      <TableRow key={policy.id}>
+                        <TableCell className="font-semibold">{policy.policy_name}</TableCell>
+                        <TableCell className="font-mono text-sm">{policy.policy_code}</TableCell>
+                        <TableCell>{policy.city || 'All Cities'}</TableCell>
+                        <TableCell>{policy.employee_type}</TableCell>
+                        <TableCell>{new Date(policy.effective_from).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Badge variant={policy.is_active ? "default" : "secondary"}>
+                            {policy.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleTogglePolicy(policy)}
+                          >
+                            {policy.is_active ? 'Deactivate' : 'Activate'}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -253,6 +396,104 @@ export default function LeaveManagement() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Confirm Action Modal */}
+      <Dialog open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmAction?.title}</DialogTitle>
+          </DialogHeader>
+          <p className="text-slate-600">{confirmAction?.message}</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmModalOpen(false)}>Cancel</Button>
+            <Button onClick={confirmWithReason}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Policy Modal */}
+      <Dialog open={createPolicyModalOpen} onOpenChange={setCreatePolicyModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create Leave Policy</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Policy Name *</Label>
+                <Input 
+                  value={policyFormData.policy_name} 
+                  onChange={(e) => setPolicyFormData({ ...policyFormData, policy_name: e.target.value })} 
+                  placeholder="e.g., Default Policy 2025"
+                />
+              </div>
+              <div>
+                <Label>Policy Code *</Label>
+                <Input 
+                  value={policyFormData.policy_code} 
+                  onChange={(e) => setPolicyFormData({ ...policyFormData, policy_code: e.target.value.toUpperCase() })} 
+                  placeholder="e.g., POLICY2025"
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Effective From *</Label>
+              <Input 
+                type="date" 
+                value={policyFormData.effective_from} 
+                onChange={(e) => setPolicyFormData({ ...policyFormData, effective_from: e.target.value })} 
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>City (optional)</Label>
+                <Input 
+                  value={policyFormData.city} 
+                  onChange={(e) => setPolicyFormData({ ...policyFormData, city: e.target.value })} 
+                  placeholder="Leave empty for all cities"
+                />
+              </div>
+              <div>
+                <Label>Employee Type</Label>
+                <select 
+                  className="w-full border rounded px-3 py-2" 
+                  value={policyFormData.employee_type} 
+                  onChange={(e) => setPolicyFormData({ ...policyFormData, employee_type: e.target.value })}
+                >
+                  <option value="ALL">All</option>
+                  <option value="FULL_TIME">Full Time</option>
+                  <option value="CONTRACT">Contract</option>
+                  <option value="INTERN">Intern</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea 
+                value={policyFormData.description} 
+                onChange={(e) => setPolicyFormData({ ...policyFormData, description: e.target.value })} 
+                placeholder="Policy description..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreatePolicyModalOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={() => {
+                if (!policyFormData.policy_name || !policyFormData.policy_code || !policyFormData.effective_from) {
+                  toast({ title: "Error", description: "Please fill required fields", variant: "destructive" });
+                  return;
+                }
+                setCreatePolicyModalOpen(false);
+                setReasonModalOpen(true);
+              }}
+            >
+              Create Policy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Change Reason Modal */}
       <Dialog open={reasonModalOpen} onOpenChange={setReasonModalOpen}>
