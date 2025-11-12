@@ -33,12 +33,15 @@ export default function LeaveManagement() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   // Load leave configs
-  const { data: configs = [], isLoading: configsLoading } = useQuery({
+  const { data: configs = [], isLoading: configsLoading, error: configsError } = useQuery({
     queryKey: ["/api/leave/config"],
     queryFn: async () => {
+      console.log("Fetching leave configs from /api/leave/config");
       const res = await apiRequest("/api/leave/config");
+      console.log("Leave configs response:", res);
       return res.configs || [];
     },
+    retry: 1,
   });
 
   // Load policies
@@ -214,9 +217,16 @@ export default function LeaveManagement() {
             <CardContent>
               {configsLoading ? (
                 <div className="text-center py-12">Loading configurations...</div>
+              ) : configsError ? (
+                <div className="text-center py-12 text-red-600">
+                  <p className="font-semibold">Error loading configurations</p>
+                  <p className="text-sm mt-2">{(configsError as any)?.message || "Failed to fetch data"}</p>
+                  <p className="text-xs mt-2 text-slate-600">Check console for details</p>
+                </div>
               ) : configs.length === 0 ? (
                 <div className="text-center py-12 text-slate-600">
-                  No leave configurations found. Please run the database migration.
+                  <p>No leave configurations found.</p>
+                  <p className="text-sm mt-2">API returned empty array. Check database.</p>
                 </div>
               ) : (
                 <>
