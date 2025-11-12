@@ -84,9 +84,9 @@ export default function Onboarding() {
       "Date of Birth (DD-MMM-YYYY)",
       "Blood Group", 
       "Marital Status",
-      "Physically Handicapped (Yes/No/NA)",
+      "Physically Handicapped (Yes/No)",
       "Nationality",
-      "International Worker (Yes/No/NA)",
+      "International Worker (Yes/No)",
       "Name as per Aadhar", 
       "Aadhar Number",
       "Father Name",
@@ -927,13 +927,13 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Name</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Mobile</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Email</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Gender</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">DOB</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Blood Group</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Marital Status</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Physically Handicapped</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Nationality</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-purple-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">International Worker</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Gender</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">DOB</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Blood Group</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Marital Status</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Physically Handicapped</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Nationality</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">International Worker</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[160px] whitespace-nowrap px-3 py-2">Name as Per Aadhar</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[140px] whitespace-nowrap px-3 py-2">Aadhar Number</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Father Name</TableHead>
