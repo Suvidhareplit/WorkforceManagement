@@ -16,8 +16,6 @@ import InductionTraining from "./pages/training/InductionTraining";
 import ClassroomTraining from "./pages/training/ClassroomTraining";
 import FieldTraining from "./pages/training/FieldTraining";
 import Onboarding from "./pages/training/Onboarding";
-import EmployeeLifecycle from "./pages/employee/EmployeeLifecycle";
-import ExitManagement from "./pages/employee/ExitManagement";
 import MasterData from "./pages/master/MasterData";
 import LeaveManagement from "./pages/leave/LeaveManagement";
 import UserManagement from "./pages/management/UserManagement";
@@ -40,8 +38,6 @@ function Router() {
         <Route path="/training/classroom" component={ClassroomTraining} />
         <Route path="/training/field" component={FieldTraining} />
         <Route path="/training/onboarding" component={Onboarding} />
-        <Route path="/employees/lifecycle" component={EmployeeLifecycle} />
-        <Route path="/employees/exit" component={ExitManagement} />
         <Route path="/master-data" component={MasterData} />
         <Route path="/leave-management" component={LeaveManagement} />
         <Route path="/management/users" component={UserManagement} />

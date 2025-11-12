@@ -308,18 +308,6 @@ CREATE TABLE IF NOT EXISTS employee_actions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE IF NOT EXISTS exit_records (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT,
-    exit_type ENUM('voluntary', 'termination', 'absconding') NOT NULL,
-    exit_date DATETIME NOT NULL,
-    reason TEXT,
-    remarks TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
 CREATE TABLE IF NOT EXISTS recruiter_incentives (
     id INT AUTO_INCREMENT PRIMARY KEY,
     recruiter_id INT,

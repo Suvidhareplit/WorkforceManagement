@@ -155,13 +155,6 @@ export interface IStorage {
   updateEmployeeAction(id: number, actionData: any, options?: UpdateOptions): Promise<any>;
   deleteEmployeeAction(id: number, options?: UpdateOptions): Promise<boolean>;
 
-  // Exit records - using any types for raw SQL approach
-  getExitRecords(filters?: FilterOptions): Promise<any[]>;
-  getExitRecord(id: number): Promise<any>;
-  createExitRecord(exitData: any, options?: CreateOptions): Promise<any>;
-  updateExitRecord(id: number, exitData: any, options?: UpdateOptions): Promise<any>;
-  deleteExitRecord(id: number, options?: UpdateOptions): Promise<boolean>;
-
   // Analytics - production-ready with proper typing
   getHiringAnalytics(filters?: FilterOptions): Promise<{
     date: string;

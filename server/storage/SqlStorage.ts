@@ -1600,60 +1600,6 @@ export class SqlStorage implements IStorage {
     return result.rowCount > 0;
   }
 
-  async getExitRecords(filters?: FilterOptions): Promise<any[]> {
-    const { orderClause, limitClause } = this.buildFilterClause(filters);
-    const result = await query(`
-      SELECT * FROM exit_records 
-      WHERE 1=1 
-      ${orderClause || 'ORDER BY exit_date DESC'} 
-      ${limitClause}
-    `);
-    return result.rows as any[];
-  }
-
-  async getExitRecord(id: number): Promise<any> {
-    const result = await query('SELECT * FROM exit_records WHERE id = ?', [id]);
-    return result.rows[0] as any || null;
-  }
-
-  async createExitRecord(exitData: any, options?: CreateOptions): Promise<any> {
-    const { employeeId, exitType, exitDate, reason, exitInterview, finalSettlement, handoverCompleted, createdBy } = exitData;
-    
-    const insertResult = await query(`
-      INSERT INTO exit_records (employee_id, exit_type, exit_date, reason, exit_interview, final_settlement, handover_completed, created_by, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
-    `, [employeeId, exitType, exitDate, reason, exitInterview, finalSettlement, handoverCompleted, createdBy]);
-    
-    const exitId = (insertResult.rows as any).insertId;
-    return await this.getExitRecord(exitId) as any;
-  }
-
-  async updateExitRecord(id: number, exitData: any, options?: UpdateOptions): Promise<any> {
-    const fields: string[] = [];
-    const values: any[] = [];
-    
-    Object.entries(exitData).forEach(([key, value]) => {
-      if (key !== 'id' && value !== undefined) {
-        fields.push(`${key} = ?`);
-        values.push(value);
-      }
-    });
-    
-    if (fields.length === 0) {
-      return await this.getExitRecord(id);
-    }
-    
-    values.push(id);
-    await query(`UPDATE exit_records SET ${fields.join(', ')} WHERE id = ?`, values);
-    
-    return await this.getExitRecord(id);
-  }
-
-  async deleteExitRecord(id: number, options?: UpdateOptions): Promise<any> {
-    const result = await query('DELETE FROM exit_records WHERE id = ?', [id]);
-    return result.rowCount > 0;
-  }
-
   async getRecruiterIncentives(filters?: FilterOptions): Promise<any[]> {
     const { orderClause, limitClause } = this.buildFilterClause(filters);
     const result = await query(`

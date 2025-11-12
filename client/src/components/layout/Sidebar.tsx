@@ -10,11 +10,9 @@ import {
   MessageSquare,
   Handshake,
   GraduationCap,
-  Users,
   BookOpen,
   HardHat,
   UserCheck,
-  LogOut,
   Database,
   Calendar,
 } from "lucide-react";
@@ -97,21 +95,6 @@ const menuItems = [
         icon: UserCheck,
         label: "Onboarding",
         href: "/training/onboarding",
-      },
-    ],
-  },
-  {
-    title: "EMPLOYEE",
-    items: [
-      {
-        icon: Users,
-        label: "Employee Lifecycle",
-        href: "/employees/lifecycle",
-      },
-      {
-        icon: LogOut,
-        label: "Exit Management",
-        href: "/employees/exit",
       },
     ],
   },
