@@ -1063,11 +1063,23 @@ export default function Onboarding() {
             <Table className="border-collapse">
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  {/* BASIC DETAILS */}
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Employee ID</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">User ID</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Name</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Mobile</TableHead>
+                  {/* SELECTION COLUMN - FROZEN */}
+                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-center align-top min-w-[80px] whitespace-nowrap px-3 py-2 sticky left-0 z-20">
+                    <div className="flex flex-col items-center gap-1">
+                      <span>Select</span>
+                      <Checkbox 
+                        checked={allUnlockedSelected}
+                        onCheckedChange={handleSelectAll}
+                        disabled={unlockedPendingCount === 0}
+                        title={unlockedPendingCount === 0 ? "No unlocked records to select" : "Select all unlocked pending records"}
+                      />
+                    </div>
+                  </TableHead>
+                  {/* BASIC DETAILS - FROZEN COLUMNS */}
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2 sticky left-[80px] z-20">Employee ID</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2 sticky left-[200px] z-20">User ID</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2 sticky left-[300px] z-20">Name</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2 sticky left-[450px] z-20">Mobile</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Email</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Gender</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-blue-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">DOB</TableHead>
@@ -1122,18 +1134,7 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Bank Name</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">UAN Number</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">ESIC IP Number</TableHead>
-                  {/* SELECTION & STATUS */}
-                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-center align-top min-w-[80px] whitespace-nowrap px-3 py-2">
-                    <div className="flex flex-col items-center gap-1">
-                      <span>Select</span>
-                      <Checkbox 
-                        checked={allUnlockedSelected}
-                        onCheckedChange={handleSelectAll}
-                        disabled={unlockedPendingCount === 0}
-                        title={unlockedPendingCount === 0 ? "No unlocked records to select" : "Select all unlocked pending records"}
-                      />
-                    </div>
-                  </TableHead>
+                  {/* STATUS */}
                   <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Status</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Onboarded</TableHead>
                 </TableRow>
@@ -1179,13 +1180,31 @@ export default function Onboarding() {
 
                     return (
                     <TableRow key={record.id} className="hover:bg-slate-50 transition-colors">
-                      {/* BASIC DETAILS */}
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.employeeId || record.employee_id || 'N/A'}</TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.userId || record.user_id || 'N/A'}</TableCell>
-                      <TableCell className="font-medium text-slate-900 border border-gray-300 text-left align-top px-3 py-2">
+                      {/* SELECTION COLUMN - FROZEN */}
+                      <TableCell className="border border-gray-300 text-center align-top px-3 py-2 sticky left-0 z-10 bg-white">
+                        <Checkbox
+                          checked={selectedRecords.has(record.id)}
+                          onCheckedChange={() => toggleRecordSelection(record.id)}
+                          disabled={
+                            (record.onboardingStatus || record.onboarding_status) === 'onboarded' ||
+                            (record.isLocked || record.is_locked)
+                          }
+                          title={
+                            (record.isLocked || record.is_locked) 
+                              ? "Record is locked" 
+                              : (record.onboardingStatus || record.onboarding_status) === 'onboarded'
+                              ? "Already onboarded"
+                              : "Select for bulk submission"
+                          }
+                        />
+                      </TableCell>
+                      {/* BASIC DETAILS - FROZEN COLUMNS */}
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap sticky left-[80px] z-10 bg-white">{record.employeeId || record.employee_id || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap sticky left-[200px] z-10 bg-white">{record.userId || record.user_id || 'N/A'}</TableCell>
+                      <TableCell className="font-medium text-slate-900 border border-gray-300 text-left align-top px-3 py-2 sticky left-[300px] z-10 bg-white">
                         <div className="max-w-[150px] break-words leading-tight">{record.name}</div>
                       </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.mobileNumber || record.mobile_number || 'N/A'}</TableCell>
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap sticky left-[450px] z-10 bg-white">{record.mobileNumber || record.mobile_number || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[180px] break-words leading-tight text-sm">{record.email || 'N/A'}</div>
                       </TableCell>
@@ -1300,24 +1319,7 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.bankName || record.bank_name || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.uanNumber || record.uan_number || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.esicIpNumber || record.esic_ip_number || 'N/A'}</TableCell>
-                      {/* SELECTION & STATUS */}
-                      <TableCell className="border border-gray-300 text-center align-top px-3 py-2">
-                        <Checkbox
-                          checked={selectedRecords.has(record.id)}
-                          onCheckedChange={() => toggleRecordSelection(record.id)}
-                          disabled={
-                            (record.onboardingStatus || record.onboarding_status) === 'onboarded' ||
-                            (record.isLocked || record.is_locked)
-                          }
-                          title={
-                            (record.isLocked || record.is_locked) 
-                              ? "Record is locked" 
-                              : (record.onboardingStatus || record.onboarding_status) === 'onboarded'
-                              ? "Already onboarded"
-                              : "Select for bulk submission"
-                          }
-                        />
-                      </TableCell>
+                      {/* STATUS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="flex items-center gap-2">
                           <Badge
