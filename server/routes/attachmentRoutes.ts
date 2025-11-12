@@ -39,6 +39,28 @@ router.get(
 );
 
 /**
+ * @route   GET /api/attachments/entity/:entity_type/:entity_id
+ * @desc    Get all attachments for a specific entity (e.g., HIRING/123, EMPLOYEE/456)
+ * @access  Authenticated
+ * @example /api/attachments/entity/HIRING/123
+ */
+router.get(
+  '/entity/:entity_type/:entity_id',
+  attachmentController.getEntityAttachments.bind(attachmentController)
+);
+
+/**
+ * @route   GET /api/attachments/templates/:entity_type
+ * @desc    Get attachment templates for a module (EMPLOYEE, HIRING, LEAVE_APPLICATION, etc.)
+ * @access  Authenticated
+ * @example /api/attachments/templates/EMPLOYEE
+ */
+router.get(
+  '/templates/:entity_type',
+  attachmentController.getAttachmentTemplates.bind(attachmentController)
+);
+
+/**
  * @route   DELETE /api/attachments/:id
  * @desc    Delete an attachment
  * @access  Authenticated

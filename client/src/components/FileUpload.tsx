@@ -5,19 +5,42 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 
 interface FileUploadProps {
-  employeeId: number | string;
-  attachmentType?: 'MEDICAL_CERTIFICATE' | 'SUPPORTING_DOCUMENT' | 'OTHER';
+  // Generic entity reference (works with ANY module)
+  entityType: 'LEAVE_APPLICATION' | 'EMPLOYEE' | 'HIRING' | 'ONBOARDING' | 'TRAINING' | 'VENDOR' | 'INTERVIEW' | string;
+  entityId: number | string;
+  
+  // Optional metadata
+  employeeId?: number | string;
+  userId?: number | string;
+  category?: string;
+  subcategory?: string;
+  title?: string;
+  
+  // Legacy support
+  attachmentType?: string;
+  
+  // Callbacks and config
   onUploadComplete?: (attachment: any) => void;
+  onUploadError?: (error: any) => void;
   maxSizeMB?: number;
   accept?: string;
+  showWarning?: boolean;
 }
 
 export function FileUpload({
+  entityType,
+  entityId,
   employeeId,
-  attachmentType = 'SUPPORTING_DOCUMENT',
+  userId,
+  category = 'DOCUMENT',
+  subcategory,
+  title,
+  attachmentType, // Legacy support
   onUploadComplete,
+  onUploadError,
   maxSizeMB = 10,
   accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.xls,.xlsx',
+  showWarning = true,
 }: FileUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -52,9 +75,22 @@ export function FileUpload({
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('employee_id', employeeId.toString());
-    formData.append('attachment_type', attachmentType);
-    formData.append('description', `Uploaded from leave management`);
+    
+    // Generic entity fields (works with ANY module)
+    formData.append('entity_type', entityType);
+    formData.append('entity_id', entityId.toString());
+    
+    // Optional fields
+    if (employeeId) formData.append('employee_id', employeeId.toString());
+    if (userId) formData.append('user_id', userId.toString());
+    if (category) formData.append('attachment_category', category);
+    if (subcategory) formData.append('attachment_subcategory', subcategory);
+    if (title) formData.append('title', title);
+    
+    // Legacy support
+    if (attachmentType) formData.append('attachment_type', attachmentType);
+    
+    formData.append('description', `Uploaded from ${entityType} module`);
 
     try {
       // Simulate progress
@@ -101,6 +137,10 @@ export function FileUpload({
         variant: 'destructive',
       });
       setUploadProgress(0);
+      
+      if (onUploadError) {
+        onUploadError(error);
+      }
     } finally {
       setUploading(false);
     }
@@ -215,21 +255,23 @@ export function FileUpload({
         </div>
       )}
 
-      {/* S3 Not Configured Warning */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-        <div className="flex gap-2">
-          <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-amber-900">
-              S3 Configuration Required
-            </p>
-            <p className="text-xs text-amber-700 mt-1">
-              File uploads require AWS S3 configuration. Contact your system administrator
-              to enable this feature.
-            </p>
+      {/* S3 Not Configured Warning (Optional) */}
+      {showWarning && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <div className="flex gap-2">
+            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-amber-900">
+                S3 Configuration Required
+              </p>
+              <p className="text-xs text-amber-700 mt-1">
+                File uploads require AWS S3 configuration. Contact your system administrator
+                to enable this feature.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
