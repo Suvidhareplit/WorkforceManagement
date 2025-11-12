@@ -910,33 +910,66 @@ export default function LeaveManagement() {
             </div>
             
             <div>
-              <h4 className="font-bold mb-3 text-slate-800">Month-wise RH Allocation:</h4>
-              <div className="grid grid-cols-3 gap-3">
-                {selectedRhCity && (selectedRhCity.monthAllocation || selectedRhCity.month_allocation) && 
-                  Object.entries(selectedRhCity.monthAllocation || selectedRhCity.month_allocation)
-                    .sort(([a], [b]) => {
-                      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                      return months.indexOf(a) - months.indexOf(b);
-                    })
-                    .map(([month, count]: [string, any]) => (
-                      <div key={month} className="border rounded-lg p-3 bg-slate-50 hover:bg-blue-50 transition-colors">
-                        <div className="text-2xl font-bold text-blue-600">{count}</div>
-                        <div className="text-xs font-semibold text-slate-700">{month}</div>
-                        <div className="text-xs text-slate-500 mt-1">
-                          Join by {month} → {count} RH
-                        </div>
-                      </div>
-                    ))
-                }
+              <h4 className="font-bold mb-3 text-slate-800">Month-wise RH Proration Table:</h4>
+              <div className="bg-white border-2 border-slate-300 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-purple-100 border-b-2 border-slate-300">
+                      <th className="px-4 py-2 text-left font-bold text-slate-700 border-r border-slate-300">Month</th>
+                      <th className="px-4 py-2 text-center font-bold text-slate-700">RH Days</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedRhCity && (selectedRhCity.monthAllocation || selectedRhCity.month_allocation) && 
+                      Object.entries(selectedRhCity.monthAllocation || selectedRhCity.month_allocation)
+                        .sort(([a], [b]) => {
+                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                          return months.indexOf(a) - months.indexOf(b);
+                        })
+                        .map(([month, count]: [string, any], idx) => {
+                          // Highlight the row if it's Jun or Jul (mid-year examples)
+                          const isHighlighted = month === 'Jun' || month === 'Jul';
+                          return (
+                            <tr 
+                              key={month} 
+                              className={`border-b border-slate-200 hover:bg-blue-50 transition-colors ${
+                                isHighlighted ? 'bg-blue-100' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'
+                              }`}
+                            >
+                              <td className="px-4 py-3 font-semibold text-slate-700 border-r border-slate-200">
+                                {month}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold text-lg">
+                                  {count}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                    }
+                  </tbody>
+                </table>
               </div>
+              <p className="text-xs text-slate-600 mt-3 italic">
+                💡 <strong>How to read:</strong> If employee joins in "Jun", they get RH days shown in Jun row for remaining year.
+              </p>
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <h4 className="font-bold text-amber-900 mb-2">💡 Example:</h4>
+              <h4 className="font-bold text-amber-900 mb-2">💡 Real Examples from Table:</h4>
               <ul className="text-sm text-slate-700 space-y-1">
-                <li>• Employee joins in <strong>January</strong> → Gets <strong>{selectedRhCity?.totalRh || selectedRhCity?.total_rh || 0}</strong> RH days (full year)</li>
-                <li>• Employee joins in <strong>July</strong> → Gets <strong>~{Math.round((selectedRhCity?.totalRh || selectedRhCity?.total_rh || 0) / 2)}</strong> RH days (6 months remaining)</li>
-                <li>• Employee joins in <strong>December</strong> → Gets <strong>1</strong> RH day (1 month remaining)</li>
+                {selectedRhCity && (selectedRhCity.monthAllocation || selectedRhCity.month_allocation) && (() => {
+                  const allocations = selectedRhCity.monthAllocation || selectedRhCity.month_allocation;
+                  return (
+                    <>
+                      <li>• Employee joins in <strong>January</strong> → Gets <strong>{allocations.Jan || 0}</strong> RH days</li>
+                      <li>• Employee joins in <strong>June</strong> (highlighted) → Gets <strong>{allocations.Jun || 0}</strong> RH days</li>
+                      <li>• Employee joins in <strong>July</strong> (highlighted) → Gets <strong>{allocations.Jul || 0}</strong> RH days</li>
+                      <li>• Employee joins in <strong>December</strong> → Gets <strong>{allocations.Dec || 0}</strong> RH day</li>
+                    </>
+                  );
+                })()}
               </ul>
             </div>
           </div>
