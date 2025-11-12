@@ -32,4 +32,4 @@ Thumbs.db
 
 # Uploads (if storing locally)
 uploads/
-temp/
+temp/*.tsbuildinfo

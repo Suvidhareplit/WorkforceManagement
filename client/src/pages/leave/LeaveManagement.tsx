@@ -464,8 +464,10 @@ export default function LeaveManagement() {
                 />
               </div>
               <div>
-                <Label>Employee Type</Label>
+                <Label htmlFor="employee-type-select">Employee Type</Label>
                 <select 
+                  id="employee-type-select"
+                  aria-label="Employee Type"
                   className="w-full border rounded px-3 py-2" 
                   value={policyFormData.employee_type} 
                   onChange={(e) => setPolicyFormData({ ...policyFormData, employee_type: e.target.value })}
