@@ -265,49 +265,6 @@ CREATE TABLE IF NOT EXISTS training_attendance (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-CREATE TABLE IF NOT EXISTS employees (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id VARCHAR(20) NOT NULL UNIQUE,
-    candidate_id INT,
-    user_id INT,
-    date_of_joining DATE NOT NULL,
-    date_of_birth DATE,
-    gender ENUM('male', 'female', 'other'),
-    address TEXT,
-    city_id INT,
-    cluster_id INT,
-    role_id INT,
-    vendor_id INT,
-    recruiter_id INT,
-    status ENUM('active', 'inactive', 'terminated', 'resigned') DEFAULT 'active',
-    basic_salary DECIMAL(10,2),
-    hra DECIMAL(10,2),
-    lta DECIMAL(10,2),
-    special_allowance DECIMAL(10,2),
-    other_allowances DECIMAL(10,2),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(id) ON DELETE SET NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
-    FOREIGN KEY (cluster_id) REFERENCES clusters(id) ON DELETE SET NULL,
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL,
-    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE SET NULL,
-    FOREIGN KEY (recruiter_id) REFERENCES recruiters(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
-CREATE TABLE IF NOT EXISTS employee_actions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT,
-    action_type TEXT NOT NULL,
-    action_date DATETIME NOT NULL,
-    details TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
 CREATE TABLE IF NOT EXISTS recruiter_incentives (
     id INT AUTO_INCREMENT PRIMARY KEY,
     recruiter_id INT,

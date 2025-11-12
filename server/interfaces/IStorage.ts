@@ -140,21 +140,6 @@ export interface IStorage {
   deleteTrainingSession(id: number, options?: UpdateOptions): Promise<boolean>;
   updateTrainingSessionStatus(id: number, status: string, options?: StatusUpdateOptions): Promise<any>;
 
-  // Employees - using any types for raw SQL approach
-  getEmployees(filters?: FilterOptions): Promise<any[]>;
-  getEmployee(id: number): Promise<any>;
-  createEmployee(employeeData: any, options?: CreateOptions): Promise<any>;
-  updateEmployee(id: number, employeeData: any, options?: UpdateOptions): Promise<any>;
-  deleteEmployee(id: number, options?: UpdateOptions): Promise<boolean>;
-  updateEmployeeStatus(id: number, status: string, options?: StatusUpdateOptions): Promise<any>;
-
-  // Employee actions - using any types for raw SQL approach
-  getEmployeeActions(employeeId: number, filters?: FilterOptions): Promise<any[]>;
-  getEmployeeAction(id: number): Promise<any>;
-  createEmployeeAction(actionData: any, options?: CreateOptions): Promise<any>;
-  updateEmployeeAction(id: number, actionData: any, options?: UpdateOptions): Promise<any>;
-  deleteEmployeeAction(id: number, options?: UpdateOptions): Promise<boolean>;
-
   // Analytics - production-ready with proper typing
   getHiringAnalytics(filters?: FilterOptions): Promise<{
     date: string;
