@@ -31,6 +31,19 @@ export default function LeaveManagement() {
   });
   const [confirmAction, setConfirmAction] = useState<any>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [selectedRhCity, setSelectedRhCity] = useState<any>(null);
+  const [rhDetailModalOpen, setRhDetailModalOpen] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedCityFilter, setSelectedCityFilter] = useState("ALL");
+  const [addHolidayModalOpen, setAddHolidayModalOpen] = useState(false);
+  const [holidayFormData, setHolidayFormData] = useState({
+    holiday_name: "",
+    holiday_date: "",
+    holiday_type: "RH",
+    city: "",
+    state: "",
+    description: "",
+  });
 
   // Load leave configs
   const { data: configs = [], isLoading: configsLoading, error: configsError } = useQuery({
@@ -59,6 +72,18 @@ export default function LeaveManagement() {
     queryFn: async () => {
       const res = await apiRequest("/api/leave/rh-allocation", { method: "GET" });
       return res.allocations || [];
+    },
+  });
+
+  // Load holidays
+  const { data: holidays = [], isLoading: holidaysLoading } = useQuery({
+    queryKey: ["/api/leave/holiday", selectedYear, selectedCityFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append("year", selectedYear.toString());
+      if (selectedCityFilter !== "ALL") params.append("city", selectedCityFilter);
+      const res = await apiRequest(`/api/leave/holiday?${params}`, { method: "GET" });
+      return res.holidays || [];
     },
   });
 
@@ -157,6 +182,8 @@ export default function LeaveManagement() {
       updateConfigMutation.mutate(reasonModalData);
     } else if (policyFormData.policy_name) {
       createPolicyMutation.mutate(policyFormData);
+    } else if (holidayFormData.holiday_name && holidayFormData.holiday_date) {
+      createHolidayMutation.mutate(holidayFormData);
     } else if (confirmAction) {
       confirmAction.execute();
     }
@@ -179,6 +206,63 @@ export default function LeaveManagement() {
     setConfirmModalOpen(false);
     setReasonModalData(null);
     setReasonModalOpen(true);
+  };
+
+  // Create holiday mutation
+  const createHolidayMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("/api/leave/holiday", {
+        method: "POST",
+        body: JSON.stringify({ ...data, change_reason: changeReason }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leave/holiday"] });
+      toast({ title: "Success", description: "Holiday added successfully" });
+      setAddHolidayModalOpen(false);
+      setReasonModalOpen(false);
+      setChangeReason("");
+      setHolidayFormData({
+        holiday_name: "",
+        holiday_date: "",
+        holiday_type: "RH",
+        city: "",
+        state: "",
+        description: "",
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Delete holiday mutation
+  const deleteHolidayMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest(`/api/leave/holiday/${id}`, {
+        method: "DELETE",
+        body: JSON.stringify({ change_reason: changeReason }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leave/holiday"] });
+      toast({ title: "Success", description: "Holiday deleted" });
+      setConfirmModalOpen(false);
+      setReasonModalOpen(false);
+      setChangeReason("");
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const handleDeleteHoliday = (holiday: any) => {
+    setConfirmAction({
+      title: "Delete Holiday",
+      message: `Are you sure you want to delete "${holiday.holidayName || holiday.holiday_name}" on ${new Date(holiday.holidayDate || holiday.holiday_date).toLocaleDateString()}?`,
+      execute: () => deleteHolidayMutation.mutate(holiday.id),
+    });
+    setConfirmModalOpen(true);
   };
 
   return (
@@ -303,23 +387,36 @@ export default function LeaveManagement() {
 
                   {/* RH Allocations Section */}
                   <div className="mt-10">
-                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
-                      <Calendar className="h-6 w-6 text-blue-600" />
-                      Restricted Holiday Allocations by City
-                    </h3>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold flex items-center gap-2 text-slate-800">
+                        <Calendar className="h-6 w-6 text-blue-600" />
+                        Restricted Holiday Allocations by City (with Proration)
+                      </h3>
+                      <Badge variant="outline" className="text-sm">
+                        Click card for month-wise breakdown
+                      </Badge>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                       {rhAllocations.map((alloc: any) => {
                         const totalRh = alloc.totalRh || alloc.total_rh || 0;
                         const city = alloc.city || '';
                         const year = alloc.year || 2025;
                         return (
-                          <Card key={alloc.id} className="border-2 border-slate-200 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer">
+                          <Card 
+                            key={alloc.id} 
+                            className="border-2 border-slate-200 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer"
+                            onClick={() => {
+                              setSelectedRhCity(alloc);
+                              setRhDetailModalOpen(true);
+                            }}
+                          >
                             <CardContent className="pt-6 text-center">
                               <div className="text-4xl font-extrabold text-blue-600 mb-2">
                                 {totalRh}
                               </div>
                               <p className="text-base font-bold text-slate-800">{city}</p>
                               <p className="text-xs text-slate-500 mt-1">Year {year}</p>
+                              <p className="text-xs text-blue-600 font-semibold mt-2">View Details →</p>
                             </CardContent>
                           </Card>
                         );
@@ -393,16 +490,112 @@ export default function LeaveManagement() {
           </Card>
         </TabsContent>
 
-        {/* HOLIDAY TAB - Coming in Step 3 */}
+        {/* HOLIDAY TAB - FULLY FUNCTIONAL */}
         <TabsContent value="holiday">
           <Card>
-            <CardHeader>
-              <CardTitle>Holidays</CardTitle>
+            <CardHeader className="space-y-4">
+              <div className="flex flex-row items-center justify-between">
+                <CardTitle>Restricted Holiday Calendar</CardTitle>
+                <Button onClick={() => setAddHolidayModalOpen(true)}>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Add Holiday
+                </Button>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="year-select">Year:</Label>
+                  <select
+                    id="year-select"
+                    aria-label="Select Year"
+                    className="border rounded px-3 py-2"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  >
+                    <option value={2024}>2024</option>
+                    <option value={2025}>2025</option>
+                    <option value={2026}>2026</option>
+                    <option value={2027}>2027</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="city-filter">City:</Label>
+                  <select
+                    id="city-filter"
+                    aria-label="Filter by City"
+                    className="border rounded px-3 py-2"
+                    value={selectedCityFilter}
+                    onChange={(e) => setSelectedCityFilter(e.target.value)}
+                  >
+                    <option value="ALL">All Cities</option>
+                    <option value="Bangalore">Bangalore</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Chennai">Chennai</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                  </select>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <p className="text-center py-12 text-slate-600">
-                Holiday management UI - Next step...
-              </p>
+              {holidaysLoading ? (
+                <div className="text-center py-12">Loading holidays...</div>
+              ) : holidays.length === 0 ? (
+                <div className="text-center py-12 text-slate-600">
+                  <Calendar className="h-16 w-16 mx-auto mb-4 text-slate-400" />
+                  <p className="font-semibold">No holidays configured for {selectedYear}</p>
+                  <p className="text-sm mt-2">Click "Add Holiday" to configure RH dates</p>
+                </div>
+              ) : (
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-slate-50 border-b-2">
+                        <TableHead className="font-bold text-slate-700">Holiday Name</TableHead>
+                        <TableHead className="font-bold text-slate-700">Date</TableHead>
+                        <TableHead className="font-bold text-slate-700">Type</TableHead>
+                        <TableHead className="font-bold text-slate-700">City</TableHead>
+                        <TableHead className="font-bold text-slate-700">State</TableHead>
+                        <TableHead className="font-bold text-slate-700">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {holidays.map((holiday: any) => (
+                        <TableRow key={holiday.id} className="hover:bg-slate-50 transition-colors">
+                          <TableCell className="font-semibold">
+                            {holiday.holidayName || holiday.holiday_name}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="font-mono">
+                              {new Date(holiday.holidayDate || holiday.holiday_date).toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={(holiday.holidayType || holiday.holiday_type) === 'RH' ? 'default' : 'secondary'}>
+                              {holiday.holidayType || holiday.holiday_type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{holiday.city || 'All'}</TableCell>
+                          <TableCell>{holiday.state || 'All'}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteHoliday(holiday)}
+                            >
+                              Delete
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -518,6 +711,152 @@ export default function LeaveManagement() {
             >
               Create Policy
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Holiday Modal */}
+      <Dialog open={addHolidayModalOpen} onOpenChange={setAddHolidayModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Restricted Holiday</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Holiday Name *</Label>
+                <Input
+                  value={holidayFormData.holiday_name}
+                  onChange={(e) => setHolidayFormData({ ...holidayFormData, holiday_name: e.target.value })}
+                  placeholder="e.g., Diwali, Eid"
+                />
+              </div>
+              <div>
+                <Label>Holiday Date *</Label>
+                <Input
+                  type="date"
+                  value={holidayFormData.holiday_date}
+                  onChange={(e) => setHolidayFormData({ ...holidayFormData, holiday_date: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="holiday-type-select">Holiday Type *</Label>
+                <select
+                  id="holiday-type-select"
+                  aria-label="Holiday Type"
+                  className="w-full border rounded px-3 py-2"
+                  value={holidayFormData.holiday_type}
+                  onChange={(e) => setHolidayFormData({ ...holidayFormData, holiday_type: e.target.value })}
+                >
+                  <option value="RH">Restricted Holiday (RH)</option>
+                  <option value="GOVT">Government Holiday</option>
+                </select>
+              </div>
+              <div>
+                <Label>City (optional)</Label>
+                <Input
+                  value={holidayFormData.city}
+                  onChange={(e) => setHolidayFormData({ ...holidayFormData, city: e.target.value })}
+                  placeholder="Bangalore, Mumbai"
+                />
+              </div>
+              <div>
+                <Label>State (optional)</Label>
+                <Input
+                  value={holidayFormData.state}
+                  onChange={(e) => setHolidayFormData({ ...holidayFormData, state: e.target.value })}
+                  placeholder="Karnataka, Maharashtra"
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Description (optional)</Label>
+              <Textarea
+                value={holidayFormData.description}
+                onChange={(e) => setHolidayFormData({ ...holidayFormData, description: e.target.value })}
+                placeholder="Additional details about this holiday"
+                rows={3}
+              />
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-xs text-amber-900">
+                💡 <strong>Note:</strong> RH holidays are city-specific. When assigning leave policy to an employee, 
+                they will see only the RH holidays available for their city.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddHolidayModalOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (!holidayFormData.holiday_name || !holidayFormData.holiday_date) {
+                  toast({ title: "Error", description: "Please fill required fields", variant: "destructive" });
+                  return;
+                }
+                setAddHolidayModalOpen(false);
+                setReasonModalData(null);
+                setReasonModalOpen(true);
+              }}
+            >
+              Add Holiday
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* RH Proration Detail Modal */}
+      <Dialog open={rhDetailModalOpen} onOpenChange={setRhDetailModalOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">
+              {selectedRhCity?.city || ''} - Restricted Holiday Allocation
+            </DialogTitle>
+            <p className="text-sm text-slate-600">Year {selectedRhCity?.year || 2025} | Total: {selectedRhCity?.totalRh || selectedRhCity?.total_rh || 0} RH days</p>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-bold text-blue-900 mb-2">📅 Proration Logic:</h4>
+              <p className="text-sm text-slate-700">
+                Employees get RH days based on their <strong>joining month</strong>. 
+                For example, if someone joins in <strong>June</strong>, they get RH days from June onwards only.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-bold mb-3 text-slate-800">Month-wise RH Allocation:</h4>
+              <div className="grid grid-cols-3 gap-3">
+                {selectedRhCity && (selectedRhCity.monthAllocation || selectedRhCity.month_allocation) && 
+                  Object.entries(selectedRhCity.monthAllocation || selectedRhCity.month_allocation)
+                    .sort(([a], [b]) => {
+                      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      return months.indexOf(a) - months.indexOf(b);
+                    })
+                    .map(([month, count]: [string, any]) => (
+                      <div key={month} className="border rounded-lg p-3 bg-slate-50 hover:bg-blue-50 transition-colors">
+                        <div className="text-2xl font-bold text-blue-600">{count}</div>
+                        <div className="text-xs font-semibold text-slate-700">{month}</div>
+                        <div className="text-xs text-slate-500 mt-1">
+                          Join by {month} → {count} RH
+                        </div>
+                      </div>
+                    ))
+                }
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <h4 className="font-bold text-amber-900 mb-2">💡 Example:</h4>
+              <ul className="text-sm text-slate-700 space-y-1">
+                <li>• Employee joins in <strong>January</strong> → Gets <strong>{selectedRhCity?.totalRh || selectedRhCity?.total_rh || 0}</strong> RH days (full year)</li>
+                <li>• Employee joins in <strong>July</strong> → Gets <strong>~{Math.round((selectedRhCity?.totalRh || selectedRhCity?.total_rh || 0) / 2)}</strong> RH days (6 months remaining)</li>
+                <li>• Employee joins in <strong>December</strong> → Gets <strong>1</strong> RH day (1 month remaining)</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setRhDetailModalOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
