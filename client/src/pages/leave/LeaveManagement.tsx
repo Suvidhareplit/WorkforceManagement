@@ -230,85 +230,100 @@ export default function LeaveManagement() {
                 </div>
               ) : (
                 <>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="font-semibold">Leave Type</TableHead>
-                        <TableHead>Display Name</TableHead>
-                        <TableHead>Annual Quota</TableHead>
-                        <TableHead>Monthly Accrual</TableHead>
-                        <TableHead>Prorate</TableHead>
-                        <TableHead>Eligibility (months)</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {configs.map((config: any) => (
-                        <TableRow key={config.id}>
-                          <TableCell className="font-mono font-bold text-blue-600">
-                            {config.leave_type}
-                          </TableCell>
-                          <TableCell>
-                            <Input 
-                              value={config.display_name} 
-                              onChange={(e) => handleConfigEdit(config, 'display_name', e.target.value)} 
-                              className="max-w-[200px]"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input 
-                              type="number" 
-                              value={config.annual_quota || ''} 
-                              onChange={(e) => handleConfigEdit(config, 'annual_quota', parseFloat(e.target.value))} 
-                              className="max-w-[100px]"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input 
-                              type="number" 
-                              step="0.5" 
-                              value={config.monthly_accrual || ''} 
-                              onChange={(e) => handleConfigEdit(config, 'monthly_accrual', parseFloat(e.target.value))} 
-                              className="max-w-[100px]"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Switch 
-                              checked={config.prorate_enabled} 
-                              onCheckedChange={(checked) => handleConfigEdit(config, 'prorate_enabled', checked)} 
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{config.eligibility_months} months</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={config.is_active ? "default" : "secondary"}>
-                              {config.is_active ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-slate-50 border-b-2">
+                          <TableHead className="font-bold text-slate-700">Leave Type</TableHead>
+                          <TableHead className="font-bold text-slate-700">Display Name</TableHead>
+                          <TableHead className="font-bold text-slate-700">Annual Quota</TableHead>
+                          <TableHead className="font-bold text-slate-700">Monthly Accrual</TableHead>
+                          <TableHead className="font-bold text-slate-700">Prorate</TableHead>
+                          <TableHead className="font-bold text-slate-700">Eligibility</TableHead>
+                          <TableHead className="font-bold text-slate-700">Status</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {configs.map((config: any) => (
+                          <TableRow key={config.id} className="hover:bg-slate-50 transition-colors">
+                            <TableCell className="font-mono font-bold text-blue-600 text-sm">
+                              {config.leaveType || config.leave_type}
+                            </TableCell>
+                            <TableCell>
+                              <Input 
+                                value={config.displayName || config.display_name || ''} 
+                                onChange={(e) => handleConfigEdit(config, 'display_name', e.target.value)} 
+                                className="max-w-[220px] border-slate-300 focus:border-blue-500"
+                                placeholder="Enter display name"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input 
+                                type="number" 
+                                value={config.annualQuota || config.annual_quota || ''} 
+                                onChange={(e) => handleConfigEdit(config, 'annual_quota', parseFloat(e.target.value))} 
+                                className="max-w-[100px] border-slate-300 focus:border-blue-500 text-center"
+                                placeholder="0"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input 
+                                type="number" 
+                                step="0.5" 
+                                value={config.monthlyAccrual || config.monthly_accrual || ''} 
+                                onChange={(e) => handleConfigEdit(config, 'monthly_accrual', parseFloat(e.target.value))} 
+                                className="max-w-[100px] border-slate-300 focus:border-blue-500 text-center"
+                                placeholder="0"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Switch 
+                                checked={config.prorateEnabled || config.prorate_enabled || false} 
+                                onCheckedChange={(checked) => handleConfigEdit(config, 'prorate_enabled', checked)} 
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="font-semibold">
+                                {config.eligibilityMonths || config.eligibility_months || 0} months
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={(config.isActive || config.is_active) ? "default" : "secondary"}
+                                className={(config.isActive || config.is_active) ? "bg-green-600" : "bg-slate-400"}
+                              >
+                                {(config.isActive || config.is_active) ? "Active" : "Inactive"}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
 
                   {/* RH Allocations Section */}
-                  <div className="mt-8">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-blue-600" />
+                  <div className="mt-10">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-800">
+                      <Calendar className="h-6 w-6 text-blue-600" />
                       Restricted Holiday Allocations by City
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                      {rhAllocations.map((alloc: any) => (
-                        <Card key={alloc.id} className="border-2">
-                          <CardContent className="pt-6">
-                            <div className="text-3xl font-bold text-blue-600 mb-1">
-                              {alloc.total_rh}
-                            </div>
-                            <p className="text-sm font-medium text-slate-700">{alloc.city}</p>
-                            <p className="text-xs text-slate-500">Year {alloc.year}</p>
-                          </CardContent>
-                        </Card>
-                      ))}
+                      {rhAllocations.map((alloc: any) => {
+                        const totalRh = alloc.totalRh || alloc.total_rh || 0;
+                        const city = alloc.city || '';
+                        const year = alloc.year || 2025;
+                        return (
+                          <Card key={alloc.id} className="border-2 border-slate-200 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer">
+                            <CardContent className="pt-6 text-center">
+                              <div className="text-4xl font-extrabold text-blue-600 mb-2">
+                                {totalRh}
+                              </div>
+                              <p className="text-base font-bold text-slate-800">{city}</p>
+                              <p className="text-xs text-slate-500 mt-1">Year {year}</p>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </div>
                   </div>
                 </>
