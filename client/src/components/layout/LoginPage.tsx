@@ -61,10 +61,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
-      {/* Professional Background - Isometric City View */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-300 via-gray-300 to-slate-200">
+      {/* Professional Background - Vibrant City View */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-100 via-sky-100 to-slate-100">
         {/* Isometric City Background */}
-        <div className="absolute inset-0 opacity-40">
+        <div className="absolute inset-0 opacity-60">
           {/* Buildings - Top Left */}
           <svg className="absolute top-0 left-0 w-64 h-80" viewBox="0 0 200 250" fill="none">
             {/* Tall Building 1 */}
@@ -148,10 +148,10 @@ export default function LoginPage() {
           </svg>
         </div>
         
-        {/* Realistic Yulu Bikes - More Visible & Always on Screen */}
-        <div className="absolute inset-0 opacity-45">
-          {/* White/Grey DEX Bike - Top Left - Moving Right */}
-          <div className="absolute top-16 left-12 w-56 h-56 animate-[slideRight_15s_linear_infinite]">
+        {/* Realistic Yulu Bikes - Moving on Road at Bottom */}
+        <div className="absolute inset-0 opacity-50">
+          {/* White/Grey DEX Bike - Bottom Road - Moving Right */}
+          <div className="absolute bottom-24 left-12 w-56 h-56 animate-[slideRight_15s_linear_infinite]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="100" ry="12" fill="#000000" opacity="0.15"/>
@@ -187,8 +187,8 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          {/* Red Yulu Bike - Top Right - Moving Left (Flipped) - Delay 7.5s */}
-          <div className="absolute top-20 right-16 w-52 h-52 animate-[slideLeft_15s_linear_infinite] animation-delay-[7.5s]" style={{animationDelay: '7.5s'}}>
+          {/* Red Yulu Bike - Bottom Road - Moving Left (Flipped) - Delay 7.5s */}
+          <div className="absolute bottom-28 right-16 w-52 h-52 animate-[slideLeft_15s_linear_infinite] animation-delay-[7.5s]" style={{animationDelay: '7.5s'}}>
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="95" ry="12" fill="#000000" opacity="0.15"/>
@@ -224,7 +224,7 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          {/* Silver/Grey DEX Bike - Bottom Left - Moving Right - Delay 3.75s */}
+          {/* Silver/Grey DEX Bike - Bottom Road - Moving Right - Delay 3.75s */}
           <div className="absolute bottom-20 left-16 w-60 h-60 animate-[slideRight_15s_linear_infinite]" style={{animationDelay: '3.75s'}}>
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
@@ -266,8 +266,8 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          {/* Cyan Yulu Bike - Bottom Right - Moving Left (Flipped) - Delay 11.25s */}
-          <div className="absolute bottom-24 right-12 w-48 h-48 animate-[slideLeft_15s_linear_infinite]" style={{animationDelay: '11.25s'}}>
+          {/* Cyan Yulu Bike - Bottom Road - Moving Left (Flipped) - Delay 11.25s */}
+          <div className="absolute bottom-20 right-12 w-48 h-48 animate-[slideLeft_15s_linear_infinite]" style={{animationDelay: '11.25s'}}>
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="90" ry="11" fill="#000000" opacity="0.15"/>
