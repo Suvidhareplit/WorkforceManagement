@@ -98,7 +98,7 @@ export function generateHiringRequestEmail(
           
           <p>Best regards,<br>
           <strong>HR Team</strong><br>
-          Blue Collar HRMS Platform</p>
+          Yulite HRMS Platform</p>
           
           <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
           <p style="font-size: 12px; color: #6b7280;">

@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-console.log('🚀 Starting Blue Collar HRMS Platform...\n');
+console.log('🚀 Starting Yulite HRMS Platform...\n');
 
 // Function to kill processes on specific ports
 function killPortProcess(port) {
@@ -172,7 +172,7 @@ async function startPlatform() {
     // Display startup information
     setTimeout(() => {
       console.log('\n============================================================');
-      console.log('🎉 Blue Collar HRMS Platform is running!');
+      console.log('🎉 Yulite HRMS Platform is running!');
       console.log('============================================================');
       console.log('📱 Frontend: http://localhost:3000');
       console.log('🔧 Backend:  http://localhost:5000');

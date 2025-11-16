@@ -29,7 +29,7 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
               <Users className="text-blue-600 text-2xl" />
-              <h1 className="text-xl font-bold text-slate-800">Blue Collar HRMS</h1>
+              <h1 className="text-xl font-bold text-slate-800">Yulite HRMS</h1>
             </div>
           </div>
           <div className="flex items-center space-x-4">
