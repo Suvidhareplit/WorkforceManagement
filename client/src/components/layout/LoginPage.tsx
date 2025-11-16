@@ -61,69 +61,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
-      {/* Clean Light Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100">
-        {/* Yulu Bikes in Background - SVG Inline */}
-        <div className="absolute inset-0 opacity-15">
-          {/* White/Grey Yulu Bike - Top Left */}
-          <div className="absolute top-16 left-12 w-48 h-48 animate-[float_7s_ease-in-out_infinite]">
-            <svg viewBox="0 0 200 200" fill="none" className="w-full h-full drop-shadow-lg">
-              <ellipse cx="100" cy="160" rx="80" ry="15" fill="#94A3B8" opacity="0.3"/>
-              <rect x="60" y="80" width="80" height="50" rx="12" fill="#E2E8F0"/>
-              <rect x="85" y="70" width="30" height="20" rx="8" fill="#334155"/>
-              <circle cx="75" cy="145" r="18" fill="#1E293B" stroke="#94A3B8" strokeWidth="4"/>
-              <circle cx="125" cy="145" r="18" fill="#1E293B" stroke="#94A3B8" strokeWidth="4"/>
-              <path d="M100 70 L112 55 L118 62" stroke="#334155" strokeWidth="4" fill="none" strokeLinecap="round"/>
-              <rect x="90" y="95" width="20" height="8" rx="2" fill="#0EA5E9"/>
-              <text x="100" y="108" fontSize="8" fill="#334155" textAnchor="middle" fontWeight="bold">DEX</text>
-            </svg>
-          </div>
-
-          {/* Red Yulu Bike - Top Right */}
-          <div className="absolute top-20 right-16 w-44 h-44 animate-[float_8s_ease-in-out_infinite_1s]">
-            <svg viewBox="0 0 200 200" fill="none" className="w-full h-full drop-shadow-lg">
-              <ellipse cx="100" cy="160" rx="75" ry="12" fill="#EF4444" opacity="0.2"/>
-              <rect x="65" y="85" width="70" height="45" rx="10" fill="#EF4444"/>
-              <rect x="88" y="75" width="24" height="18" rx="6" fill="#1E293B"/>
-              <circle cx="78" cy="142" r="16" fill="#1E293B" stroke="#EF4444" strokeWidth="4"/>
-              <circle cx="122" cy="142" r="16" fill="#1E293B" stroke="#EF4444" strokeWidth="4"/>
-              <path d="M100 75 L110 62 L115 68" stroke="#1E293B" strokeWidth="3" fill="none" strokeLinecap="round"/>
-              <text x="100" y="105" fontSize="9" fill="white" textAnchor="middle" fontWeight="bold">yulu</text>
-              <circle cx="100" cy="112" r="2" fill="white"/>
-            </svg>
-          </div>
-
-          {/* Silver Yulu Bike - Bottom Left */}
-          <div className="absolute bottom-20 left-16 w-52 h-52 animate-[float_7.5s_ease-in-out_infinite_2s]">
-            <svg viewBox="0 0 200 200" fill="none" className="w-full h-full drop-shadow-lg">
-              <ellipse cx="100" cy="165" rx="85" ry="18" fill="#64748B" opacity="0.25"/>
-              <rect x="58" y="78" width="84" height="52" rx="14" fill="#94A3B8"/>
-              <rect x="84" y="68" width="32" height="22" rx="8" fill="#334155"/>
-              <circle cx="73" cy="148" r="20" fill="#1E293B" stroke="#0EA5E9" strokeWidth="4"/>
-              <circle cx="127" cy="148" r="20" fill="#1E293B" stroke="#0EA5E9" strokeWidth="4"/>
-              <path d="M100 68 L113 52 L120 60" stroke="#334155" strokeWidth="4" fill="none" strokeLinecap="round"/>
-              <rect x="88" y="95" width="24" height="10" rx="3" fill="#0EA5E9"/>
-              <text x="100" y="110" fontSize="10" fill="#1E293B" textAnchor="middle" fontWeight="bold">DEX</text>
-              <rect x="68" y="85" width="8" height="8" rx="2" fill="#FBBF24"/>
-            </svg>
-          </div>
-
-          {/* Cyan Yulu Bike - Bottom Right */}
-          <div className="absolute bottom-24 right-12 w-40 h-40 animate-[float_6.5s_ease-in-out_infinite_1.5s]">
-            <svg viewBox="0 0 200 200" fill="none" className="w-full h-full drop-shadow-lg">
-              <ellipse cx="100" cy="158" rx="70" ry="14" fill="#06B6D4" opacity="0.25"/>
-              <rect x="68" y="88" width="64" height="42" rx="10" fill="#06B6D4"/>
-              <rect x="90" y="78" width="20" height="16" rx="6" fill="#1E293B"/>
-              <circle cx="80" cy="140" r="15" fill="#1E293B" stroke="#06B6D4" strokeWidth="3"/>
-              <circle cx="120" cy="140" r="15" fill="#1E293B" stroke="#06B6D4" strokeWidth="3"/>
-              <path d="M100 78 L108 66 L113 72" stroke="#1E293B" strokeWidth="3" fill="none" strokeLinecap="round"/>
-              <circle cx="75" cy="100" r="12" fill="white" opacity="0.9"/>
-              <path d="M 75 92 Q 75 100 82 100 Q 75 100 75 108 Q 75 100 68 100 Q 75 100 75 92" fill="#06B6D4"/>
-              <text x="100" y="112" fontSize="8" fill="white" textAnchor="middle" fontWeight="bold">yulu</text>
-            </svg>
-          </div>
-        </div>
-      </div>
+      {/* Clean Professional Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100"></div>
 
       {/* Reduced Width Login Card */}
       <div className="relative w-full max-w-4xl">
