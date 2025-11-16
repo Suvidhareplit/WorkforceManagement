@@ -37,20 +37,44 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F6FAFF] to-[#EAF4FB] flex items-center justify-center p-4 font-['Inter',sans-serif]">
-      {/* Login Card with fade-in animation */}
-      <div 
-        className="w-full max-w-[440px] bg-white rounded-xl shadow-[0_4px_22px_rgba(0,0,0,0.06)] p-10 animate-[fadeInUp_0.5s_ease-out]"
-      >
-        {/* Logo Section */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="mb-4">
-            <svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="50" cy="50" r="48" fill="#14D4EF"/>
-              <path d="M50 25 C35 25, 25 35, 25 50 L25 75 C25 85, 35 85, 40 80 L40 50 C40 42, 45 37, 50 37 C55 37, 60 42, 60 50 L60 80 C65 85, 75 85, 75 75 L75 50 C75 35, 65 25, 50 25 Z" fill="white"/>
-              <path d="M35 35 C42 28, 50 25, 58 28 M42 32 C48 28, 52 28, 58 32" stroke="white" strokeWidth="4" fill="none" strokeLinecap="round"/>
-            </svg>
-          </div>
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 font-['Inter',sans-serif]">
+      {/* Rich Background with Gradient and Patterns */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#E8F4F8] via-[#F0F9FC] to-[#E0F2F7]">
+        {/* Abstract Pattern Overlay */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-[#14D4EF]/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#14D4EF]/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#14D4EF]/5 rounded-full blur-3xl"></div>
+        </div>
+        
+        {/* Subtle Grid Pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `linear-gradient(#14D4EF 1px, transparent 1px), linear-gradient(90deg, #14D4EF 1px, transparent 1px)`,
+            backgroundSize: '50px 50px'
+          }}
+        ></div>
+      </div>
+
+      {/* Login Card with Cyan Glow */}
+      <div className="relative">
+        {/* Cyan Glow Behind Card */}
+        <div className="absolute inset-0 bg-[#14D4EF]/20 rounded-xl blur-2xl scale-105"></div>
+        
+        {/* Main Card */}
+        <div 
+          className="relative w-full max-w-[460px] bg-white rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] p-10 animate-[fadeInUp_0.5s_ease-out]"
+        >
+          {/* Logo Section */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="mb-4">
+              <img 
+                src="/yulite-logo.svg" 
+                alt="Yulite Logo" 
+                className="w-20 h-20"
+              />
+            </div>
           
           {/* Title and Tagline */}
           <h1 className="text-2xl font-semibold text-slate-800 mb-1">
@@ -85,7 +109,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
-              className="w-full h-[50px] px-4 text-base border border-[#D4DDE8] rounded-lg
+              className="w-full h-[52px] px-4 text-base border border-[#D4DDE8] rounded-lg
                          focus:outline-none focus:border-[#14D4EF] focus:ring-2 focus:ring-[#14D4EF]/20
                          transition-all duration-200 disabled:bg-slate-50 disabled:cursor-not-allowed
                          text-slate-800 placeholder:text-slate-400"
@@ -108,7 +132,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
-              className="w-full h-[50px] px-4 text-base border border-[#D4DDE8] rounded-lg
+              className="w-full h-[52px] px-4 text-base border border-[#D4DDE8] rounded-lg
                          focus:outline-none focus:border-[#14D4EF] focus:ring-2 focus:ring-[#14D4EF]/20
                          transition-all duration-200 disabled:bg-slate-50 disabled:cursor-not-allowed
                          text-slate-800 placeholder:text-slate-400"
@@ -154,6 +178,7 @@ export default function LoginPage() {
           <p className="text-[12px] text-slate-500">
             © 2025 Yulite HRMS. All rights reserved.
           </p>
+        </div>
         </div>
       </div>
 
