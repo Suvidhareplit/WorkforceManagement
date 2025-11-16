@@ -63,10 +63,79 @@ export default function LoginPage() {
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
       {/* Professional Background - Darker for better contrast */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-gray-200 to-blue-200">
-        {/* Realistic Yulu Bikes - More Visible & Moving */}
-        <div className="absolute inset-0 opacity-40">
+        {/* City Landmarks Background - Subtle */}
+        <div className="absolute inset-0 opacity-10">
+          {/* Mumbai - Gateway of India (left) */}
+          <div className="absolute left-8 bottom-0 w-32 h-48">
+            <svg viewBox="0 0 100 150" fill="none">
+              <rect x="20" y="100" width="60" height="50" fill="#8B7355"/>
+              <path d="M 10 100 L 50 60 L 90 100" fill="#A0826D"/>
+              <rect x="40" y="110" width="20" height="40" fill="#6B5444"/>
+              <circle cx="50" cy="75" r="15" fill="#C9A86A"/>
+            </svg>
+          </div>
+          
+          {/* Delhi - India Gate (center-left) */}
+          <div className="absolute left-1/4 bottom-0 w-28 h-52">
+            <svg viewBox="0 0 100 150" fill="none">
+              <rect x="35" y="90" width="30" height="60" fill="#D4A574"/>
+              <path d="M 20 90 L 50 60 L 80 90" fill="#E8C9A1"/>
+              <rect x="43" y="100" width="14" height="30" fill="#8B7355"/>
+              <circle cx="50" cy="70" r="8" fill="#C9A86A"/>
+            </svg>
+          </div>
+          
+          {/* Bangalore - Vidhana Soudha (center) */}
+          <div className="absolute left-1/2 bottom-0 w-36 h-44 transform -translate-x-1/2">
+            <svg viewBox="0 0 120 140" fill="none">
+              <rect x="20" y="80" width="80" height="60" fill="#9B8B7E"/>
+              <rect x="30" y="90" width="15" height="50" fill="#8B7355"/>
+              <rect x="75" y="90" width="15" height="50" fill="#8B7355"/>
+              <path d="M 15 80 L 60 50 L 105 80" fill="#B5A99A"/>
+              <circle cx="60" cy="60" r="10" fill="#D4A574"/>
+            </svg>
+          </div>
+          
+          {/* Hyderabad - Charminar (center-right) */}
+          <div className="absolute right-1/4 bottom-0 w-32 h-50">
+            <svg viewBox="0 0 100 150" fill="none">
+              <rect x="15" y="90" width="20" height="60" fill="#B5A99A"/>
+              <rect x="65" y="90" width="20" height="60" fill="#B5A99A"/>
+              <circle cx="25" cy="85" r="8" fill="#D4A574"/>
+              <circle cx="75" cy="85" r="8" fill="#D4A574"/>
+              <path d="M 30 100 L 50 70 L 70 100" fill="#C9A86A"/>
+            </svg>
+          </div>
+          
+          {/* Chennai - Lighthouse (right) */}
+          <div className="absolute right-8 bottom-0 w-24 h-56">
+            <svg viewBox="0 0 80 150" fill="none">
+              <rect x="28" y="60" width="24" height="90" fill="#E8E8E8"/>
+              <rect x="26" y="70" width="28" height="8" fill="#DC143C"/>
+              <rect x="26" y="90" width="28" height="8" fill="#DC143C"/>
+              <rect x="26" y="110" width="28" height="8" fill="#DC143C"/>
+              <path d="M 25 60 L 40 45 L 55 60" fill="#FFD700"/>
+            </svg>
+          </div>
+          
+          {/* Pune - Shaniwar Wada (far left) */}
+          <div className="absolute left-32 bottom-0 w-28 h-40">
+            <svg viewBox="0 0 100 130" fill="none">
+              <rect x="25" y="70" width="50" height="60" fill="#8B6F47"/>
+              <rect x="35" y="80" width="10" height="50" fill="#6B5444"/>
+              <rect x="55" y="80" width="10" height="50" fill="#6B5444"/>
+              <path d="M 20 70 L 50 50 L 80 70" fill="#A0826D"/>
+            </svg>
+          </div>
+          
+          {/* Road/Ground */}
+          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-gray-400 to-transparent opacity-30"></div>
+        </div>
+        
+        {/* Realistic Yulu Bikes - More Visible & Always on Screen */}
+        <div className="absolute inset-0 opacity-45">
           {/* White/Grey DEX Bike - Top Left - Moving Right */}
-          <div className="absolute top-16 left-12 w-56 h-56 animate-[slideRight_20s_linear_infinite]">
+          <div className="absolute top-16 left-12 w-56 h-56 animate-[slideRight_15s_linear_infinite]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="100" ry="12" fill="#000000" opacity="0.15"/>
@@ -83,8 +152,8 @@ export default function LoginPage() {
               <circle cx="200" cy="145" r="18" fill="#1E293B"/>
               <circle cx="200" cy="145" r="8" fill="#E5E7EB"/>
               
-              {/* Main Body - Grey */}
-              <path d="M 110 120 Q 120 100 140 95 L 180 95 Q 190 100 195 120 L 185 140 L 115 140 Z" fill="#D1D5DB"/>
+              {/* Main Body - Darker Grey with Shine */}
+              <path d="M 110 120 Q 120 100 140 95 L 180 95 Q 190 100 195 120 L 185 140 L 115 140 Z" fill="#9CA3AF" stroke="#E5E7EB" strokeWidth="2" filter="drop-shadow(0 0 4px rgba(255,255,255,0.6))"/>
               
               {/* Seat */}
               <ellipse cx="125" cy="95" rx="25" ry="12" fill="#1E293B"/>
@@ -102,8 +171,8 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          {/* Red Yulu Bike - Top Right - Moving Left (Flipped) */}
-          <div className="absolute top-20 right-16 w-52 h-52 animate-[slideLeft_18s_linear_infinite]">
+          {/* Red Yulu Bike - Top Right - Moving Left (Flipped) - Delay 7.5s */}
+          <div className="absolute top-20 right-16 w-52 h-52 animate-[slideLeft_15s_linear_infinite] animation-delay-[7.5s]" style={{animationDelay: '7.5s'}}>
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="95" ry="12" fill="#000000" opacity="0.15"/>
@@ -120,8 +189,8 @@ export default function LoginPage() {
               <circle cx="200" cy="145" r="16" fill="#1E293B"/>
               <circle cx="200" cy="145" r="7" fill="#EF4444"/>
               
-              {/* Main Body - Red */}
-              <path d="M 110 120 Q 120 98 140 92 L 180 92 Q 192 98 197 120 L 187 140 L 115 140 Z" fill="#EF4444"/>
+              {/* Main Body - Darker Red with Shine */}
+              <path d="M 110 120 Q 120 98 140 92 L 180 92 Q 192 98 197 120 L 187 140 L 115 140 Z" fill="#DC2626" stroke="#FCA5A5" strokeWidth="2" filter="drop-shadow(0 0 5px rgba(239,68,68,0.7))"/>
               
               {/* Seat */}
               <ellipse cx="125" cy="92" rx="26" ry="13" fill="#1E293B"/>
@@ -139,8 +208,8 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          {/* Silver/Grey DEX Bike - Bottom Left - Moving Right */}
-          <div className="absolute bottom-20 left-16 w-60 h-60 animate-[slideRight_22s_linear_infinite]">
+          {/* Silver/Grey DEX Bike - Bottom Left - Moving Right - Delay 3.75s */}
+          <div className="absolute bottom-20 left-16 w-60 h-60 animate-[slideRight_15s_linear_infinite]" style={{animationDelay: '3.75s'}}>
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="105" ry="14" fill="#000000" opacity="0.15"/>
@@ -157,8 +226,8 @@ export default function LoginPage() {
               <circle cx="200" cy="145" r="20" fill="#1E293B"/>
               <circle cx="200" cy="145" r="9" fill="#06B6D4" opacity="0.8"/>
               
-              {/* Main Body - Silver/Grey */}
-              <path d="M 108 118 Q 118 96 138 90 L 182 90 Q 194 96 200 118 L 190 142 L 113 142 Z" fill="#9CA3AF"/>
+              {/* Main Body - Darker Silver with Shine */}
+              <path d="M 108 118 Q 118 96 138 90 L 182 90 Q 194 96 200 118 L 190 142 L 113 142 Z" fill="#6B7280" stroke="#D1D5DB" strokeWidth="2" filter="drop-shadow(0 0 4px rgba(209,213,217,0.7))"/>
               
               {/* Metallic highlights */}
               <path d="M 115 105 L 185 105" stroke="#E5E7EB" strokeWidth="2" opacity="0.6"/>
@@ -181,8 +250,8 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          {/* Cyan Yulu Bike - Bottom Right - Moving Left (Flipped) */}
-          <div className="absolute bottom-24 right-12 w-48 h-48 animate-[slideLeft_19s_linear_infinite]">
+          {/* Cyan Yulu Bike - Bottom Right - Moving Left (Flipped) - Delay 11.25s */}
+          <div className="absolute bottom-24 right-12 w-48 h-48 animate-[slideLeft_15s_linear_infinite]" style={{animationDelay: '11.25s'}}>
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="90" ry="11" fill="#000000" opacity="0.15"/>
@@ -199,8 +268,8 @@ export default function LoginPage() {
               <circle cx="195" cy="145" r="15" fill="#1E293B"/>
               <circle cx="195" cy="145" r="6" fill="#06B6D4"/>
               
-              {/* Main Body - Cyan */}
-              <path d="M 113 122 Q 122 102 140 97 L 177 97 Q 188 102 193 122 L 183 140 L 118 140 Z" fill="#06B6D4"/>
+              {/* Main Body - Darker Cyan with Shine */}
+              <path d="M 113 122 Q 122 102 140 97 L 177 97 Q 188 102 193 122 L 183 140 L 118 140 Z" fill="#0891B2" stroke="#67E8F9" strokeWidth="2" filter="drop-shadow(0 0 5px rgba(6,182,212,0.8))"/>
               
               {/* Seat */}
               <ellipse cx="127" cy="97" rx="24" ry="12" fill="#1E293B"/>
