@@ -74,8 +74,8 @@ export default function LoginPage() {
           className="relative bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden animate-[fadeInUp_0.6s_ease-out]"
         >
           <div className="grid md:grid-cols-2 gap-0">
-            {/* Left Side - Branding & Quote - MUCH LIGHTER BLUE */}
-            <div className="bg-gradient-to-br from-[#60A5FA] to-[#93C5FD] p-12 flex flex-col justify-center">
+            {/* Left Side - Branding & Quote - MEDIUM BLUE */}
+            <div className="bg-gradient-to-br from-[#3B82F6] to-[#60A5FA] p-12 flex flex-col justify-center">
               {/* Title and Tagline - NO LOGO */}
               <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-3 text-white">
