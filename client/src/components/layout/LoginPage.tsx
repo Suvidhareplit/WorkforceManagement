@@ -61,10 +61,92 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
-      {/* Professional Background - Light Sky */}
-      <div className="absolute inset-0 bg-gradient-to-b from-sky-300 via-blue-200 to-slate-300">
-        {/* Simple City Silhouette at Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-400/30 to-transparent"></div>
+      {/* Professional Background - Isometric City View */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-100 via-gray-50 to-white">
+        {/* Isometric City Background */}
+        <div className="absolute inset-0 opacity-25">
+          {/* Buildings - Top Left */}
+          <svg className="absolute top-0 left-0 w-64 h-80" viewBox="0 0 200 250" fill="none">
+            {/* Tall Building 1 */}
+            <path d="M 40 80 L 70 60 L 70 20 L 40 40 Z" fill="#E2E8F0"/>
+            <path d="M 70 60 L 100 80 L 100 40 L 70 20 Z" fill="#CBD5E1"/>
+            <path d="M 40 80 L 70 60 L 100 80 L 70 100 Z" fill="#F1F5F9"/>
+            {/* Windows */}
+            <rect x="48" y="50" width="6" height="8" fill="#94A3B8" opacity="0.4"/>
+            <rect x="58" y="50" width="6" height="8" fill="#94A3B8" opacity="0.4"/>
+            <rect x="78" y="50" width="6" height="8" fill="#94A3B8" opacity="0.4"/>
+            <rect x="88" y="50" width="6" height="8" fill="#94A3B8" opacity="0.4"/>
+            
+            {/* Building 2 */}
+            <path d="M 120 100 L 150 80 L 150 50 L 120 70 Z" fill="#E2E8F0"/>
+            <path d="M 150 80 L 180 100 L 180 70 L 150 50 Z" fill="#CBD5E1"/>
+            <path d="M 120 100 L 150 80 L 180 100 L 150 120 Z" fill="#F1F5F9"/>
+          </svg>
+
+          {/* Buildings - Top Right */}
+          <svg className="absolute top-0 right-0 w-64 h-80" viewBox="0 0 200 250" fill="none">
+            {/* Building 3 */}
+            <path d="M 20 90 L 50 70 L 50 30 L 20 50 Z" fill="#E2E8F0"/>
+            <path d="M 50 70 L 80 90 L 80 50 L 50 30 Z" fill="#CBD5E1"/>
+            <path d="M 20 90 L 50 70 L 80 90 L 50 110 Z" fill="#F1F5F9"/>
+            
+            {/* Building 4 */}
+            <path d="M 100 110 L 130 90 L 130 60 L 100 80 Z" fill="#E2E8F0"/>
+            <path d="M 130 90 L 160 110 L 160 80 L 130 60 Z" fill="#CBD5E1"/>
+            <path d="M 100 110 L 130 90 L 160 110 L 130 130 Z" fill="#F1F5F9"/>
+          </svg>
+
+          {/* Roads and Parks - Center */}
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600" fill="none">
+            {/* Diagonal Roads */}
+            <path d="M 0 300 L 400 100 L 600 200 L 1000 0" stroke="#CBD5E1" strokeWidth="80" opacity="0.3"/>
+            <path d="M 0 400 L 300 250 L 700 450 L 1000 300" stroke="#CBD5E1" strokeWidth="80" opacity="0.3"/>
+            
+            {/* Road Markings */}
+            <path d="M 100 350 L 300 240" stroke="white" strokeWidth="3" strokeDasharray="20,15" opacity="0.4"/>
+            <path d="M 400 400 L 700 250" stroke="white" strokeWidth="3" strokeDasharray="20,15" opacity="0.4"/>
+            
+            {/* Green Parks */}
+            <ellipse cx="200" cy="450" rx="80" ry="40" fill="#86EFAC" opacity="0.5"/>
+            <ellipse cx="750" cy="350" rx="90" ry="45" fill="#86EFAC" opacity="0.5"/>
+            <ellipse cx="450" cy="500" rx="70" ry="35" fill="#86EFAC" opacity="0.5"/>
+            
+            {/* Trees */}
+            <circle cx="180" cy="440" r="12" fill="#22C55E" opacity="0.6"/>
+            <circle cx="220" cy="460" r="10" fill="#22C55E" opacity="0.6"/>
+            <circle cx="730" cy="340" r="14" fill="#22C55E" opacity="0.6"/>
+            <circle cx="770" cy="360" r="11" fill="#22C55E" opacity="0.6"/>
+            
+            {/* Water Pond */}
+            <ellipse cx="850" cy="480" rx="60" ry="35" fill="#93C5FD" opacity="0.5"/>
+            <ellipse cx="850" cy="480" rx="40" ry="22" fill="#BFDBFE" opacity="0.6"/>
+          </svg>
+
+          {/* Buildings - Bottom Left */}
+          <svg className="absolute bottom-0 left-0 w-72 h-64" viewBox="0 0 220 200" fill="none">
+            {/* Small Building */}
+            <path d="M 30 120 L 60 100 L 60 80 L 30 100 Z" fill="#E2E8F0"/>
+            <path d="M 60 100 L 90 120 L 90 100 L 60 80 Z" fill="#CBD5E1"/>
+            <path d="M 30 120 L 60 100 L 90 120 L 60 140 Z" fill="#F1F5F9"/>
+            
+            {/* Medium Building */}
+            <path d="M 110 140 L 140 120 L 140 90 L 110 110 Z" fill="#E2E8F0"/>
+            <path d="M 140 120 L 170 140 L 170 110 L 140 90 Z" fill="#CBD5E1"/>
+            <path d="M 110 140 L 140 120 L 170 140 L 140 160 Z" fill="#F1F5F9"/>
+          </svg>
+
+          {/* Buildings - Bottom Right */}
+          <svg className="absolute bottom-0 right-0 w-72 h-64" viewBox="0 0 220 200" fill="none">
+            {/* Building Group */}
+            <path d="M 40 130 L 70 110 L 70 85 L 40 105 Z" fill="#E2E8F0"/>
+            <path d="M 70 110 L 100 130 L 100 105 L 70 85 Z" fill="#CBD5E1"/>
+            <path d="M 40 130 L 70 110 L 100 130 L 70 150 Z" fill="#F1F5F9"/>
+            
+            <path d="M 130 145 L 160 125 L 160 95 L 130 115 Z" fill="#E2E8F0"/>
+            <path d="M 160 125 L 190 145 L 190 115 L 160 95 Z" fill="#CBD5E1"/>
+            <path d="M 130 145 L 160 125 L 190 145 L 160 165 Z" fill="#F1F5F9"/>
+          </svg>
+        </div>
         
         {/* Realistic Yulu Bikes - More Visible & Always on Screen */}
         <div className="absolute inset-0 opacity-45">
