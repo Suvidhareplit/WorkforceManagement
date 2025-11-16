@@ -105,21 +105,6 @@ export default function LoginPage() {
             {/* Road Markings */}
             <path d="M 100 350 L 300 240" stroke="white" strokeWidth="3" strokeDasharray="20,15" opacity="0.4"/>
             <path d="M 400 400 L 700 250" stroke="white" strokeWidth="3" strokeDasharray="20,15" opacity="0.4"/>
-            
-            {/* Green Parks */}
-            <ellipse cx="200" cy="450" rx="80" ry="40" fill="#86EFAC" opacity="0.5"/>
-            <ellipse cx="750" cy="350" rx="90" ry="45" fill="#86EFAC" opacity="0.5"/>
-            <ellipse cx="450" cy="500" rx="70" ry="35" fill="#86EFAC" opacity="0.5"/>
-            
-            {/* Trees */}
-            <circle cx="180" cy="440" r="12" fill="#22C55E" opacity="0.6"/>
-            <circle cx="220" cy="460" r="10" fill="#22C55E" opacity="0.6"/>
-            <circle cx="730" cy="340" r="14" fill="#22C55E" opacity="0.6"/>
-            <circle cx="770" cy="360" r="11" fill="#22C55E" opacity="0.6"/>
-            
-            {/* Water Pond */}
-            <ellipse cx="850" cy="480" rx="60" ry="35" fill="#93C5FD" opacity="0.5"/>
-            <ellipse cx="850" cy="480" rx="40" ry="22" fill="#BFDBFE" opacity="0.6"/>
           </svg>
 
           {/* Buildings - Bottom Left */}
@@ -148,8 +133,8 @@ export default function LoginPage() {
           </svg>
         </div>
         
-        {/* Realistic Yulu Bikes - Moving on Road at Bottom */}
-        <div className="absolute inset-0 opacity-50">
+        {/* Realistic Yulu Bikes - Moving on Road at Bottom - BRIGHTER */}
+        <div className="absolute inset-0 opacity-75">
           {/* White/Grey DEX Bike - Bottom Road - Moving Right */}
           <div className="absolute bottom-24 left-12 w-56 h-56 animate-[slideRight_15s_linear_infinite]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
