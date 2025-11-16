@@ -61,75 +61,113 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
-      {/* Professional Background - Darker for better contrast */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-gray-200 to-blue-200">
-        {/* City Landmarks Background - Subtle */}
-        <div className="absolute inset-0 opacity-10">
-          {/* Mumbai - Gateway of India (left) */}
-          <div className="absolute left-8 bottom-0 w-32 h-48">
-            <svg viewBox="0 0 100 150" fill="none">
-              <rect x="20" y="100" width="60" height="50" fill="#8B7355"/>
-              <path d="M 10 100 L 50 60 L 90 100" fill="#A0826D"/>
-              <rect x="40" y="110" width="20" height="40" fill="#6B5444"/>
-              <circle cx="50" cy="75" r="15" fill="#C9A86A"/>
+      {/* Professional Background - Night Sky with City */}
+      <div className="absolute inset-0 bg-gradient-to-b from-indigo-900 via-blue-900 to-slate-800">
+        {/* City Skyline with Monuments in 4 Corners */}
+        <div className="absolute inset-0">
+          
+          {/* TOP LEFT - Vidhana Soudha, Bangalore */}
+          <div className="absolute top-8 left-8 w-48 h-40 opacity-20">
+            <svg viewBox="0 0 200 160" fill="none">
+              {/* Main Building - Granite */}
+              <rect x="30" y="60" width="140" height="100" fill="#8B7D6B"/>
+              <rect x="40" y="70" width="25" height="90" fill="#6B5D4F"/>
+              <rect x="75" y="70" width="25" height="90" fill="#6B5D4F"/>
+              <rect x="110" y="70" width="25" height="90" fill="#6B5D4F"/>
+              <rect x="145" y="70" width="25" height="90" fill="#6B5D4F"/>
+              {/* Central Dome */}
+              <ellipse cx="100" cy="50" rx="30" ry="20" fill="#A89968"/>
+              <rect x="95" y="50" width="10" height="10" fill="#D4AF37"/>
+              {/* Windows */}
+              <rect x="45" y="80" width="8" height="12" fill="#FFE4B5" opacity="0.6"/>
+              <rect x="80" y="80" width="8" height="12" fill="#FFE4B5" opacity="0.6"/>
+              <rect x="115" y="80" width="8" height="12" fill="#FFE4B5" opacity="0.6"/>
+              <rect x="150" y="80" width="8" height="12" fill="#FFE4B5" opacity="0.6"/>
             </svg>
           </div>
           
-          {/* Delhi - India Gate (center-left) */}
-          <div className="absolute left-1/4 bottom-0 w-28 h-52">
-            <svg viewBox="0 0 100 150" fill="none">
-              <rect x="35" y="90" width="30" height="60" fill="#D4A574"/>
-              <path d="M 20 90 L 50 60 L 80 90" fill="#E8C9A1"/>
-              <rect x="43" y="100" width="14" height="30" fill="#8B7355"/>
-              <circle cx="50" cy="70" r="8" fill="#C9A86A"/>
+          {/* TOP RIGHT - Gateway of India, Mumbai */}
+          <div className="absolute top-8 right-8 w-44 h-44 opacity-20">
+            <svg viewBox="0 0 180 180" fill="none">
+              {/* Main Arch - Yellow Stone */}
+              <rect x="40" y="80" width="100" height="100" fill="#D4A574"/>
+              {/* Central Arch */}
+              <path d="M 60 160 Q 60 100 90 100 Q 120 100 120 160" fill="#1E293B"/>
+              {/* Side Pillars */}
+              <rect x="30" y="100" width="20" height="80" fill="#C9956B"/>
+              <rect x="130" y="100" width="20" height="80" fill="#C9956B"/>
+              {/* Top Dome */}
+              <ellipse cx="90" cy="75" rx="40" ry="25" fill="#B8916A"/>
+              <circle cx="90" cy="60" r="15" fill="#D4AF37"/>
+              {/* Decorative Elements */}
+              <rect x="45" y="90" width="8" height="15" fill="#8B6F47"/>
+              <rect x="127" y="90" width="8" height="15" fill="#8B6F47"/>
             </svg>
           </div>
           
-          {/* Bangalore - Vidhana Soudha (center) */}
-          <div className="absolute left-1/2 bottom-0 w-36 h-44 transform -translate-x-1/2">
-            <svg viewBox="0 0 120 140" fill="none">
-              <rect x="20" y="80" width="80" height="60" fill="#9B8B7E"/>
-              <rect x="30" y="90" width="15" height="50" fill="#8B7355"/>
-              <rect x="75" y="90" width="15" height="50" fill="#8B7355"/>
-              <path d="M 15 80 L 60 50 L 105 80" fill="#B5A99A"/>
-              <circle cx="60" cy="60" r="10" fill="#D4A574"/>
+          {/* BOTTOM LEFT - Red Fort, Delhi */}
+          <div className="absolute bottom-20 left-8 w-52 h-36 opacity-20">
+            <svg viewBox="0 0 220 150" fill="none">
+              {/* Fort Walls - Red Sandstone */}
+              <rect x="20" y="60" width="180" height="90" fill="#C13832"/>
+              {/* Battlements */}
+              <rect x="25" y="55" width="15" height="10" fill="#A82820"/>
+              <rect x="50" y="55" width="15" height="10" fill="#A82820"/>
+              <rect x="75" y="55" width="15" height="10" fill="#A82820"/>
+              <rect x="100" y="55" width="15" height="10" fill="#A82820"/>
+              <rect x="125" y="55" width="15" height="10" fill="#A82820"/>
+              <rect x="150" y="55" width="15" height="10" fill="#A82820"/>
+              <rect x="175" y="55" width="15" height="10" fill="#A82820"/>
+              {/* Central Gate */}
+              <path d="M 90 150 Q 90 100 110 100 Q 130 100 130 150" fill="#1E293B"/>
+              {/* Dome */}
+              <ellipse cx="110" cy="40" rx="25" ry="15" fill="#F5F5DC"/>
+              <circle cx="110" cy="30" r="8" fill="#D4AF37"/>
             </svg>
           </div>
           
-          {/* Hyderabad - Charminar (center-right) */}
-          <div className="absolute right-1/4 bottom-0 w-32 h-50">
-            <svg viewBox="0 0 100 150" fill="none">
-              <rect x="15" y="90" width="20" height="60" fill="#B5A99A"/>
-              <rect x="65" y="90" width="20" height="60" fill="#B5A99A"/>
-              <circle cx="25" cy="85" r="8" fill="#D4A574"/>
-              <circle cx="75" cy="85" r="8" fill="#D4A574"/>
-              <path d="M 30 100 L 50 70 L 70 100" fill="#C9A86A"/>
+          {/* BOTTOM RIGHT - Charminar, Hyderabad */}
+          <div className="absolute bottom-20 right-8 w-44 h-48 opacity-20">
+            <svg viewBox="0 0 180 200" fill="none">
+              {/* Four Minarets */}
+              <rect x="20" y="80" width="30" height="120" fill="#E8DCC4"/>
+              <rect x="130" y="80" width="30" height="120" fill="#E8DCC4"/>
+              <rect x="20" y="40" width="30" height="120" fill="#E8DCC4"/>
+              <rect x="130" y="40" width="30" height="120" fill="#E8DCC4"/>
+              {/* Domes on Minarets */}
+              <ellipse cx="35" cy="35" rx="18" ry="12" fill="#D4A574"/>
+              <ellipse cx="145" cy="35" rx="18" ry="12" fill="#D4A574"/>
+              <ellipse cx="35" cy="75" rx="18" ry="12" fill="#D4A574"/>
+              <ellipse cx="145" cy="75" rx="18" ry="12" fill="#D4A574"/>
+              {/* Central Structure */}
+              <rect x="55" y="120" width="70" height="80" fill="#F5DEB3"/>
+              {/* Central Arches */}
+              <path d="M 70 180 Q 70 150 90 150 Q 110 150 110 180" fill="#1E293B"/>
             </svg>
           </div>
           
-          {/* Chennai - Lighthouse (right) */}
-          <div className="absolute right-8 bottom-0 w-24 h-56">
-            <svg viewBox="0 0 80 150" fill="none">
-              <rect x="28" y="60" width="24" height="90" fill="#E8E8E8"/>
-              <rect x="26" y="70" width="28" height="8" fill="#DC143C"/>
-              <rect x="26" y="90" width="28" height="8" fill="#DC143C"/>
-              <rect x="26" y="110" width="28" height="8" fill="#DC143C"/>
-              <path d="M 25 60 L 40 45 L 55 60" fill="#FFD700"/>
-            </svg>
+          {/* City Road - Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-20">
+            {/* Road Surface */}
+            <div className="absolute bottom-0 w-full h-16 bg-gradient-to-t from-gray-700 via-gray-600 to-transparent opacity-30"></div>
+            {/* Road Markings */}
+            <div className="absolute bottom-8 left-0 w-full h-1 bg-yellow-400 opacity-20"></div>
+            <div className="absolute bottom-6 left-0 w-full flex justify-around">
+              <div className="w-16 h-0.5 bg-white opacity-20"></div>
+              <div className="w-16 h-0.5 bg-white opacity-20"></div>
+              <div className="w-16 h-0.5 bg-white opacity-20"></div>
+              <div className="w-16 h-0.5 bg-white opacity-20"></div>
+              <div className="w-16 h-0.5 bg-white opacity-20"></div>
+            </div>
           </div>
           
-          {/* Pune - Shaniwar Wada (far left) */}
-          <div className="absolute left-32 bottom-0 w-28 h-40">
-            <svg viewBox="0 0 100 130" fill="none">
-              <rect x="25" y="70" width="50" height="60" fill="#8B6F47"/>
-              <rect x="35" y="80" width="10" height="50" fill="#6B5444"/>
-              <rect x="55" y="80" width="10" height="50" fill="#6B5444"/>
-              <path d="M 20 70 L 50 50 L 80 70" fill="#A0826D"/>
-            </svg>
+          {/* Street Lights */}
+          <div className="absolute bottom-16 left-1/4 w-2 h-24 bg-gray-500 opacity-15">
+            <div className="absolute -top-4 -left-3 w-8 h-8 bg-yellow-200 rounded-full opacity-30 blur-sm"></div>
           </div>
-          
-          {/* Road/Ground */}
-          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-gray-400 to-transparent opacity-30"></div>
+          <div className="absolute bottom-16 right-1/4 w-2 h-24 bg-gray-500 opacity-15">
+            <div className="absolute -top-4 -left-3 w-8 h-8 bg-yellow-200 rounded-full opacity-30 blur-sm"></div>
+          </div>
         </div>
         
         {/* Realistic Yulu Bikes - More Visible & Always on Screen */}
