@@ -62,9 +62,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
       {/* Clean Professional Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100">
         {/* Realistic Yulu Bikes - More Visible & Moving */}
-        <div className="absolute inset-0 opacity-25">
+        <div className="absolute inset-0 opacity-35">
           {/* White/Grey DEX Bike - Top Left - Moving Right */}
           <div className="absolute top-16 left-12 w-56 h-56 animate-[slideRight_20s_linear_infinite]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
@@ -99,14 +99,11 @@ export default function LoginPage() {
               
               {/* Cyan Stripe */}
               <rect x="130" y="115" width="40" height="6" rx="3" fill="#06B6D4"/>
-              
-              {/* Stand */}
-              <line x1="150" y1="140" x2="160" y2="175" stroke="#374151" strokeWidth="2"/>
             </svg>
           </div>
 
-          {/* Red Yulu Bike - Top Right - Moving Left */}
-          <div className="absolute top-20 right-16 w-52 h-52 animate-[slideLeft_18s_linear_infinite]">
+          {/* Red Yulu Bike - Top Right - Moving Left (Flipped) */}
+          <div className="absolute top-20 right-16 w-52 h-52 animate-[slideLeft_18s_linear_infinite] scale-x-[-1]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="95" ry="12" fill="#000000" opacity="0.15"/>
@@ -139,9 +136,6 @@ export default function LoginPage() {
               
               {/* Yulu Branding */}
               <text x="150" y="118" fontSize="10" fill="white" fontWeight="bold" textAnchor="middle">yulu</text>
-              
-              {/* Stand */}
-              <line x1="150" y1="140" x2="158" y2="175" stroke="#374151" strokeWidth="2"/>
             </svg>
           </div>
 
@@ -184,14 +178,11 @@ export default function LoginPage() {
               {/* Cyan Accent Stripe */}
               <rect x="128" y="112" width="48" height="8" rx="4" fill="#06B6D4"/>
               <text x="152" y="118" fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">DEX</text>
-              
-              {/* Stand */}
-              <line x1="150" y1="142" x2="162" y2="175" stroke="#374151" strokeWidth="3"/>
             </svg>
           </div>
 
-          {/* Cyan Yulu Bike - Bottom Right - Moving Left */}
-          <div className="absolute bottom-24 right-12 w-48 h-48 animate-[slideLeft_19s_linear_infinite]">
+          {/* Cyan Yulu Bike - Bottom Right - Moving Left (Flipped) */}
+          <div className="absolute bottom-24 right-12 w-48 h-48 animate-[slideLeft_19s_linear_infinite] scale-x-[-1]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="90" ry="11" fill="#000000" opacity="0.15"/>
@@ -227,9 +218,6 @@ export default function LoginPage() {
               <path d="M 130 105 Q 130 112 136 112 Q 130 112 130 119 Q 130 112 124 112 Q 130 112 130 105" fill="#06B6D4"/>
               
               <text x="160" y="118" fontSize="9" fill="white" fontWeight="bold" textAnchor="middle">yulu</text>
-              
-              {/* Stand */}
-              <line x1="150" y1="140" x2="157" y2="175" stroke="#374151" strokeWidth="2"/>
             </svg>
           </div>
         </div>
