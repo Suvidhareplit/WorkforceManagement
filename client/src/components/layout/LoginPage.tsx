@@ -61,8 +61,51 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
-      {/* Clean Light Background - NO imagery */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100"></div>
+      {/* Clean Light Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100">
+        {/* Yulu Bikes in Background - Fitting Sizes */}
+        <div className="absolute inset-0 opacity-15">
+          {/* White/Grey Yulu Bike - Top Left */}
+          <div className="absolute top-16 left-12 w-48 h-48 animate-[float_7s_ease-in-out_infinite]">
+            <img 
+              src="/yulu-bikes/yulu-white.png" 
+              alt="Yulu White Bike" 
+              className="w-full h-full object-contain drop-shadow-lg"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </div>
+
+          {/* Red Yulu Bike - Top Right */}
+          <div className="absolute top-20 right-16 w-44 h-44 animate-[float_8s_ease-in-out_infinite_1s]">
+            <img 
+              src="/yulu-bikes/yulu-red.png" 
+              alt="Yulu Red Bike" 
+              className="w-full h-full object-contain drop-shadow-lg"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </div>
+
+          {/* Silver Yulu Bike - Bottom Left */}
+          <div className="absolute bottom-20 left-16 w-52 h-52 animate-[float_7.5s_ease-in-out_infinite_2s]">
+            <img 
+              src="/yulu-bikes/yulu-silver.png" 
+              alt="Yulu Silver Bike" 
+              className="w-full h-full object-contain drop-shadow-lg"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </div>
+
+          {/* Cyan Yulu Bike - Bottom Right */}
+          <div className="absolute bottom-24 right-12 w-40 h-40 animate-[float_6.5s_ease-in-out_infinite_1.5s]">
+            <img 
+              src="/yulu-bikes/yulu-cyan.png" 
+              alt="Yulu Cyan Bike" 
+              className="w-full h-full object-contain drop-shadow-lg"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Reduced Width Login Card */}
       <div className="relative w-full max-w-4xl">
