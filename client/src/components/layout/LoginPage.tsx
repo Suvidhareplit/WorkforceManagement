@@ -61,47 +61,71 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
-      {/* Rich Professional Background with HRMS imagery */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-blue-50">
-        {/* HRMS-related SVG Icons Pattern - MORE VISIBLE */}
-        <div className="absolute inset-0 opacity-[0.15]">
-          {/* Animated floating People/Team Icons */}
-          <svg className="absolute top-20 left-20 w-32 h-32 text-blue-500 animate-[float_6s_ease-in-out_infinite]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-          </svg>
+      {/* Very Light Professional Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        {/* Yulu Bikes + People Interacting + Handshakes */}
+        <div className="absolute inset-0 opacity-20">
           
-          <svg className="absolute top-40 right-32 w-24 h-24 text-indigo-500 animate-[float_7s_ease-in-out_infinite_1s]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-          </svg>
-          
-          <svg className="absolute bottom-32 left-40 w-36 h-36 text-blue-400 animate-[float_8s_ease-in-out_infinite_2s]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M16.5 12c1.38 0 2.49-1.12 2.49-2.5S17.88 7 16.5 7C15.12 7 14 8.12 14 9.5s1.12 2.5 2.5 2.5zM9 11c1.66 0 2.99-1.34 2.99-3S10.66 5 9 5C7.34 5 6 6.34 6 8s1.34 3 3 3zm7.5 3c-1.83 0-5.5.92-5.5 2.75V19h11v-2.25c0-1.83-3.67-2.75-5.5-2.75zM9 13c-2.33 0-7 1.17-7 3.5V19h7v-2.25c0-.85.33-2.34 2.37-3.47C10.5 13.1 9.66 13 9 13z"/>
-          </svg>
-          
-          <svg className="absolute top-1/2 left-1/4 w-20 h-20 text-indigo-400 animate-[float_6.5s_ease-in-out_infinite_0.5s]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/>
-          </svg>
-          
-          <svg className="absolute bottom-20 right-24 w-28 h-28 text-blue-500 animate-[float_7.5s_ease-in-out_infinite_1.5s]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
-          
-          <svg className="absolute top-3/4 right-1/4 w-32 h-32 text-indigo-400 animate-[float_8s_ease-in-out_infinite]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M9 11.75c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zm6 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25 1.25-.56 1.25-1.25-.56-1.25-1.25-1.25zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.29.02-.58.05-.86 2.36-1.05 4.23-2.98 5.21-5.37C11.07 8.33 14.05 10 17.42 10c.78 0 1.53-.09 2.25-.26.21.71.33 1.47.33 2.26 0 4.41-3.59 8-8 8z"/>
-          </svg>
-          
-          {/* Additional smaller icons for richness */}
-          <svg className="absolute top-1/3 right-1/2 w-16 h-16 text-blue-400 animate-[float_7s_ease-in-out_infinite_2.5s]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
-          
-          <svg className="absolute bottom-1/3 left-1/3 w-20 h-20 text-indigo-500 animate-[float_6.8s_ease-in-out_infinite_1.2s]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3z"/>
-          </svg>
+          {/* Cyan Yulu Bike (Top Left) */}
+          <div className="absolute top-20 left-16 w-40 h-40 animate-[float_6s_ease-in-out_infinite]">
+            <svg viewBox="0 0 200 200" fill="none">
+              <ellipse cx="100" cy="120" rx="70" ry="20" fill="#0EA5E9" opacity="0.2"/>
+              <rect x="70" y="60" width="60" height="40" rx="10" fill="#0EA5E9"/>
+              <rect x="90" y="50" width="20" height="15" rx="5" fill="#334155"/>
+              <circle cx="80" cy="130" r="15" fill="#1E293B" stroke="#0EA5E9" strokeWidth="3"/>
+              <circle cx="120" cy="130" r="15" fill="#1E293B" stroke="#0EA5E9" strokeWidth="3"/>
+              <path d="M100 50 L110 40 L115 45" stroke="#334155" strokeWidth="3" fill="none"/>
+            </svg>
+          </div>
+
+          {/* Red Yulu Bike (Bottom Right) */}
+          <div className="absolute bottom-24 right-20 w-36 h-36 animate-[float_7s_ease-in-out_infinite_1s]">
+            <svg viewBox="0 0 200 200" fill="none">
+              <ellipse cx="100" cy="120" rx="70" ry="20" fill="#EF4444" opacity="0.2"/>
+              <rect x="70" y="60" width="60" height="40" rx="10" fill="#EF4444"/>
+              <rect x="90" y="50" width="20" height="15" rx="5" fill="#334155"/>
+              <circle cx="80" cy="130" r="15" fill="#1E293B" stroke="#EF4444" strokeWidth="3"/>
+              <circle cx="120" cy="130" r="15" fill="#1E293B" stroke="#EF4444" strokeWidth="3"/>
+              <path d="M100 50 L110 40 L115 45" stroke="#334155" strokeWidth="3" fill="none"/>
+            </svg>
+          </div>
+
+          {/* Handshake Emoji 1 */}
+          <div className="absolute top-1/3 right-1/4 text-6xl animate-[float_8s_ease-in-out_infinite_2s]">
+            🤝
+          </div>
+
+          {/* Handshake Emoji 2 */}
+          <div className="absolute bottom-1/3 left-1/4 text-5xl animate-[float_7.5s_ease-in-out_infinite_1.5s]">
+            🤝
+          </div>
+
+          {/* People Interacting - Emoji 1 */}
+          <div className="absolute top-1/2 left-16 text-5xl animate-[float_6.5s_ease-in-out_infinite_0.5s]">
+            👥
+          </div>
+
+          {/* People Interacting - Emoji 2 */}
+          <div className="absolute top-40 right-32 text-4xl animate-[float_7.2s_ease-in-out_infinite_1.8s]">
+            👔
+          </div>
+
+          {/* Team/Collaboration */}
+          <div className="absolute bottom-40 left-1/3 text-5xl animate-[float_6.8s_ease-in-out_infinite_1.2s]">
+            👨‍💼👩‍💼
+          </div>
+
+          {/* More Handshakes */}
+          <div className="absolute top-2/3 right-1/3 text-4xl animate-[float_7.8s_ease-in-out_infinite_2.2s]">
+            🤝
+          </div>
+
+          {/* Workforce Icon */}
+          <div className="absolute bottom-1/2 right-20 text-5xl animate-[float_6.3s_ease-in-out_infinite_0.8s]">
+            💼
+          </div>
+
         </div>
-        
-        {/* Subtle pattern overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-200/20 via-transparent to-indigo-200/20"></div>
       </div>
 
       {/* Reduced Width Login Card */}
