@@ -61,72 +61,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
-      {/* Very Light Professional Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        {/* Yulu Bikes + People Interacting + Handshakes */}
-        <div className="absolute inset-0 opacity-20">
-          
-          {/* Cyan Yulu Bike (Top Left) */}
-          <div className="absolute top-20 left-16 w-40 h-40 animate-[float_6s_ease-in-out_infinite]">
-            <svg viewBox="0 0 200 200" fill="none">
-              <ellipse cx="100" cy="120" rx="70" ry="20" fill="#0EA5E9" opacity="0.2"/>
-              <rect x="70" y="60" width="60" height="40" rx="10" fill="#0EA5E9"/>
-              <rect x="90" y="50" width="20" height="15" rx="5" fill="#334155"/>
-              <circle cx="80" cy="130" r="15" fill="#1E293B" stroke="#0EA5E9" strokeWidth="3"/>
-              <circle cx="120" cy="130" r="15" fill="#1E293B" stroke="#0EA5E9" strokeWidth="3"/>
-              <path d="M100 50 L110 40 L115 45" stroke="#334155" strokeWidth="3" fill="none"/>
-            </svg>
-          </div>
-
-          {/* Red Yulu Bike (Bottom Right) */}
-          <div className="absolute bottom-24 right-20 w-36 h-36 animate-[float_7s_ease-in-out_infinite_1s]">
-            <svg viewBox="0 0 200 200" fill="none">
-              <ellipse cx="100" cy="120" rx="70" ry="20" fill="#EF4444" opacity="0.2"/>
-              <rect x="70" y="60" width="60" height="40" rx="10" fill="#EF4444"/>
-              <rect x="90" y="50" width="20" height="15" rx="5" fill="#334155"/>
-              <circle cx="80" cy="130" r="15" fill="#1E293B" stroke="#EF4444" strokeWidth="3"/>
-              <circle cx="120" cy="130" r="15" fill="#1E293B" stroke="#EF4444" strokeWidth="3"/>
-              <path d="M100 50 L110 40 L115 45" stroke="#334155" strokeWidth="3" fill="none"/>
-            </svg>
-          </div>
-
-          {/* Handshake Emoji 1 */}
-          <div className="absolute top-1/3 right-1/4 text-6xl animate-[float_8s_ease-in-out_infinite_2s]">
-            🤝
-          </div>
-
-          {/* Handshake Emoji 2 */}
-          <div className="absolute bottom-1/3 left-1/4 text-5xl animate-[float_7.5s_ease-in-out_infinite_1.5s]">
-            🤝
-          </div>
-
-          {/* People Interacting - Emoji 1 */}
-          <div className="absolute top-1/2 left-16 text-5xl animate-[float_6.5s_ease-in-out_infinite_0.5s]">
-            👥
-          </div>
-
-          {/* People Interacting - Emoji 2 */}
-          <div className="absolute top-40 right-32 text-4xl animate-[float_7.2s_ease-in-out_infinite_1.8s]">
-            👔
-          </div>
-
-          {/* Team/Collaboration */}
-          <div className="absolute bottom-40 left-1/3 text-5xl animate-[float_6.8s_ease-in-out_infinite_1.2s]">
-            👨‍💼👩‍💼
-          </div>
-
-          {/* More Handshakes */}
-          <div className="absolute top-2/3 right-1/3 text-4xl animate-[float_7.8s_ease-in-out_infinite_2.2s]">
-            🤝
-          </div>
-
-          {/* Workforce Icon */}
-          <div className="absolute bottom-1/2 right-20 text-5xl animate-[float_6.3s_ease-in-out_infinite_0.8s]">
-            💼
-          </div>
-
-        </div>
-      </div>
+      {/* Clean Light Background - NO imagery */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-slate-50 to-gray-100"></div>
 
       {/* Reduced Width Login Card */}
       <div className="relative w-full max-w-4xl">
@@ -138,24 +74,24 @@ export default function LoginPage() {
           className="relative bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden animate-[fadeInUp_0.6s_ease-out]"
         >
           <div className="grid md:grid-cols-2 gap-0">
-            {/* Left Side - Branding & Quote */}
-            <div className="bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] p-12 flex flex-col justify-center text-white">
+            {/* Left Side - Branding & Quote - MUCH LIGHTER BLUE */}
+            <div className="bg-gradient-to-br from-[#60A5FA] to-[#93C5FD] p-12 flex flex-col justify-center">
               {/* Title and Tagline - NO LOGO */}
               <div className="mb-8">
-                <h1 className="text-4xl font-bold mb-3">
+                <h1 className="text-4xl font-bold mb-3 text-white">
                   Yulite HRMS
                 </h1>
-                <p className="text-lg text-blue-100">
+                <p className="text-lg text-white/90">
                   Effortless workforce management.
                 </p>
               </div>
               
               {/* Current Quote Display */}
               <div className="mt-auto">
-                <div className="border-l-4 border-blue-300 pl-4">
+                <div className="border-l-4 border-white/50 pl-4">
                   <p 
                     key={`quote-${currentQuoteIndex}`}
-                    className="text-lg text-blue-50 italic animate-[fadeIn_1s_ease-in]"
+                    className="text-lg text-white/90 italic animate-[fadeIn_1s_ease-in]"
                   >
                     "{quotes[currentQuoteIndex]}"
                   </p>
