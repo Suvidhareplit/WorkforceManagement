@@ -33,7 +33,7 @@ export default function Layout({ children }: LayoutProps) {
 
   if (isLoading && !loadingTimeout) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-2">Loading...</p>
@@ -54,7 +54,7 @@ export default function Layout({ children }: LayoutProps) {
 
   console.log('🏠 Showing main app layout');
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-slate-50">
       {/* Fixed Header */}
       <div className="sticky top-0 z-50">
         <Header />
@@ -66,7 +66,7 @@ export default function Layout({ children }: LayoutProps) {
           <Sidebar />
         </div>
         {/* Scrollable Main Content */}
-        <main className="flex-1 overflow-auto p-6 bg-gray-50">
+        <main className="flex-1 overflow-auto p-6">
           {children}
         </main>
       </div>
