@@ -62,9 +62,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
       {/* Professional Background - Isometric City View */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-100 via-gray-50 to-white">
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-300 via-gray-300 to-slate-200">
         {/* Isometric City Background */}
-        <div className="absolute inset-0 opacity-25">
+        <div className="absolute inset-0 opacity-40">
           {/* Buildings - Top Left */}
           <svg className="absolute top-0 left-0 w-64 h-80" viewBox="0 0 200 250" fill="none">
             {/* Tall Building 1 */}
