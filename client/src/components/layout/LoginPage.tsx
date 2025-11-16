@@ -61,10 +61,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-6 font-['Inter',sans-serif]">
-      {/* Clean Professional Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-gray-100 to-blue-100">
+      {/* Professional Background - Darker for better contrast */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-gray-200 to-blue-200">
         {/* Realistic Yulu Bikes - More Visible & Moving */}
-        <div className="absolute inset-0 opacity-35">
+        <div className="absolute inset-0 opacity-40">
           {/* White/Grey DEX Bike - Top Left - Moving Right */}
           <div className="absolute top-16 left-12 w-56 h-56 animate-[slideRight_20s_linear_infinite]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
@@ -103,7 +103,7 @@ export default function LoginPage() {
           </div>
 
           {/* Red Yulu Bike - Top Right - Moving Left (Flipped) */}
-          <div className="absolute top-20 right-16 w-52 h-52 animate-[slideLeft_18s_linear_infinite] scale-x-[-1]">
+          <div className="absolute top-20 right-16 w-52 h-52 animate-[slideLeft_18s_linear_infinite]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="95" ry="12" fill="#000000" opacity="0.15"/>
@@ -182,7 +182,7 @@ export default function LoginPage() {
           </div>
 
           {/* Cyan Yulu Bike - Bottom Right - Moving Left (Flipped) */}
-          <div className="absolute bottom-24 right-12 w-48 h-48 animate-[slideLeft_19s_linear_infinite] scale-x-[-1]">
+          <div className="absolute bottom-24 right-12 w-48 h-48 animate-[slideLeft_19s_linear_infinite]">
             <svg viewBox="0 0 300 200" fill="none" className="w-full h-full drop-shadow-2xl">
               {/* Shadow */}
               <ellipse cx="150" cy="175" rx="90" ry="11" fill="#000000" opacity="0.15"/>
@@ -411,18 +411,34 @@ export default function LoginPage() {
         @keyframes slideRight {
           0% {
             transform: translateX(-100vw);
+            opacity: 0;
+          }
+          5% {
+            opacity: 1;
+          }
+          95% {
+            opacity: 1;
           }
           100% {
             transform: translateX(100vw);
+            opacity: 0;
           }
         }
         
         @keyframes slideLeft {
           0% {
-            transform: translateX(100vw);
+            transform: translateX(100vw) scaleX(-1);
+            opacity: 0;
+          }
+          5% {
+            opacity: 1;
+          }
+          95% {
+            opacity: 1;
           }
           100% {
-            transform: translateX(-100vw);
+            transform: translateX(-100vw) scaleX(-1);
+            opacity: 0;
           }
         }
       `}</style>
