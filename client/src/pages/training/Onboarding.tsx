@@ -37,6 +37,20 @@ export default function Onboarding() {
 
   const onboardingRecords = (onboardingResponse as any) || [];
 
+  // Fetch employees to check profile creation status
+  const { data: employeesResponse } = useQuery({
+    queryKey: ["/api/employees"],
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const employees = (employeesResponse as any) || [];
+  
+  // Helper function to check if profile exists for an onboarding record
+  const hasProfile = (onboardingId: number) => {
+    return employees.some((emp: any) => emp.onboarding_id === onboardingId);
+  };
+
   // Update onboarding status mutation
   const updateOnboardingMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
@@ -97,6 +111,7 @@ export default function Onboarding() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/onboarding"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
       toast({
         title: "Success",
         description: `Employee profile created successfully for ${data.data?.name || 'candidate'}`,
@@ -1160,8 +1175,8 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-amber-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">ESIC IP Number</TableHead>
                   {/* STATUS */}
                   <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Status</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Onboarded</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Actions</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Onboarding action</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Profile creation Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1377,24 +1392,31 @@ export default function Onboarding() {
                       {/* ACTIONS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         {(record.onboardingStatus || record.onboarding_status) === 'onboarded' ? (
-                          <Button
-                            size="sm"
-                            onClick={() => createEmployeeProfileMutation.mutate(record.id)}
-                            disabled={createEmployeeProfileMutation.isPending}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            {createEmployeeProfileMutation.isPending ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                                Creating...
-                              </>
-                            ) : (
-                              <>
-                                <UserPlus className="h-4 w-4 mr-1" />
-                                Create Profile
-                              </>
-                            )}
-                          </Button>
+                          hasProfile(record.id) ? (
+                            <Badge className="bg-blue-600 hover:bg-blue-600">
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              Profile Created
+                            </Badge>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => createEmployeeProfileMutation.mutate(record.id)}
+                              disabled={createEmployeeProfileMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              {createEmployeeProfileMutation.isPending ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  Creating...
+                                </>
+                              ) : (
+                                <>
+                                  <UserPlus className="h-4 w-4 mr-1" />
+                                  Create Profile
+                                </>
+                              )}
+                            </Button>
+                          )
                         ) : (
                           <span className="text-sm text-gray-400">Complete onboarding first</span>
                         )}

@@ -97,9 +97,9 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
       onboarding.date_of_birth,
       onboarding.blood_group,
       onboarding.marital_status,
-      convertToBoolean(onboarding.physically_handicapped),
+      onboarding.physically_handicapped,  // Keep as "Yes"/"No" string
       onboarding.nationality,
-      onboarding.international_worker,
+      onboarding.international_worker,  // Keep as "Yes"/"No" string
       onboarding.pan_number,
       onboarding.name_as_per_pan,
       onboarding.aadhar_number,
