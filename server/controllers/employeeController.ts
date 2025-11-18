@@ -67,7 +67,7 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
     const result = await query(
       `INSERT INTO employees (
         candidate_id, onboarding_id, field_training_id,
-        employee_id, user_id,
+        employee_id,
         name, mobile_number, email, city, cluster, role, manager_name,
         date_of_joining, gross_salary,
         gender, date_of_birth, blood_group, marital_status,
@@ -79,13 +79,12 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         resume_source, cost_centre, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         group_doj, assets, documents, paygrade, payband,
         working_status, profile_created_at, profile_created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
       [
         onboarding.candidate_id,
         onboarding.id,
         onboarding.field_training_id,
         onboarding.employee_id,
-        onboarding.user_id,
         onboarding.name,
         onboarding.mobile_number,
         onboarding.email,
