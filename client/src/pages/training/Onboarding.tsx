@@ -44,7 +44,7 @@ export default function Onboarding() {
     refetchOnWindowFocus: false,
   });
 
-  const employees = (employeesResponse as any) || [];
+  const employees = ((employeesResponse as any)?.data || []);
   
   // Helper function to check if profile exists for an onboarding record
   const hasProfile = (onboardingId: number) => {
