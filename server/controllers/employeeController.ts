@@ -53,6 +53,16 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
     // Get user ID from request (for profile_created_by)
     const userId = (req as any).user?.id || null;
     
+    // Helper function to convert string boolean to actual boolean
+    const convertToBoolean = (value: any): boolean => {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'string') {
+        const lower = value.toLowerCase();
+        return lower === 'yes' || lower === 'true' || lower === '1';
+      }
+      return false;
+    };
+    
     // Create employee record with all onboarding data + new fields
     const result = await query(
       `INSERT INTO employees (
@@ -68,7 +78,7 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         emergency_contact_number, emergency_contact_name, emergency_contact_relation,
         resume_source, cost_centre, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         group_doj, assets, documents, paygrade, payband,
-        status, profile_created_at, profile_created_by
+        working_status, profile_created_at, profile_created_by
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
       [
         onboarding.candidate_id,
@@ -89,9 +99,9 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         onboarding.date_of_birth,
         onboarding.blood_group,
         onboarding.marital_status,
-        onboarding.physically_handicapped || false,
+        convertToBoolean(onboarding.physically_handicapped),
         onboarding.nationality,
-        onboarding.international_worker || false,
+        convertToBoolean(onboarding.international_worker),
         onboarding.pan_number,
         onboarding.name_as_per_pan,
         onboarding.aadhar_number,
