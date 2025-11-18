@@ -39,12 +39,12 @@ export default function OfferManagement() {
 
 
   // Extract data from API responses and filter for selected and offered candidates
-  // IMPORTANT: Also exclude candidates who were rejected in technical round or already onboarded
+  // IMPORTANT: Exclude rejected, onboarded, and assigned_induction candidates
+  // Once assigned to induction, they move to Induction Training page
   const allCandidates = (selectedCandidatesResponse as any)?.data || [];
   const selectedCandidates = allCandidates.filter((c: any) => 
-    (c.status === 'selected' || c.status === 'offered' || c.status === 'assigned_induction') &&
-    c.technicalResult !== 'rejected' && // Prevent rejected candidates from appearing
-    c.status !== 'onboarded' // Prevent onboarded candidates from appearing
+    (c.status === 'selected' || c.status === 'offered') &&
+    c.technicalResult !== 'rejected' // Prevent rejected candidates from appearing
   );
 
   console.log('📋 Offer Management Data:', {
