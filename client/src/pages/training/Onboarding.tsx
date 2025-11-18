@@ -8,14 +8,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X, UserCheck, Lock, Check, FileCheck, Loader2, UserPlus, CalendarIcon } from "lucide-react";
+import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X, UserCheck, Lock, Check, FileCheck, Loader2, UserPlus } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 
 export default function Onboarding() {
   const [uploading, setUploading] = useState(false);
@@ -29,13 +25,6 @@ export default function Onboarding() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'single' | 'bulk'>('single');
   const [singleRecordId, setSingleRecordId] = useState<number | null>(null);
-  const [showCreateProfileDialog, setShowCreateProfileDialog] = useState(false);
-  const [selectedOnboardingId, setSelectedOnboardingId] = useState<number | null>(null);
-  const [groupDoj, setGroupDoj] = useState<Date | undefined>();
-  const [assets, setAssets] = useState('');
-  const [documents, setDocuments] = useState('');
-  const [paygrade, setPaygrade] = useState('');
-  const [payband, setPayband] = useState('');
   const { toast } = useToast();
 
   // Fetch onboarding records
@@ -98,24 +87,16 @@ export default function Onboarding() {
     },
   });
 
-  // Create employee profile mutation
+  // Create employee profile mutation (direct creation without dialog)
   const createEmployeeProfileMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (onboarding_id: number) => {
       return await apiRequest('/api/employees/profile', {
         method: "POST",
-        body: data
+        body: { onboarding_id }
       });
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/onboarding"] });
-      setShowCreateProfileDialog(false);
-      // Reset form
-      setSelectedOnboardingId(null);
-      setGroupDoj(undefined);
-      setAssets('');
-      setDocuments('');
-      setPaygrade('');
-      setPayband('');
       toast({
         title: "Success",
         description: `Employee profile created successfully for ${data.data?.name || 'candidate'}`,
@@ -1398,14 +1379,21 @@ export default function Onboarding() {
                         {(record.onboardingStatus || record.onboarding_status) === 'onboarded' ? (
                           <Button
                             size="sm"
-                            onClick={() => {
-                              setSelectedOnboardingId(record.id);
-                              setShowCreateProfileDialog(true);
-                            }}
+                            onClick={() => createEmployeeProfileMutation.mutate(record.id)}
+                            disabled={createEmployeeProfileMutation.isPending}
                             className="bg-green-600 hover:bg-green-700"
                           >
-                            <UserPlus className="h-4 w-4 mr-1" />
-                            Create Profile
+                            {createEmployeeProfileMutation.isPending ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                Creating...
+                              </>
+                            ) : (
+                              <>
+                                <UserPlus className="h-4 w-4 mr-1" />
+                                Create Profile
+                              </>
+                            )}
                           </Button>
                         ) : (
                           <span className="text-sm text-gray-400">Complete onboarding first</span>
@@ -1694,142 +1682,6 @@ export default function Onboarding() {
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-2" />
                   Confirm & Submit
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Create Employee Profile Dialog */}
-      <Dialog open={showCreateProfileDialog} onOpenChange={setShowCreateProfileDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <UserPlus className="h-6 w-6 text-green-600" />
-              Create Employee Profile
-            </DialogTitle>
-            <DialogDescription>
-              Complete the employee profile with additional information. All fields are optional.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Group DOJ */}
-            <div className="space-y-2">
-              <Label htmlFor="group_doj">Group Date of Joining (Optional)</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !groupDoj && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {groupDoj ? format(groupDoj, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={groupDoj}
-                    onSelect={setGroupDoj}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Assets */}
-            <div className="space-y-2">
-              <Label htmlFor="assets">Assets (Optional)</Label>
-              <Input
-                id="assets"
-                placeholder="e.g., Laptop, Phone, ID Card"
-                value={assets}
-                onChange={(e) => setAssets(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">Comma-separated list of assigned assets</p>
-            </div>
-
-            {/* Documents */}
-            <div className="space-y-2">
-              <Label htmlFor="documents">Documents (Optional)</Label>
-              <Input
-                id="documents"
-                placeholder="e.g., Offer Letter, Contract, NDA"
-                value={documents}
-                onChange={(e) => setDocuments(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">Comma-separated list of uploaded documents</p>
-            </div>
-
-            {/* Paygrade */}
-            <div className="space-y-2">
-              <Label htmlFor="paygrade">Pay Grade (Optional)</Label>
-              <Input
-                id="paygrade"
-                placeholder="e.g., L1, L2, Manager"
-                value={paygrade}
-                onChange={(e) => setPaygrade(e.target.value)}
-              />
-            </div>
-
-            {/* Payband */}
-            <div className="space-y-2">
-              <Label htmlFor="payband">Pay Band (Optional)</Label>
-              <Input
-                id="payband"
-                placeholder="e.g., Band A, Band B"
-                value={payband}
-                onChange={(e) => setPayband(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setShowCreateProfileDialog(false);
-                setSelectedOnboardingId(null);
-                setGroupDoj(undefined);
-                setAssets('');
-                setDocuments('');
-                setPaygrade('');
-                setPayband('');
-              }}
-              disabled={createEmployeeProfileMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={() => {
-                if (selectedOnboardingId) {
-                  createEmployeeProfileMutation.mutate({
-                    onboarding_id: selectedOnboardingId,
-                    group_doj: groupDoj ? format(groupDoj, 'yyyy-MM-dd') : null,
-                    assets: assets || null,
-                    documents: documents || null,
-                    paygrade: paygrade || null,
-                    payband: payband || null
-                  });
-                }
-              }}
-              disabled={createEmployeeProfileMutation.isPending || !selectedOnboardingId}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {createEmployeeProfileMutation.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Create Profile
                 </>
               )}
             </Button>
