@@ -11,6 +11,7 @@ import { masterDataRoutes } from "./routes/masterDataRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import leaveManagementRoutes from "./routes/leaveManagementRoutes";
 import attachmentRoutes from "./routes/attachmentRoutes";
+import employeeRoutes from "./routes/employeeRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure CORS for authentication state persistence
@@ -28,6 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/interviews', interviewRoutes);
   app.use('/api/training', trainingRoutes);
   app.use('/api/onboarding', onboardingRoutes);
+  app.use('/api/employees', employeeRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/master-data', masterDataRoutes);
   app.use('/api/analytics', analyticsRoutes);

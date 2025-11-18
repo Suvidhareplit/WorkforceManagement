@@ -8,10 +8,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X, UserCheck, Lock, Check, FileCheck, Loader2 } from "lucide-react";
+import { Download, Upload, AlertCircle, CheckCircle2, AlertTriangle, X, UserCheck, Lock, Check, FileCheck, Loader2, UserPlus, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function Onboarding() {
   const [uploading, setUploading] = useState(false);
@@ -25,6 +29,13 @@ export default function Onboarding() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'single' | 'bulk'>('single');
   const [singleRecordId, setSingleRecordId] = useState<number | null>(null);
+  const [showCreateProfileDialog, setShowCreateProfileDialog] = useState(false);
+  const [selectedOnboardingId, setSelectedOnboardingId] = useState<number | null>(null);
+  const [groupDoj, setGroupDoj] = useState<Date | undefined>();
+  const [assets, setAssets] = useState('');
+  const [documents, setDocuments] = useState('');
+  const [paygrade, setPaygrade] = useState('');
+  const [payband, setPayband] = useState('');
   const { toast } = useToast();
 
   // Fetch onboarding records
@@ -82,6 +93,38 @@ export default function Onboarding() {
       toast({
         title: "Error",
         description: error.message || "Failed to submit onboarding",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create employee profile mutation
+  const createEmployeeProfileMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('/api/employees/profile', {
+        method: "POST",
+        body: data
+      });
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/onboarding/onboarding"] });
+      setShowCreateProfileDialog(false);
+      // Reset form
+      setSelectedOnboardingId(null);
+      setGroupDoj(undefined);
+      setAssets('');
+      setDocuments('');
+      setPaygrade('');
+      setPayband('');
+      toast({
+        title: "Success",
+        description: `Employee profile created successfully for ${data.data?.name || 'candidate'}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create employee profile",
         variant: "destructive",
       });
     },
