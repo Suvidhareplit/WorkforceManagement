@@ -37,20 +37,6 @@ export default function Onboarding() {
 
   const onboardingRecords = (onboardingResponse as any) || [];
 
-  // Fetch employees to check profile creation status
-  const { data: employeesResponse } = useQuery({
-    queryKey: ["/api/employees"],
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
-
-  const employees = ((employeesResponse as any)?.data || []);
-  
-  // Helper function to check if profile exists for an onboarding record
-  const hasProfile = (onboardingId: number) => {
-    return employees.some((emp: any) => emp.onboarding_id === onboardingId);
-  };
-
   // Update onboarding status mutation
   const updateOnboardingMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
@@ -111,7 +97,6 @@ export default function Onboarding() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding/onboarding"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
       toast({
         title: "Success",
         description: `Employee profile created successfully for ${data.data?.name || 'candidate'}`,
@@ -1392,9 +1377,9 @@ export default function Onboarding() {
                       {/* ACTIONS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         {(record.onboardingStatus || record.onboarding_status) === 'onboarded' ? (
-                          hasProfile(record.id) ? (
-                            <Badge className="bg-blue-600 hover:bg-blue-600">
-                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                          record.profile_created ? (
+                            <Badge className="bg-blue-600 hover:bg-blue-600 cursor-not-allowed">
+                              <Lock className="h-4 w-4 mr-1" />
                               Profile Created
                             </Badge>
                           ) : (

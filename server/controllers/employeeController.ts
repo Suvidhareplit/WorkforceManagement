@@ -160,6 +160,12 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
       ['employee_created', onboarding.candidate_id]
     );
     
+    // Mark profile as created in onboarding table
+    await query(
+      'UPDATE onboarding SET profile_created = TRUE WHERE id = ?',
+      [onboarding_id]
+    );
+    
     console.log('✅ Employee profile created successfully:', employeeId);
     
     res.status(201).json({ 
