@@ -35,7 +35,17 @@ export default function Onboarding() {
     refetchOnMount: false, // Don't refetch on component mount if data exists
   });
 
-  const onboardingRecords = (onboardingResponse as any) || [];
+  const onboardingRecords = ((onboardingResponse as any)?.data || []);
+  
+  // Debug: Log first record to verify profile_created
+  if (onboardingRecords.length > 0) {
+    console.log('📋 First onboarding record:', {
+      id: onboardingRecords[0].id,
+      name: onboardingRecords[0].name,
+      profile_created: onboardingRecords[0].profile_created,
+      profile_created_type: typeof onboardingRecords[0].profile_created
+    });
+  }
 
   // Update onboarding status mutation
   const updateOnboardingMutation = useMutation({
