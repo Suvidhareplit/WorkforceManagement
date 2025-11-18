@@ -1180,6 +1180,7 @@ export default function Onboarding() {
                   {/* STATUS */}
                   <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Status</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-gray-50 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Onboarded</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1391,6 +1392,24 @@ export default function Onboarding() {
                           disabled={(record.isLocked || record.is_locked)}
                           title={(record.isLocked || record.is_locked) ? "Record is locked and cannot be modified" : "Mark as onboarded"}
                         />
+                      </TableCell>
+                      {/* ACTIONS */}
+                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
+                        {(record.onboardingStatus || record.onboarding_status) === 'onboarded' ? (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setSelectedOnboardingId(record.id);
+                              setShowCreateProfileDialog(true);
+                            }}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <UserPlus className="h-4 w-4 mr-1" />
+                            Create Profile
+                          </Button>
+                        ) : (
+                          <span className="text-sm text-gray-400">Complete onboarding first</span>
+                        )}
                       </TableCell>
                     </TableRow>
                     );
@@ -1675,6 +1694,142 @@ export default function Onboarding() {
                 <>
                   <CheckCircle2 className="h-4 w-4 mr-2" />
                   Confirm & Submit
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Employee Profile Dialog */}
+      <Dialog open={showCreateProfileDialog} onOpenChange={setShowCreateProfileDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <UserPlus className="h-6 w-6 text-green-600" />
+              Create Employee Profile
+            </DialogTitle>
+            <DialogDescription>
+              Complete the employee profile with additional information. All fields are optional.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Group DOJ */}
+            <div className="space-y-2">
+              <Label htmlFor="group_doj">Group Date of Joining (Optional)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !groupDoj && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {groupDoj ? format(groupDoj, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={groupDoj}
+                    onSelect={setGroupDoj}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Assets */}
+            <div className="space-y-2">
+              <Label htmlFor="assets">Assets (Optional)</Label>
+              <Input
+                id="assets"
+                placeholder="e.g., Laptop, Phone, ID Card"
+                value={assets}
+                onChange={(e) => setAssets(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Comma-separated list of assigned assets</p>
+            </div>
+
+            {/* Documents */}
+            <div className="space-y-2">
+              <Label htmlFor="documents">Documents (Optional)</Label>
+              <Input
+                id="documents"
+                placeholder="e.g., Offer Letter, Contract, NDA"
+                value={documents}
+                onChange={(e) => setDocuments(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Comma-separated list of uploaded documents</p>
+            </div>
+
+            {/* Paygrade */}
+            <div className="space-y-2">
+              <Label htmlFor="paygrade">Pay Grade (Optional)</Label>
+              <Input
+                id="paygrade"
+                placeholder="e.g., L1, L2, Manager"
+                value={paygrade}
+                onChange={(e) => setPaygrade(e.target.value)}
+              />
+            </div>
+
+            {/* Payband */}
+            <div className="space-y-2">
+              <Label htmlFor="payband">Pay Band (Optional)</Label>
+              <Input
+                id="payband"
+                placeholder="e.g., Band A, Band B"
+                value={payband}
+                onChange={(e) => setPayband(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowCreateProfileDialog(false);
+                setSelectedOnboardingId(null);
+                setGroupDoj(undefined);
+                setAssets('');
+                setDocuments('');
+                setPaygrade('');
+                setPayband('');
+              }}
+              disabled={createEmployeeProfileMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                if (selectedOnboardingId) {
+                  createEmployeeProfileMutation.mutate({
+                    onboarding_id: selectedOnboardingId,
+                    group_doj: groupDoj ? format(groupDoj, 'yyyy-MM-dd') : null,
+                    assets: assets || null,
+                    documents: documents || null,
+                    paygrade: paygrade || null,
+                    payband: payband || null
+                  });
+                }
+              }}
+              disabled={createEmployeeProfileMutation.isPending || !selectedOnboardingId}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {createEmployeeProfileMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Create Profile
                 </>
               )}
             </Button>
