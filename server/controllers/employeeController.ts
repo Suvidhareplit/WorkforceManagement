@@ -1,6 +1,16 @@
 import { Request, Response } from "express";
 import { query } from '../config/db';
 
+// Helper function to convert string boolean to actual boolean
+const convertToBoolean = (value: any): boolean => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const lower = value.toLowerCase();
+    return lower === 'yes' || lower === 'true' || lower === '1';
+  }
+  return false;
+};
+
 // Create employee profile from onboarding record
 const createEmployeeProfile = async (req: Request, res: Response) => {
   try {
@@ -53,66 +63,49 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
     // Get user ID from request (for profile_created_by)
     const userId = (req as any).user?.id || null;
     
-    // Helper function to convert string boolean to actual boolean
-    const convertToBoolean = (value: any): boolean => {
-      if (typeof value === 'boolean') return value;
-      if (typeof value === 'string') {
-        const lower = value.toLowerCase();
-        return lower === 'yes' || lower === 'true' || lower === '1';
-      }
-      return false;
-    };
-    
-    // Create employee record with all onboarding data + new fields
+    // Create employee record with ALL onboarding data + new fields
     const result = await query(
       `INSERT INTO employees (
         candidate_id, onboarding_id, field_training_id,
-        employee_id,
-        name, mobile_number, email, city, cluster, role, manager_name,
-        date_of_joining, gross_salary,
+        name, mobile_number, email, city, cluster, role,
+        legal_entity, business_unit_name, function_name, department_name, sub_department_name, employment_type,
+        manager_name, date_of_joining, gross_salary,
+        resume_source, cost_centre, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
+        referral_contact, referral_relation, direct_source,
         gender, date_of_birth, blood_group, marital_status,
         physically_handicapped, nationality, international_worker,
         pan_number, name_as_per_pan, aadhar_number, name_as_per_aadhar,
-        account_number, ifsc_code, name_as_per_bank,
+        account_number, ifsc_code, bank_name, name_as_per_bank,
         present_address, permanent_address,
         emergency_contact_number, emergency_contact_name, emergency_contact_relation,
-        resume_source, cost_centre, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
+        father_name, father_dob, mother_name, mother_dob,
+        wife_name, wife_dob,
+        child1_name, child1_gender, child1_dob,
+        child2_name, child2_gender, child2_dob,
+        nominee_name, nominee_relation,
+        user_id, employee_id, uan_number, esic_ip_number,
         group_doj, assets, documents, paygrade, payband,
         working_status, profile_created_at, profile_created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
       [
         onboarding.candidate_id,
         onboarding.id,
         onboarding.field_training_id,
-        onboarding.employee_id,
         onboarding.name,
         onboarding.mobile_number,
         onboarding.email,
         onboarding.city,
         onboarding.cluster,
         onboarding.role,
+        onboarding.legal_entity,
+        onboarding.business_unit_name,
+        onboarding.function_name,
+        onboarding.department_name,
+        onboarding.sub_department_name,
+        onboarding.employment_type,
         onboarding.manager_name,
         onboarding.date_of_joining,
         onboarding.gross_salary,
-        onboarding.gender,
-        onboarding.date_of_birth,
-        onboarding.blood_group,
-        onboarding.marital_status,
-        convertToBoolean(onboarding.physically_handicapped),
-        onboarding.nationality,
-        convertToBoolean(onboarding.international_worker),
-        onboarding.pan_number,
-        onboarding.name_as_per_pan,
-        onboarding.aadhar_number,
-        onboarding.name_as_per_aadhar,
-        onboarding.account_number,
-        onboarding.ifsc_code,
-        onboarding.name_as_per_bank,
-        onboarding.present_address,
-        onboarding.permanent_address,
-        onboarding.emergency_contact_number,
-        onboarding.emergency_contact_name,
-        onboarding.emergency_contact_relation,
         onboarding.resume_source,
         onboarding.cost_centre,
         onboarding.vendor_id,
@@ -120,6 +113,47 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         onboarding.recruiter_id,
         onboarding.recruiter_name,
         onboarding.referral_name,
+        onboarding.referral_contact,
+        onboarding.referral_relation,
+        onboarding.direct_source,
+        onboarding.gender,
+        onboarding.date_of_birth,
+        onboarding.blood_group,
+        onboarding.marital_status,
+        convertToBoolean(onboarding.physically_handicapped),
+        onboarding.nationality,
+        onboarding.international_worker,
+        onboarding.pan_number,
+        onboarding.name_as_per_pan,
+        onboarding.aadhar_number,
+        onboarding.name_as_per_aadhar,
+        onboarding.account_number,
+        onboarding.ifsc_code,
+        onboarding.bank_name,
+        onboarding.name_as_per_bank,
+        onboarding.present_address,
+        onboarding.permanent_address,
+        onboarding.emergency_contact_number,
+        onboarding.emergency_contact_name,
+        onboarding.emergency_contact_relation,
+        onboarding.father_name,
+        onboarding.father_dob,
+        onboarding.mother_name,
+        onboarding.mother_dob,
+        onboarding.wife_name,
+        onboarding.wife_dob,
+        onboarding.child1_name,
+        onboarding.child1_gender,
+        onboarding.child1_dob,
+        onboarding.child2_name,
+        onboarding.child2_gender,
+        onboarding.child2_dob,
+        onboarding.nominee_name,
+        onboarding.nominee_relation,
+        onboarding.user_id,
+        onboarding.employee_id,
+        onboarding.uan_number,
+        onboarding.esic_ip_number,
         group_doj || null,
         assets || null,
         documents || null,
@@ -132,7 +166,7 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
     
     const employeeId = (result as any).insertId || result.rowCount;
     
-    // Update candidate status to 'employee_created' or similar
+    // Update candidate status to 'employee_created'
     await query(
       'UPDATE candidates SET status = ? WHERE id = ?',
       ['employee_created', onboarding.candidate_id]
