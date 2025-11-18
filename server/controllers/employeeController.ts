@@ -81,8 +81,9 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         father_name,
         user_id, employee_id, uan_number, esic_ip_number,
         group_doj, assets, documents, paygrade, payband,
-        working_status, profile_created_at, profile_created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
+        working_status, date_of_exit, exit_initiated_date, lwd,
+        profile_created_at, profile_created_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
       [
         onboarding.candidate_id,
         onboarding.id,
@@ -142,6 +143,9 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         paygrade || null,
         payband || null,
         'active',
+        null,  // date_of_exit - optional, can be filled later
+        null,  // exit_initiated_date - optional, can be filled later
+        null,  // lwd - optional, can be filled later
         userId
       ]
     );
