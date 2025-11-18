@@ -94,14 +94,14 @@ const getInductions = async (req: Request, res: Response) => {
     res.setHeader('Expires', '0');
     res.removeHeader('ETag');
     
-    // IMPORTANT: Filter out candidates who were rejected in technical round
-    // Join with candidates table to check technical_result
+    // IMPORTANT: Filter out candidates who were rejected or already onboarded
+    // Join with candidates table to check technical_result and status
     const result = await query(
       `SELECT it.* 
        FROM induction_training it
        LEFT JOIN candidates c ON it.candidate_id = c.id
        WHERE (c.technical_result IS NULL OR c.technical_result != 'rejected')
-         AND (c.status IS NULL OR c.status != 'rejected')
+         AND (c.status IS NULL OR c.status NOT IN ('rejected', 'onboarded'))
        ORDER BY it.created_at DESC`
     );
     const rows = result.rows || [];
