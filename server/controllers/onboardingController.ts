@@ -97,6 +97,18 @@ const updateOnboarding = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     const updateData = req.body;
     
+    // Get the current onboarding record to access candidate_id
+    const currentRecord = await query(
+      'SELECT candidate_id, onboarding_status FROM onboarding WHERE id = ?',
+      [id]
+    );
+    
+    if (!currentRecord.rows || currentRecord.rows.length === 0) {
+      return res.status(404).json({ message: "Onboarding record not found" });
+    }
+    
+    const candidateId = (currentRecord.rows[0] as any).candidate_id;
+    
     const fields: string[] = [];
     const values: any[] = [];
     
@@ -111,6 +123,15 @@ const updateOnboarding = async (req: Request, res: Response) => {
       `UPDATE onboarding SET ${fields.join(', ')} WHERE id = ?`,
       values
     );
+    
+    // IMPORTANT: If onboarding_status is changed to 'onboarded', update candidate status to 'onboarded'
+    if (updateData.onboarding_status === 'onboarded' && candidateId) {
+      console.log(`✅ Updating candidate ${candidateId} status to 'onboarded' (from onboarding completion)`);
+      await query(
+        'UPDATE candidates SET status = ? WHERE id = ?',
+        ['onboarded', candidateId]
+      );
+    }
     
     res.json({ message: "Onboarding record updated successfully" });
   } catch (error) {
