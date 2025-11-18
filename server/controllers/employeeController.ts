@@ -78,6 +78,7 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         account_number, ifsc_code, bank_name,
         present_address, permanent_address,
         emergency_contact_number, emergency_contact_name, emergency_contact_relation,
+        father_name,
         user_id, employee_id, uan_number, esic_ip_number,
         group_doj, assets, documents, paygrade, payband,
         working_status, profile_created_at, profile_created_by
@@ -130,6 +131,7 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         onboarding.emergency_contact_number,
         onboarding.emergency_contact_name,
         onboarding.emergency_contact_relation,
+        onboarding.father_name,
         onboarding.user_id,
         onboarding.employee_id,
         onboarding.uan_number,
