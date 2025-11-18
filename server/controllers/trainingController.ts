@@ -37,6 +37,20 @@ const createInduction = async (req: Request, res: Response) => {
     
     const candidate = candidateResult.rows[0] as any;
     
+    // VALIDATION: Prevent rejected candidates from being assigned to induction
+    if (candidate.status === 'rejected' || candidate.technical_result === 'rejected') {
+      return res.status(400).json({ 
+        message: `Cannot assign induction to rejected candidate. Technical Result: ${candidate.technical_result}, Status: ${candidate.status}` 
+      });
+    }
+    
+    // VALIDATION: Ensure candidate is in correct stage (selected or offered)
+    if (!['selected', 'offered'].includes(candidate.status)) {
+      return res.status(400).json({ 
+        message: `Candidate must be 'selected' or 'offered' to assign induction. Current status: ${candidate.status}` 
+      });
+    }
+    
     // Create induction record
     const result = await query(
       `INSERT INTO induction_training (

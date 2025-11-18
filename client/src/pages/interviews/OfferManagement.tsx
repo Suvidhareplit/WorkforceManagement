@@ -39,9 +39,11 @@ export default function OfferManagement() {
 
 
   // Extract data from API responses and filter for selected and offered candidates
+  // IMPORTANT: Also exclude candidates who were rejected in technical round
   const allCandidates = (selectedCandidatesResponse as any)?.data || [];
   const selectedCandidates = allCandidates.filter((c: any) => 
-    c.status === 'selected' || c.status === 'offered'
+    (c.status === 'selected' || c.status === 'offered' || c.status === 'assigned_induction') &&
+    c.technicalResult !== 'rejected' // Prevent rejected candidates from appearing
   );
 
   console.log('📋 Offer Management Data:', {

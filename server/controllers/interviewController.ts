@@ -306,6 +306,19 @@ const updateCandidateStatus = async (req: Request, res: Response) => {
       return res.status(400).json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
     }
     
+    // VALIDATION: Get current candidate to check technical result
+    const currentCandidate = await storage.getCandidate(id);
+    if (!currentCandidate) {
+      return res.status(404).json({ message: "Candidate not found" });
+    }
+    
+    // VALIDATION: Prevent changing status to 'selected', 'offered', or 'assigned_induction' if technical result is 'rejected'
+    if (['selected', 'offered', 'assigned_induction'].includes(status) && currentCandidate.technicalResult === 'rejected') {
+      return res.status(400).json({ 
+        message: `Cannot change status to '${status}' because candidate was rejected in technical round. Technical Result: ${currentCandidate.technicalResult}` 
+      });
+    }
+    
     const candidate = await storage.updateCandidate(id, { status });
     console.log('✅ Updated candidate status:', candidate);
     
