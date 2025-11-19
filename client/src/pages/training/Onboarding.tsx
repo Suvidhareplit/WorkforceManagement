@@ -30,9 +30,6 @@ export default function Onboarding() {
   // Fetch onboarding records
   const { data: onboardingResponse, isLoading } = useQuery({
     queryKey: ["/api/onboarding/onboarding"],
-    staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh for 5 min
-    refetchOnWindowFocus: false, // Don't refetch when window regains focus
-    refetchOnMount: false, // Don't refetch on component mount if data exists
   });
 
   const onboardingRecords = ((onboardingResponse as any)?.data || []);
