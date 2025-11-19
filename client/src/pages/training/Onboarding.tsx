@@ -32,7 +32,8 @@ export default function Onboarding() {
     queryKey: ["/api/onboarding/onboarding"],
   });
 
-  const onboardingRecords = ((onboardingResponse as any)?.data || []);
+  // Note: getQueryFn already extracts the data array from { data: [...] }
+  const onboardingRecords = (onboardingResponse as any) || [];
 
   // Update onboarding status mutation
   const updateOnboardingMutation = useMutation({
@@ -1374,7 +1375,7 @@ export default function Onboarding() {
                       {/* ACTIONS */}
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         {(record.onboardingStatus || record.onboarding_status) === 'onboarded' ? (
-                          record.profile_created ? (
+                          record.profileCreated ? (
                             <Badge className="bg-blue-600 hover:bg-blue-600 cursor-not-allowed">
                               <Lock className="h-4 w-4 mr-1" />
                               Profile Created
