@@ -15,12 +15,18 @@ import {
   UserCheck,
   Database,
   Calendar,
+  Home,
 } from "lucide-react";
 
 const menuItems = [
   {
     title: "OVERVIEW",
     items: [
+      {
+        icon: Home,
+        label: "Home",
+        href: "/home",
+      },
       {
         icon: LayoutDashboard,
         label: "Dashboard",

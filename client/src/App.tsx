@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "./hooks/useAuth";
 import Layout from "./components/layout/Layout";
+import Home from "./pages/Home";
+import EmployeeProfile from "./pages/EmployeeProfile";
 import Dashboard from "./pages/Dashboard";
 import CreateHiringRequest from "./pages/hiring/CreateHiringRequest";
 import ViewHiringRequests from "./pages/hiring/ViewHiringRequests";
@@ -28,6 +30,8 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/home" component={Home} />
+        <Route path="/employee/:employeeId" component={EmployeeProfile} />
         <Route path="/hiring/create" component={CreateHiringRequest} />
         <Route path="/hiring/requests" component={ViewHiringRequests} />
         <Route path="/interviews/applications" component={CandidateApplication} />
