@@ -12,15 +12,27 @@ import {
   Users,
   Heart,
   FileText,
+  MoreVertical,
+  FileEdit,
+  LogOut,
+  Flag,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 export default function EmployeeProfile() {
   const [, params] = useRoute("/employee/:employeeId");
   const employeeId = params?.employeeId;
+  const { toast } = useToast();
 
   // Fetch all employees and find the specific one
   const { data: employeesResponse, isLoading } = useQuery({
@@ -31,6 +43,28 @@ export default function EmployeeProfile() {
   const employee = employees.find(
     (emp: any) => (emp.employeeId || emp.employee_id) === employeeId
   );
+
+  // Action handlers
+  const handleWriteNote = () => {
+    toast({
+      title: "Write Internal Note",
+      description: "Internal note feature coming soon...",
+    });
+  };
+
+  const handleInitiateExit = () => {
+    toast({
+      title: "Initiate Exit",
+      description: "Employee exit process feature coming soon...",
+    });
+  };
+
+  const handleAddToPIP = () => {
+    toast({
+      title: "Add Employee to PIP",
+      description: "Performance Improvement Plan feature coming soon...",
+    });
+  };
 
   if (isLoading) {
     return (
@@ -75,7 +109,36 @@ export default function EmployeeProfile() {
 
       {/* Header Card with Employee Basic Info */}
       <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-        <CardContent className="p-8">
+        <CardContent className="p-8 relative">
+          {/* Action Menu - Top Right */}
+          <div className="absolute top-4 right-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-white hover:bg-white/20 h-8 w-8"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={handleWriteNote} className="cursor-pointer">
+                  <FileEdit className="h-4 w-4 mr-3 text-gray-600" />
+                  <span>Write Internal Note</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleInitiateExit} className="cursor-pointer">
+                  <LogOut className="h-4 w-4 mr-3 text-gray-600" />
+                  <span>Initiate Exit</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleAddToPIP} className="cursor-pointer">
+                  <Flag className="h-4 w-4 mr-3 text-gray-600" />
+                  <span>Add Employee to PIP</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           <div className="flex items-start gap-6">
             {/* Avatar */}
             <div className="flex-shrink-0">
