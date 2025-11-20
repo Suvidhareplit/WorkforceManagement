@@ -108,16 +108,16 @@ export default function EmployeeProfile() {
       </Link>
 
       {/* Header Card with Employee Basic Info */}
-      <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+      <Card className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 text-white shadow-lg">
         <CardContent className="p-8 relative">
           {/* Action Menu - Top Right */}
           <div className="absolute top-4 right-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   size="icon"
-                  className="text-white hover:bg-white/20 h-8 w-8"
+                  className="bg-white/90 text-gray-800 hover:bg-white hover:text-gray-900 border-2 border-white/50 h-10 w-10 shadow-md"
                 >
                   <MoreVertical className="h-5 w-5" />
                 </Button>
@@ -142,19 +142,19 @@ export default function EmployeeProfile() {
           <div className="flex items-start gap-6">
             {/* Avatar */}
             <div className="flex-shrink-0">
-              <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white text-3xl font-bold border-4 border-white/30">
+              <div className="w-24 h-24 rounded-full bg-white/30 backdrop-blur flex items-center justify-center text-white text-3xl font-bold border-4 border-white shadow-lg">
                 {(employee.name || "?").charAt(0).toUpperCase()}
               </div>
             </div>
 
             {/* Basic Info */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{employee.name}</h1>
-              <p className="text-xl text-purple-100 mb-4">
+              <h1 className="text-3xl font-bold mb-2 text-white drop-shadow-md">{employee.name}</h1>
+              <p className="text-xl text-white/95 mb-4 font-medium">
                 {employee.role || "N/A"}
               </p>
               
-              <div className="flex flex-wrap gap-4 text-sm mb-4">
+              <div className="flex flex-wrap gap-4 text-sm mb-4 text-white/95">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
                   <span>{employee.mobileNumber || employee.mobile_number || "N/A"}</span>
@@ -172,35 +172,37 @@ export default function EmployeeProfile() {
               {/* Additional Info Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 mb-4">
                 <div>
-                  <p className="text-xs text-purple-200 uppercase mb-1">Business Unit</p>
-                  <p className="text-sm font-medium">{employee.businessUnitName || employee.business_unit_name || "N/A"}</p>
+                  <p className="text-xs text-white/80 uppercase mb-1 font-semibold">Business Unit</p>
+                  <p className="text-sm font-semibold text-white">{employee.businessUnitName || employee.business_unit_name || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-purple-200 uppercase mb-1">Department</p>
-                  <p className="text-sm font-medium">{employee.departmentName || employee.department_name || "N/A"}</p>
+                  <p className="text-xs text-white/80 uppercase mb-1 font-semibold">Department</p>
+                  <p className="text-sm font-semibold text-white">{employee.departmentName || employee.department_name || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-purple-200 uppercase mb-1">Cost Centre</p>
-                  <p className="text-sm font-medium">{employee.costCentre || employee.cost_centre || "N/A"}</p>
+                  <p className="text-xs text-white/80 uppercase mb-1 font-semibold">Cost Centre</p>
+                  <p className="text-sm font-semibold text-white">{employee.costCentre || employee.cost_centre || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-purple-200 uppercase mb-1">Reporting Manager</p>
-                  <p className="text-sm font-medium">{employee.managerName || employee.manager_name || "N/A"}</p>
+                  <p className="text-xs text-white/80 uppercase mb-1 font-semibold">Reporting Manager</p>
+                  <p className="text-sm font-semibold text-white">{employee.managerName || employee.manager_name || "N/A"}</p>
                 </div>
               </div>
 
               <div className="mt-4 flex gap-2">
-                <Badge className="bg-white/20 hover:bg-white/20 text-white border-white/30">
+                <Badge className="bg-white/30 hover:bg-white/30 text-white border border-white/50 font-semibold text-sm px-3 py-1">
                   {employee.employmentType || employee.employment_type || "N/A"}
                 </Badge>
                 <Badge 
                   className={
-                    (employee.workingStatus || employee.working_status) === 'active'
-                      ? 'bg-green-500 hover:bg-green-500 text-white'
-                      : 'bg-red-500 hover:bg-red-500 text-white'
+                    (employee.workingStatus || employee.working_status) === 'working'
+                      ? 'bg-green-500 hover:bg-green-600 text-white font-semibold text-sm px-3 py-1 shadow-md border-2 border-green-600'
+                      : 'bg-red-500 hover:bg-red-600 text-white font-semibold text-sm px-3 py-1 shadow-md border-2 border-red-600'
                   }
                 >
-                  {employee.workingStatus || employee.working_status || 'Active'}
+                  {((employee.workingStatus || employee.working_status) === 'working' ? 'Working' : 
+                    (employee.workingStatus || employee.working_status) === 'relieved' ? 'Relieved' : 
+                    employee.workingStatus || employee.working_status || 'Working')}
                 </Badge>
               </div>
             </div>
