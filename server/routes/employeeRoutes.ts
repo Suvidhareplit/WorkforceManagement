@@ -15,4 +15,7 @@ router.get('/:id', employeeController.getEmployeeById);
 // Update employee
 router.patch('/:id', employeeController.updateEmployee);
 
+// Initiate employee exit
+router.post('/:employeeId/initiate-exit', employeeController.initiateExit);
+
 export default router;

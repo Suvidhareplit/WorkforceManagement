@@ -50,6 +50,7 @@ export const INVOLUNTARY_EXIT_REASONS = [
   'Background Verification Failure',
   'Contract / Project Completion',
   'ATL - Resign',
+  'Others',
 ] as const;
 
 /**

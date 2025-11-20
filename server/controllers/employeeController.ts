@@ -245,9 +245,113 @@ const updateEmployee = async (req: Request, res: Response) => {
   }
 };
 
+// Initiate employee exit
+const initiateExit = async (req: Request, res: Response) => {
+  try {
+    const { employeeId } = req.params;
+    const {
+      exitType,
+      exitReason,
+      discussionWithEmployee,
+      discussionSummary,
+      terminationNoticeDate,
+      lastWorkingDay,
+      noticePeriodServed,
+      okayToRehire,
+      abscondingLetterSent,
+      additionalComments
+    } = req.body;
+
+    console.log('🚪 Initiate Exit Request:', {
+      employeeId,
+      exitType,
+      exitReason,
+      lastWorkingDay
+    });
+
+    // Validate required fields
+    if (!exitType || !lastWorkingDay) {
+      return res.status(400).json({ message: "Exit type and last working day are required" });
+    }
+
+    // Validate exit type
+    if (!['voluntary', 'involuntary', 'absconding'].includes(exitType)) {
+      return res.status(400).json({ message: "Invalid exit type" });
+    }
+
+    // Check if employee exists
+    const employeeResult = await query(
+      'SELECT * FROM employees WHERE employee_id = ?',
+      [employeeId]
+    );
+
+    if (!employeeResult.rows || employeeResult.rows.length === 0) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    const employee = employeeResult.rows[0] as any;
+
+    // Check if employee is already relieved
+    if (employee.working_status === 'relieved') {
+      return res.status(400).json({ message: "Employee is already relieved" });
+    }
+
+    // Get current date for exit_initiated_date (format: YYYY-MM-DD)
+    const exitInitiatedDate = new Date().toISOString().split('T')[0];
+
+    // Build update query
+    const updateQuery = `
+      UPDATE employees 
+      SET 
+        exit_type = ?,
+        exit_reason = ?,
+        discussion_with_employee = ?,
+        discussion_summary = ?,
+        termination_notice_date = ?,
+        last_working_day = ?,
+        notice_period_served = ?,
+        okay_to_rehire = ?,
+        absconding_letter_sent = ?,
+        exit_additional_comments = ?,
+        exit_initiated_date = ?,
+        working_status = 'working'
+      WHERE employee_id = ?
+    `;
+
+    const params = [
+      exitType,
+      exitReason || null,
+      discussionWithEmployee || null,
+      discussionSummary || null,
+      terminationNoticeDate || null,
+      lastWorkingDay,
+      noticePeriodServed || null,
+      okayToRehire || null,
+      abscondingLetterSent || null,
+      additionalComments || null,
+      exitInitiatedDate,
+      employeeId
+    ];
+
+    await query(updateQuery, params);
+
+    console.log('✅ Exit initiated successfully for employee:', employeeId);
+
+    res.json({ 
+      message: "Exit initiated successfully",
+      exitInitiatedDate,
+      employeeId
+    });
+  } catch (error) {
+    console.error('Initiate exit error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const employeeController = {
   createEmployeeProfile,
   getEmployees,
   getEmployeeById,
-  updateEmployee
+  updateEmployee,
+  initiateExit
 };

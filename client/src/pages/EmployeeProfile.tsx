@@ -28,11 +28,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { InitiateExitDialog, ExitData } from "@/components/dialogs/InitiateExitDialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 export default function EmployeeProfile() {
   const [, params] = useRoute("/employee/:employeeId");
   const employeeId = params?.employeeId;
   const { toast } = useToast();
+  const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch all employees and find the specific one
   const { data: employeesResponse, isLoading } = useQuery({
@@ -52,11 +57,61 @@ export default function EmployeeProfile() {
     });
   };
 
+  // Mutation for initiating exit
+  const initiateExitMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch(`/api/employees/${data.employeeId}/initiate-exit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to initiate exit');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/employees'] });
+      toast({
+        title: "Exit Initiated",
+        description: "Employee exit process has been initiated successfully.",
+      });
+      setIsExitDialogOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleInitiateExit = () => {
-    toast({
-      title: "Initiate Exit",
-      description: "Employee exit process feature coming soon...",
-    });
+    setIsExitDialogOpen(true);
+  };
+
+  const handleExitSubmit = (data: ExitData) => {
+    if (!employeeId) return;
+    
+    // Format dates to YYYY-MM-DD for API
+    const formattedData = {
+      exitType: data.exitType,
+      exitReason: data.exitReason,
+      discussionWithEmployee: data.discussionWithEmployee,
+      discussionSummary: data.discussionSummary,
+      terminationNoticeDate: data.terminationNoticeDate.toISOString().split('T')[0],
+      lastWorkingDay: data.lastWorkingDay.toISOString().split('T')[0],
+      noticePeriodServed: data.noticePeriodServed,
+      okayToRehire: data.okayToRehire,
+      abscondingLetterSent: data.abscondingLetterSent,
+      additionalComments: data.additionalComments,
+      employeeId,
+    };
+    
+    initiateExitMutation.mutate(formattedData);
   };
 
   const handleAddToPIP = () => {
@@ -122,18 +177,18 @@ export default function EmployeeProfile() {
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={handleWriteNote} className="cursor-pointer">
-                  <FileEdit className="h-4 w-4 mr-3 text-gray-600" />
-                  <span>Write Internal Note</span>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuItem onClick={handleWriteNote} className="cursor-pointer py-3">
+                  <FileEdit className="h-5 w-5 mr-3 text-gray-600" />
+                  <span className="text-base">Write Internal Note</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleInitiateExit} className="cursor-pointer">
-                  <LogOut className="h-4 w-4 mr-3 text-gray-600" />
-                  <span>Initiate Exit</span>
+                <DropdownMenuItem onClick={handleInitiateExit} className="cursor-pointer py-3">
+                  <LogOut className="h-5 w-5 mr-3 text-gray-600" />
+                  <span className="text-base">Initiate Exit</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleAddToPIP} className="cursor-pointer">
-                  <Flag className="h-4 w-4 mr-3 text-gray-600" />
-                  <span>Add Employee to PIP</span>
+                <DropdownMenuItem onClick={handleAddToPIP} className="cursor-pointer py-3">
+                  <Flag className="h-5 w-5 mr-3 text-gray-600" />
+                  <span className="text-base">Add Employee to PIP</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -149,12 +204,12 @@ export default function EmployeeProfile() {
 
             {/* Basic Info */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2 text-white drop-shadow-lg">{employee.name}</h1>
-              <p className="text-xl text-white mb-4 font-semibold drop-shadow-md">
+              <h1 className="text-4xl font-bold mb-2 text-white drop-shadow-lg">{employee.name}</h1>
+              <p className="text-2xl text-white mb-4 font-semibold drop-shadow-md">
                 {employee.role || "N/A"}
               </p>
               
-              <div className="flex flex-wrap gap-4 text-sm mb-4 text-white font-medium">
+              <div className="flex flex-wrap gap-4 text-base mb-4 text-white font-medium">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
                   <span>{employee.mobileNumber || employee.mobile_number || "N/A"}</span>
@@ -172,20 +227,20 @@ export default function EmployeeProfile() {
               {/* Additional Info Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 mb-4">
                 <div>
-                  <p className="text-xs text-white uppercase mb-1 font-bold tracking-wide">Business Unit</p>
-                  <p className="text-sm font-bold text-white drop-shadow">{employee.businessUnitName || employee.business_unit_name || "N/A"}</p>
+                  <p className="text-sm text-white uppercase mb-1 font-bold tracking-wide">Business Unit</p>
+                  <p className="text-base font-bold text-white drop-shadow">{employee.businessUnitName || employee.business_unit_name || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white uppercase mb-1 font-bold tracking-wide">Department</p>
-                  <p className="text-sm font-bold text-white drop-shadow">{employee.departmentName || employee.department_name || "N/A"}</p>
+                  <p className="text-sm text-white uppercase mb-1 font-bold tracking-wide">Department</p>
+                  <p className="text-base font-bold text-white drop-shadow">{employee.departmentName || employee.department_name || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white uppercase mb-1 font-bold tracking-wide">Cost Centre</p>
-                  <p className="text-sm font-bold text-white drop-shadow">{employee.costCentre || employee.cost_centre || "N/A"}</p>
+                  <p className="text-sm text-white uppercase mb-1 font-bold tracking-wide">Cost Centre</p>
+                  <p className="text-base font-bold text-white drop-shadow">{employee.costCentre || employee.cost_centre || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white uppercase mb-1 font-bold tracking-wide">Reporting Manager</p>
-                  <p className="text-sm font-bold text-white drop-shadow">{employee.managerName || employee.manager_name || "N/A"}</p>
+                  <p className="text-sm text-white uppercase mb-1 font-bold tracking-wide">Reporting Manager</p>
+                  <p className="text-base font-bold text-white drop-shadow">{employee.managerName || employee.manager_name || "N/A"}</p>
                 </div>
               </div>
 
@@ -522,6 +577,14 @@ export default function EmployeeProfile() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Initiate Exit Dialog */}
+      <InitiateExitDialog
+        open={isExitDialogOpen}
+        onOpenChange={setIsExitDialogOpen}
+        employee={employee}
+        onSubmit={handleExitSubmit}
+      />
     </div>
   );
 }
