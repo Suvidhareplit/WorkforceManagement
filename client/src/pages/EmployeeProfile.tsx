@@ -115,9 +115,9 @@ export default function EmployeeProfile() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="icon"
-                  className="bg-white/90 text-gray-800 hover:bg-white hover:text-gray-900 border-2 border-white/50 h-10 w-10 shadow-md"
+                  className="bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-2 border-white h-10 w-10 shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   <MoreVertical className="h-5 w-5" />
                 </Button>
@@ -149,12 +149,12 @@ export default function EmployeeProfile() {
 
             {/* Basic Info */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2 text-white drop-shadow-md">{employee.name}</h1>
-              <p className="text-xl text-white/95 mb-4 font-medium">
+              <h1 className="text-3xl font-bold mb-2 text-white drop-shadow-lg">{employee.name}</h1>
+              <p className="text-xl text-white mb-4 font-semibold drop-shadow-md">
                 {employee.role || "N/A"}
               </p>
               
-              <div className="flex flex-wrap gap-4 text-sm mb-4 text-white/95">
+              <div className="flex flex-wrap gap-4 text-sm mb-4 text-white font-medium">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
                   <span>{employee.mobileNumber || employee.mobile_number || "N/A"}</span>
@@ -172,20 +172,20 @@ export default function EmployeeProfile() {
               {/* Additional Info Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 mb-4">
                 <div>
-                  <p className="text-xs text-white/80 uppercase mb-1 font-semibold">Business Unit</p>
-                  <p className="text-sm font-semibold text-white">{employee.businessUnitName || employee.business_unit_name || "N/A"}</p>
+                  <p className="text-xs text-white uppercase mb-1 font-bold tracking-wide">Business Unit</p>
+                  <p className="text-sm font-bold text-white drop-shadow">{employee.businessUnitName || employee.business_unit_name || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white/80 uppercase mb-1 font-semibold">Department</p>
-                  <p className="text-sm font-semibold text-white">{employee.departmentName || employee.department_name || "N/A"}</p>
+                  <p className="text-xs text-white uppercase mb-1 font-bold tracking-wide">Department</p>
+                  <p className="text-sm font-bold text-white drop-shadow">{employee.departmentName || employee.department_name || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white/80 uppercase mb-1 font-semibold">Cost Centre</p>
-                  <p className="text-sm font-semibold text-white">{employee.costCentre || employee.cost_centre || "N/A"}</p>
+                  <p className="text-xs text-white uppercase mb-1 font-bold tracking-wide">Cost Centre</p>
+                  <p className="text-sm font-bold text-white drop-shadow">{employee.costCentre || employee.cost_centre || "N/A"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white/80 uppercase mb-1 font-semibold">Reporting Manager</p>
-                  <p className="text-sm font-semibold text-white">{employee.managerName || employee.manager_name || "N/A"}</p>
+                  <p className="text-xs text-white uppercase mb-1 font-bold tracking-wide">Reporting Manager</p>
+                  <p className="text-sm font-bold text-white drop-shadow">{employee.managerName || employee.manager_name || "N/A"}</p>
                 </div>
               </div>
 
