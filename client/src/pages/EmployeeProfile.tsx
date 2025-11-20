@@ -91,7 +91,7 @@ export default function EmployeeProfile() {
                 {employee.role || "N/A"}
               </p>
               
-              <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex flex-wrap gap-4 text-sm mb-4">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
                   <span>{employee.mobileNumber || employee.mobile_number || "N/A"}</span>
@@ -103,6 +103,26 @@ export default function EmployeeProfile() {
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4" />
                   <span>Emp # {employee.employeeId || employee.employee_id}</span>
+                </div>
+              </div>
+
+              {/* Additional Info Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 mb-4">
+                <div>
+                  <p className="text-xs text-purple-200 uppercase mb-1">Business Unit</p>
+                  <p className="text-sm font-medium">{employee.businessUnitName || employee.business_unit_name || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-purple-200 uppercase mb-1">Department</p>
+                  <p className="text-sm font-medium">{employee.departmentName || employee.department_name || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-purple-200 uppercase mb-1">Cost Centre</p>
+                  <p className="text-sm font-medium">{employee.costCentre || employee.cost_centre || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-purple-200 uppercase mb-1">Reporting Manager</p>
+                  <p className="text-sm font-medium">{employee.managerName || employee.manager_name || "N/A"}</p>
                 </div>
               </div>
 
@@ -224,42 +244,161 @@ export default function EmployeeProfile() {
 
         {/* Job Tab */}
         <TabsContent value="job" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Employment Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5" />
-                  Employment Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <InfoRow label="Employment Type" value={employee.employmentType || employee.employment_type} />
-                <InfoRow label="Date of Joining" value={formatDate(employee.dateOfJoining || employee.date_of_joining)} />
-                <InfoRow label="Group DOJ" value={formatDate(employee.groupDoj || employee.group_doj)} />
-                <InfoRow label="Gross Salary" value={employee.grossSalary ? `₹${parseFloat(employee.grossSalary || employee.gross_salary).toLocaleString('en-IN')}` : 'N/A'} />
-                <InfoRow label="Cost Centre" value={employee.costCentre || employee.cost_centre} />
-                <InfoRow label="Resume Source" value={employee.resumeSource || employee.resume_source} />
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Job Details */}
+            <div className="space-y-6">
+              {/* Job Details Card */}
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle className="text-lg font-semibold">Job Details</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">Employee Number</p>
+                      <p className="text-sm font-medium text-gray-900">{employee.employeeId || employee.employee_id}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">Date of Joining</p>
+                      <p className="text-sm font-medium text-gray-900">{formatDate(employee.dateOfJoining || employee.date_of_joining)}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-gray-500 uppercase mb-1">Job Title - Primary</p>
+                      <p className="text-sm font-medium text-gray-900">{employee.role || "N/A"}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-gray-500 uppercase mb-1">Job Title - Secondary</p>
+                      <p className="text-sm font-medium text-gray-900">-Not Set-</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">In Probation?</p>
+                      <p className="text-sm font-medium text-gray-900">No</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">Notice Period</p>
+                      <p className="text-sm font-medium text-gray-900">Permanent employees Notice Period (1 Months)</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">Worker Type</p>
+                      <p className="text-sm font-medium text-gray-900">{employee.employmentType || employee.employment_type || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">Time Type</p>
+                      <p className="text-sm font-medium text-gray-900">Full Time</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">Contract Status</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                          Not Applicable
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">Pay Grade</p>
+                      <p className="text-sm font-medium text-gray-900">{employee.paygrade || "-Not Set-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase mb-1">Pay Band</p>
+                      <p className="text-sm font-medium text-gray-900">{employee.payband || "-Not Set-"}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Vendor/Recruiter Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Source Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <InfoRow label="Vendor" value={employee.vendorName || employee.vendor_name} />
-                <InfoRow label="Recruiter" value={employee.recruiterName || employee.recruiter_name} />
-                <InfoRow label="Paygrade" value={employee.paygrade} />
-                <InfoRow label="Payband" value={employee.payband} />
-                <InfoRow label="Assets" value={employee.assets} />
-                <InfoRow label="Documents" value={employee.documents} />
-              </CardContent>
-            </Card>
+              {/* Employee Time Card */}
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle className="text-lg font-semibold">Employee Time</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800">
+                      Managing shift-based pay? <span className="text-blue-600 font-medium cursor-pointer hover:underline">Learn</span> how to set up and manage shift allowance policies.
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase mb-1">Shift</p>
+                        <p className="text-sm font-medium text-gray-900">Rotational Shift - Yuzen</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase mb-1">Weekly Off Policy</p>
+                        <p className="text-sm font-medium text-gray-900">Scheduled Weekly Off</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase mb-1">Leave Plan</p>
+                        <p className="text-sm font-medium text-gray-900">Yuzen Leave Plan Without Leave Types</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase mb-1">Holiday Calendar</p>
+                        <p className="text-sm font-medium text-gray-900">Bangalore Holiday List</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase mb-1">Attendance Number</p>
+                        <p className="text-sm font-medium text-gray-900">{employee.employeeId || employee.employee_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase mb-1">Payroll Time Source</p>
+                        <p className="text-sm font-medium text-gray-900">Attendance</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column - Organization */}
+            <div>
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle className="text-lg font-semibold">Organization</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Business Unit</p>
+                    <p className="text-sm font-medium text-gray-900">{employee.businessUnitName || employee.business_unit_name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Department</p>
+                    <p className="text-sm font-medium text-gray-900">{employee.departmentName || employee.department_name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Location</p>
+                    <p className="text-sm font-medium text-gray-900">{employee.city || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Cost Center</p>
+                    <p className="text-sm font-medium text-gray-900">{employee.costCentre || employee.cost_centre || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Legal Entity</p>
+                    <p className="text-sm font-medium text-gray-900">{employee.legalEntity || employee.legal_entity || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Dotted Line Manager</p>
+                    <p className="text-sm font-medium text-gray-900">-Not Set-</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Reports To</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
+                        {(employee.managerName || employee.manager_name || "?").charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{employee.managerName || employee.manager_name || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Manager of Manager (L2 Manager)</p>
+                    <p className="text-sm font-medium text-gray-900">-Not Set-</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase mb-1">Direct Reports</p>
+                    <p className="text-sm font-medium text-gray-900">0 Employees</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
 
