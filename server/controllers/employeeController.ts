@@ -308,7 +308,7 @@ const initiateExit = async (req: Request, res: Response) => {
         discussion_with_employee = ?,
         discussion_summary = ?,
         termination_notice_date = ?,
-        last_working_day = ?,
+        lwd = ?,
         notice_period_served = ?,
         okay_to_rehire = ?,
         absconding_letter_sent = ?,
