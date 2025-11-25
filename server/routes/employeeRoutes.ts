@@ -21,4 +21,7 @@ router.post('/:employeeId/initiate-exit', employeeController.initiateExit);
 // Revoke employee exit
 router.delete('/:employeeId/revoke-exit', employeeController.revokeExit);
 
+// Get exit audit trail for employee
+router.get('/:employeeId/exit-audit-trail', employeeController.getExitAuditTrail);
+
 export default router;

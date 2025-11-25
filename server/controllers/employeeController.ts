@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { query } from '../config/db';
+import { ExitAuditLogger } from '../utils/auditLogger';
 
 // Helper function to convert string boolean to actual boolean
 const convertToBoolean = (value: any): boolean => {
@@ -335,6 +336,26 @@ const initiateExit = async (req: Request, res: Response) => {
 
     await query(updateQuery, params);
 
+    // Log audit trail
+    await ExitAuditLogger.logExitInitiation(
+      employeeId,
+      {
+        exitType,
+        exitReason,
+        discussionWithEmployee,
+        discussionSummary,
+        terminationNoticeDate,
+        lastWorkingDay,
+        noticePeriodServed,
+        okayToRehire,
+        abscondingLetterSent,
+        additionalComments
+      },
+      req,
+      'system', // TODO: Get from authenticated user
+      'System User' // TODO: Get from authenticated user
+    );
+
     console.log('✅ Exit initiated successfully for employee:', employeeId);
 
     res.json({ 
@@ -377,6 +398,22 @@ const revokeExit = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Cannot revoke exit for relieved employee" });
     }
 
+    // Store previous exit data for audit trail
+    const previousExitData = {
+      exit_type: employee.exit_type,
+      exit_reason: employee.exit_reason,
+      discussion_with_employee: employee.discussion_with_employee,
+      discussion_summary: employee.discussion_summary,
+      termination_notice_date: employee.termination_notice_date,
+      lwd: employee.lwd,
+      notice_period_served: employee.notice_period_served,
+      okay_to_rehire: employee.okay_to_rehire,
+      absconding_letter_sent: employee.absconding_letter_sent,
+      exit_additional_comments: employee.exit_additional_comments,
+      exit_initiated_date: employee.exit_initiated_date,
+      working_status: employee.working_status
+    };
+
     // Clear all exit-related data
     const revokeQuery = `
       UPDATE employees 
@@ -398,6 +435,15 @@ const revokeExit = async (req: Request, res: Response) => {
 
     await query(revokeQuery, [employeeId]);
 
+    // Log audit trail
+    await ExitAuditLogger.logExitRevocation(
+      employeeId,
+      previousExitData,
+      req,
+      'system', // TODO: Get from authenticated user
+      'System User' // TODO: Get from authenticated user
+    );
+
     console.log('✅ Exit revoked successfully for employee:', employeeId);
 
     res.json({ 
@@ -410,11 +456,47 @@ const revokeExit = async (req: Request, res: Response) => {
   }
 };
 
+// Get exit audit trail for an employee
+const getExitAuditTrail = async (req: Request, res: Response) => {
+  try {
+    const { employeeId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 50;
+
+    console.log('📋 Get Exit Audit Trail Request for employee:', employeeId);
+
+    // Check if employee exists
+    const employeeResult = await query(
+      'SELECT employee_id, name FROM employees WHERE employee_id = ?',
+      [employeeId]
+    );
+
+    if (!employeeResult.rows || employeeResult.rows.length === 0) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // Get audit trail
+    const auditTrail = await ExitAuditLogger.getEmployeeAuditTrail(employeeId, limit);
+
+    console.log(`✅ Retrieved ${auditTrail.length} audit records for employee:`, employeeId);
+
+    res.json({
+      message: "Audit trail retrieved successfully",
+      employeeId,
+      auditTrail,
+      totalRecords: auditTrail.length
+    });
+  } catch (error) {
+    console.error('Get audit trail error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const employeeController = {
   createEmployeeProfile,
   getEmployees,
   getEmployeeById,
   updateEmployee,
   initiateExit,
-  revokeExit
+  revokeExit,
+  getExitAuditTrail
 };
