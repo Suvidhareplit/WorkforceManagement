@@ -348,10 +348,73 @@ const initiateExit = async (req: Request, res: Response) => {
   }
 };
 
+// Revoke employee exit
+const revokeExit = async (req: Request, res: Response) => {
+  try {
+    const { employeeId } = req.params;
+
+    console.log('🔄 Revoke Exit Request for employee:', employeeId);
+
+    // Check if employee exists
+    const employeeResult = await query(
+      'SELECT * FROM employees WHERE employee_id = ?',
+      [employeeId]
+    );
+
+    if (!employeeResult.rows || employeeResult.rows.length === 0) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    const employee = employeeResult.rows[0] as any;
+
+    // Check if employee has exit initiated
+    if (!employee.exit_initiated_date) {
+      return res.status(400).json({ message: "No exit process found for this employee" });
+    }
+
+    // Check if employee is already relieved
+    if (employee.working_status === 'relieved') {
+      return res.status(400).json({ message: "Cannot revoke exit for relieved employee" });
+    }
+
+    // Clear all exit-related data
+    const revokeQuery = `
+      UPDATE employees 
+      SET 
+        exit_type = NULL,
+        exit_reason = NULL,
+        discussion_with_employee = NULL,
+        discussion_summary = NULL,
+        termination_notice_date = NULL,
+        lwd = NULL,
+        notice_period_served = NULL,
+        okay_to_rehire = NULL,
+        absconding_letter_sent = NULL,
+        exit_additional_comments = NULL,
+        exit_initiated_date = NULL,
+        working_status = 'working'
+      WHERE employee_id = ?
+    `;
+
+    await query(revokeQuery, [employeeId]);
+
+    console.log('✅ Exit revoked successfully for employee:', employeeId);
+
+    res.json({ 
+      message: "Exit revoked successfully",
+      employeeId
+    });
+  } catch (error) {
+    console.error('Revoke exit error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const employeeController = {
   createEmployeeProfile,
   getEmployees,
   getEmployeeById,
   updateEmployee,
-  initiateExit
+  initiateExit,
+  revokeExit
 };

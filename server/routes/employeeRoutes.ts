@@ -18,4 +18,7 @@ router.patch('/:id', employeeController.updateEmployee);
 // Initiate employee exit
 router.post('/:employeeId/initiate-exit', employeeController.initiateExit);
 
+// Revoke employee exit
+router.delete('/:employeeId/revoke-exit', employeeController.revokeExit);
+
 export default router;

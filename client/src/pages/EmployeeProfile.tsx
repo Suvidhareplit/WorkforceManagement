@@ -16,6 +16,9 @@ import {
   FileEdit,
   LogOut,
   Flag,
+  Undo2,
+  AlertCircle,
+  Calendar,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -114,6 +117,41 @@ export default function EmployeeProfile() {
     initiateExitMutation.mutate(formattedData);
   };
 
+  // Mutation for revoking exit
+  const revokeExitMutation = useMutation({
+    mutationFn: async (employeeId: string) => {
+      const response = await fetch(`/api/employees/${employeeId}/revoke-exit`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to revoke exit');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/employees'] });
+      toast({
+        title: "Exit Revoked",
+        description: "Employee exit process has been revoked successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRevokeExit = () => {
+    if (!employeeId) return;
+    revokeExitMutation.mutate(employeeId);
+  };
+
   const handleAddToPIP = () => {
     toast({
       title: "Add Employee to PIP",
@@ -182,10 +220,17 @@ export default function EmployeeProfile() {
                   <FileEdit className="h-5 w-5 mr-3 text-gray-600" />
                   <span className="text-base">Write Internal Note</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleInitiateExit} className="cursor-pointer py-3">
-                  <LogOut className="h-5 w-5 mr-3 text-gray-600" />
-                  <span className="text-base">Initiate Exit</span>
-                </DropdownMenuItem>
+                {!(employee.exitInitiatedDate || employee.exit_initiated_date) ? (
+                  <DropdownMenuItem onClick={handleInitiateExit} className="cursor-pointer py-3">
+                    <LogOut className="h-5 w-5 mr-3 text-gray-600" />
+                    <span className="text-base">Initiate Exit</span>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={handleRevokeExit} className="cursor-pointer py-3">
+                    <Undo2 className="h-5 w-5 mr-3 text-orange-600" />
+                    <span className="text-base text-orange-600">Revoke Exit</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={handleAddToPIP} className="cursor-pointer py-3">
                   <Flag className="h-5 w-5 mr-3 text-gray-600" />
                   <span className="text-base">Add Employee to PIP</span>
@@ -244,7 +289,7 @@ export default function EmployeeProfile() {
                 </div>
               </div>
 
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <Badge className="bg-white/30 hover:bg-white/30 text-white border border-white/50 font-semibold text-sm px-3 py-1">
                   {employee.employmentType || employee.employment_type || "N/A"}
                 </Badge>
@@ -259,6 +304,26 @@ export default function EmployeeProfile() {
                     (employee.workingStatus || employee.working_status) === 'relieved' ? 'Relieved' : 
                     employee.workingStatus || employee.working_status || 'Working')}
                 </Badge>
+                
+                {/* Exit Status Badge */}
+                {(employee.exitInitiatedDate || employee.exit_initiated_date) && (
+                  <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm px-3 py-1 shadow-md border-2 border-orange-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    Exit Initiated
+                  </Badge>
+                )}
+                
+                {/* Last Working Day Badge */}
+                {(employee.lwd || employee.last_working_day) && (
+                  <Badge className="bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm px-3 py-1 shadow-md border-2 border-blue-600 flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    LWD: {new Date(employee.lwd || employee.last_working_day).toLocaleDateString('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
