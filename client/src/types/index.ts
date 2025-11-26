@@ -81,6 +81,32 @@ export interface Role {
   isActive?: boolean;
 }
 
+export interface Designation {
+  id: number;
+  name: string;
+  code: string;
+  description?: string;
+  roleId: number;
+  roleName?: string;
+  roleCode?: string;
+  subDepartmentId: number;
+  subDepartmentName?: string;
+  subDepartmentCode?: string;
+  level: 'entry' | 'junior' | 'mid' | 'senior' | 'lead' | 'manager' | 'director' | 'executive';
+  grade?: string;
+  minSalary?: number;
+  maxSalary?: number;
+  isActive: boolean;
+  requiresApproval: boolean;
+  reportsToDesignationId?: number;
+  reportsToDesignationName?: string;
+  canManageDesignations?: number[];
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: number;
+  updatedBy?: number;
+}
+
 export interface Vendor {
   id: number;
   name: string;

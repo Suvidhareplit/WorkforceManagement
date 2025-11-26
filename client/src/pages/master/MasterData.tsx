@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { City, Cluster, Role, Vendor, Recruiter, Trainer, Function, BusinessUnit, Department, SubDepartment } from "@/types";
+import { City, Cluster, Role, Vendor, Recruiter, Trainer, Function, BusinessUnit, Department, SubDepartment, Designation } from "@/types";
 import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye, DollarSign, Building, Layers, FolderTree, Plus, X, GraduationCap } from "lucide-react";
 
 import { useEffect } from "react";
@@ -30,6 +30,7 @@ export default function MasterData() {
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/role"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/vendor"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/recruiter"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/designations"] });
   }, []);
 
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -84,6 +85,14 @@ export default function MasterData() {
     subDepartment: "",
     skillLevel: "",
     level: "",
+    // Designation fields
+    roleId: "",
+    subDepartmentId: "",
+    designationLevel: "mid",
+    grade: "",
+    minSalary: "",
+    maxSalary: "",
+    description: "",
     // Commercial terms
     managementFees: "",
     sourcingFee: "",
@@ -141,6 +150,10 @@ export default function MasterData() {
     queryKey: ["/api/master-data/trainer"],
   });
 
+  const { data: designations = [], isLoading: loadingDesignations } = useQuery({
+    queryKey: ["/api/designations"],
+  });
+
   // Ensure data is always an array to prevent map errors - SHOW ALL ITEMS INCLUDING INACTIVE
   const safeCities = Array.isArray(cities) ? cities : [];
   const safeClusters = Array.isArray(clusters) ? clusters : [];
@@ -152,6 +165,7 @@ export default function MasterData() {
   const safeVendors = Array.isArray(vendors) ? vendors : [];
   const safeRecruiters = Array.isArray(recruiters) ? recruiters : [];
   const safeTrainers = Array.isArray(trainers) ? trainers : [];
+  const safeDesignations = Array.isArray(designations?.data) ? designations.data : [];
 
   const createCityMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -274,6 +288,30 @@ export default function MasterData() {
       toast({
         title: "Error",
         description: error.message || "Failed to create recruiter",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createDesignationMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("/api/designations", {
+        method: "POST",
+        body: data,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/designations"] });
+      toast({
+        title: "Success",
+        description: "Designation created successfully",
+      });
+      resetForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create designation",
         variant: "destructive",
       });
     },
@@ -465,6 +503,29 @@ export default function MasterData() {
     });
   };
 
+  const handleCreateDesignation = () => {
+    if (!formData.name || !formData.code || !formData.roleId || !formData.subDepartmentId) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields (Name, Code, Role, Sub Department)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createDesignationMutation.mutate({
+      name: formData.name,
+      code: formData.code.toUpperCase(),
+      description: formData.description,
+      role_id: parseInt(formData.roleId),
+      sub_department_id: parseInt(formData.subDepartmentId),
+      level: formData.designationLevel,
+      grade: formData.grade,
+      min_salary: formData.minSalary ? parseFloat(formData.minSalary) : undefined,
+      max_salary: formData.maxSalary ? parseFloat(formData.maxSalary) : undefined,
+    });
+  };
+
   // Edit and Delete handlers
   const handleEditCity = (city: City) => {
     setEditingItem(city);
@@ -486,7 +547,9 @@ export default function MasterData() {
     if (!editingItem || !editType) return;
     
     try {
-      const endpoint = `/api/master-data/${editType}/${editingItem.id}`;
+      const endpoint = editType === 'designation' 
+        ? `/api/designations/${editingItem.id}`
+        : `/api/master-data/${editType}/${editingItem.id}`;
       
       // Handle file uploads for roles
       if (editType === 'role' && editFormData.jobDescriptionFile) {
@@ -564,6 +627,15 @@ export default function MasterData() {
             email: editFormData.email,
             phone: editFormData.phone
           }),
+          ...(editType === 'designation' && { 
+            description: (editFormData as any).description,
+            role_id: parseInt((editFormData as any).roleId),
+            sub_department_id: parseInt((editFormData as any).subDepartmentId),
+            level: (editFormData as any).designationLevel,
+            grade: (editFormData as any).grade,
+            min_salary: (editFormData as any).minSalary ? parseFloat((editFormData as any).minSalary) : undefined,
+            max_salary: (editFormData as any).maxSalary ? parseFloat((editFormData as any).maxSalary) : undefined,
+          }),
           ...(editType === 'cluster' && { city_id: parseInt(editFormData.cityId) }), // Use snake_case for backend
           ...(editType === 'department' && { 
             businessUnitId: editFormData.businessUnit ? parseInt(editFormData.businessUnit) : undefined
@@ -579,7 +651,9 @@ export default function MasterData() {
         });
       }
       
-      queryClient.invalidateQueries({ queryKey: [`/api/master-data/${editType}`] });
+      queryClient.invalidateQueries({ 
+        queryKey: editType === 'designation' ? ["/api/designations"] : [`/api/master-data/${editType}`] 
+      });
       toast({
         title: "Success",
         description: `${editType.charAt(0).toUpperCase() + editType.slice(1)} updated successfully`,
@@ -818,7 +892,7 @@ export default function MasterData() {
       </div>
 
       <Tabs defaultValue="cities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10 gap-1">
+        <TabsList className="grid w-full grid-cols-11 gap-1">
           <TabsTrigger value="cities">Cities</TabsTrigger>
           <TabsTrigger value="clusters">Clusters</TabsTrigger>
           <TabsTrigger value="functions">Functions</TabsTrigger>
@@ -826,6 +900,7 @@ export default function MasterData() {
           <TabsTrigger value="departments">Departments</TabsTrigger>
           <TabsTrigger value="sub-departments">Sub Depts</TabsTrigger>
           <TabsTrigger value="roles">Roles</TabsTrigger>
+          <TabsTrigger value="designations">Designations</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
           <TabsTrigger value="recruiters">Recruiters</TabsTrigger>
           <TabsTrigger value="trainers">Trainers</TabsTrigger>
@@ -2595,6 +2670,243 @@ export default function MasterData() {
             </Card>
           </div>
         </TabsContent>
+
+        <TabsContent value="designations">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Briefcase className="h-5 w-5 mr-2" />
+                  Designations
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Sub Department</TableHead>
+                      <TableHead>Level</TableHead>
+                      <TableHead>Salary Range</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingDesignations ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8">
+                          Loading...
+                        </TableCell>
+                      </TableRow>
+                    ) : safeDesignations.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8">
+                          No designations found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      safeDesignations.map((designation: Designation) => (
+                        <TableRow key={designation.id}>
+                          <TableCell className="font-medium">{designation.name}</TableCell>
+                          <TableCell className="font-mono">{designation.code}</TableCell>
+                          <TableCell>{designation.roleName || "N/A"}</TableCell>
+                          <TableCell>{designation.subDepartmentName || "N/A"}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {designation.level}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {designation.minSalary && designation.maxSalary 
+                              ? `₹${designation.minSalary.toLocaleString()} - ₹${designation.maxSalary.toLocaleString()}`
+                              : "N/A"
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={designation.isActive ? "default" : "secondary"}>
+                              {designation.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  setEditingItem(designation);
+                                  setEditType("designation");
+                                  setEditFormData({
+                                    name: designation.name,
+                                    code: designation.code,
+                                    description: designation.description || "",
+                                    roleId: designation.roleId.toString(),
+                                    subDepartmentId: designation.subDepartmentId.toString(),
+                                    designationLevel: designation.level,
+                                    grade: designation.grade || "",
+                                    minSalary: designation.minSalary?.toString() || "",
+                                    maxSalary: designation.maxSalary?.toString() || "",
+                                  } as any);
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Switch
+                                checked={designation.isActive}
+                                onCheckedChange={async () => {
+                                  try {
+                                    await apiRequest(`/api/designations/${designation.id}`, {
+                                      method: "PUT",
+                                      body: { isActive: !designation.isActive },
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/designations"] });
+                                    toast({
+                                      title: "Success",
+                                      description: `Designation ${designation.isActive ? 'deactivated' : 'activated'} successfully`,
+                                    });
+                                  } catch (error: any) {
+                                    toast({
+                                      title: "Error",
+                                      description: error.message || "Failed to update designation status",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Add New Designation</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="designationName">Designation Name *</Label>
+                  <Input
+                    id="designationName"
+                    placeholder="e.g., Senior Software Engineer"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="designationCode">Designation Code *</Label>
+                  <Input
+                    id="designationCode"
+                    placeholder="e.g., SSE"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="designationRole">Role *</Label>
+                  <Select value={formData.roleId} onValueChange={(value) => setFormData({ ...formData, roleId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeRoles.map((role: Role) => (
+                        <SelectItem key={role.id} value={role.id!.toString()}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="designationSubDept">Sub Department *</Label>
+                  <Select value={formData.subDepartmentId} onValueChange={(value) => setFormData({ ...formData, subDepartmentId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sub department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeSubDepartments.map((subDept: SubDepartment) => (
+                        <SelectItem key={subDept.id} value={subDept.id.toString()}>
+                          {subDept.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="designationLevel">Level</Label>
+                  <Select value={formData.designationLevel} onValueChange={(value) => setFormData({ ...formData, designationLevel: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="entry">Entry</SelectItem>
+                      <SelectItem value="junior">Junior</SelectItem>
+                      <SelectItem value="mid">Mid</SelectItem>
+                      <SelectItem value="senior">Senior</SelectItem>
+                      <SelectItem value="lead">Lead</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="director">Director</SelectItem>
+                      <SelectItem value="executive">Executive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="designationGrade">Grade</Label>
+                  <Input
+                    id="designationGrade"
+                    placeholder="e.g., L4, M1"
+                    value={formData.grade}
+                    onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="minSalary">Min Salary</Label>
+                    <Input
+                      id="minSalary"
+                      type="number"
+                      placeholder="80000"
+                      value={formData.minSalary}
+                      onChange={(e) => setFormData({ ...formData, minSalary: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maxSalary">Max Salary</Label>
+                    <Input
+                      id="maxSalary"
+                      type="number"
+                      placeholder="120000"
+                      value={formData.maxSalary}
+                      onChange={(e) => setFormData({ ...formData, maxSalary: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="designationDescription">Description</Label>
+                  <Input
+                    id="designationDescription"
+                    placeholder="Brief description of the role"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+                <Button
+                  onClick={handleCreateDesignation}
+                  disabled={createDesignationMutation.isPending}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  {createDesignationMutation.isPending ? "Creating..." : "Create Designation"}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Edit Dialog */}
@@ -3086,6 +3398,99 @@ export default function MasterData() {
                     placeholder="Enter phone"
                     value={editFormData.phone}
                     onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+
+            {editType === "designation" && (
+              <>
+                <div>
+                  <Label htmlFor="editDesignationRole">Role *</Label>
+                  <Select value={(editFormData as any).roleId} onValueChange={(value) => setEditFormData({ ...editFormData, roleId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeRoles.map((role: Role) => (
+                        <SelectItem key={role.id} value={role.id!.toString()}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editDesignationSubDept">Sub Department *</Label>
+                  <Select value={(editFormData as any).subDepartmentId} onValueChange={(value) => setEditFormData({ ...editFormData, subDepartmentId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sub department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeSubDepartments.map((subDept: SubDepartment) => (
+                        <SelectItem key={subDept.id} value={subDept.id.toString()}>
+                          {subDept.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editDesignationLevel">Level</Label>
+                  <Select value={(editFormData as any).designationLevel} onValueChange={(value) => setEditFormData({ ...editFormData, designationLevel: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="entry">Entry</SelectItem>
+                      <SelectItem value="junior">Junior</SelectItem>
+                      <SelectItem value="mid">Mid</SelectItem>
+                      <SelectItem value="senior">Senior</SelectItem>
+                      <SelectItem value="lead">Lead</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="director">Director</SelectItem>
+                      <SelectItem value="executive">Executive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editDesignationGrade">Grade</Label>
+                  <Input
+                    id="editDesignationGrade"
+                    placeholder="e.g., L4, M1"
+                    value={(editFormData as any).grade}
+                    onChange={(e) => setEditFormData({ ...editFormData, grade: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="editMinSalary">Min Salary</Label>
+                    <Input
+                      id="editMinSalary"
+                      type="number"
+                      placeholder="80000"
+                      value={(editFormData as any).minSalary}
+                      onChange={(e) => setEditFormData({ ...editFormData, minSalary: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editMaxSalary">Max Salary</Label>
+                    <Input
+                      id="editMaxSalary"
+                      type="number"
+                      placeholder="120000"
+                      value={(editFormData as any).maxSalary}
+                      onChange={(e) => setEditFormData({ ...editFormData, maxSalary: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="editDesignationDescription">Description</Label>
+                  <Input
+                    id="editDesignationDescription"
+                    placeholder="Brief description of the role"
+                    value={(editFormData as any).description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                   />
                 </div>
               </>
