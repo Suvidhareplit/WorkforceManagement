@@ -202,16 +202,43 @@ const getEmployeeById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     
-    const result = await query(
+    // Get employee basic data
+    const employeeResult = await query(
       'SELECT * FROM employees WHERE id = ?',
       [id]
     );
     
-    if (!result.rows || result.rows.length === 0) {
+    if (!employeeResult.rows || employeeResult.rows.length === 0) {
       return res.status(404).json({ message: "Employee not found" });
     }
     
-    res.json({ data: result.rows[0] });
+    const employee = employeeResult.rows[0] as any;
+    
+    // Get active exit data if exists
+    const exitResult = await query(
+      'SELECT * FROM employee_exits WHERE employee_id = ? AND exit_status != ? ORDER BY created_at DESC LIMIT 1',
+      [employee.employee_id, 'cancelled']
+    );
+    
+    // Merge exit data with employee data for backward compatibility
+    if (exitResult.rows && exitResult.rows.length > 0) {
+      const exitData = exitResult.rows[0] as any;
+      employee.exit_type = exitData.exit_type;
+      employee.exit_reason = exitData.exit_reason;
+      employee.exit_initiated_date = exitData.exit_initiated_date;
+      employee.lwd = exitData.last_working_day;
+      employee.date_of_exit = exitData.date_of_exit;
+      employee.discussion_with_employee = exitData.discussion_with_employee;
+      employee.discussion_summary = exitData.discussion_summary;
+      employee.termination_notice_date = exitData.termination_notice_date;
+      employee.notice_period_served = exitData.notice_period_served;
+      employee.okay_to_rehire = exitData.okay_to_rehire;
+      employee.absconding_letter_sent = exitData.absconding_letter_sent;
+      employee.exit_additional_comments = exitData.exit_additional_comments;
+      employee.exit_status = exitData.exit_status;
+    }
+    
+    res.json({ data: employee });
   } catch (error) {
     console.error('Get employee error:', error);
     res.status(500).json({ message: "Internal server error" });
@@ -300,26 +327,39 @@ const initiateExit = async (req: Request, res: Response) => {
     // Get current date for exit_initiated_date (format: YYYY-MM-DD)
     const exitInitiatedDate = new Date().toISOString().split('T')[0];
 
-    // Build update query
-    const updateQuery = `
-      UPDATE employees 
-      SET 
-        exit_type = ?,
-        exit_reason = ?,
-        discussion_with_employee = ?,
-        discussion_summary = ?,
-        termination_notice_date = ?,
-        lwd = ?,
-        notice_period_served = ?,
-        okay_to_rehire = ?,
-        absconding_letter_sent = ?,
-        exit_additional_comments = ?,
-        exit_initiated_date = ?,
-        working_status = 'working'
-      WHERE employee_id = ?
+    // Check if exit record already exists
+    const existingExitResult = await query(
+      'SELECT * FROM employee_exits WHERE employee_id = ? AND exit_status != ?',
+      [employeeId, 'cancelled']
+    );
+
+    if (existingExitResult.rows && existingExitResult.rows.length > 0) {
+      return res.status(400).json({ message: "Exit process already initiated for this employee" });
+    }
+
+    // Insert into employee_exits table
+    const insertExitQuery = `
+      INSERT INTO employee_exits (
+        employee_id, 
+        exit_type, 
+        exit_reason, 
+        discussion_with_employee,
+        discussion_summary,
+        termination_notice_date,
+        last_working_day,
+        notice_period_served,
+        okay_to_rehire,
+        absconding_letter_sent,
+        exit_additional_comments,
+        exit_initiated_date,
+        exit_status,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'initiated', NOW(), NOW())
     `;
 
-    const params = [
+    const exitParams = [
+      employeeId,
       exitType,
       exitReason || null,
       discussionWithEmployee || null,
@@ -330,11 +370,17 @@ const initiateExit = async (req: Request, res: Response) => {
       okayToRehire || null,
       abscondingLetterSent || null,
       additionalComments || null,
-      exitInitiatedDate,
-      employeeId
+      exitInitiatedDate
     ];
 
-    await query(updateQuery, params);
+    const exitResult = await query(insertExitQuery, exitParams);
+
+    // Update working_status in employees table based on exit dates
+    const shouldBeRelieved = lastWorkingDay && new Date(lastWorkingDay) <= new Date();
+    await query(
+      'UPDATE employees SET working_status = ? WHERE employee_id = ?',
+      [shouldBeRelieved ? 'relieved' : 'working', employeeId]
+    );
 
     // Log audit trail
     await ExitAuditLogger.logExitInitiation(
@@ -388,10 +434,17 @@ const revokeExit = async (req: Request, res: Response) => {
 
     const employee = employeeResult.rows[0] as any;
 
-    // Check if employee has exit initiated
-    if (!employee.exit_initiated_date) {
-      return res.status(400).json({ message: "No exit process found for this employee" });
+    // Check if employee has active exit record
+    const exitResult = await query(
+      'SELECT * FROM employee_exits WHERE employee_id = ? AND exit_status != ?',
+      [employeeId, 'cancelled']
+    );
+
+    if (!exitResult.rows || exitResult.rows.length === 0) {
+      return res.status(400).json({ message: "No active exit process found for this employee" });
     }
+
+    const exitRecord = exitResult.rows[0] as any;
 
     // Check if employee is already relieved
     if (employee.working_status === 'relieved') {
@@ -400,40 +453,31 @@ const revokeExit = async (req: Request, res: Response) => {
 
     // Store previous exit data for audit trail
     const previousExitData = {
-      exit_type: employee.exit_type,
-      exit_reason: employee.exit_reason,
-      discussion_with_employee: employee.discussion_with_employee,
-      discussion_summary: employee.discussion_summary,
-      termination_notice_date: employee.termination_notice_date,
-      lwd: employee.lwd,
-      notice_period_served: employee.notice_period_served,
-      okay_to_rehire: employee.okay_to_rehire,
-      absconding_letter_sent: employee.absconding_letter_sent,
-      exit_additional_comments: employee.exit_additional_comments,
-      exit_initiated_date: employee.exit_initiated_date,
+      exit_type: exitRecord.exit_type,
+      exit_reason: exitRecord.exit_reason,
+      discussion_with_employee: exitRecord.discussion_with_employee,
+      discussion_summary: exitRecord.discussion_summary,
+      termination_notice_date: exitRecord.termination_notice_date,
+      last_working_day: exitRecord.last_working_day,
+      notice_period_served: exitRecord.notice_period_served,
+      okay_to_rehire: exitRecord.okay_to_rehire,
+      absconding_letter_sent: exitRecord.absconding_letter_sent,
+      exit_additional_comments: exitRecord.exit_additional_comments,
+      exit_initiated_date: exitRecord.exit_initiated_date,
       working_status: employee.working_status
     };
 
-    // Clear all exit-related data
-    const revokeQuery = `
-      UPDATE employees 
-      SET 
-        exit_type = NULL,
-        exit_reason = NULL,
-        discussion_with_employee = NULL,
-        discussion_summary = NULL,
-        termination_notice_date = NULL,
-        lwd = NULL,
-        notice_period_served = NULL,
-        okay_to_rehire = NULL,
-        absconding_letter_sent = NULL,
-        exit_additional_comments = NULL,
-        exit_initiated_date = NULL,
-        working_status = 'working'
-      WHERE employee_id = ?
-    `;
+    // Cancel the exit record (don't delete, for audit purposes)
+    await query(
+      'UPDATE employee_exits SET exit_status = ?, updated_at = NOW() WHERE employee_id = ? AND exit_status != ?',
+      ['cancelled', employeeId, 'cancelled']
+    );
 
-    await query(revokeQuery, [employeeId]);
+    // Reset working status to working
+    await query(
+      'UPDATE employees SET working_status = ? WHERE employee_id = ?',
+      ['working', employeeId]
+    );
 
     // Log audit trail
     await ExitAuditLogger.logExitRevocation(
