@@ -1,7 +1,11 @@
 import { Router } from 'express';
 import { employeeController } from '../controllers/employeeController';
+import { authenticate } from '../middlewares/auth';
 
 const router = Router();
+
+// All routes require authentication
+router.use(authenticate);
 
 // Create employee profile from onboarding
 router.post('/profile', employeeController.createEmployeeProfile);

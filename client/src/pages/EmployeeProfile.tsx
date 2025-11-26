@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, Link } from "wouter";
+import { authService } from "@/lib/auth";
 import {
   ArrowLeft,
   Phone,
@@ -65,7 +66,10 @@ export default function EmployeeProfile() {
     mutationFn: async (data: any) => {
       const response = await fetch(`/api/employees/${data.employeeId}/initiate-exit`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...authService.getAuthHeaders()
+        },
         credentials: 'include',
         body: JSON.stringify(data),
       });
@@ -122,7 +126,10 @@ export default function EmployeeProfile() {
     mutationFn: async (employeeId: string) => {
       const response = await fetch(`/api/employees/${employeeId}/revoke-exit`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...authService.getAuthHeaders()
+        },
         credentials: 'include',
       });
       if (!response.ok) {
