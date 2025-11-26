@@ -309,6 +309,17 @@ const bulkUploadMigration = async (req: Request, res: Response) => {
       try {
         console.log(`\n--- Processing migration for: ${record.name} ---`);
         
+        // VALIDATION: Skip rejected candidates during migration
+        if (record.status === 'rejected' || record.technical_result === 'rejected') {
+          console.log(`⚠️ Skipping rejected candidate: ${record.name} (Status: ${record.status}, Technical: ${record.technical_result})`);
+          results.failed++;
+          results.errors.push({ 
+            name: record.name, 
+            error: `Skipped - Candidate was rejected (Status: ${record.status}, Technical: ${record.technical_result})` 
+          });
+          continue;
+        }
+
         // Step 1: Create candidate record
         const candidateResult = await query(
           `INSERT INTO candidates (name, mobile_number, email, status, resume_source_type, resume_source_name, created_at, updated_at)
