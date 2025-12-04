@@ -5,9 +5,8 @@
   "license": "MIT",
   "description": "Blue Collar HRMS Platform with separated frontend and backend",
   "scripts": {
-    "dev": "./start-dev.sh",
-    "dev:client": "cd client && npm run dev",
-    "dev:server": "cd server && npm run dev",
+    "start:backend": "kill -9 $(lsof -ti:5000) 2>/dev/null || true; cd server && npm run dev",
+    "start:frontend": "kill -9 $(lsof -ti:3000) 2>/dev/null || true; cd client && npm run dev",
     "build": "npm run build:client && npm run build:server",
     "build:client": "cd client && npm run build",
     "build:server": "cd server && npm run build",

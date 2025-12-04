@@ -2,11 +2,6 @@
 -- Date: 2025-11-27
 -- Description: Insert sample data for testing designation functionality
 
--- Insert Functions
-INSERT INTO functions (name, code, created_at) VALUES
-('Technology', 'TECH', NOW()),
-('Operations', 'OPS', NOW());
-
 -- Insert Business Units
 INSERT INTO business_units (name, code, created_at) VALUES
 ('Engineering', 'ENG', NOW()),
@@ -59,9 +54,7 @@ INSERT INTO trainers (name, email, phone, created_at) VALUES
 -- Verification
 SELECT 'Sample master data inserted successfully' as status;
 
-SELECT 'Functions:' as info, COUNT(*) as count FROM functions
-UNION ALL
-SELECT 'Business Units:', COUNT(*) FROM business_units
+SELECT 'Business Units:' as info, COUNT(*) as count FROM business_units
 UNION ALL
 SELECT 'Departments:', COUNT(*) FROM departments
 UNION ALL

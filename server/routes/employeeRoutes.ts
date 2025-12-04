@@ -13,6 +13,18 @@ router.post('/profile', employeeController.createEmployeeProfile);
 // Get all employees
 router.get('/', employeeController.getEmployees);
 
+// Get exit summary for chart (must be before /:id to avoid conflict)
+router.get('/exit-summary', employeeController.getExitSummary);
+
+// Get exit process list
+router.get('/exit-process-list', employeeController.getExitProcessList);
+
+// Review exit (initiated -> in_progress)
+router.post('/exit/:exitId/review', employeeController.reviewExit);
+
+// Complete exit (in_progress -> completed)
+router.post('/exit/:exitId/complete', employeeController.completeExit);
+
 // Get employee by ID
 router.get('/:id', employeeController.getEmployeeById);
 

@@ -360,42 +360,6 @@ export class MasterDataController extends BaseController {
     }
   }
 
-  // Functions
-  async getFunctions(req: Request, res: Response): Promise<void> {
-    try {
-      const filters = this.buildFilterOptions(req);
-      const functions = await this.storage.getFunctions(filters);
-      this.sendSuccess(res, functions, 'Functions retrieved successfully');
-    } catch (error) {
-      this.handleError(res, error, 'Failed to retrieve functions');
-    }
-  }
-
-  async createFunction(req: Request, res: Response): Promise<void> {
-    try {
-      const userId = this.getUserId(req);
-      const func = await this.storage.createFunction(req.body, { changedBy: userId });
-      this.sendSuccess(res, func, 'Function created successfully');
-    } catch (error) {
-      this.handleError(res, error, 'Failed to create function');
-    }
-  }
-
-  async updateFunction(req: Request, res: Response): Promise<void> {
-    try {
-      const id = parseInt(req.params.id);
-      const userId = this.getUserId(req);
-      const func = await this.storage.updateFunction(id, req.body, { changedBy: userId });
-      if (!func) {
-        this.sendNotFound(res, 'Function');
-        return;
-      }
-      this.sendSuccess(res, func, 'Function updated successfully');
-    } catch (error) {
-      this.handleError(res, error, 'Failed to update function');
-    }
-  }
-
   // Business Units
   async getBusinessUnits(req: Request, res: Response): Promise<void> {
     try {

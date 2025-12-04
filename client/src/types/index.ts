@@ -32,12 +32,6 @@ export interface Cluster {
   description?: string;
 }
 
-export interface Function {
-  id: number;
-  name: string;
-  code: string;
-  isActive: boolean;
-}
 
 export interface BusinessUnit {
   id: number;

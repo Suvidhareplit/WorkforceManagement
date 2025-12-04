@@ -21,6 +21,9 @@ import Onboarding from "./pages/training/Onboarding";
 import MasterData from "./pages/master/MasterData";
 import LeaveManagement from "./pages/leave/LeaveManagement";
 import UserManagement from "./pages/management/UserManagement";
+import ExitManagement from "./pages/management/ExitManagement";
+import AttritionAnalysis from "./pages/management/AttritionAnalysis";
+import Reports from "./pages/management/Reports";
 import Analytics from "./pages/analytics/Analytics";
 import HiringAnalytics from "./pages/analytics/HiringAnalytics";
 import NotFound from "@/pages/not-found";
@@ -44,7 +47,10 @@ function Router() {
         <Route path="/training/onboarding" component={Onboarding} />
         <Route path="/master-data" component={MasterData} />
         <Route path="/leave-management" component={LeaveManagement} />
+        <Route path="/management/exit" component={ExitManagement} />
+        <Route path="/management/attrition" component={AttritionAnalysis} />
         <Route path="/management/users" component={UserManagement} />
+        <Route path="/management/reports" component={Reports} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/analytics/hiring" component={HiringAnalytics} />
         <Route component={NotFound} />

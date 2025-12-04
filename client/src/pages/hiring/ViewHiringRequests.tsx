@@ -143,21 +143,21 @@ export default function ViewHiringRequests() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Hiring Requests</h2>
             <p className="text-slate-600 mt-1">Manage and track all hiring requests</p>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline">
+            <Button variant="outline" className="shadow-sm">
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
             <Link href="/hiring/create">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Request
               </Button>
@@ -167,9 +167,9 @@ export default function ViewHiringRequests() {
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center">
+      <Card className="shadow-md">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="flex items-center text-lg">
             <Filter className="h-5 w-5 mr-2" />
             Filters
           </CardTitle>

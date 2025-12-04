@@ -7,7 +7,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- Clear all master data tables
 TRUNCATE TABLE clusters;
-TRUNCATE TABLE functions;
 TRUNCATE TABLE business_units;
 TRUNCATE TABLE departments;
 TRUNCATE TABLE sub_departments;
@@ -18,7 +17,6 @@ TRUNCATE TABLE trainers;
 
 -- Reset auto-increment counters to 1
 ALTER TABLE clusters AUTO_INCREMENT = 1;
-ALTER TABLE functions AUTO_INCREMENT = 1;
 ALTER TABLE business_units AUTO_INCREMENT = 1;
 ALTER TABLE departments AUTO_INCREMENT = 1;
 ALTER TABLE sub_departments AUTO_INCREMENT = 1;
@@ -33,8 +31,6 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Verification
 SELECT 'Master data cleared. Current counts:' as status;
 SELECT 'clusters' as table_name, COUNT(*) as count FROM clusters
-UNION ALL
-SELECT 'functions', COUNT(*) FROM functions  
 UNION ALL
 SELECT 'business_units', COUNT(*) FROM business_units
 UNION ALL

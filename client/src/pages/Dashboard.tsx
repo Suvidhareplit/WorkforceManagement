@@ -137,16 +137,16 @@ export default function Dashboard() {
     : 0;
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Dashboard Header */}
-      <div className="mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Hiring Dashboard</h2>
             <p className="text-slate-600 mt-1">Manage your recruitment pipeline and track hiring progress</p>
           </div>
           <Link href="/hiring/create">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md">
               <Plus className="h-4 w-4 mr-2" />
               Create New Request
             </Button>
@@ -155,8 +155,8 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -190,7 +190,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -205,7 +205,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -220,7 +220,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -237,7 +237,7 @@ export default function Dashboard() {
       </div>
 
       {/* Role-wise Open Positions Table */}
-      <Card>
+      <Card className="shadow-md">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Open Positions - City wise_Role wise_Cluster wise</CardTitle>
@@ -275,8 +275,8 @@ export default function Dashboard() {
             <div className="overflow-x-auto">
               <Table className="w-auto">
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="sticky left-0 bg-white z-10">Role</TableHead>
+                  <TableRow className="bg-slate-50">
+                    <TableHead className="sticky left-0 bg-slate-50 z-10 font-semibold">Role</TableHead>
                     {clustersWithOpenPositions.map((cluster: any) => (
                       <TableHead key={cluster.id} className="text-center px-4">
                         {cluster.name}

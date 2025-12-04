@@ -1,5 +1,0 @@
-name,phone,aadharNumber,email,role,city,cluster,qualification,resumeSource,sourceName
-John Doe,9876543210,111111111111,john@example.com,Operator,Bangalore,CBD,Graduation,vendor,ManpowerCorp
-Jane Smith,9876543211,222222222222,jane@example.com,Operator,Bangalore,Indiranagar,B.Tech,field_recruiter,Joydeep
-Bob Johnson,9876543212,333333333333,bob@example.com,Operator,Bangalore,Whitefield,Diploma,referral,Alice Brown
-    

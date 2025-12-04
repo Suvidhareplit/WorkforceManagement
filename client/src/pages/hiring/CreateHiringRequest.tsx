@@ -112,17 +112,17 @@ export default function CreateHiringRequest() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <h2 className="text-2xl font-bold text-slate-800">Create Hiring Request</h2>
         <p className="text-slate-600 mt-1">Submit a new recruitment request for your team</p>
       </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Hiring Request Details</CardTitle>
+      <Card className="max-w-2xl shadow-md">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="text-lg">Hiring Request Details</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

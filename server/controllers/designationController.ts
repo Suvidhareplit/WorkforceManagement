@@ -33,16 +33,13 @@ const getDesignations = async (req: Request, res: Response) => {
       SELECT 
         d.*,
         r.name as role_name,
-        r.code as role_code,
         sd.name as sub_department_name,
-        sd.code as sub_department_code,
-        reports_to.name as reports_to_designation_name
+        sd.code as sub_department_code
       FROM designations d
       LEFT JOIN roles r ON d.role_id = r.id
       LEFT JOIN sub_departments sd ON d.sub_department_id = sd.id
-      LEFT JOIN designations reports_to ON d.reports_to_designation_id = reports_to.id
       ${whereClause}
-      ORDER BY d.level, d.name
+      ORDER BY d.name
     `, params);
     
     res.json({ 
@@ -64,14 +61,11 @@ const getDesignationById = async (req: Request, res: Response) => {
       SELECT 
         d.*,
         r.name as role_name,
-        r.code as role_code,
         sd.name as sub_department_name,
-        sd.code as sub_department_code,
-        reports_to.name as reports_to_designation_name
+        sd.code as sub_department_code
       FROM designations d
       LEFT JOIN roles r ON d.role_id = r.id
       LEFT JOIN sub_departments sd ON d.sub_department_id = sd.id
-      LEFT JOIN designations reports_to ON d.reports_to_designation_id = reports_to.id
       WHERE d.id = ?
     `, [id]);
     
@@ -92,17 +86,11 @@ const createDesignation = async (req: Request, res: Response) => {
     const {
       name,
       code,
-      description,
       role_id,
       sub_department_id,
-      level = 'mid',
-      grade,
-      min_salary,
-      max_salary,
-      is_active = true,
-      requires_approval = false,
-      reports_to_designation_id,
-      can_manage_designations
+      skill_level,
+      level,
+      is_active = true
     } = req.body;
 
     // Validate required fields
@@ -131,15 +119,10 @@ const createDesignation = async (req: Request, res: Response) => {
 
     const result = await query(`
       INSERT INTO designations (
-        name, code, description, role_id, sub_department_id, level, grade,
-        min_salary, max_salary, is_active, requires_approval, 
-        reports_to_designation_id, can_manage_designations, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        name, code, role_id, sub_department_id, skill_level, level, is_active, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
     `, [
-      name, code, description, role_id, sub_department_id, level, grade,
-      min_salary, max_salary, is_active, requires_approval,
-      reports_to_designation_id, 
-      can_manage_designations ? JSON.stringify(can_manage_designations) : null
+      name, code, role_id, sub_department_id, skill_level, level, is_active
     ]);
 
     const insertId = (result as any).insertId;
@@ -175,19 +158,13 @@ const updateDesignation = async (req: Request, res: Response) => {
     
     // Build dynamic update query
     const allowedFields = [
-      'name', 'code', 'description', 'role_id', 'sub_department_id', 
-      'level', 'grade', 'min_salary', 'max_salary', 'is_active', 
-      'requires_approval', 'reports_to_designation_id', 'can_manage_designations'
+      'name', 'code', 'role_id', 'sub_department_id', 'skill_level', 'level', 'is_active'
     ];
     
     for (const field of allowedFields) {
       if (updateData[field] !== undefined) {
         fields.push(`${field} = ?`);
-        if (field === 'can_manage_designations' && updateData[field]) {
-          values.push(JSON.stringify(updateData[field]));
-        } else {
-          values.push(updateData[field]);
-        }
+        values.push(updateData[field]);
       }
     }
     
@@ -195,7 +172,6 @@ const updateDesignation = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "No valid fields to update" });
     }
     
-    fields.push('updated_at = NOW()');
     values.push(id);
     
     await query(

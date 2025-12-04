@@ -186,8 +186,12 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
 // Get all employees
 const getEmployees = async (req: Request, res: Response) => {
   try {
+    // Join with employee_exits to get exit_status
     const result = await query(
-      'SELECT * FROM employees ORDER BY created_at DESC'
+      `SELECT e.*, ee.exit_status, ee.exit_type
+       FROM employees e
+       LEFT JOIN employee_exits ee ON e.employee_id = ee.employee_id AND ee.exit_status != 'cancelled'
+       ORDER BY e.created_at DESC`
     );
     
     res.json({ data: result.rows || [] });
@@ -375,12 +379,9 @@ const initiateExit = async (req: Request, res: Response) => {
 
     const exitResult = await query(insertExitQuery, exitParams);
 
-    // Update working_status in employees table based on exit dates
-    const shouldBeRelieved = lastWorkingDay && new Date(lastWorkingDay) <= new Date();
-    await query(
-      'UPDATE employees SET working_status = ? WHERE employee_id = ?',
-      [shouldBeRelieved ? 'relieved' : 'working', employeeId]
-    );
+    // NOTE: Do NOT update working_status here when exit is initiated
+    // working_status should only change to 'relieved' when exit_status becomes 'completed'
+    // The employee remains 'working' until the exit process is fully completed
 
     // Log audit trail
     await ExitAuditLogger.logExitInitiation(
@@ -500,6 +501,226 @@ const revokeExit = async (req: Request, res: Response) => {
   }
 };
 
+// Get exit process list - all exit records with employee details
+const getExitProcessList = async (req: Request, res: Response) => {
+  try {
+    const { status, department, location, exitType, businessUnit, costCenter, legalEntity, search } = req.query;
+    
+    console.log('📋 Get Exit Process List Request:', { status, department, location, exitType, businessUnit, costCenter, legalEntity, search });
+
+    let whereConditions = ['ee.exit_status != ?'];
+    const params: any[] = ['cancelled'];
+
+    // Filter by exit status - "initiated" goes to "under_review"
+    if (status && status !== 'all') {
+      if (status === 'under_review') {
+        whereConditions.push("ee.exit_status = 'initiated'");
+      } else if (status === 'in_progress') {
+        whereConditions.push("ee.exit_status = 'in_progress'");
+      } else if (status === 'exited') {
+        whereConditions.push("ee.exit_status = 'completed'");
+      }
+    }
+
+    // Filter by exit type
+    if (exitType && exitType !== 'all') {
+      whereConditions.push('ee.exit_type = ?');
+      params.push(exitType);
+    }
+
+    // Filter by department
+    if (department && department !== 'all') {
+      whereConditions.push('e.department_name = ?');
+      params.push(department);
+    }
+
+    // Filter by location
+    if (location && location !== 'all') {
+      whereConditions.push('e.city = ?');
+      params.push(location);
+    }
+
+    // Filter by business unit
+    if (businessUnit && businessUnit !== 'all') {
+      whereConditions.push('e.business_unit_name = ?');
+      params.push(businessUnit);
+    }
+
+    // Filter by cost center
+    if (costCenter && costCenter !== 'all') {
+      whereConditions.push('e.cost_centre = ?');
+      params.push(costCenter);
+    }
+
+    // Filter by legal entity
+    if (legalEntity && legalEntity !== 'all') {
+      whereConditions.push('e.legal_entity = ?');
+      params.push(legalEntity);
+    }
+
+    // Search by employee name or ID
+    if (search) {
+      whereConditions.push('(e.name LIKE ? OR e.employee_id LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    const listQuery = `
+      SELECT 
+        ee.id,
+        ee.employee_id,
+        e.name as employee_name,
+        e.role as designation,
+        e.department_name,
+        e.city as location,
+        ee.exit_type,
+        ee.exit_reason,
+        ee.exit_initiated_date,
+        ee.termination_notice_date as notice_date,
+        ee.last_working_day,
+        ee.exit_status,
+        ee.discussion_with_employee,
+        ee.okay_to_rehire,
+        ee.initiated_by,
+        ee.approved_by,
+        ee.created_at
+      FROM employee_exits ee
+      LEFT JOIN employees e ON ee.employee_id = e.employee_id
+      WHERE ${whereConditions.join(' AND ')}
+      ORDER BY ee.created_at DESC
+      LIMIT 100
+    `;
+
+    console.log('📋 Exit Process Query:', listQuery);
+
+    const result = await query(listQuery, params);
+    const rows = result.rows || [];
+
+    // Count by status - 'initiated' = under_review, 'in_progress' = in_progress, 'completed' = exited
+    const countQuery = `
+      SELECT 
+        SUM(CASE WHEN exit_status = 'initiated' THEN 1 ELSE 0 END) as under_review,
+        SUM(CASE WHEN exit_status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+        SUM(CASE WHEN exit_status = 'completed' THEN 1 ELSE 0 END) as exited
+      FROM employee_exits
+      WHERE exit_status != 'cancelled'
+    `;
+    const countResult = await query(countQuery);
+    const counts: any = countResult.rows?.[0] || { under_review: 0, in_progress: 0, exited: 0 };
+
+    console.log('✅ Exit process list retrieved:', { count: rows.length, counts });
+
+    res.json({
+      message: "Exit process list retrieved successfully",
+      data: rows,
+      counts: {
+        underReview: parseInt(counts.under_review) || 0,
+        inProgress: parseInt(counts.in_progress) || 0,
+        exited: parseInt(counts.exited) || 0
+      }
+    });
+  } catch (error: any) {
+    console.error('Get exit process list error:', error);
+    res.status(500).json({ 
+      message: "Internal server error", 
+      error: error?.message || 'Unknown error'
+    });
+  }
+};
+
+// Get exit summary for chart - grouped by month and exit type
+const getExitSummary = async (req: Request, res: Response) => {
+  try {
+    const { startDate, endDate, viewType } = req.query;
+    
+    console.log('📊 Get Exit Summary Request:', { startDate, endDate, viewType });
+
+    // Build date filter
+    let dateCondition = '';
+    const params: any[] = [];
+    
+    if (startDate && endDate) {
+      dateCondition = `(ee.last_working_day BETWEEN ? AND ? OR ee.exit_initiated_date BETWEEN ? AND ?)`;
+      params.push(startDate, endDate, startDate, endDate);
+    } else {
+      // Default to last 12 months
+      dateCondition = `ee.exit_initiated_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)`;
+    }
+
+    // Query to get exit counts grouped by month and type
+    const summaryQuery = `
+      SELECT 
+        DATE_FORMAT(COALESCE(ee.last_working_day, ee.exit_initiated_date), '%Y-%m') as period,
+        DATE_FORMAT(COALESCE(ee.last_working_day, ee.exit_initiated_date), '%b-%Y') as period_label,
+        ee.exit_type,
+        COUNT(*) as count
+      FROM employee_exits ee
+      WHERE ${dateCondition}
+        AND ee.exit_status != 'cancelled'
+        AND ee.exit_type IS NOT NULL
+      GROUP BY period, period_label, ee.exit_type
+      ORDER BY period ASC
+    `;
+
+    console.log('📊 Exit Summary Query:', summaryQuery);
+    console.log('📊 Query Params:', params);
+
+    const result = await query(summaryQuery, params);
+    const rows = result.rows || result || [];
+
+    // Transform data for chart - group by period
+    const periodMap: Record<string, { period: string, voluntary: number, involuntary: number, absconding: number }> = {};
+    
+    rows.forEach((row: any) => {
+      if (!periodMap[row.period]) {
+        periodMap[row.period] = {
+          period: row.period_label,
+          voluntary: 0,
+          involuntary: 0,
+          absconding: 0
+        };
+      }
+      
+      if (row.exit_type === 'voluntary') {
+        periodMap[row.period].voluntary = parseInt(row.count);
+      } else if (row.exit_type === 'involuntary') {
+        periodMap[row.period].involuntary = parseInt(row.count);
+      } else if (row.exit_type === 'absconding') {
+        periodMap[row.period].absconding = parseInt(row.count);
+      }
+    });
+
+    // Convert to array and sort by period
+    const chartData = Object.entries(periodMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([_, data]) => data);
+
+    // Calculate totals
+    const totals = {
+      voluntary: chartData.reduce((sum, d) => sum + d.voluntary, 0),
+      involuntary: chartData.reduce((sum, d) => sum + d.involuntary, 0),
+      absconding: chartData.reduce((sum, d) => sum + d.absconding, 0),
+      total: 0
+    };
+    totals.total = totals.voluntary + totals.involuntary + totals.absconding;
+
+    console.log('✅ Exit summary retrieved:', { periods: chartData.length, totals });
+
+    res.json({
+      message: "Exit summary retrieved successfully",
+      data: chartData,
+      totals
+    });
+  } catch (error: any) {
+    console.error('Get exit summary error:', error);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
+    res.status(500).json({ 
+      message: "Internal server error", 
+      error: error?.message || 'Unknown error'
+    });
+  }
+};
+
 // Get exit audit trail for an employee
 const getExitAuditTrail = async (req: Request, res: Response) => {
   try {
@@ -535,6 +756,97 @@ const getExitAuditTrail = async (req: Request, res: Response) => {
   }
 };
 
+// Review employee exit - changes status from 'initiated' to 'in_progress'
+const reviewExit = async (req: Request, res: Response) => {
+  try {
+    const { exitId } = req.params;
+    
+    console.log('📋 Review Exit Request for exit ID:', exitId);
+
+    // Check if exit record exists
+    const exitResult = await query(
+      'SELECT * FROM employee_exits WHERE id = ?',
+      [exitId]
+    );
+
+    if (!exitResult.rows || exitResult.rows.length === 0) {
+      return res.status(404).json({ message: "Exit record not found" });
+    }
+
+    const exitRecord = exitResult.rows[0] as any;
+
+    if (exitRecord.exit_status !== 'initiated') {
+      return res.status(400).json({ message: "Exit can only be reviewed when status is 'initiated'" });
+    }
+
+    // Update exit status to 'in_progress'
+    await query(
+      'UPDATE employee_exits SET exit_status = ?, updated_at = NOW() WHERE id = ?',
+      ['in_progress', exitId]
+    );
+
+    console.log('✅ Exit reviewed successfully for exit ID:', exitId);
+
+    res.json({ 
+      message: "Exit reviewed successfully",
+      exitId,
+      newStatus: 'in_progress'
+    });
+  } catch (error) {
+    console.error('Review exit error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Complete employee exit - changes status from 'in_progress' to 'completed' and updates working_status
+const completeExit = async (req: Request, res: Response) => {
+  try {
+    const { exitId } = req.params;
+    
+    console.log('✅ Complete Exit Request for exit ID:', exitId);
+
+    // Check if exit record exists
+    const exitResult = await query(
+      'SELECT * FROM employee_exits WHERE id = ?',
+      [exitId]
+    );
+
+    if (!exitResult.rows || exitResult.rows.length === 0) {
+      return res.status(404).json({ message: "Exit record not found" });
+    }
+
+    const exitRecord = exitResult.rows[0] as any;
+
+    if (exitRecord.exit_status !== 'in_progress') {
+      return res.status(400).json({ message: "Exit can only be completed when status is 'in_progress'" });
+    }
+
+    // Update exit status to 'completed'
+    await query(
+      'UPDATE employee_exits SET exit_status = ?, updated_at = NOW() WHERE id = ?',
+      ['completed', exitId]
+    );
+
+    // Update employee working_status to 'relieved'
+    await query(
+      'UPDATE employees SET working_status = ? WHERE employee_id = ?',
+      ['relieved', exitRecord.employee_id]
+    );
+
+    console.log('✅ Exit completed successfully for exit ID:', exitId, 'Employee:', exitRecord.employee_id);
+
+    res.json({ 
+      message: "Exit completed successfully. Employee status updated to relieved.",
+      exitId,
+      employeeId: exitRecord.employee_id,
+      newStatus: 'completed'
+    });
+  } catch (error) {
+    console.error('Complete exit error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const employeeController = {
   createEmployeeProfile,
   getEmployees,
@@ -542,5 +854,9 @@ export const employeeController = {
   updateEmployee,
   initiateExit,
   revokeExit,
-  getExitAuditTrail
+  getExitAuditTrail,
+  getExitSummary,
+  getExitProcessList,
+  reviewExit,
+  completeExit
 };

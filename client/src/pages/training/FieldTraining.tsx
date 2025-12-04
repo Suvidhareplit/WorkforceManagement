@@ -139,29 +139,31 @@ export default function FieldTraining() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Field Training (FT)</h2>
-          <p className="text-slate-600 mt-1">Manage field training for candidates who completed classroom training</p>
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800">Field Training (FT)</h2>
+            <p className="text-slate-600 mt-1">Manage field training for candidates who completed classroom training</p>
+          </div>
+          <Button onClick={exportFitCandidates} className="flex items-center gap-2 shadow-md bg-blue-600 hover:bg-blue-700">
+            <Download className="h-4 w-4" />
+            Export Fit Candidates
+          </Button>
         </div>
-        <Button onClick={exportFitCandidates} className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
-          Export Fit Candidates
-        </Button>
       </div>
 
       {/* Field Training Records Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Field Training Records</CardTitle>
+      <Card className="shadow-md">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="text-lg">Field Training Records</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-slate-50">
                   <TableHead className="font-semibold">Name</TableHead>
                   <TableHead className="font-semibold">Mobile</TableHead>
                   <TableHead className="font-semibold">City</TableHead>

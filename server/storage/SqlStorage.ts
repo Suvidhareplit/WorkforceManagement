@@ -372,12 +372,10 @@ export class SqlStorage implements IStorage {
     const { orderClause, limitClause } = this.buildFilterClause(filters);
     const result = await query(`
       SELECT r.*, 
-             f.name as function_name,
              bu.name as business_unit_name,
              d.name as department_name,
              sd.name as sub_department_name
       FROM roles r
-      LEFT JOIN functions f ON r.paygroup_id = f.id
       LEFT JOIN business_units bu ON r.business_unit_id = bu.id
       LEFT JOIN departments d ON r.department_id = d.id
       LEFT JOIN sub_departments sd ON r.sub_department_id = sd.id
@@ -391,12 +389,10 @@ export class SqlStorage implements IStorage {
   async getRole(id: number): Promise<any> {
     const result = await query(`
       SELECT r.*, 
-             f.name as function_name,
              bu.name as business_unit_name,
              d.name as department_name,
              sd.name as sub_department_name
       FROM roles r
-      LEFT JOIN functions f ON r.paygroup_id = f.id
       LEFT JOIN business_units bu ON r.business_unit_id = bu.id
       LEFT JOIN departments d ON r.department_id = d.id
       LEFT JOIN sub_departments sd ON r.sub_department_id = sd.id
@@ -410,26 +406,22 @@ export class SqlStorage implements IStorage {
     
     // Handle both camelCase (from FormData) and snake_case (from JSON)
     const name = roleData.name;
-    const code = roleData.code;
     const job_description_file = roleData.job_description_file || roleData.jobDescriptionFile;
-    const paygroup_id = roleData.paygroup_id || roleData.paygroupId;
     const business_unit_id = roleData.business_unit_id || roleData.businessUnitId;
     const department_id = roleData.department_id || roleData.departmentId;
     const sub_department_id = roleData.sub_department_id || roleData.subDepartmentId;
-    const skill_level = roleData.skill_level || roleData.skillLevel;
-    const level = roleData.level;
     const is_active = roleData.is_active !== undefined ? roleData.is_active : (roleData.isActive !== undefined ? roleData.isActive : true);
     
     console.log('Prepared values for insertion:', {
-      name, code, job_description_file, paygroup_id, 
-      business_unit_id, department_id, sub_department_id, skill_level, level, is_active
+      name, job_description_file, 
+      business_unit_id, department_id, sub_department_id, is_active
     });
     
     try {
       const insertResult = await query(`
-        INSERT INTO roles (name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, skill_level, level, is_active, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-      `, [name, code, job_description_file, paygroup_id, business_unit_id, department_id, sub_department_id, skill_level, level, is_active]);
+        INSERT INTO roles (name, job_description_file, business_unit_id, department_id, sub_department_id, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW())
+      `, [name, job_description_file, business_unit_id, department_id, sub_department_id, is_active]);
       
       console.log('Insert result:', insertResult);
       
@@ -453,18 +445,12 @@ export class SqlStorage implements IStorage {
     // Map of camelCase/snake_case to database column names
     const fieldMap: Record<string, string> = {
       'name': 'name',
-      'code': 'code',
-      'paygroup_id': 'paygroup_id',
-      'paygroupId': 'paygroup_id',
       'business_unit_id': 'business_unit_id',
       'businessUnitId': 'business_unit_id',
       'department_id': 'department_id',
       'departmentId': 'department_id',
       'sub_department_id': 'sub_department_id',
       'subDepartmentId': 'sub_department_id',
-      'skill_level': 'skill_level',
-      'skillLevel': 'skill_level',
-      'level': 'level',
       'job_description_file': 'job_description_file',
       'jobDescriptionFile': 'job_description_file',
       'is_active': 'is_active',
@@ -498,53 +484,87 @@ export class SqlStorage implements IStorage {
     return this.updateRole(id, { isActive }, options);
   }
 
-  // Functions - production-ready CRUD
-  async getFunctions(filters?: FilterOptions): Promise<any[]> {
+  // Designations - production-ready CRUD
+  async getDesignations(filters?: FilterOptions): Promise<any[]> {
     const { orderClause, limitClause } = this.buildFilterClause(filters);
     const result = await query(`
-      SELECT * FROM functions 
-      WHERE 1=1 
-      ${orderClause || 'ORDER BY name ASC'} 
+      SELECT d.*, r.name as roleName, sd.name as subDepartmentName 
+      FROM designations d
+      LEFT JOIN roles r ON d.role_id = r.id
+      LEFT JOIN sub_departments sd ON d.sub_department_id = sd.id
+      WHERE d.is_active = 1 
+      ${orderClause || 'ORDER BY d.name ASC'} 
       ${limitClause}
     `);
     return result.rows as any[];
   }
 
-  async getFunction(id: number): Promise<any> {
-    const result = await query('SELECT * FROM functions WHERE id = ?', [id]);
+  async getDesignation(id: number): Promise<any> {
+    const result = await query(`
+      SELECT d.*, r.name as roleName, sd.name as subDepartmentName 
+      FROM designations d
+      LEFT JOIN roles r ON d.role_id = r.id
+      LEFT JOIN sub_departments sd ON d.sub_department_id = sd.id
+      WHERE d.id = ?
+    `, [id]);
     return result.rows[0] as any || null;
   }
 
-  async createFunction(data: any, options?: CreateOptions): Promise<any> {
-    const { name, code, isActive = true } = data;
-    const insertResult = await query(`
-      INSERT INTO functions (name, code, is_active, created_at)
-      VALUES (?, ?, ?, NOW())
-    `, [name, code, isActive]);
-    const functionId = (insertResult.rows as any).insertId;
-    return await this.getFunction(functionId);
+  async createDesignation(designationData: any, options?: CreateOptions): Promise<any> {
+    const { name, code, role_id, sub_department_id, skill_level, level, is_active = true } = designationData;
+    const result = await query(`
+      INSERT INTO designations (name, code, role_id, sub_department_id, skill_level, level, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+    `, [name, code, role_id, sub_department_id, skill_level, level, is_active]);
+    
+    const designationId = (result.rows as any).insertId;
+    return await this.getDesignation(designationId);
   }
 
-  async updateFunction(id: number, data: any, options?: UpdateOptions): Promise<any> {
+  async updateDesignation(id: number, designationData: any, options?: UpdateOptions): Promise<any> {
     const fields: string[] = [];
     const values: any[] = [];
-    Object.entries(data).forEach(([key, value]) => {
-      if (key !== 'id' && value !== undefined) {
-        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
-        fields.push(`${dbKey} = ?`);
-        values.push(value);
+    
+    const fieldMap: Record<string, string> = {
+      'name': 'name',
+      'code': 'code',
+      'role_id': 'role_id',
+      'roleId': 'role_id',
+      'sub_department_id': 'sub_department_id',
+      'subDepartmentId': 'sub_department_id',
+      'skill_level': 'skill_level',
+      'skillLevel': 'skill_level',
+      'level': 'level',
+      'is_active': 'is_active',
+      'isActive': 'is_active'
+    };
+
+    Object.keys(designationData).forEach(key => {
+      const dbField = fieldMap[key];
+      if (dbField && designationData[key] !== undefined) {
+        fields.push(`${dbField} = ?`);
+        values.push(designationData[key]);
       }
     });
-    if (fields.length > 0) {
-      values.push(id);
-      await query(`UPDATE functions SET ${fields.join(', ')} WHERE id = ?`, values);
+
+    if (fields.length === 0) {
+      throw new Error('No valid fields to update');
     }
-    return await this.getFunction(id);
+
+    fields.push('updated_at = NOW()');
+    values.push(id);
+
+    await query(`UPDATE designations SET ${fields.join(', ')} WHERE id = ?`, values);
+    return await this.getDesignation(id);
   }
 
-  async deleteFunction(id: number, options?: UpdateOptions): Promise<any> {
-    const result = await query('DELETE FROM functions WHERE id = ?', [id]);
+  async deleteDesignation(id: number, options?: UpdateOptions): Promise<any> {
+    const result = await query('DELETE FROM designations WHERE id = ?', [id]);
     return result.rowCount > 0;
+  }
+
+  async updateDesignationStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any> {
+    return this.updateDesignation(id, { isActive }, options);
   }
 
   // Business Units - production-ready CRUD
@@ -1046,12 +1066,12 @@ export class SqlStorage implements IStorage {
         c.code as city_code,
         cl.name as cluster_name,
         cl.code as cluster_code,
-        r.name as role_name,
-        r.code as role_code
+        d.name as designation_name,
+        d.code as designation_code
       FROM hiring_requests hr
       LEFT JOIN cities c ON hr.city_id = c.id
       LEFT JOIN clusters cl ON hr.cluster_id = cl.id
-      LEFT JOIN roles r ON hr.role_id = r.id
+      LEFT JOIN designations d ON hr.designation_id = d.id
       ${whereClause} 
       ${orderClause || 'ORDER BY hr.created_at DESC'} 
       ${limitClause}
@@ -1067,12 +1087,12 @@ export class SqlStorage implements IStorage {
         c.code as city_code,
         cl.name as cluster_name,
         cl.code as cluster_code,
-        r.name as role_name,
-        r.code as role_code
+        d.name as designation_name,
+        d.code as designation_code
       FROM hiring_requests hr
       LEFT JOIN cities c ON hr.city_id = c.id
       LEFT JOIN clusters cl ON hr.cluster_id = cl.id
-      LEFT JOIN roles r ON hr.role_id = r.id
+      LEFT JOIN designations d ON hr.designation_id = d.id
       WHERE hr.id = ?
     `, [id]);
     return result.rows[0] as any || null;
@@ -1083,7 +1103,7 @@ export class SqlStorage implements IStorage {
       requestId,
       cityId,
       clusterId,
-      roleId,
+      designationId,
       numberOfPositions,
       priority = 'P2',
       requestType = 'fresh',
@@ -1099,11 +1119,11 @@ export class SqlStorage implements IStorage {
     
     const insertResult = await query(`
       INSERT INTO hiring_requests (
-        request_id, city_id, cluster_id, role_id, position_title, no_of_openings,
+        request_id, city_id, cluster_id, designation_id, position_title, no_of_openings,
         priority, request_type, status, description, request_date, created_by, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     `, [
-      requestId, cityId, clusterId, roleId, 'Position', numberOfPositions,
+      requestId, cityId, clusterId, designationId, 'Position', numberOfPositions,
       priority, requestType, status, notes, actualRequestDate, createdBy
     ]);
     
@@ -1138,13 +1158,13 @@ export class SqlStorage implements IStorage {
     return result.rowCount > 0;
   }
 
-  async getNextHiringRequestSequence(roleId: number): Promise<number> {
+  async getNextHiringRequestSequence(designationId: number): Promise<number> {
     const result = await query(`
       SELECT COUNT(*) as count 
       FROM hiring_requests hr
-      JOIN roles r ON hr.role_id = r.id
-      WHERE hr.role_id = ?
-    `, [roleId]);
+      JOIN designations d ON hr.designation_id = d.id
+      WHERE hr.designation_id = ?
+    `, [designationId]);
     
     const count = (result.rows as any)[0]?.count || 0;
     return count + 1;
@@ -1570,5 +1590,87 @@ export class SqlStorage implements IStorage {
       closedRequests: parseInt(row.closedRequests) || 0,
       totalPositions: parseInt(row.totalPositions) || 0
     }));
+  }
+
+  // Centres - CRUD operations
+  async getCentres(filters?: FilterOptions): Promise<any[]> {
+    const { orderClause, limitClause } = this.buildFilterClause(filters);
+    const result = await query(`
+      SELECT c.*, cl.name as clusterName, city.name as cityName 
+      FROM centres c
+      LEFT JOIN clusters cl ON c.cluster_id = cl.id
+      LEFT JOIN cities city ON cl.city_id = city.id
+      WHERE c.is_active = 1 
+      ${orderClause || 'ORDER BY c.name ASC'} 
+      ${limitClause}
+    `);
+    return result.rows as any[];
+  }
+
+  async getCentre(id: number): Promise<any> {
+    const result = await query(`
+      SELECT c.*, cl.name as clusterName, city.name as cityName 
+      FROM centres c
+      LEFT JOIN clusters cl ON c.cluster_id = cl.id
+      LEFT JOIN cities city ON cl.city_id = city.id
+      WHERE c.id = ?
+    `, [id]);
+    return result.rows[0] as any || null;
+  }
+
+  async createCentre(centreData: any, options?: CreateOptions): Promise<any> {
+    const { name, code, address, cluster_id, manager_name, manager_phone, manager_email, capacity, is_active = true } = centreData;
+    const result = await query(`
+      INSERT INTO centres (name, code, address, cluster_id, manager_name, manager_phone, manager_email, capacity, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    `, [name, code, address, cluster_id, manager_name, manager_phone, manager_email, capacity, is_active]);
+    
+    const centreId = (result.rows as any).insertId;
+    return await this.getCentre(centreId);
+  }
+
+  async updateCentre(id: number, centreData: any, options?: UpdateOptions): Promise<any> {
+    const fieldMap: Record<string, string> = {
+      name: 'name',
+      code: 'code', 
+      address: 'address',
+      clusterId: 'cluster_id',
+      cluster_id: 'cluster_id',
+      managerName: 'manager_name',
+      manager_name: 'manager_name',
+      managerPhone: 'manager_phone', 
+      manager_phone: 'manager_phone',
+      managerEmail: 'manager_email',
+      manager_email: 'manager_email',
+      capacity: 'capacity',
+      isActive: 'is_active',
+      is_active: 'is_active'
+    };
+
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    Object.keys(centreData).forEach(key => {
+      if (fieldMap[key] && centreData[key] !== undefined) {
+        updates.push(`${fieldMap[key]} = ?`);
+        values.push(centreData[key]);
+      }
+    });
+
+    if (updates.length === 0) {
+      throw new Error('No valid fields to update');
+    }
+
+    values.push(id);
+    await query(`UPDATE centres SET ${updates.join(', ')} WHERE id = ?`, values);
+    return await this.getCentre(id);
+  }
+
+  async deleteCentre(id: number, softDelete: boolean = true): Promise<void> {
+    if (softDelete) {
+      await query('UPDATE centres SET is_active = 0 WHERE id = ?', [id]);
+    } else {
+      await query('DELETE FROM centres WHERE id = ?', [id]);
+    }
   }
 }

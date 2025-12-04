@@ -63,13 +63,6 @@ export interface IStorage {
   deleteCluster(id: number, options?: UpdateOptions): Promise<boolean>;
   updateClusterStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any>;
 
-  // Functions - using any types for raw SQL approach
-  getFunctions(filters?: FilterOptions): Promise<any[]>;
-  getFunction(id: number): Promise<any>;
-  createFunction(functionData: any, options?: CreateOptions): Promise<any>;
-  updateFunction(id: number, functionData: any, options?: UpdateOptions): Promise<any>;
-  deleteFunction(id: number, options?: UpdateOptions): Promise<boolean>;
-
   // Business Units - using any types for raw SQL approach
   getBusinessUnits(filters?: FilterOptions): Promise<any[]>;
   getBusinessUnit(id: number): Promise<any>;
@@ -99,6 +92,14 @@ export interface IStorage {
   deleteRole(id: number, options?: UpdateOptions): Promise<boolean>;
   updateRoleStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any>;
 
+  // Designations - using any types for raw SQL approach
+  getDesignations(filters?: FilterOptions): Promise<any[]>;
+  getDesignation(id: number): Promise<any>;
+  createDesignation(designationData: any, options?: CreateOptions): Promise<any>;
+  updateDesignation(id: number, designationData: any, options?: UpdateOptions): Promise<any>;
+  deleteDesignation(id: number, options?: UpdateOptions): Promise<boolean>;
+  updateDesignationStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any>;
+
   // Vendors - using any types for raw SQL approach
   getVendors(filters?: FilterOptions): Promise<any[]>;
   getVendor(id: number): Promise<any>;
@@ -115,6 +116,14 @@ export interface IStorage {
   deleteRecruiter(id: number, options?: UpdateOptions): Promise<boolean>;
   updateRecruiterStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any>;
 
+  // Trainers - using any types for raw SQL approach
+  getTrainers(filters?: FilterOptions): Promise<any[]>;
+  getTrainer(id: number): Promise<any>;
+  createTrainer(trainerData: any, options?: CreateOptions): Promise<any>;
+  updateTrainer(id: number, trainerData: any, options?: UpdateOptions): Promise<any>;
+  deleteTrainer(id: number, options?: UpdateOptions): Promise<boolean>;
+  updateTrainerStatus(id: number, isActive: boolean, options?: StatusUpdateOptions): Promise<any>;
+
   // Hiring requests - using any types for raw SQL approach
   getHiringRequests(filters?: FilterOptions): Promise<any[]>;
   getHiringRequest(id: number): Promise<any>;
@@ -122,7 +131,7 @@ export interface IStorage {
   updateHiringRequest(id: number, requestData: any, options?: UpdateOptions): Promise<any>;
   updateHiringRequestStatus(id: number, status: string, options?: UpdateOptions): Promise<any>;
   deleteHiringRequest(id: number, options?: UpdateOptions): Promise<boolean>;
-  getNextHiringRequestSequence(roleId: number): Promise<number>;
+  getNextHiringRequestSequence(designationId: number): Promise<number>;
 
   // Candidates - NEW STRUCTURE
   getCandidates(filters?: FilterOptions): Promise<any[]>;

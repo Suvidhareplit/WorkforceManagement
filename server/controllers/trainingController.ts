@@ -381,7 +381,6 @@ const updateFieldTraining = async (req: Request, res: Response) => {
                   c.recruiter_id, c.recruiter_name, c.referral_name,
                   c.role_id,
                   r.name as role_name,
-                  f.name as function_name,
                   bu.name as business_unit_name,
                   d.name as department_name,
                   sd.name as sub_department_name
@@ -390,7 +389,6 @@ const updateFieldTraining = async (req: Request, res: Response) => {
            JOIN induction_training it ON ct.induction_id = it.id
            JOIN candidates c ON ft.candidate_id = c.id
            LEFT JOIN roles r ON c.role_id = r.id
-           LEFT JOIN functions f ON r.paygroup_id = f.id
            LEFT JOIN business_units bu ON r.business_unit_id = bu.id
            LEFT JOIN departments d ON r.department_id = d.id
            LEFT JOIN sub_departments sd ON r.sub_department_id = sd.id

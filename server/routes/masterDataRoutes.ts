@@ -35,7 +35,6 @@ const router = Router();
 router.get('/city', masterDataController.getCities.bind(masterDataController));
 router.get('/city/:cityId/clusters', masterDataController.getClustersByCity.bind(masterDataController));
 router.get('/cluster', masterDataController.getClusters.bind(masterDataController));
-router.get('/function', masterDataController.getFunctions.bind(masterDataController));
 router.get('/business-unit', masterDataController.getBusinessUnits.bind(masterDataController));
 router.get('/department', masterDataController.getDepartments.bind(masterDataController));
 router.get('/sub-department', masterDataController.getSubDepartments.bind(masterDataController));
@@ -57,7 +56,6 @@ router.use(authenticate);
 // Create master data
 router.post('/city', masterDataController.createCity.bind(masterDataController));
 router.post('/cluster', masterDataController.createCluster.bind(masterDataController));
-router.post('/function', masterDataController.createFunction.bind(masterDataController));
 router.post('/business-unit', masterDataController.createBusinessUnit.bind(masterDataController));
 router.post('/department', masterDataController.createDepartment.bind(masterDataController));
 router.post('/sub-department', masterDataController.createSubDepartment.bind(masterDataController));
@@ -77,7 +75,6 @@ router.patch('/trainer/:id/toggle-status', masterDataController.toggleTrainerSta
 // Edit master data
 router.patch('/city/:id', masterDataController.updateCity.bind(masterDataController));
 router.patch('/cluster/:id', masterDataController.updateCluster.bind(masterDataController));
-router.patch('/function/:id', masterDataController.updateFunction.bind(masterDataController));
 router.patch('/business-unit/:id', masterDataController.updateBusinessUnit.bind(masterDataController));
 router.patch('/department/:id', masterDataController.updateDepartment.bind(masterDataController));
 router.patch('/sub-department/:id', masterDataController.updateSubDepartment.bind(masterDataController));

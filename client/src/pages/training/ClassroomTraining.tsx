@@ -104,23 +104,23 @@ export default function ClassroomTraining() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <h2 className="text-2xl font-bold text-slate-800">Classroom Training (CRT)</h2>
         <p className="text-slate-600 mt-1">Manage classroom training for candidates who completed induction</p>
       </div>
 
       {/* Classroom Training Records Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Classroom Training Records</CardTitle>
+      <Card className="shadow-md">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="text-lg">Classroom Training Records</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-slate-50">
                   <TableHead className="font-semibold">Name</TableHead>
                   <TableHead className="font-semibold">Mobile</TableHead>
                   <TableHead className="font-semibold">City</TableHead>

@@ -396,16 +396,16 @@ export default function OfferManagement() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <h2 className="text-2xl font-bold text-slate-800">Offer Management</h2>
         <p className="text-slate-600 mt-1">Manage job offers and onboarding for selected candidates</p>
       </div>
 
       <div className="space-y-6">
         {/* Interview Feedback Download */}
-        <Card className="border-2 border-blue-100 shadow-sm">
+        <Card className="shadow-md border border-blue-200">
           <CardHeader className="space-y-3 pb-6">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-blue-100 rounded-lg">

@@ -93,15 +93,20 @@ export default function TechnicalRounds() {
   });
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <h2 className="text-2xl font-bold text-slate-800">Technical Rounds</h2>
         <p className="text-slate-600 mt-1">Evaluate candidates technical skills</p>
       </div>
 
       {/* Filters */}
-      <div className="mb-6 flex gap-4 flex-wrap">
+      <Card className="shadow-md">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="text-lg">Filter Candidates</CardTitle>
+        </CardHeader>
+        <CardContent>
+      <div className="flex gap-4 flex-wrap">
         <div className="flex-1 min-w-[200px]">
           <Label htmlFor="cityFilter">City</Label>
           <Select value={cityFilter} onValueChange={setCityFilter}>
@@ -156,10 +161,12 @@ export default function TechnicalRounds() {
           />
         </div>
       </div>
+        </CardContent>
+      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Candidates for Technical Evaluation</CardTitle>
+      <Card className="shadow-md">
+        <CardHeader className="bg-slate-50 border-b">
+          <CardTitle className="text-lg">Candidates for Technical Evaluation</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>

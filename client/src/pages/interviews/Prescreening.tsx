@@ -180,16 +180,16 @@ export default function Prescreening() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Candidate Prescreening</h1>
-        <p className="text-slate-600 mt-2">Evaluate and assess candidate qualifications for technical interview progression</p>
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <h1 className="text-2xl font-bold text-slate-800">Candidate Prescreening</h1>
+        <p className="text-slate-600 mt-1">Evaluate and assess candidate qualifications for technical interview progression</p>
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader>
+      <Card className="shadow-md">
+        <CardHeader className="bg-slate-50 border-b">
           <CardTitle className="text-lg">Filter Candidates</CardTitle>
         </CardHeader>
         <CardContent>

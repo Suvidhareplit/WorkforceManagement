@@ -12,11 +12,11 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch all employees
-  const { data: employeesResponse } = useQuery({
+  const { data: employeesData } = useQuery({
     queryKey: ["/api/employees"],
   });
-
-  const employees = (employeesResponse as any) || [];
+  
+  const employees = (employeesData as any[]) || [];
 
   // Filter employees based on search query
   const filteredEmployees = employees.filter((emp: any) => {
@@ -98,12 +98,31 @@ export default function Home() {
                           <p className="text-sm text-gray-600 mb-2">
                             {employee.role || "N/A"}
                           </p>
-                          <div className="flex flex-wrap gap-2 text-sm text-gray-500">
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
                             <span className="font-medium">
                               Emp # {employee.employeeId || employee.employee_id}
                             </span>
                             <span>|</span>
                             <span>{employee.employmentType || employee.employment_type}</span>
+                            {/* Exit Status - only show if exists */}
+                            {(employee.exitStatus || employee.exit_status) && (
+                              <>
+                                <span>|</span>
+                                <Badge 
+                                  className={
+                                    (employee.exitStatus || employee.exit_status) === 'initiated' 
+                                      ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100 text-xs'
+                                      : (employee.exitStatus || employee.exit_status) === 'in_progress'
+                                      ? 'bg-orange-100 text-orange-800 hover:bg-orange-100 text-xs'
+                                      : (employee.exitStatus || employee.exit_status) === 'completed'
+                                      ? 'bg-gray-100 text-gray-800 hover:bg-gray-100 text-xs'
+                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-100 text-xs'
+                                  }
+                                >
+                                  Exit: {employee.exitStatus || employee.exit_status}
+                                </Badge>
+                              </>
+                            )}
                           </div>
                         </div>
 
@@ -111,9 +130,11 @@ export default function Home() {
                         <div className="flex-shrink-0">
                           <Badge 
                             className={
-                              employee.workingStatus === 'active' || employee.working_status === 'active'
+                              (employee.workingStatus || employee.working_status) === 'working'
                                 ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                                : 'bg-red-100 text-red-800 hover:bg-red-100'
+                                : (employee.workingStatus || employee.working_status) === 'relieved'
+                                ? 'bg-red-100 text-red-800 hover:bg-red-100'
+                                : 'bg-blue-100 text-blue-800 hover:bg-blue-100'
                             }
                           >
                             {employee.workingStatus || employee.working_status || 'Active'}

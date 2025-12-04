@@ -29,30 +29,30 @@ export class HiringController extends BaseController {
       const userId = this.getUserId(req);
       
       // Validate required fields
-      if (!requestData.cityId || !requestData.clusterId || !requestData.roleId || !requestData.numberOfPositions) {
-        this.sendError(res, 'Missing required fields: cityId, clusterId, roleId, numberOfPositions', 400);
+      if (!requestData.cityId || !requestData.clusterId || !requestData.designationId || !requestData.numberOfPositions) {
+        this.sendError(res, 'Missing required fields: cityId, clusterId, designationId, numberOfPositions', 400);
         return;
       }
 
       // Get reference data for validation and ID generation
-      const [city, cluster, role] = await Promise.all([
+      const [city, cluster, designation] = await Promise.all([
         this.storage.getCity(requestData.cityId),
         this.storage.getCluster(requestData.clusterId),
-        this.storage.getRole(requestData.roleId)
+        this.storage.getDesignation(requestData.designationId)
       ]);
 
-      if (!city || !cluster || !role) {
-        this.sendError(res, 'Invalid city, cluster, or role ID', 400);
+      if (!city || !cluster || !designation) {
+        this.sendError(res, 'Invalid city, cluster, or designation ID', 400);
         return;
       }
 
-      // Get next sequence number for this role
-      const nextSequence = await this.storage.getNextHiringRequestSequence(requestData.roleId);
+      // Get next sequence number for this designation
+      const nextSequence = await this.storage.getNextHiringRequestSequence(requestData.designationId);
       
       // Create individual requests for each position
       const requests = [];
       for (let i = 0; i < requestData.numberOfPositions; i++) {
-        const requestId = this.generateRequestId(city.code, role.code, cluster.code, nextSequence + i);
+        const requestId = this.generateRequestId(city.code, designation.code, cluster.code, nextSequence + i);
         
         const request = await this.storage.createHiringRequest({
           ...requestData,

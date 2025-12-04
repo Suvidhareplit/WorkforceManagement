@@ -13,8 +13,8 @@ import { Switch } from "@/components/ui/switch";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { City, Cluster, Role, Vendor, Recruiter, Trainer, Function, BusinessUnit, Department, SubDepartment, Designation } from "@/types";
-import { MapPin, Building2, Briefcase, Users, UserCheck, Edit, Eye, DollarSign, Building, Layers, FolderTree, Plus, X, GraduationCap } from "lucide-react";
+import { City, Cluster, Role, Vendor, Recruiter, Trainer, BusinessUnit, Department, SubDepartment, Designation } from "@/types";
+import { MapPin, Briefcase, Users, UserCheck, Edit, Eye, Building, Layers, FolderTree, Plus, X, GraduationCap, ChevronDown, ChevronRight } from "lucide-react";
 
 import { useEffect } from "react";
 
@@ -23,7 +23,6 @@ export default function MasterData() {
     // Invalidate queries to ensure fresh data on component mount
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/city"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/cluster"] });
-    queryClient.invalidateQueries({ queryKey: ["/api/master-data/function"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/business-unit"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/department"] });
     queryClient.invalidateQueries({ queryKey: ["/api/master-data/sub-department"] });
@@ -38,6 +37,10 @@ export default function MasterData() {
   const [vendorDetailsOpen, setVendorDetailsOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [showAddVendorForm, setShowAddVendorForm] = useState(false);
+  const [showClusterDialog, setShowClusterDialog] = useState(false);
+  const [showCentreDialog, setShowCentreDialog] = useState(false);
+  const [selectedClusterForCentre, setSelectedClusterForCentre] = useState<any>(null);
+  const [expandedClusters, setExpandedClusters] = useState<Set<string>>(new Set());
   const [editFormData, setEditFormData] = useState({
     name: "",
     code: "",
@@ -48,12 +51,9 @@ export default function MasterData() {
     replacementPeriod: "",
     cityId: "1",
     jobDescriptionFile: null as File | null,
-    function: "",
     businessUnit: "",
     department: "",
     subDepartment: "",
-    skillLevel: "",
-    level: "",
     // Commercial terms
     managementFees: "",
     sourcingFee: "",
@@ -68,6 +68,14 @@ export default function MasterData() {
     payrollSpocName: "",
     payrollSpocEmail: "",
     payrollSpocPhone: "",
+    // Designation fields
+    roleId: "",
+    subDepartmentId: "",
+    skillLevel: "",
+    level: "",
+    // Centre fields
+    clusterId: "",
+    address: "",
   });
   const [formData, setFormData] = useState({
     name: "",
@@ -79,20 +87,14 @@ export default function MasterData() {
     replacementPeriod: "",
     cityId: "1", // Default to first city to avoid empty string
     jobDescriptionFile: null as File | null,
-    function: "",
     businessUnit: "",
     department: "",
     subDepartment: "",
-    skillLevel: "",
-    level: "",
     // Designation fields
     roleId: "",
     subDepartmentId: "",
-    designationLevel: "mid",
-    grade: "",
-    minSalary: "",
-    maxSalary: "",
-    description: "",
+    skillLevel: "",
+    level: "",
     // Commercial terms
     managementFees: "",
     sourcingFee: "",
@@ -107,6 +109,9 @@ export default function MasterData() {
     payrollSpocName: "",
     payrollSpocEmail: "",
     payrollSpocPhone: "",
+    // Centre fields
+    clusterId: "",
+    address: "",
   });
   const { toast } = useToast();
 
@@ -114,13 +119,10 @@ export default function MasterData() {
     queryKey: ["/api/master-data/city"],
   });
 
-  const { data: clusters = [], isLoading: loadingClusters } = useQuery({
+  const { data: clusters = [] } = useQuery({
     queryKey: ["/api/master-data/cluster"],
   });
 
-  const { data: functions = [], isLoading: loadingFunctions } = useQuery({
-    queryKey: ["/api/master-data/function"],
-  });
 
   const { data: businessUnits = [], isLoading: loadingBusinessUnits } = useQuery({
     queryKey: ["/api/master-data/business-unit"],
@@ -154,18 +156,23 @@ export default function MasterData() {
     queryKey: ["/api/designations"],
   });
 
+  const { data: centres = [] } = useQuery({
+    queryKey: ["/api/centres"],
+  });
+
   // Ensure data is always an array to prevent map errors - SHOW ALL ITEMS INCLUDING INACTIVE
   const safeCities = Array.isArray(cities) ? cities : [];
   const safeClusters = Array.isArray(clusters) ? clusters : [];
-  const safeFunctions = Array.isArray(functions) ? functions : [];
   const safeBusinessUnits = Array.isArray(businessUnits) ? businessUnits : [];
   const safeDepartments = Array.isArray(departments) ? departments : [];
   const safeSubDepartments = Array.isArray(subDepartments) ? subDepartments : [];
+  const safeCentres = Array.isArray(centres) ? centres : [];
   const safeRoles = Array.isArray(roles) ? roles : [];
   const safeVendors = Array.isArray(vendors) ? vendors : [];
   const safeRecruiters = Array.isArray(recruiters) ? recruiters : [];
   const safeTrainers = Array.isArray(trainers) ? trainers : [];
-  const safeDesignations = Array.isArray(designations?.data) ? designations.data : [];
+  const safeDesignations = Array.isArray(designations) ? designations : [];
+
 
   const createCityMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -317,6 +324,30 @@ export default function MasterData() {
     },
   });
 
+  const createCentreMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("/api/centres", {
+        method: "POST",
+        body: data,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/centres"] });
+      toast({
+        title: "Success",
+        description: "Centre created successfully",
+      });
+      resetForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create centre",
+        variant: "destructive",
+      });
+    },
+  });
+
   const resetForm = () => {
     const newFormData = {
       name: "",
@@ -345,6 +376,18 @@ export default function MasterData() {
       payrollSpocName: "",
       payrollSpocEmail: "",
       payrollSpocPhone: "",
+      // Designation fields
+      roleId: "",
+      subDepartmentId: "",
+      skillLevel: "",
+      level: "",
+      // Centre fields
+      clusterId: "",
+      address: "",
+      managerName: "",
+      managerPhone: "",
+      managerEmail: "",
+      capacity: "",
     };
     
     // Reset city-specific SPOC data
@@ -392,7 +435,7 @@ export default function MasterData() {
   };
 
   const handleCreateRole = async () => {
-    if (!formData.name || !formData.code) {
+    if (!formData.name) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -405,13 +448,9 @@ export default function MasterData() {
 
     const roleData = new FormData();
     roleData.append('name', formData.name);
-    roleData.append('code', formData.code.toUpperCase());
-    if (formData.function) roleData.append('functionId', formData.function);
     if (formData.businessUnit) roleData.append('businessUnitId', formData.businessUnit);
     if (formData.department) roleData.append('departmentId', formData.department);
     if (formData.subDepartment) roleData.append('subDepartmentId', formData.subDepartment);
-    if (formData.skillLevel) roleData.append('skillLevel', formData.skillLevel);
-    if (formData.level) roleData.append('level', formData.level);
     if (formData.jobDescriptionFile) {
       roleData.append('jobDescriptionFile', formData.jobDescriptionFile);
     }
@@ -425,7 +464,7 @@ export default function MasterData() {
       console.log('Sending API request...');
       const result = await createRoleMutation.mutateAsync(roleData);
       console.log('API response:', result);
-      setFormData({ ...formData, name: "", code: "", function: "", businessUnit: "", department: "", subDepartment: "", skillLevel: "", level: "", jobDescriptionFile: null });
+      setFormData({ ...formData, name: "", businessUnit: "", department: "", subDepartment: "", jobDescriptionFile: null });
       // Reset file input
       const fileInput = document.getElementById('roleJD') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -516,13 +555,27 @@ export default function MasterData() {
     createDesignationMutation.mutate({
       name: formData.name,
       code: formData.code.toUpperCase(),
-      description: formData.description,
       role_id: parseInt(formData.roleId),
       sub_department_id: parseInt(formData.subDepartmentId),
-      level: formData.designationLevel,
-      grade: formData.grade,
-      min_salary: formData.minSalary ? parseFloat(formData.minSalary) : undefined,
-      max_salary: formData.maxSalary ? parseFloat(formData.maxSalary) : undefined,
+      skill_level: formData.skillLevel,
+      level: formData.level,
+    });
+  };
+
+  const handleCreateCentre = () => {
+    if (!formData.name || !formData.clusterId) {
+      toast({
+        title: "Error",
+        description: "Please fill in the centre name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createCentreMutation.mutate({
+      name: formData.name,
+      cluster_id: parseInt(formData.clusterId),
+      address: formData.address || "",
     });
   };
 
@@ -555,13 +608,9 @@ export default function MasterData() {
       if (editType === 'role' && editFormData.jobDescriptionFile) {
         const formData = new FormData();
         formData.append('name', editFormData.name);
-        formData.append('code', editFormData.code);
-        if (editFormData.function) formData.append('functionId', editFormData.function);
         if (editFormData.businessUnit) formData.append('businessUnitId', editFormData.businessUnit);
         if (editFormData.department) formData.append('departmentId', editFormData.department);
         if (editFormData.subDepartment) formData.append('subDepartmentId', editFormData.subDepartment);
-        if (editFormData.skillLevel) formData.append('skillLevel', editFormData.skillLevel);
-        if (editFormData.level) formData.append('level', editFormData.level);
         formData.append('jobDescriptionFile', editFormData.jobDescriptionFile);
         
         await apiRequest(endpoint, {
@@ -574,19 +623,18 @@ export default function MasterData() {
           name: editFormData.name,
           code: editFormData.code,
           ...(editType === 'role' && { 
-            functionId: editFormData.function ? parseInt(editFormData.function) : undefined,
             businessUnitId: editFormData.businessUnit ? parseInt(editFormData.businessUnit) : undefined,
             departmentId: editFormData.department ? parseInt(editFormData.department) : undefined,
-            subDepartmentId: editFormData.subDepartment ? parseInt(editFormData.subDepartment) : undefined,
-            skillLevel: editFormData.skillLevel || undefined,
-            level: editFormData.level || undefined
+            subDepartmentId: editFormData.subDepartment ? parseInt(editFormData.subDepartment) : undefined
           }),
           ...(editType === 'vendor' && (() => {
             // Extract city SPOC fields
             const citySpocs: any = {};
             Object.keys(editFormData).forEach(key => {
-              if (key.startsWith('citySpoc_')) {
-                citySpocs[key] = (editFormData as any)[key];
+              if (key.includes('_')) {
+                const [city, field] = key.split('_');
+                if (!citySpocs[city]) citySpocs[city] = {};
+                citySpocs[city][field] = (editFormData as any)[key];
               }
             });
             
@@ -595,18 +643,15 @@ export default function MasterData() {
               phone: editFormData.phone,
               contactPerson: editFormData.contactPerson,
               commercialTerms: editFormData.commercialTerms,
-              replacementPeriod: editFormData.replacementPeriod ? parseInt(editFormData.replacementPeriod) : undefined,
+              replacementPeriod: editFormData.replacementPeriod,
               // Commercial terms
-              managementFees: editFormData.managementFees ? parseFloat(editFormData.managementFees) : undefined,
-              sourcingFee: editFormData.sourcingFee ? parseFloat(editFormData.sourcingFee) : undefined,
-              replacementDays: editFormData.replacementDays ? parseInt(editFormData.replacementDays) : undefined,
+              managementFees: editFormData.managementFees,
+              sourcingFee: editFormData.sourcingFee,
+              replacementDays: editFormData.replacementDays,
               // Contact details
               deliveryLeadName: editFormData.deliveryLeadName,
               deliveryLeadEmail: editFormData.deliveryLeadEmail,
               deliveryLeadPhone: editFormData.deliveryLeadPhone,
-              cityRecruitmentSpocName: (editFormData as any).cityRecruitmentSpocName,
-              cityRecruitmentSpocEmail: (editFormData as any).cityRecruitmentSpocEmail,
-              cityRecruitmentSpocPhone: (editFormData as any).cityRecruitmentSpocPhone,
               businessHeadName: editFormData.businessHeadName,
               businessHeadEmail: editFormData.businessHeadEmail,
               businessHeadPhone: editFormData.businessHeadPhone,
@@ -618,6 +663,7 @@ export default function MasterData() {
             };
           })()),
           ...(editType === 'recruiter' && { 
+            cityId: parseInt(editFormData.cityId),
             email: editFormData.email,
             phone: editFormData.phone,
             incentiveStructure: (editFormData as any).incentiveStructure
@@ -628,13 +674,10 @@ export default function MasterData() {
             phone: editFormData.phone
           }),
           ...(editType === 'designation' && { 
-            description: (editFormData as any).description,
-            role_id: parseInt((editFormData as any).roleId),
-            sub_department_id: parseInt((editFormData as any).subDepartmentId),
-            level: (editFormData as any).designationLevel,
-            grade: (editFormData as any).grade,
-            min_salary: (editFormData as any).minSalary ? parseFloat((editFormData as any).minSalary) : undefined,
-            max_salary: (editFormData as any).maxSalary ? parseFloat((editFormData as any).maxSalary) : undefined,
+            role_id: parseInt(editFormData.roleId),
+            sub_department_id: parseInt(editFormData.subDepartmentId),
+            skill_level: editFormData.skillLevel,
+            level: editFormData.level,
           }),
           ...(editType === 'cluster' && { city_id: parseInt(editFormData.cityId) }), // Use snake_case for backend
           ...(editType === 'department' && { 
@@ -645,15 +688,28 @@ export default function MasterData() {
           })
         };
 
-        await apiRequest(endpoint, {
+        console.log('Sending PATCH request to:', endpoint);
+        console.log('Update data:', updateData);
+        
+        const response = await apiRequest(endpoint, {
           method: "PATCH",
           body: updateData,
         });
+        
+        console.log('API response:', response);
       }
       
-      queryClient.invalidateQueries({ 
-        queryKey: editType === 'designation' ? ["/api/designations"] : [`/api/master-data/${editType}`] 
+      // Force immediate cache refresh
+      const queryKey = editType === 'designation' ? ["/api/designations"] : [`/api/master-data/${editType}`];
+      console.log('Force refreshing cache for query:', queryKey);
+      
+      // Invalidate and immediately refetch active queries
+      await queryClient.invalidateQueries({ 
+        queryKey,
+        refetchType: 'active'
       });
+      
+      console.log('Cache force refresh completed');
       toast({
         title: "Success",
         description: `${editType.charAt(0).toUpperCase() + editType.slice(1)} updated successfully`,
@@ -701,40 +757,6 @@ export default function MasterData() {
     }
   };
 
-  const handleEditCluster = (cluster: Cluster) => {
-    setEditingItem(cluster);
-    setEditType("cluster");
-    setEditFormData({
-      name: cluster.name,
-      code: cluster.code,
-      email: "",
-      phone: "",
-      contactPerson: "",
-      commercialTerms: "",
-      replacementPeriod: "",
-      incentiveStructure: "",
-      cityId: cluster.cityId.toString(),
-    } as any);
-  };
-
-  const handleToggleClusterStatus = async (id: number, currentStatus: boolean) => {
-    try {
-      await apiRequest(`/api/master-data/cluster/${id}/toggle-status`, {
-        method: "PATCH",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/master-data/cluster"] });
-      toast({
-        title: "Success",
-        description: `Cluster ${currentStatus ? 'deactivated' : 'activated'} successfully`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update cluster status",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleEditRole = (role: Role) => {
     setEditingItem(role);
@@ -742,13 +764,9 @@ export default function MasterData() {
     setEditFormData({
       ...editFormData,
       name: role.name,
-      code: role.code,
-      function: role.functionId?.toString() || "",
       businessUnit: role.businessUnitId?.toString() || "",
       department: role.departmentId?.toString() || "",
       subDepartment: role.subDepartmentId?.toString() || "",
-      skillLevel: (role as any).skillLevel || "",
-      level: (role as any).level || "",
     });
   };
 
@@ -884,18 +902,19 @@ export default function MasterData() {
   };
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-6">
+    <div className="flex flex-col h-[calc(100vh-80px)]">
+      {/* Fixed Header */}
+      <div className="bg-white px-6 py-4 border-b border-slate-200 flex-shrink-0">
         <h2 className="text-2xl font-bold text-slate-800">Master Data Management</h2>
         <p className="text-slate-600 mt-1">Manage all master data including cities, clusters, roles, vendors, and recruiters</p>
       </div>
 
-      <Tabs defaultValue="cities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-11 gap-1">
+      <Tabs defaultValue="cities" className="flex flex-col flex-1 min-h-0">
+        {/* Fixed Tabs */}
+        <div className="border-b border-slate-200 bg-white px-6 flex-shrink-0">
+          <TabsList className="grid w-full grid-cols-10 gap-1 bg-slate-50">
           <TabsTrigger value="cities">Cities</TabsTrigger>
           <TabsTrigger value="clusters">Clusters</TabsTrigger>
-          <TabsTrigger value="functions">Functions</TabsTrigger>
           <TabsTrigger value="business-units">Business Units</TabsTrigger>
           <TabsTrigger value="departments">Departments</TabsTrigger>
           <TabsTrigger value="sub-departments">Sub Depts</TabsTrigger>
@@ -905,8 +924,11 @@ export default function MasterData() {
           <TabsTrigger value="recruiters">Recruiters</TabsTrigger>
           <TabsTrigger value="trainers">Trainers</TabsTrigger>
         </TabsList>
+        </div>
 
-        <TabsContent value="cities">
+        {/* Scrollable Content Container */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <TabsContent value="cities" className="mt-0 h-full">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -1015,283 +1037,215 @@ export default function MasterData() {
           </div>
         </TabsContent>
 
-        <TabsContent value="clusters">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Building2 className="h-5 w-5 mr-2" />
-                  Clusters
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Code</TableHead>
-                      <TableHead>City</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loadingClusters ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
-                          Loading...
-                        </TableCell>
-                      </TableRow>
-                    ) : safeClusters.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
-                          No clusters found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      safeClusters.map((cluster: Cluster) => (
-                        <TableRow key={cluster.id}>
-                          <TableCell className="font-medium">{cluster.name}</TableCell>
-                          <TableCell className="font-mono">{cluster.code}</TableCell>
-                          <TableCell>
-                            {cluster.cityName || 'Not assigned'}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={cluster.isActive ? "default" : "secondary"}>
-                              {cluster.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleEditCluster(cluster)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-sm">
-                                  {cluster.isActive ? "Active" : "Inactive"}
-                                </span>
-                                <Switch
-                                  checked={cluster.isActive}
-                                  onCheckedChange={() => handleToggleClusterStatus(cluster.id, cluster.isActive)}
-                                />
-                              </div>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+        <TabsContent value="clusters" className="mt-0">
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">Cities & Clusters</h2>
+                <p className="text-slate-600">Manage cities, clusters and their centres</p>
+              </div>
+              <Button 
+                onClick={() => setShowClusterDialog(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Cluster
+              </Button>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Add New Cluster</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="clusterCity">City</Label>
-                  <Select
-                    value={formData.cityId}
-                    onValueChange={(value) => setFormData({ ...formData, cityId: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select city" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {safeCities.map((city: City) => (
-                        <SelectItem key={city.id} value={city.id.toString()}>
-                          {city.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="clusterName">Cluster Name</Label>
-                  <Input
-                    id="clusterName"
-                    placeholder="Enter cluster name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="clusterCode">Cluster Code</Label>
-                  <Input
-                    id="clusterCode"
-                    placeholder="Enter cluster code"
-                    value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  />
-                </div>
-                <Button
-                  onClick={handleCreateCluster}
-                  disabled={createClusterMutation.isPending}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  {createClusterMutation.isPending ? "Creating..." : "Create Cluster"}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+            {/* Cities & Clusters Hierarchy */}
+            <div className="space-y-4">
+              {safeCities.map((city: City) => {
+                const cityClusters = safeClusters.filter((cluster: any) => cluster.cityId === city.id);
+                const cityExpanded = expandedClusters.has(city.id.toString());
+                
+                return (
+                  <div key={city.id} className="bg-white border border-slate-200 rounded-lg">
+                    {/* City Header */}
+                    <div 
+                      className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50"
+                      onClick={() => {
+                        const newExpanded = new Set(expandedClusters);
+                        if (cityExpanded) {
+                          newExpanded.delete(city.id.toString());
+                        } else {
+                          newExpanded.add(city.id.toString());
+                        }
+                        setExpandedClusters(newExpanded);
+                      }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Button variant="ghost" size="sm" className="p-1 h-6 w-6">
+                          {cityExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        </Button>
+                        <h3 className="text-lg font-medium text-slate-900">{city.name}</h3>
+                        <span className="text-sm text-slate-500">({cityClusters.length} clusters)</span>
+                      </div>
+                    </div>
 
-        {/* PAYGROUPS TAB */}
-        <TabsContent value="functions">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <DollarSign className="h-5 w-5 mr-2" />
-                  Functions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Code</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loadingFunctions ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8">
-                          Loading...
-                        </TableCell>
-                      </TableRow>
-                    ) : safeFunctions.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8">
-                          No functions found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      safeFunctions.map((func: Function) => (
-                        <TableRow key={func.id}>
-                          <TableCell className="font-medium">{func.name}</TableCell>
-                          <TableCell className="font-mono">{func.code}</TableCell>
-                          <TableCell>
-                            <Badge variant={func.isActive ? "default" : "secondary"}>
-                              {func.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
+                    {/* Clusters under City */}
+                    {cityExpanded && (
+                      <div className="border-t border-slate-200 divide-y divide-slate-200">
+                        {cityClusters.map((cluster: Cluster) => {
+                          const clusterCentres = safeCentres.filter((centre: any) => centre.clusterId === cluster.id);
+                          const clusterExpanded = expandedClusters.has(`cluster-${cluster.id}`);
+                          
+                          return (
+                            <div key={cluster.id}>
+                              {/* Cluster Header */}
+                              <div 
+                                className="flex items-center justify-between p-4 pl-12 cursor-pointer hover:bg-slate-50"
                                 onClick={() => {
-                                  setEditingItem(func);
-                                  setEditType("function");
-                                  setEditFormData({
-                                    ...editFormData,
-                                    name: func.name,
-                                    code: func.code,
-                                  });
+                                  const newExpanded = new Set(expandedClusters);
+                                  const clusterKey = `cluster-${cluster.id}`;
+                                  if (clusterExpanded) {
+                                    newExpanded.delete(clusterKey);
+                                  } else {
+                                    newExpanded.add(clusterKey);
+                                  }
+                                  setExpandedClusters(newExpanded);
                                 }}
                               >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Switch
-                                checked={func.isActive}
-                                onCheckedChange={async () => {
-                                  try {
-                                    await apiRequest(`/api/master-data/function/${func.id}`, {
-                                      method: "PATCH",
-                                      body: { isActive: !func.isActive },
-                                    });
-                                    queryClient.invalidateQueries({ queryKey: ["/api/master-data/function"] });
-                                    toast({
-                                      title: "Success",
-                                      description: `Function ${!func.isActive ? "activated" : "deactivated"} successfully`,
-                                    });
-                                  } catch (error: any) {
-                                    toast({
-                                      title: "Error",
-                                      description: error.message || "Failed to update function status",
-                                      variant: "destructive",
-                                    });
-                                  }
-                                }}
-                              />
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                                <div className="flex items-center space-x-3">
+                                  <Button variant="ghost" size="sm" className="p-1 h-6 w-6">
+                                    {clusterExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                  </Button>
+                                  <h4 className="text-sm font-medium text-slate-900">{cluster.name}</h4>
+                                  <span className="text-xs text-slate-500">({clusterCentres.length} centers)</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Switch
+                                    checked={cluster.isActive}
+                                    onCheckedChange={async () => {
+                                      try {
+                                        await apiRequest(`/api/master-data/cluster/${cluster.id}/toggle-status`, {
+                                          method: 'PATCH',
+                                        });
+                                        queryClient.invalidateQueries({ queryKey: ['/api/master-data/cluster'] });
+                                        toast({
+                                          title: 'Success',
+                                          description: `Cluster ${cluster.isActive ? 'deactivated' : 'activated'} successfully`,
+                                        });
+                                      } catch (error: any) {
+                                        toast({
+                                          title: 'Error',
+                                          description: error.message,
+                                          variant: 'destructive',
+                                        });
+                                      }
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingItem(cluster);
+                                      setEditType('cluster');
+                                      setEditFormData({
+                                        ...editFormData,
+                                        name: cluster.name,
+                                        code: cluster.code,
+                                        cityId: cluster.cityId.toString(),
+                                      });
+                                    }}
+                                    className="p-1 h-8 w-8"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedClusterForCentre(cluster);
+                                      setShowCentreDialog(true);
+                                    }}
+                                    className="text-green-600 border-green-200 hover:bg-green-50"
+                                  >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Center
+                                  </Button>
+                                </div>
+                              </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Add New Function</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="functionName">Function Name</Label>
-                  <Input
-                    id="functionName"
-                    placeholder="Enter function name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="functionCode">Function Code</Label>
-                  <Input
-                    id="functionCode"
-                    placeholder="Enter function code"
-                    value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  />
-                </div>
-                <Button
-                  onClick={async () => {
-                    try {
-                      await apiRequest("/api/master-data/function", {
-                        method: "POST",
-                        body: {
-                          name: formData.name,
-                          code: formData.code,
-                        },
-                      });
-                      queryClient.invalidateQueries({ queryKey: ["/api/master-data/function"] });
-                      setFormData({ ...formData, name: "", code: "" });
-                      toast({
-                        title: "Success",
-                        description: "Function created successfully",
-                      });
-                    } catch (error: any) {
-                      toast({
-                        title: "Error",
-                        description: error.message || "Failed to create function",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  Create Function
-                </Button>
-              </CardContent>
-            </Card>
+                              {/* Centres under Cluster */}
+                              {clusterExpanded && clusterCentres.length > 0 && (
+                                <div className="bg-slate-50 p-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {clusterCentres.map((centre: any) => (
+                                      <div key={centre.id} className="bg-white border border-slate-200 rounded-lg p-4">
+                                        <div className="flex items-start justify-between">
+                                          <div className="flex-1">
+                                            <h5 className="text-xs font-medium text-slate-900 mb-1">{centre.name}</h5>
+                                            {centre.address && <p className="text-xs text-slate-500 mb-2">{centre.address}</p>}
+                                            <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                                              centre.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                            }`}>
+                                              {centre.isActive ? 'Active' : 'Inactive'}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center space-x-1 ml-2">
+                                            <Switch
+                                              checked={centre.isActive}
+                                              onCheckedChange={async () => {
+                                                try {
+                                                  await apiRequest(`/api/centres/${centre.id}/toggle-status`, {
+                                                    method: 'PATCH',
+                                                  });
+                                                  queryClient.invalidateQueries({ queryKey: ['/api/centres'] });
+                                                  toast({
+                                                    title: 'Success',
+                                                    description: `Centre ${centre.isActive ? 'deactivated' : 'activated'} successfully`,
+                                                  });
+                                                } catch (error: any) {
+                                                  toast({
+                                                    title: 'Error',
+                                                    description: error.message,
+                                                    variant: 'destructive',
+                                                  });
+                                                }
+                                              }}
+                                            />
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => {
+                                                setEditingItem(centre);
+                                                setEditType('centre');
+                                                setEditFormData({
+                                                  ...editFormData,
+                                                  name: centre.name,
+                                                  clusterId: centre.clusterId?.toString() || '',
+                                                  address: centre.address || '',
+                                                });
+                                              }}
+                                              className="p-1 h-8 w-8"
+                                            >
+                                              <Edit className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 
         {/* BUSINESS UNITS TAB */}
-        <TabsContent value="business-units">
+        <TabsContent value="business-units" className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -1439,7 +1393,7 @@ export default function MasterData() {
         </TabsContent>
 
         {/* DEPARTMENTS TAB */}
-        <TabsContent value="departments">
+        <TabsContent value="departments" className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -1609,7 +1563,7 @@ export default function MasterData() {
         </TabsContent>
 
         {/* SUB DEPARTMENTS TAB */}
-        <TabsContent value="sub-departments">
+        <TabsContent value="sub-departments" className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -1778,7 +1732,7 @@ export default function MasterData() {
           </div>
         </TabsContent>
 
-        <TabsContent value="roles">
+        <TabsContent value="roles" className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -1793,13 +1747,9 @@ export default function MasterData() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
-                        <TableHead>Code</TableHead>
                         <TableHead>Business Unit</TableHead>
-                        <TableHead>Function</TableHead>
                         <TableHead>Department</TableHead>
                         <TableHead>Sub Department</TableHead>
-                        <TableHead>Skill Level</TableHead>
-                        <TableHead>Level</TableHead>
                         <TableHead>Job Description</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
@@ -1808,13 +1758,13 @@ export default function MasterData() {
                     <TableBody>
                       {loadingRoles ? (
                         <TableRow>
-                          <TableCell colSpan={11} className="text-center py-8">
+                          <TableCell colSpan={7} className="text-center py-8">
                             Loading...
                           </TableCell>
                         </TableRow>
                       ) : safeRoles.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={11} className="text-center py-8">
+                          <TableCell colSpan={7} className="text-center py-8">
                             No roles found
                           </TableCell>
                         </TableRow>
@@ -1822,13 +1772,9 @@ export default function MasterData() {
                         safeRoles.map((role: Role) => (
                           <TableRow key={role.id}>
                             <TableCell className="font-medium">{role.name}</TableCell>
-                            <TableCell className="font-mono">{role.code}</TableCell>
                             <TableCell className="text-sm">{role.businessUnitName || '-'}</TableCell>
-                            <TableCell className="text-sm">{role.functionName || '-'}</TableCell>
                             <TableCell className="text-sm">{role.departmentName || '-'}</TableCell>
                             <TableCell className="text-sm">{role.subDepartmentName || '-'}</TableCell>
-                            <TableCell className="text-sm">{(role as any).skillLevel || '-'}</TableCell>
-                            <TableCell className="text-sm">{(role as any).level || '-'}</TableCell>
                             <TableCell>
                               {(role as any).jobDescriptionFile ? (
                                 <div className="flex items-center space-x-2">
@@ -1894,33 +1840,6 @@ export default function MasterData() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="roleCode">Role Code</Label>
-                  <Input
-                    id="roleCode"
-                    placeholder="Enter role code"
-                    value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="roleFunction">Function</Label>
-                  <Select
-                    value={formData.function || ""}
-                    onValueChange={(value) => setFormData({ ...formData, function: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select function" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {safeFunctions.map((pg: Function) => (
-                        <SelectItem key={pg.id} value={pg.id.toString()}>
-                          {pg.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
                   <Label htmlFor="roleBusinessUnit">Business Unit</Label>
                   <Select
                     value={formData.businessUnit || ""}
@@ -1975,31 +1894,6 @@ export default function MasterData() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="roleSkillLevel">Skill Level</Label>
-                  <Select
-                    value={formData.skillLevel || ""}
-                    onValueChange={(value) => setFormData({ ...formData, skillLevel: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select skill level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Skilled">Skilled</SelectItem>
-                      <SelectItem value="Semi-Skilled">Semi-Skilled</SelectItem>
-                      <SelectItem value="Unskilled">Unskilled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="roleLevel">Level</Label>
-                  <Input
-                    id="roleLevel"
-                    placeholder="e.g., L1, L2, L3, L4"
-                    value={formData.level}
-                    onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                  />
-                </div>
-                <div>
                   <Label htmlFor="roleJD">Job Description (PDF/DOC)</Label>
                   <Input
                     id="roleJD"
@@ -2029,7 +1923,7 @@ export default function MasterData() {
           </div>
         </TabsContent>
 
-        <TabsContent value="vendors">
+        <TabsContent value="vendors" className="mt-0">
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -2050,90 +1944,132 @@ export default function MasterData() {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="p-0 overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="min-w-[150px]">Name</TableHead>
-                      <TableHead className="min-w-[100px]">Mgmt Fees (%)</TableHead>
-                      <TableHead className="min-w-[120px]">Sourcing Fee (₹)</TableHead>
-                      <TableHead className="min-w-[120px]">Replace Days</TableHead>
-                      <TableHead className="min-w-[120px]">Delivery Lead</TableHead>
-                      <TableHead className="min-w-[180px]">DL Email</TableHead>
-                      <TableHead className="min-w-[120px]">DL Phone</TableHead>
-                      <TableHead className="min-w-[120px]">Business Head</TableHead>
-                      <TableHead className="min-w-[180px]">BH Email</TableHead>
-                      <TableHead className="min-w-[120px]">BH Phone</TableHead>
-                      <TableHead className="min-w-[120px]">Payroll SPOC</TableHead>
-                      <TableHead className="min-w-[180px]">PS Email</TableHead>
-                      <TableHead className="min-w-[120px]">PS Phone</TableHead>
-                      <TableHead className="min-w-[80px]">Status</TableHead>
-                      <TableHead className="min-w-[150px] sticky right-0 bg-white">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loadingVendors ? (
-                      <TableRow>
-                        <TableCell colSpan={15} className="text-center py-8">
-                          Loading...
-                        </TableCell>
-                      </TableRow>
-                    ) : safeVendors.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={15} className="text-center py-8">
-                          No vendors found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      safeVendors.map((vendor: Vendor) => (
-                        <TableRow key={vendor.id}>
-                          <TableCell className="font-medium">{vendor.name}</TableCell>
-                          <TableCell>{vendor.managementFees || "N/A"}</TableCell>
-                          <TableCell>{vendor.sourcingFee || "N/A"}</TableCell>
-                          <TableCell>{vendor.replacementDays || "N/A"}</TableCell>
-                          <TableCell>{vendor.deliveryLeadName || "N/A"}</TableCell>
-                          <TableCell>{vendor.deliveryLeadEmail || "N/A"}</TableCell>
-                          <TableCell>{vendor.deliveryLeadPhone || "N/A"}</TableCell>
-                          <TableCell>{vendor.businessHeadName || "N/A"}</TableCell>
-                          <TableCell>{vendor.businessHeadEmail || "N/A"}</TableCell>
-                          <TableCell>{vendor.businessHeadPhone || "N/A"}</TableCell>
-                          <TableCell>{vendor.payrollSpocName || "N/A"}</TableCell>
-                          <TableCell>{vendor.payrollSpocEmail || "N/A"}</TableCell>
-                          <TableCell>{vendor.payrollSpocPhone || "N/A"}</TableCell>
-                          <TableCell>
-                            <Badge variant={vendor.isActive ? "default" : "secondary"}>
-                              {vendor.isActive ? "Active" : "Inactive"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="sticky right-0 bg-white">
+              <CardContent className="p-6">
+                {loadingVendors ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-slate-600">Loading vendors...</p>
+                  </div>
+                ) : safeVendors.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                    <p className="text-slate-600">No vendors found</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-6">
+                    {safeVendors.map((vendor: Vendor) => (
+                      <Card key={vendor.id} className="border-l-4 border-l-blue-600">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-lg font-semibold text-slate-900">{vendor.name}</h3>
+                              <Badge variant={vendor.isActive ? "default" : "secondary"} className="mt-2">
+                                {vendor.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                            </div>
                             <div className="flex space-x-2">
                               <Button 
-                                variant="ghost" 
+                                variant="outline" 
                                 size="sm"
                                 onClick={() => handleViewVendorDetails(vendor)}
                               >
-                                <Eye className="h-4 w-4" />
+                                <Eye className="h-4 w-4 mr-2" />
+                                View
                               </Button>
                               <Button 
-                                variant="ghost" 
+                                variant="outline" 
                                 size="sm"
                                 onClick={() => handleEditVendor(vendor)}
                               >
-                                <Edit className="h-4 w-4" />
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
                               </Button>
-                              <div className="flex items-center space-x-2">
-                                <Switch
-                                  checked={vendor.isActive}
-                                  onCheckedChange={() => handleToggleVendorStatus(vendor.id, vendor.isActive)}
-                                />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleToggleVendorStatus(vendor.id, vendor.isActive)}
+                              >
+                                {vendor.isActive ? <ToggleRight className="h-4 w-4 text-green-600" /> : <ToggleLeft className="h-4 w-4 text-gray-400" />}
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Commercial Terms */}
+                            <div className="space-y-3">
+                              <h4 className="font-medium text-slate-700 text-sm border-b pb-2">Commercial Terms</h4>
+                              <div>
+                                <p className="text-xs text-slate-500">Management Fees</p>
+                                <p className="text-sm font-medium">{vendor.managementFees ? `${vendor.managementFees}%` : "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500">Sourcing Fee</p>
+                                <p className="text-sm font-medium">{vendor.sourcingFee ? `₹${vendor.sourcingFee}` : "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500">Replacement Days</p>
+                                <p className="text-sm font-medium">{vendor.replacementDays ? `${vendor.replacementDays} days` : "—"}</p>
                               </div>
                             </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+
+                            {/* Delivery Lead */}
+                            <div className="space-y-3">
+                              <h4 className="font-medium text-slate-700 text-sm border-b pb-2">Delivery Lead</h4>
+                              <div>
+                                <p className="text-xs text-slate-500">Name</p>
+                                <p className="text-sm font-medium">{vendor.deliveryLeadName || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500">Email</p>
+                                <p className="text-sm font-medium truncate">{vendor.deliveryLeadEmail || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500">Phone</p>
+                                <p className="text-sm font-medium">{vendor.deliveryLeadPhone || "—"}</p>
+                              </div>
+                            </div>
+
+                            {/* Business Head */}
+                            <div className="space-y-3">
+                              <h4 className="font-medium text-slate-700 text-sm border-b pb-2">Business Head</h4>
+                              <div>
+                                <p className="text-xs text-slate-500">Name</p>
+                                <p className="text-sm font-medium">{vendor.businessHeadName || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500">Email</p>
+                                <p className="text-sm font-medium truncate">{vendor.businessHeadEmail || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500">Phone</p>
+                                <p className="text-sm font-medium">{vendor.businessHeadPhone || "—"}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Payroll SPOC - Full width */}
+                          <div className="mt-6 pt-6 border-t">
+                            <h4 className="font-medium text-slate-700 text-sm mb-3">Payroll SPOC</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <p className="text-xs text-slate-500">Name</p>
+                                <p className="text-sm font-medium">{vendor.payrollSpocName || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500">Email</p>
+                                <p className="text-sm font-medium truncate">{vendor.payrollSpocEmail || "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-slate-500">Phone</p>
+                                <p className="text-sm font-medium">{vendor.payrollSpocPhone || "—"}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -2367,7 +2303,7 @@ export default function MasterData() {
           </div>
         </TabsContent>
 
-        <TabsContent value="recruiters">
+        <TabsContent value="recruiters" className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -2501,7 +2437,7 @@ export default function MasterData() {
           </div>
         </TabsContent>
 
-        <TabsContent value="trainers">
+        <TabsContent value="trainers" className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -2671,7 +2607,7 @@ export default function MasterData() {
           </div>
         </TabsContent>
 
-        <TabsContent value="designations">
+        <TabsContent value="designations" className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -2688,8 +2624,6 @@ export default function MasterData() {
                       <TableHead>Code</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Sub Department</TableHead>
-                      <TableHead>Level</TableHead>
-                      <TableHead>Salary Range</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -2697,13 +2631,13 @@ export default function MasterData() {
                   <TableBody>
                     {loadingDesignations ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8">
+                        <TableCell colSpan={6} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : safeDesignations.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8">
+                        <TableCell colSpan={6} className="text-center py-8">
                           No designations found
                         </TableCell>
                       </TableRow>
@@ -2714,17 +2648,6 @@ export default function MasterData() {
                           <TableCell className="font-mono">{designation.code}</TableCell>
                           <TableCell>{designation.roleName || "N/A"}</TableCell>
                           <TableCell>{designation.subDepartmentName || "N/A"}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="capitalize">
-                              {designation.level}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {designation.minSalary && designation.maxSalary 
-                              ? `₹${designation.minSalary.toLocaleString()} - ₹${designation.maxSalary.toLocaleString()}`
-                              : "N/A"
-                            }
-                          </TableCell>
                           <TableCell>
                             <Badge variant={designation.isActive ? "default" : "secondary"}>
                               {designation.isActive ? "Active" : "Inactive"}
@@ -2739,16 +2662,12 @@ export default function MasterData() {
                                   setEditingItem(designation);
                                   setEditType("designation");
                                   setEditFormData({
+                                    ...editFormData,
                                     name: designation.name,
                                     code: designation.code,
-                                    description: designation.description || "",
                                     roleId: designation.roleId.toString(),
                                     subDepartmentId: designation.subDepartmentId.toString(),
-                                    designationLevel: designation.level,
-                                    grade: designation.grade || "",
-                                    minSalary: designation.minSalary?.toString() || "",
-                                    maxSalary: designation.maxSalary?.toString() || "",
-                                  } as any);
+                                  });
                                 }}
                               >
                                 <Edit className="h-4 w-4" />
@@ -2810,7 +2729,17 @@ export default function MasterData() {
                 </div>
                 <div>
                   <Label htmlFor="designationRole">Role *</Label>
-                  <Select value={formData.roleId} onValueChange={(value) => setFormData({ ...formData, roleId: value })}>
+                  <Select 
+                    value={formData.roleId} 
+                    onValueChange={(value) => {
+                      const selectedRole = safeRoles.find((role: Role) => role.id!.toString() === value);
+                      setFormData({ 
+                        ...formData, 
+                        roleId: value,
+                        subDepartmentId: selectedRole?.subDepartmentId?.toString() || ""
+                      });
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -2839,61 +2768,28 @@ export default function MasterData() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="designationLevel">Level</Label>
-                  <Select value={formData.designationLevel} onValueChange={(value) => setFormData({ ...formData, designationLevel: value })}>
+                  <Label htmlFor="designationSkillLevel">Skill Level</Label>
+                  <Select
+                    value={formData.skillLevel || ""}
+                    onValueChange={(value) => setFormData({ ...formData, skillLevel: value })}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
+                      <SelectValue placeholder="Select skill level" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="entry">Entry</SelectItem>
-                      <SelectItem value="junior">Junior</SelectItem>
-                      <SelectItem value="mid">Mid</SelectItem>
-                      <SelectItem value="senior">Senior</SelectItem>
-                      <SelectItem value="lead">Lead</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="director">Director</SelectItem>
-                      <SelectItem value="executive">Executive</SelectItem>
+                      <SelectItem value="Unskilled">Unskilled</SelectItem>
+                      <SelectItem value="Semi-skilled">Semi-skilled</SelectItem>
+                      <SelectItem value="Skilled">Skilled</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="designationGrade">Grade</Label>
+                  <Label htmlFor="designationLevel">Level</Label>
                   <Input
-                    id="designationGrade"
-                    placeholder="e.g., L4, M1"
-                    value={formData.grade}
-                    onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor="minSalary">Min Salary</Label>
-                    <Input
-                      id="minSalary"
-                      type="number"
-                      placeholder="80000"
-                      value={formData.minSalary}
-                      onChange={(e) => setFormData({ ...formData, minSalary: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxSalary">Max Salary</Label>
-                    <Input
-                      id="maxSalary"
-                      type="number"
-                      placeholder="120000"
-                      value={formData.maxSalary}
-                      onChange={(e) => setFormData({ ...formData, maxSalary: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="designationDescription">Description</Label>
-                  <Input
-                    id="designationDescription"
-                    placeholder="Brief description of the role"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    id="designationLevel"
+                    placeholder="e.g., L1, L2, L3, L4"
+                    value={formData.level}
+                    onChange={(e) => setFormData({ ...formData, level: e.target.value })}
                   />
                 </div>
                 <Button
@@ -2907,6 +2803,7 @@ export default function MasterData() {
             </Card>
           </div>
         </TabsContent>
+        </div>
       </Tabs>
 
       {/* Edit Dialog */}
@@ -2916,16 +2813,35 @@ export default function MasterData() {
         setEditFormData({
           name: "",
           code: "",
-          description: "",
           email: "",
           phone: "",
           contactPerson: "",
           commercialTerms: "",
           replacementPeriod: "",
-          incentiveStructure: "",
           cityId: "1",
           jobDescriptionFile: null,
-        } as any);
+          businessUnit: "",
+          department: "",
+          subDepartment: "",
+          managementFees: "",
+          sourcingFee: "",
+          replacementDays: "",
+          deliveryLeadName: "",
+          deliveryLeadEmail: "",
+          deliveryLeadPhone: "",
+          businessHeadName: "",
+          businessHeadEmail: "",
+          businessHeadPhone: "",
+          payrollSpocName: "",
+          payrollSpocEmail: "",
+          payrollSpocPhone: "",
+          roleId: "",
+          subDepartmentId: "",
+          skillLevel: "",
+          level: "",
+          clusterId: "",
+          address: "",
+        });
       }}>
         <DialogContent className={editType === "vendor" ? "max-w-4xl max-h-[90vh] overflow-y-auto" : "max-w-md"}>
           <DialogHeader>
@@ -2956,24 +2872,6 @@ export default function MasterData() {
 
             {editType === "role" && (
               <>
-                <div>
-                  <Label htmlFor="editFunction">Function</Label>
-                  <Select
-                    value={editFormData.function}
-                    onValueChange={(value) => setEditFormData({ ...editFormData, function: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select function" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {safeFunctions.map((pg: Function) => (
-                        <SelectItem key={pg.id} value={pg.id.toString()}>
-                          {pg.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div>
                   <Label htmlFor="editBusinessUnit">Business Unit</Label>
                   <Select
@@ -3029,31 +2927,6 @@ export default function MasterData() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="editSkillLevel">Skill Level</Label>
-                  <Select
-                    value={editFormData.skillLevel || ""}
-                    onValueChange={(value) => setEditFormData({ ...editFormData, skillLevel: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select skill level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Skilled">Skilled</SelectItem>
-                      <SelectItem value="Semi-Skilled">Semi-Skilled</SelectItem>
-                      <SelectItem value="Unskilled">Unskilled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="editLevel">Level</Label>
-                  <Input
-                    id="editLevel"
-                    placeholder="e.g., L1, L2, L3, L4"
-                    value={editFormData.level}
-                    onChange={(e) => setEditFormData({ ...editFormData, level: e.target.value })}
-                  />
-                </div>
-                <div>
                   <Label htmlFor="editJobDescription">Job Description (PDF/DOC)</Label>
                   <Input
                     id="editJobDescription"
@@ -3106,6 +2979,35 @@ export default function MasterData() {
                   </SelectContent>
                 </Select>
               </div>
+            )}
+
+            {editType === "centre" && (
+              <>
+                <div>
+                  <Label htmlFor="editCentreCluster">Cluster</Label>
+                  <Select value={editFormData.clusterId} onValueChange={(value) => setEditFormData({ ...editFormData, clusterId: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select cluster" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {safeClusters.map((cluster: any) => (
+                        <SelectItem key={cluster.id} value={cluster.id.toString()}>
+                          {cluster.name} ({cluster.cityName})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editCentreAddress">Address</Label>
+                  <Input
+                    id="editCentreAddress"
+                    placeholder="e.g., 123 Main Street, Downtown"
+                    value={editFormData.address}
+                    onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                  />
+                </div>
+              </>
             )}
 
             {editType === "department" && (
@@ -3407,7 +3309,17 @@ export default function MasterData() {
               <>
                 <div>
                   <Label htmlFor="editDesignationRole">Role *</Label>
-                  <Select value={(editFormData as any).roleId} onValueChange={(value) => setEditFormData({ ...editFormData, roleId: value })}>
+                  <Select 
+                    value={(editFormData as any).roleId} 
+                    onValueChange={(value) => {
+                      const selectedRole = safeRoles.find((role: Role) => role.id!.toString() === value);
+                      setEditFormData({ 
+                        ...editFormData, 
+                        roleId: value,
+                        subDepartmentId: selectedRole?.subDepartmentId?.toString() || ""
+                      });
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
@@ -3436,61 +3348,28 @@ export default function MasterData() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="editDesignationLevel">Level</Label>
-                  <Select value={(editFormData as any).designationLevel} onValueChange={(value) => setEditFormData({ ...editFormData, designationLevel: value })}>
+                  <Label htmlFor="editDesignationSkillLevel">Skill Level</Label>
+                  <Select
+                    value={editFormData.skillLevel || ""}
+                    onValueChange={(value) => setEditFormData({ ...editFormData, skillLevel: value })}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
+                      <SelectValue placeholder="Select skill level" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="entry">Entry</SelectItem>
-                      <SelectItem value="junior">Junior</SelectItem>
-                      <SelectItem value="mid">Mid</SelectItem>
-                      <SelectItem value="senior">Senior</SelectItem>
-                      <SelectItem value="lead">Lead</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="director">Director</SelectItem>
-                      <SelectItem value="executive">Executive</SelectItem>
+                      <SelectItem value="Unskilled">Unskilled</SelectItem>
+                      <SelectItem value="Semi-skilled">Semi-skilled</SelectItem>
+                      <SelectItem value="Skilled">Skilled</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="editDesignationGrade">Grade</Label>
+                  <Label htmlFor="editDesignationLevel">Level</Label>
                   <Input
-                    id="editDesignationGrade"
-                    placeholder="e.g., L4, M1"
-                    value={(editFormData as any).grade}
-                    onChange={(e) => setEditFormData({ ...editFormData, grade: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor="editMinSalary">Min Salary</Label>
-                    <Input
-                      id="editMinSalary"
-                      type="number"
-                      placeholder="80000"
-                      value={(editFormData as any).minSalary}
-                      onChange={(e) => setEditFormData({ ...editFormData, minSalary: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="editMaxSalary">Max Salary</Label>
-                    <Input
-                      id="editMaxSalary"
-                      type="number"
-                      placeholder="120000"
-                      value={(editFormData as any).maxSalary}
-                      onChange={(e) => setEditFormData({ ...editFormData, maxSalary: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="editDesignationDescription">Description</Label>
-                  <Input
-                    id="editDesignationDescription"
-                    placeholder="Brief description of the role"
-                    value={(editFormData as any).description}
-                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                    id="editDesignationLevel"
+                    placeholder="e.g., L1, L2, L3, L4"
+                    value={editFormData.level}
+                    onChange={(e) => setEditFormData({ ...editFormData, level: e.target.value })}
                   />
                 </div>
               </>
@@ -3511,15 +3390,35 @@ export default function MasterData() {
                   setEditFormData({
                     name: "",
                     code: "",
-                    description: "",
                     email: "",
                     phone: "",
                     contactPerson: "",
                     commercialTerms: "",
                     replacementPeriod: "",
-                    incentiveStructure: "",
                     cityId: "1",
-                  } as any);
+                    jobDescriptionFile: null,
+                    businessUnit: "",
+                    department: "",
+                    subDepartment: "",
+                    managementFees: "",
+                    sourcingFee: "",
+                    replacementDays: "",
+                    deliveryLeadName: "",
+                    deliveryLeadEmail: "",
+                    deliveryLeadPhone: "",
+                    businessHeadName: "",
+                    businessHeadEmail: "",
+                    businessHeadPhone: "",
+                    payrollSpocName: "",
+                    payrollSpocEmail: "",
+                    payrollSpocPhone: "",
+                    roleId: "",
+                    subDepartmentId: "",
+                    skillLevel: "",
+                    level: "",
+                    clusterId: "",
+                    address: "",
+                  });
                 }}
                 className="flex-1"
               >
@@ -3697,6 +3596,119 @@ export default function MasterData() {
               </Card>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Cluster Creation Dialog */}
+      <Dialog open={showClusterDialog} onOpenChange={setShowClusterDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Cluster</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="clusterCity">City *</Label>
+              <Select value={formData.cityId} onValueChange={(value) => setFormData({ ...formData, cityId: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {safeCities.map((city: City) => (
+                    <SelectItem key={city.id} value={city.id.toString()}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="clusterName">Cluster Name *</Label>
+              <Input
+                id="clusterName"
+                placeholder="Enter cluster name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="clusterCode">Cluster Code *</Label>
+              <Input
+                id="clusterCode"
+                placeholder="Enter cluster code"
+                value={formData.code}
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowClusterDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  handleCreateCluster();
+                  setShowClusterDialog(false);
+                }}
+                disabled={createClusterMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {createClusterMutation.isPending ? "Creating..." : "Create Cluster"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Centre Creation Dialog */}
+      <Dialog open={showCentreDialog} onOpenChange={setShowCentreDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              Add New Centre
+              {selectedClusterForCentre && (
+                <span className="text-sm font-normal text-slate-600 block">
+                  to {selectedClusterForCentre.name} cluster
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="centreName">Centre Name *</Label>
+              <Input
+                id="centreName"
+                placeholder="e.g., Central Hub"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="centreAddress">Address</Label>
+              <Input
+                id="centreAddress"
+                placeholder="e.g., 123 Main Street, Downtown"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowCentreDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedClusterForCentre) {
+                    setFormData({ ...formData, clusterId: selectedClusterForCentre.id.toString() });
+                    handleCreateCentre();
+                    setShowCentreDialog(false);
+                  }
+                }}
+                disabled={createCentreMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {createCentreMutation.isPending ? "Creating..." : "Create Centre"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
