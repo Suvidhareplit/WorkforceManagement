@@ -212,8 +212,16 @@ export default function ManpowerPlanning() {
         body: data,
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/manpower-planning/workshop-technician"] });
+    onSuccess: async (_, variables) => {
+      // Clear local state for this city so fresh API data is used
+      setWorkshopData((prev) => {
+        const newData = { ...prev };
+        delete newData[variables.cityId];
+        return newData;
+      });
+      // Invalidate and refetch to get fresh data with updated timestamp
+      await queryClient.invalidateQueries({ queryKey: ["/api/manpower-planning/workshop-technician"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/manpower-planning/workshop-technician"] });
       toast({
         title: "Success",
         description: "Workshop technician planning saved successfully",
