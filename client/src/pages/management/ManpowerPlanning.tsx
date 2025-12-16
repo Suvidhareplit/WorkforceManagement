@@ -261,42 +261,43 @@ export default function ManpowerPlanning() {
 
   // Handle save workshop planning for a city
   const handleSaveWorkshopCity = (cityId: number) => {
-    // Get current data from the UI (combines local edits with existing/default values)
     const currentData = getWorkshopCityData(cityId);
+    
+    const dau = Number(currentData.dau) || 0;
+    const bikesInCity = Number(currentData.bikesInCity) || 0;
+    
+    // If both DAU and BIC are 0, auto-set outflow/capacity/shrinkage to 0
+    const isZeroBase = dau === 0 && bikesInCity === 0;
     
     const dataToSave = {
       cityId: cityId,
-      dau: currentData.dau,
-      bikesInCity: currentData.bikesInCity,
-      faultRatePercent: currentData.faultRatePercent,
-      perMechanicCapacity: currentData.perMechanicCapacity,
-      shrinkagePercent: currentData.shrinkagePercent,
-      useDau: currentData.useDau,
-      useBic: currentData.useBic,
+      dau: dau,
+      bikesInCity: bikesInCity,
+      faultRatePercent: isZeroBase ? 0 : Number(currentData.faultRatePercent) ?? 0,
+      perMechanicCapacity: isZeroBase ? 0 : Number(currentData.perMechanicCapacity) ?? 1,
+      shrinkagePercent: isZeroBase ? 0 : Number(currentData.shrinkagePercent) ?? 0,
+      useDau: Boolean(currentData.useDau),
+      useBic: Boolean(currentData.useBic),
     };
     
-    console.log('Saving workshop data:', dataToSave);
     saveWorkshopMutation.mutate(dataToSave as WorkshopTechnicianPlan);
   };
 
-  // Get workshop data for a city (from API or local state)
+  // Get workshop data for a city - prioritizes local edits, falls back to API data
   const getWorkshopCityData = (cityId: number): WorkshopTechnicianPlan => {
     const localData = workshopData[cityId];
     const apiData = safeWorkshopData.find((w: any) => w.cityId === cityId);
     
-    // If API data exists, use it (even if values are 0)
-    // Only use defaults if no API data exists at all
-    const hasApiData = !!apiData;
-    
+    // Local edits take priority, then API data (use ?? to handle 0 correctly)
     return {
       cityId,
-      dau: localData?.dau !== undefined ? localData.dau : (hasApiData ? (apiData.dau ?? 0) : 0),
-      bikesInCity: localData?.bikesInCity !== undefined ? localData.bikesInCity : (hasApiData ? (apiData.bikesInCity ?? 0) : 0),
-      faultRatePercent: localData?.faultRatePercent !== undefined ? localData.faultRatePercent : (hasApiData ? (apiData.faultRatePercent ?? 0) : 8),
-      perMechanicCapacity: localData?.perMechanicCapacity !== undefined ? localData.perMechanicCapacity : (hasApiData ? (apiData.perMechanicCapacity ?? 1) : 8),
-      shrinkagePercent: localData?.shrinkagePercent !== undefined ? localData.shrinkagePercent : (hasApiData ? (apiData.shrinkagePercent ?? 0) : 15),
-      useDau: localData?.useDau !== undefined ? localData.useDau : (hasApiData ? (apiData.useDau ?? false) : true),
-      useBic: localData?.useBic !== undefined ? localData.useBic : (hasApiData ? (apiData.useBic ?? false) : false),
+      dau: localData?.dau !== undefined ? localData.dau : (Number(apiData?.dau) ?? 0),
+      bikesInCity: localData?.bikesInCity !== undefined ? localData.bikesInCity : (Number(apiData?.bikesInCity) ?? 0),
+      faultRatePercent: localData?.faultRatePercent !== undefined ? localData.faultRatePercent : (Number(apiData?.faultRatePercent) ?? 0),
+      perMechanicCapacity: localData?.perMechanicCapacity !== undefined ? localData.perMechanicCapacity : (Number(apiData?.perMechanicCapacity) ?? 0),
+      shrinkagePercent: localData?.shrinkagePercent !== undefined ? localData.shrinkagePercent : (Number(apiData?.shrinkagePercent) ?? 0),
+      useDau: localData?.useDau !== undefined ? localData.useDau : Boolean(apiData?.useDau),
+      useBic: localData?.useBic !== undefined ? localData.useBic : Boolean(apiData?.useBic ?? true),
     };
   };
 

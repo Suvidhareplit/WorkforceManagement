@@ -205,14 +205,14 @@ const getWorkshopTechnicianPlanning = async (req: Request, res: Response) => {
 const saveWorkshopTechnicianPlanning = async (req: Request, res: Response) => {
   try {
     // Accept both camelCase and snake_case (frontend converts to snake_case)
-    const cityId = req.body.city_id || req.body.cityId;
-    const dau = req.body.dau;
-    const bikesInCity = req.body.bikes_in_city || req.body.bikesInCity;
-    const faultRatePercent = req.body.fault_rate_percent || req.body.faultRatePercent;
-    const perMechanicCapacity = req.body.per_mechanic_capacity || req.body.perMechanicCapacity;
-    const shrinkagePercent = req.body.shrinkage_percent || req.body.shrinkagePercent;
-    const useDau = req.body.use_dau ?? req.body.useDau;
-    const useBic = req.body.use_bic ?? req.body.useBic;
+    const cityId = req.body.city_id ?? req.body.cityId;
+    const dau = req.body.dau ?? 0;
+    const bikesInCity = req.body.bikes_in_city ?? req.body.bikesInCity ?? 0;
+    const faultRatePercent = req.body.fault_rate_percent ?? req.body.faultRatePercent ?? 0;
+    const perMechanicCapacity = req.body.per_mechanic_capacity ?? req.body.perMechanicCapacity ?? 0;
+    const shrinkagePercent = req.body.shrinkage_percent ?? req.body.shrinkagePercent ?? 0;
+    const useDau = req.body.use_dau ?? req.body.useDau ?? false;
+    const useBic = req.body.use_bic ?? req.body.useBic ?? true;
 
     // Get user ID from authenticated session
     const updatedBy = (req as any).user?.id || null;
@@ -230,10 +230,10 @@ const saveWorkshopTechnicianPlanning = async (req: Request, res: Response) => {
         UPDATE workshop_technician_planning 
         SET dau = ?, bikes_in_city = ?, fault_rate_percent = ?, 
             per_mechanic_capacity = ?, shrinkage_percent = ?,
-            use_dau = ?, use_bic = ?, updated_by = ?
+            use_dau = ?, use_bic = ?, updated_by = ?, updated_at = NOW()
         WHERE city_id = ?
-      `, [dau || 0, bikesInCity || 0, faultRatePercent || 8, 
-          perMechanicCapacity || 8, shrinkagePercent || 15,
+      `, [dau, bikesInCity, faultRatePercent, 
+          perMechanicCapacity, shrinkagePercent,
           useDau ? 1 : 0, useBic ? 1 : 0, updatedBy, cityId]);
     } else {
       // Insert new
@@ -241,8 +241,8 @@ const saveWorkshopTechnicianPlanning = async (req: Request, res: Response) => {
         INSERT INTO workshop_technician_planning 
         (city_id, dau, bikes_in_city, fault_rate_percent, per_mechanic_capacity, shrinkage_percent, use_dau, use_bic, updated_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [cityId, dau || 0, bikesInCity || 0, faultRatePercent || 8, 
-          perMechanicCapacity || 8, shrinkagePercent || 15,
+      `, [cityId, dau, bikesInCity, faultRatePercent, 
+          perMechanicCapacity, shrinkagePercent,
           useDau ? 1 : 0, useBic ? 1 : 0, updatedBy]);
     }
 
