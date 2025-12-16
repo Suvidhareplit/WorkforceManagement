@@ -181,6 +181,12 @@ export default function ManpowerPlanning() {
   // Formula: ((DAU × Outflow %) ÷ Per Mechanic Capacity) / (1 - Shrinkage %)
   const calculateRequiredTechnicians = (plan: WorkshopTechnicianPlan) => {
     const baseValue = plan.useBic ? plan.bikesInCity : plan.dau;
+    
+    // Return 0 if base value is 0 or perMechanicCapacity is 0 (avoid division by zero)
+    if (baseValue === 0 || !plan.perMechanicCapacity || plan.perMechanicCapacity === 0) {
+      return { base: 0, withShrinkage: 0, exact: '0.00' };
+    }
+    
     const faultyBikes = baseValue * (plan.faultRatePercent / 100);
     const baseTechnicians = faultyBikes / plan.perMechanicCapacity;
     const shrinkageFactor = 1 - (plan.shrinkagePercent / 100);
