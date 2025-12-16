@@ -544,11 +544,12 @@ const getCityManpowerAnalysis = async (req: Request, res: Response) => {
       const totalHeadcount = cityData.reduce((sum: number, d: any) => sum + d.currentHeadcount, 0);
       const totalBase = cityData.reduce((sum: number, d: any) => sum + (d.baseManpower || 0), 0);
 
-      // Calculate average shrinkage across cities for this designation
-      const citiesWithShrinkage = cityData.filter((d: any) => d.shrinkagePercent !== null);
-      const avgShrinkage = citiesWithShrinkage.length > 0
-        ? citiesWithShrinkage.reduce((sum: number, d: any) => sum + (d.shrinkagePercent || 0), 0) / citiesWithShrinkage.length
-        : null;
+      // Calculate shrinkage based on formula: Required = Base / (1 - Shrinkage%)
+      // Rearranging: Shrinkage% = (1 - Base/Required) * 100
+      let calculatedShrinkage = null;
+      if (isPlanned && totalBase > 0 && totalRequired > 0) {
+        calculatedShrinkage = (1 - (totalBase / totalRequired)) * 100;
+      }
 
       return {
         designationId: designation.id,
@@ -561,7 +562,7 @@ const getCityManpowerAnalysis = async (req: Request, res: Response) => {
         requiredManpower: isPlanned ? totalRequired : null,
         currentHeadcount: totalHeadcount,
         surplusDeficit: isPlanned ? totalHeadcount - totalRequired : null,
-        shrinkagePercent: avgShrinkage
+        shrinkagePercent: calculatedShrinkage
       };
     });
 

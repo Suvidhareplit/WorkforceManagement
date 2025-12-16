@@ -4,7 +4,7 @@ import { convertToCamelCase, convertToSnakeCase } from './apiUtils';
 
 // Create axios instance with default configuration
 const apiClient = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -63,7 +63,8 @@ export async function apiRequest(
       'Content-Type': 'multipart/form-data',
     } : undefined,
   });
-  return response.data;
+  // Extract data from the backend envelope structure { success, data, message }
+  return response.data?.data || response.data;
 }
 
 // Helper function for backward compatibility with 3-parameter apiRequest calls

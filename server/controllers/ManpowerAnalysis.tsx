@@ -40,87 +40,16 @@ export default function ManpowerAnalysis() {
     setExpandedCities(newExpanded);
   };
 
-  const processDesignationsForExport = (designations: any[], workshopTechnicianRequired?: number) => {
-    // Workshop technician designation names to combine
-    const workshopTechnicianNames = ['Workshop Technician', 'Senior Workshop Technician', 'Associate Workshop Technician'];
-    
-    // Filter and process designations
-    const filteredDesignations = designations.filter((d: any) => d.currentHeadcount > 0 || d.isPlanned);
-    
-    // Separate workshop technicians from others
-    const workshopTechnicians = filteredDesignations.filter((d: any) => 
-      workshopTechnicianNames.some(wt => d.designationName.toLowerCase().includes(wt.toLowerCase()))
-    );
-    const otherDesignations = filteredDesignations.filter((d: any) => 
-      !workshopTechnicianNames.some(wt => d.designationName.toLowerCase().includes(wt.toLowerCase()))
-    );
-    
-    // Get combined headcount for all workshop technicians
-    const combinedWorkshopHeadcount = workshopTechnicians.reduce((sum: number, d: any) => sum + d.currentHeadcount, 0);
-    
-    // Use the single workshopTechnicianRequired value from backend
-    const workshopRequired = workshopTechnicianRequired || 0;
-    const isWorkshopPlanned = workshopRequired > 0;
-    
-    // Combine workshop technicians into one row
-    const combinedWorkshopTechnician = (workshopTechnicians.length > 0 || isWorkshopPlanned) ? {
-      designationName: 'Workshop Technician + Senior Workshop Technician + Associate Workshop Technician',
-      isPlanned: isWorkshopPlanned,
-      requiredManpower: workshopRequired,
-      currentHeadcount: combinedWorkshopHeadcount,
-      surplusDeficit: isWorkshopPlanned ? combinedWorkshopHeadcount - workshopRequired : null
-    } : null;
-    
-    // Separate planned and unplanned designations
-    const plannedDesignations = otherDesignations.filter((d: any) => d.isPlanned);
-    const unplannedDesignations = otherDesignations.filter((d: any) => !d.isPlanned);
-    
-    // Sort both groups by current headcount in descending order
-    const sortedPlanned = [...plannedDesignations].sort((a: any, b: any) => {
-      return (b.currentHeadcount || 0) - (a.currentHeadcount || 0);
-    });
-    const sortedUnplanned = [...unplannedDesignations].sort((a: any, b: any) => {
-      return (b.currentHeadcount || 0) - (a.currentHeadcount || 0);
-    });
-    
-    // Build final list: planned first, then workshop technician (if planned), then unplanned
-    const finalDesignations: any[] = [...sortedPlanned];
-    if (combinedWorkshopTechnician && combinedWorkshopTechnician.isPlanned) {
-      const insertIndex = finalDesignations.findIndex(
-        (d: any) => (d.currentHeadcount || 0) < (combinedWorkshopTechnician.currentHeadcount || 0)
-      );
-      if (insertIndex === -1) {
-        finalDesignations.push(combinedWorkshopTechnician);
-      } else {
-        finalDesignations.splice(insertIndex, 0, combinedWorkshopTechnician);
-      }
-    }
-    finalDesignations.push(...sortedUnplanned);
-    if (combinedWorkshopTechnician && !combinedWorkshopTechnician.isPlanned) {
-      const unplannedStartIndex = sortedPlanned.length;
-      const insertIndex = finalDesignations.slice(unplannedStartIndex).findIndex(
-        (d: any) => (d.currentHeadcount || 0) < (combinedWorkshopTechnician.currentHeadcount || 0)
-      );
-      if (insertIndex === -1) {
-        finalDesignations.push(combinedWorkshopTechnician);
-      } else {
-        finalDesignations.splice(unplannedStartIndex + insertIndex, 0, combinedWorkshopTechnician);
-      }
-    }
-    
-    return finalDesignations;
-  };
-
-  const downloadCSV = (designations: any[], filename: string, workshopTechnicianRequired?: number) => {
-    // Process designations in the same order as displayed in the table
-    const processedData = processDesignationsForExport(designations, workshopTechnicianRequired);
-    
-    const headers = ['ROLE', 'REQUIRED MANPOWER', 'CURRENT ACTIVE HEADCOUNT', 'SURPLUS OR DEFICIT'];
-    const rows = processedData.map((d: any) => [
+  const downloadCSV = (data: any[], filename: string) => {
+    const headers = ['Role', 'Planning Type', 'Base Manpower', 'Required Manpower', 'Current Active Headcount', 'Surplus/Deficit', 'Shrinkage %'];
+    const rows = data.map((d: any) => [
       d.designationName,
-      d.requiredManpower !== null && d.requiredManpower !== undefined ? d.requiredManpower : '',
+      d.planningType || 'Shift Based',
+      d.baseManpower ?? 'N/A',
+      d.requiredManpower ?? 'N/A',
       d.currentHeadcount ?? 0,
-      d.surplusDeficit !== null && d.surplusDeficit !== undefined ? d.surplusDeficit : ''
+      d.surplusDeficit ?? 'N/A',
+      d.shrinkagePercent ? `${d.shrinkagePercent.toFixed(1)}%` : 'N/A'
     ]);
     
     const csvContent = [
@@ -405,8 +334,7 @@ export default function ManpowerAnalysis() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      const workshopRequired = cityAnalysis.cities?.reduce((sum: number, c: any) => sum + (c.workshopTechnicianRequired || 0), 0);
-                      downloadCSV(cityAnalysis.panIndia.designations, 'PAN_India_Manpower_Analysis.csv', workshopRequired);
+                      downloadCSV(cityAnalysis.panIndia.designations, 'PAN_India_Manpower_Analysis.csv');
                     }}
                     className="p-2 hover:bg-cyan-800 rounded-lg transition-colors"
                     title="Download CSV"
@@ -440,7 +368,7 @@ export default function ManpowerAnalysis() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        downloadCSV(city.designations, `${city.cityName}_Manpower_Analysis.csv`, city.workshopTechnicianRequired);
+                        downloadCSV(city.designations, `${city.cityName}_Manpower_Analysis.csv`);
                       }}
                       className="p-2 hover:bg-cyan-300 rounded-lg transition-colors"
                       title="Download CSV"
