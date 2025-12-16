@@ -11,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Edit, Save, X, CalendarIcon } from "lucide-react";
+import { Edit, Save, X, CalendarIcon, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +64,25 @@ export default function ClassroomTraining() {
     },
   });
 
+  // Check if feedback is locked (final feedback given)
+  const isFeedbackLocked = (classroom: any) => {
+    const feedback = classroom.crtFeedback || classroom.crt_feedback;
+    // Feedback is locked if it's a final status (not under_classroom_training or empty)
+    const lockedStatuses = ['fit', 'not_fit_crt_rejection', 'early_exit', 'fit_need_observation'];
+    return feedback && lockedStatuses.includes(feedback);
+  };
+
   const handleEdit = (classroom: any) => {
+    // Check if feedback is locked
+    if (isFeedbackLocked(classroom)) {
+      toast({
+        title: "Feedback Locked",
+        description: "This feedback has been finalized and cannot be edited. Please contact admin for any changes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setEditingId(classroom.id);
     setEditData({
       training_start_date: classroom.trainingStartDate || classroom.training_start_date,
@@ -237,6 +255,7 @@ export default function ClassroomTraining() {
                               <SelectValue placeholder="Select Feedback" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="under_classroom_training">Under Classroom Training</SelectItem>
                               <SelectItem value="fit">Fit</SelectItem>
                               <SelectItem value="not_fit_crt_rejection">Not Fit - CRT Rejection</SelectItem>
                               <SelectItem value="early_exit">Early Exit</SelectItem>
@@ -245,7 +264,11 @@ export default function ClassroomTraining() {
                           </Select>
                         ) : (
                           (classroom.crtFeedback || classroom.crt_feedback) ? (
-                            <Badge variant={(classroom.crtFeedback || classroom.crt_feedback) === 'fit' || (classroom.crtFeedback || classroom.crt_feedback) === 'fit_need_observation' ? 'default' : 'destructive'}>
+                            <Badge variant={
+                              (classroom.crtFeedback || classroom.crt_feedback) === 'fit' || 
+                              (classroom.crtFeedback || classroom.crt_feedback) === 'fit_need_observation' ? 'default' : 
+                              (classroom.crtFeedback || classroom.crt_feedback) === 'under_classroom_training' ? 'outline' : 'destructive'
+                            }>
                               {(classroom.crtFeedback || classroom.crt_feedback).replace(/_/g, ' ')}
                             </Badge>
                           ) : '-'
@@ -345,10 +368,15 @@ export default function ClassroomTraining() {
                         ) : (
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant={isFeedbackLocked(classroom) ? "ghost" : "outline"}
                             onClick={() => handleEdit(classroom)}
+                            title={isFeedbackLocked(classroom) ? "Feedback locked - Contact admin" : "Edit"}
                           >
-                            <Edit className="h-4 w-4" />
+                            {isFeedbackLocked(classroom) ? (
+                              <Lock className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <Edit className="h-4 w-4" />
+                            )}
                           </Button>
                         )}
                       </TableCell>

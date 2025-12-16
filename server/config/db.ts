@@ -14,10 +14,7 @@ const dbConfig = {
   connectionLimit: 10,
   queueLimit: 0,
   namedPlaceholders: true,
-  // Connection keep-alive settings to prevent disconnections
-  acquireTimeout: 60000,
-  timeout: 60000,
-  reconnect: true,
+  // Connection keep-alive settings
   idleTimeout: 300000, // 5 minutes
   maxIdle: 10,
   enableKeepAlive: true,
@@ -56,7 +53,8 @@ export async function query(text: string, params: any[] = []) {
     });
     return {
       rows: Array.isArray(rows) ? rows : [],
-      rowCount: Array.isArray(rows) ? rows.length : (rows as any).affectedRows
+      rowCount: Array.isArray(rows) ? rows.length : (rows as any).affectedRows,
+      insertId: Array.isArray(rows) ? undefined : (rows as any).insertId
     };
   } catch (error) {
     console.error('Database query error:', error);

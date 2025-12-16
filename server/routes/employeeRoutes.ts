@@ -19,6 +19,10 @@ router.get('/exit-summary', employeeController.getExitSummary);
 // Get exit process list
 router.get('/exit-process-list', employeeController.getExitProcessList);
 
+// Org Dashboard routes
+router.get('/org-hierarchy', employeeController.getOrgHierarchy);
+router.get('/filter-options', employeeController.getFilterOptions);
+
 // Review exit (initiated -> in_progress)
 router.post('/exit/:exitId/review', employeeController.reviewExit);
 

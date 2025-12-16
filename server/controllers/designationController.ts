@@ -158,7 +158,7 @@ const updateDesignation = async (req: Request, res: Response) => {
     
     // Build dynamic update query
     const allowedFields = [
-      'name', 'code', 'role_id', 'sub_department_id', 'skill_level', 'level', 'is_active'
+      'name', 'code', 'role_id', 'sub_department_id', 'skill_level', 'level', 'is_active', 'manpower_planning_required'
     ];
     
     for (const field of allowedFields) {

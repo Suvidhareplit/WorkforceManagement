@@ -28,7 +28,7 @@ const candidateSchema = z.object({
     .refine((val) => val.length === 12, "Aadhar number must be exactly 12 digits")
     .refine((val) => /^\d{12}$/.test(val), "Aadhar number must contain only digits"),
   email: z.string().email("Valid email is required"),
-  roleId: z.string().min(1, "Role is required"),
+  designationId: z.string().min(1, "Designation is required"),
   cityId: z.string().min(1, "City is required"),
   clusterId: z.string().min(1, "Cluster is required"),
   qualification: z.string().min(1, "Qualification is required"),
@@ -48,7 +48,7 @@ interface ValidatedRow {
   phone: string;
   aadharNumber: string;
   email: string;
-  role: string;
+  designation: string;
   city: string;
   cluster: string;
   qualification: string;
@@ -64,7 +64,7 @@ interface ValidatedRow {
   }>;
 }
 
-function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast }: any) {
+function BulkUploadContent({ designations, cities, clusters, vendors, recruiters, toast }: any) {
   const [file, setFile] = useState<File | null>(null);
   const [validatedData, setValidatedData] = useState<ValidatedRow[]>([]);
 
@@ -241,10 +241,10 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
         }
         break;
         
-      case 'role':
-        const role = roles?.find((r: any) => r.name.toLowerCase() === row.role.toLowerCase());
-        if (!role) {
-          errors.push({ row: row.row, field: 'role', value: row.role, message: 'Invalid role. Must match existing roles.' });
+      case 'designation':
+        const designation = designations?.find((d: any) => d.name.toLowerCase() === row.designation.toLowerCase());
+        if (!designation) {
+          errors.push({ row: row.row, field: 'designation', value: row.designation, message: 'Invalid designation. Must match existing designations.' });
         }
         break;
         
@@ -312,7 +312,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
       newRow.errors = [];
       
       // Validate all fields to ensure IDs are set
-      ['name', 'phone', 'email', 'role', 'city', 'cluster', 'qualification', 'resumeSource', 'sourceName'].forEach(field => {
+      ['name', 'phone', 'email', 'designation', 'city', 'cluster', 'qualification', 'resumeSource', 'sourceName'].forEach(field => {
         validateField(newRow, field);
       });
       
@@ -362,8 +362,8 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
   };
 
   const downloadTemplate = () => {
-    const csvContent = "name,phone,email,role,city,cluster,qualification,resumeSource,sourceName\n" +
-      "John Doe,9876543210,john@example.com,Bike Captain,Bangalore,Electronic City,Graduation,vendor,ManpowerCorp\n" +
+    const csvContent = "name,phone,email,designation,city,cluster,qualification,resumeSource,sourceName\n" +
+      "John Doe,9876543210,john@example.com,Sales Executive,Bangalore,Electronic City,Graduation,vendor,ManpowerCorp\n" +
       "Jane Smith,9876543211,jane@example.com,Quality Control Associate,Mumbai,Andheri,Diploma,field_recruiter,Joydeep\n" +
       "Bob Wilson,9876543212,bob@example.com,Cleaning Associate,Delhi,South Delhi,11th-12th,referral,Employee Name";
 
@@ -393,11 +393,11 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
             <AlertDescription className="text-sm space-y-2">
               <p className="font-semibold text-blue-800">Important Instructions:</p>
               <ul className="list-disc list-inside space-y-1 text-blue-700">
-                <li>CSV file must contain all required columns: name, phone, email, role, city, cluster, qualification, resumeSource, sourceName</li>
+                <li>CSV file must contain all required columns: name, phone, email, designation, city, cluster, qualification, resumeSource, sourceName</li>
                 <li>Qualification must be one of: 8th-10th, 11th-12th, Graduation, B.Tech, Diploma, ITI</li>
                 <li>Resume source must be: vendor, field_recruiter, or referral</li>
                 <li>For vendor/recruiter sources, the source name must match existing vendor/recruiter names exactly</li>
-                <li>City, cluster, and role names must match master data exactly (case-insensitive)</li>
+                <li>City, cluster, and designation names must match master data exactly (case-insensitive)</li>
                 <li>Maximum 1000 rows per upload for optimal performance</li>
                 <li>Email must be valid and phone number should be 10 digits</li>
               </ul>
@@ -463,7 +463,7 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                     <TableHead className="min-w-[120px]">Phone</TableHead>
                     <TableHead className="min-w-[140px]">Aadhar Number</TableHead>
                     <TableHead className="min-w-[200px]">Email</TableHead>
-                    <TableHead className="min-w-[150px]">Role</TableHead>
+                    <TableHead className="min-w-[150px]">Designation</TableHead>
                     <TableHead className="min-w-[120px]">City</TableHead>
                     <TableHead className="min-w-[150px]">Cluster</TableHead>
                     <TableHead className="min-w-[120px]">Qualification</TableHead>
@@ -530,22 +530,22 @@ function BulkUploadContent({ roles, cities, clusters, vendors, recruiters, toast
                       <TableCell className="min-w-[150px]">
                         <div className="w-full">
                           <Select
-                            value={row.role}
-                            onValueChange={(value) => handleUpdateRow(index, 'role', value)}
+                            value={row.designation}
+                            onValueChange={(value) => handleUpdateRow(index, 'designation', value)}
                           >
-                            <SelectTrigger className={`w-full ${getFieldError(row, 'role') ? "border-red-500" : ""}`}>
+                            <SelectTrigger className={`w-full ${getFieldError(row, 'designation') ? "border-red-500" : ""}`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {roles?.map((role: any) => (
-                                <SelectItem key={role.id} value={role.name}>
-                                  {role.name}
+                              {designations?.map((d: any) => (
+                                <SelectItem key={d.id} value={d.name}>
+                                  {d.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          {getFieldError(row, 'role') && (
-                            <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'role')?.message}</div>
+                          {getFieldError(row, 'designation') && (
+                            <div className="text-xs text-red-500 mt-1">{getFieldError(row, 'designation')?.message}</div>
                           )}
                         </div>
                       </TableCell>
@@ -717,15 +717,15 @@ export default function CandidateApplication() {
     refetchOnMount: true,
   });
 
-  const { data: roles } = useQuery({
-    queryKey: ["/api/master-data/role"],
+  const { data: designations } = useQuery({
+    queryKey: ["/api/designations"],
     staleTime: 0,
     refetchOnMount: true,
   });
 
   // Debug logging
-  console.log('CandidateApplication - Roles data:', roles);
-  console.log('CandidateApplication - Is roles array?', Array.isArray(roles));
+  console.log('CandidateApplication - Designations data:', designations);
+  console.log('CandidateApplication - Is designations array?', Array.isArray(designations));
 
   const { data: vendors } = useQuery({
     queryKey: ["/api/master-data/vendor"],
@@ -746,7 +746,7 @@ export default function CandidateApplication() {
       name: "",
       phone: "",
       email: "",
-      roleId: "",
+      designationId: "",
       cityId: "",
       clusterId: "",
       qualification: "",
@@ -764,7 +764,7 @@ export default function CandidateApplication() {
   const createCandidateMutation = useMutation({
     mutationFn: async (data: any) => {
       // Find the names based on IDs
-      const roleName = (roles as any[])?.find((r: any) => r.id === parseInt(data.roleId))?.name || '';
+      const designationName = (designations as any[])?.find((d: any) => d.id === parseInt(data.designationId))?.name || '';
       const cityName = (cities as any[])?.find((c: any) => c.id === parseInt(data.cityId))?.name || '';
       const clusterName = (clusters as any[])?.find((c: any) => c.id === parseInt(data.clusterId))?.name || '';
       const vendorName = data.vendorId ? (vendors as any[])?.find((v: any) => v.id === parseInt(data.vendorId))?.name : undefined;
@@ -776,7 +776,7 @@ export default function CandidateApplication() {
         name: data.name,
         phone: data.phone,
         email: data.email,
-        role: roleName,
+        designation: designationName,
         city: cityName,
         cluster: clusterName,
         qualification: data.qualification,
@@ -1028,20 +1028,20 @@ export default function CandidateApplication() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <FormField
                     control={form.control}
-                    name="roleId"
+                    name="designationId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Role</FormLabel>
+                        <FormLabel>Designation</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select Role" />
+                              <SelectValue placeholder="Select Designation" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {(Array.isArray(roles) ? roles : []).map((role: any) => (
-                              <SelectItem key={role.id} value={role.id.toString()}>
-                                {role.name}
+                            {(Array.isArray(designations) ? designations : []).map((d: any) => (
+                              <SelectItem key={d.id} value={d.id.toString()}>
+                                {d.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1329,7 +1329,7 @@ export default function CandidateApplication() {
       
       <TabsContent value="bulk" className="w-full">
         <BulkUploadContent 
-          roles={roles}
+          designations={designations}
           cities={cities}
           clusters={clusters}
           vendors={vendors}

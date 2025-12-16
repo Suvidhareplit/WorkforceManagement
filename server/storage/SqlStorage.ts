@@ -641,9 +641,9 @@ export class SqlStorage implements IStorage {
   }
 
   async createDepartment(data: any, options?: CreateOptions): Promise<any> {
-    const { name, code, business_unit_id, is_active = true } = data;
-    const businessUnitId = business_unit_id;
-    const isActive = is_active;
+    const { name, code, business_unit_id, businessUnitId: buId, is_active = true, isActive: active } = data;
+    const businessUnitId = business_unit_id || buId || null;
+    const isActive = is_active !== undefined ? is_active : (active !== undefined ? active : true);
     const insertResult = await query(`
       INSERT INTO departments (name, code, business_unit_id, is_active, created_at)
       VALUES (?, ?, ?, ?, NOW())
@@ -928,12 +928,13 @@ export class SqlStorage implements IStorage {
   }
 
   async createRecruiter(recruiterData: any, options?: CreateOptions): Promise<any> {
-    const { name, email, phone, vendorId, isActive = true } = recruiterData;
+    const { name, email, phone, cityId, city_id, isActive = true } = recruiterData;
+    const resolvedCityId = cityId || city_id || null;
     
     const insertResult = await query(`
-      INSERT INTO recruiters (name, email, phone, vendor_id, is_active, created_at)
+      INSERT INTO recruiters (name, email, phone, city_id, is_active, created_at)
       VALUES (?, ?, ?, ?, ?, NOW())
-    `, [name, email, phone, vendorId, isActive]);
+    `, [name, email, phone, resolvedCityId, isActive]);
     
     const recruiterId = (insertResult.rows as any).insertId;
     return await this.getRecruiter(recruiterId) as any;
@@ -943,9 +944,16 @@ export class SqlStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     
+    // Map camelCase to snake_case for database columns
+    const fieldMapping: { [key: string]: string } = {
+      cityId: 'city_id',
+      isActive: 'is_active',
+    };
+    
     Object.entries(recruiterData).forEach(([key, value]) => {
       if (key !== 'id' && value !== undefined) {
-        fields.push(`${key} = ?`);
+        const dbField = fieldMapping[key] || key;
+        fields.push(`${dbField} = ?`);
         values.push(value);
       }
     });
@@ -1054,9 +1062,9 @@ export class SqlStorage implements IStorage {
       whereClause += ' AND hr.cluster_id = ?';
       params.push(filters.clusterId);
     }
-    if (filters?.roleId) {
-      whereClause += ' AND hr.role_id = ?';
-      params.push(filters.roleId);
+    if (filters?.designationId) {
+      whereClause += ' AND hr.designation_id = ?';
+      params.push(filters.designationId);
     }
     
     const result = await query(`
@@ -1119,15 +1127,18 @@ export class SqlStorage implements IStorage {
     
     const insertResult = await query(`
       INSERT INTO hiring_requests (
-        request_id, city_id, cluster_id, designation_id, position_title, no_of_openings,
+        request_id, city_id, cluster_id, designation_id, no_of_openings,
         priority, request_type, status, description, request_date, created_by, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     `, [
-      requestId, cityId, clusterId, designationId, 'Position', numberOfPositions,
+      requestId, cityId, clusterId, designationId, numberOfPositions,
       priority, requestType, status, notes, actualRequestDate, createdBy
     ]);
     
-    const hiringRequestId = (insertResult as any).insertId;
+    const hiringRequestId = insertResult.insertId;
+    if (!hiringRequestId) {
+      throw new Error('Failed to get inserted hiring request ID');
+    }
     return await this.getHiringRequest(hiringRequestId) as any;
   }
 
@@ -1214,7 +1225,7 @@ export class SqlStorage implements IStorage {
       phone,
       aadharNumber,
       email,
-      role,
+      designation,
       city,
       cluster,
       qualification,
@@ -1251,16 +1262,16 @@ export class SqlStorage implements IStorage {
     }
     
     // Get IDs and codes from names
-    const roleResult = await query('SELECT id, code FROM roles WHERE name = ?', [role]);
+    const designationResult = await query('SELECT id, code FROM designations WHERE name = ?', [designation]);
     const cityResult = await query('SELECT id, code FROM cities WHERE name = ?', [city]);
     const clusterResult = await query('SELECT id, code FROM clusters WHERE name = ?', [cluster]);
     
-    if (!roleResult.rows[0] || !cityResult.rows[0] || !clusterResult.rows[0]) {
-      throw new Error('Invalid role, city, or cluster');
+    if (!designationResult.rows[0] || !cityResult.rows[0] || !clusterResult.rows[0]) {
+      throw new Error('Invalid designation, city, or cluster');
     }
     
-    const roleId = (roleResult.rows[0] as any).id;
-    const roleCode = (roleResult.rows[0] as any).code;
+    const designationId = (designationResult.rows[0] as any).id;
+    const designationCode = (designationResult.rows[0] as any).code;
     const cityId = (cityResult.rows[0] as any).id;
     const cityCode = (cityResult.rows[0] as any).code;
     const clusterId = (clusterResult.rows[0] as any).id;
@@ -1268,7 +1279,7 @@ export class SqlStorage implements IStorage {
     
     // Generate Application ID: CITY_CLUSTER_ROLE_FIRST3LETTERS_SEQUENCE
     const namePrefix = name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
-    const basePattern = `${cityCode}_${clusterCode}_${roleCode}_${namePrefix}_%`;
+    const basePattern = `${cityCode}_${clusterCode}_${designationCode}_${namePrefix}_%`;
     
     // Get the next sequence number for this pattern
     const seqResult = await query(`
@@ -1284,7 +1295,7 @@ export class SqlStorage implements IStorage {
       nextSeq = parseInt(lastSeqStr) + 1;
     }
     
-    const applicationId = `${cityCode}_${clusterCode}_${roleCode}_${namePrefix}_${String(nextSeq).padStart(4, '0')}`;
+    const applicationId = `${cityCode}_${clusterCode}_${designationCode}_${namePrefix}_${String(nextSeq).padStart(4, '0')}`;
     
     let vendorId = null;
     let vendorName = null;
@@ -1309,13 +1320,13 @@ export class SqlStorage implements IStorage {
 
     const insertResult = await query(`
       INSERT INTO candidates (
-        application_id, name, phone, aadhar_number, email, role_id, role_name, city_id, city_name, cluster_id, cluster_name,
+        application_id, name, phone, aadhar_number, email, designation_id, designation_name, city_id, city_name, cluster_id, cluster_name,
         qualification, current_company, experience_years, current_ctc, expected_ctc,
         resume_source, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         status, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
     `, [
-      applicationId, name, phone, aadharNumber, email, roleId, role, cityId, city, clusterId, cluster,
+      applicationId, name, phone, aadharNumber, email, designationId, designation, cityId, city, clusterId, cluster,
       qualification, currentCompany, experienceYears, currentCtc, expectedCtc,
       resumeSource, vendorId, vendorName, recruiterId, recruiterName, referralName
     ]);
@@ -1327,7 +1338,7 @@ export class SqlStorage implements IStorage {
       name,
       phone,
       email,
-      role,
+      designation,
       city,
       cluster,
       qualification,

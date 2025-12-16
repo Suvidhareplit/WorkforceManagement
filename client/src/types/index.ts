@@ -91,6 +91,7 @@ export interface Designation {
   minSalary?: number;
   maxSalary?: number;
   isActive: boolean;
+  manpowerPlanningRequired?: boolean;
   requiresApproval: boolean;
   reportsToDesignationId?: number;
   reportsToDesignationName?: string;

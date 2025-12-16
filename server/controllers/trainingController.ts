@@ -411,8 +411,8 @@ const updateFieldTraining = async (req: Request, res: Response) => {
               field_training_id, candidate_id, name, mobile_number, email,
               city, cluster, role, manager_name, date_of_joining, gross_salary,
               resume_source, cost_centre, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
-              function_name, business_unit_name, department_name, sub_department_name
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              business_unit_name, department_name, sub_department_name
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               id,
               candidate.candidate_id,
@@ -432,7 +432,6 @@ const updateFieldTraining = async (req: Request, res: Response) => {
               candidate.recruiter_id,
               candidate.recruiter_name,
               candidate.referral_name,
-              candidate.function_name,
               candidate.business_unit_name,
               candidate.department_name,
               candidate.sub_department_name

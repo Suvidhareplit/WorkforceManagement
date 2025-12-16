@@ -22,6 +22,8 @@ import {
   LogOut,
   BarChart3,
   FileText,
+  Building2,
+  Users,
 } from "lucide-react";
 
 const menuItems = [
@@ -32,6 +34,18 @@ const menuItems = [
         icon: Home,
         label: "Home",
         href: "/home",
+      },
+      {
+        icon: Building2,
+        label: "Org Dashboard",
+        href: "/dashboard/org",
+        subItems: [
+          {
+            icon: Users,
+            label: "Manpower Analysis",
+            href: "/dashboard/manpower-analysis",
+          },
+        ],
       },
     ],
   },
@@ -158,6 +172,11 @@ const menuItems = [
         label: "Leave Management",
         href: "/leave-management",
       },
+      {
+        icon: Building2,
+        label: "Manpower Planning",
+        href: "/manpower-planning",
+      },
     ],
   },
 ];
@@ -228,22 +247,52 @@ export default function Sidebar() {
                   )}
                 >
                   <div className="space-y-1 pt-1">
-                    {section.items.map((item) => {
+                    {section.items.map((item: any) => {
                       const isActive = location === item.href;
+                      const hasSubItems = item.subItems && item.subItems.length > 0;
+                      const isSubItemActive = hasSubItems && item.subItems.some((sub: any) => location === sub.href);
+                      
                       return (
-                        <Link key={item.href} href={item.href}>
-                          <div
-                            className={cn(
-                              "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors cursor-pointer",
-                              isActive
-                                ? "text-blue-600 bg-blue-50 font-medium"
-                                : "text-slate-700 hover:text-blue-600 hover:bg-slate-50"
-                            )}
-                          >
-                            <item.icon className="h-5 w-5" />
-                            <span>{item.label}</span>
-                          </div>
-                        </Link>
+                        <div key={item.href}>
+                          <Link href={item.href}>
+                            <div
+                              className={cn(
+                                "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors cursor-pointer",
+                                isActive || isSubItemActive
+                                  ? "text-blue-600 bg-blue-50 font-medium"
+                                  : "text-slate-700 hover:text-blue-600 hover:bg-slate-50"
+                              )}
+                            >
+                              <item.icon className="h-5 w-5" />
+                              <span>{item.label}</span>
+                              {hasSubItems && (
+                                <ChevronDown className="h-4 w-4 ml-auto" />
+                              )}
+                            </div>
+                          </Link>
+                          {hasSubItems && (
+                            <div className="ml-6 mt-1 space-y-1">
+                              {item.subItems.map((subItem: any) => {
+                                const isSubActive = location === subItem.href;
+                                return (
+                                  <Link key={subItem.href} href={subItem.href}>
+                                    <div
+                                      className={cn(
+                                        "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors cursor-pointer text-sm",
+                                        isSubActive
+                                          ? "text-blue-600 bg-blue-50 font-medium"
+                                          : "text-slate-600 hover:text-blue-600 hover:bg-slate-50"
+                                      )}
+                                    >
+                                      <subItem.icon className="h-4 w-4" />
+                                      <span>{subItem.label}</span>
+                                    </div>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
                   </div>

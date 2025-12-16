@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { City, Cluster, Role, Vendor, Recruiter, Trainer, BusinessUnit, Department, SubDepartment, Designation } from "@/types";
-import { MapPin, Briefcase, Users, UserCheck, Edit, Eye, Building, Layers, FolderTree, Plus, X, GraduationCap, ChevronDown, ChevronRight } from "lucide-react";
+import { MapPin, Briefcase, Users, UserCheck, Edit, Eye, Building, Layers, FolderTree, Plus, X, GraduationCap, ChevronDown, ChevronRight, ToggleRight, ToggleLeft } from "lucide-react";
 
 import { useEffect } from "react";
 
@@ -2625,19 +2625,20 @@ export default function MasterData() {
                       <TableHead>Role</TableHead>
                       <TableHead>Sub Department</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Manpower Planning</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loadingDesignations ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={7} className="text-center py-8">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : safeDesignations.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={7} className="text-center py-8">
                           No designations found
                         </TableCell>
                       </TableRow>
@@ -2652,6 +2653,30 @@ export default function MasterData() {
                             <Badge variant={designation.isActive ? "default" : "secondary"}>
                               {designation.isActive ? "Active" : "Inactive"}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Switch
+                              checked={designation.manpowerPlanningRequired || false}
+                              onCheckedChange={async () => {
+                                try {
+                                  await apiRequest(`/api/designations/${designation.id}`, {
+                                    method: "PUT",
+                                    body: { manpower_planning_required: !designation.manpowerPlanningRequired },
+                                  });
+                                  queryClient.invalidateQueries({ queryKey: ["/api/designations"] });
+                                  toast({
+                                    title: "Success",
+                                    description: `Manpower planning ${designation.manpowerPlanningRequired ? 'disabled' : 'enabled'} for ${designation.name}`,
+                                  });
+                                } catch (error: any) {
+                                  toast({
+                                    title: "Error",
+                                    description: error.message || "Failed to update manpower planning status",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
+                            />
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
@@ -3256,13 +3281,19 @@ export default function MasterData() {
 
             {editType === "recruiter" && (
               <div>
-                <Label htmlFor="editIncentiveStructure">Incentive Structure</Label>
-                <Input
-                  id="editIncentiveStructure"
-                  placeholder="Enter incentive structure"
-                  value={(editFormData as any).incentiveStructure}
-                  onChange={(e) => setEditFormData({ ...editFormData, incentiveStructure: e.target.value } as any)}
-                />
+                <Label htmlFor="editCity">City</Label>
+                <Select value={editFormData.cityId} onValueChange={(value) => setEditFormData({ ...editFormData, cityId: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {safeCities.map((city: City) => (
+                      <SelectItem key={city.id} value={city.id.toString()}>
+                        {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
 

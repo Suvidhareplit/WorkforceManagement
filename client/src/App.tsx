@@ -26,6 +26,9 @@ import AttritionAnalysis from "./pages/management/AttritionAnalysis";
 import Reports from "./pages/management/Reports";
 import Analytics from "./pages/analytics/Analytics";
 import HiringAnalytics from "./pages/analytics/HiringAnalytics";
+import OrgDashboard from "./pages/dashboard/OrgDashboard";
+import ManpowerAnalysis from "./pages/dashboard/ManpowerAnalysis";
+import ManpowerPlanning from "./pages/management/ManpowerPlanning";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -34,6 +37,8 @@ function Router() {
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/home" component={Home} />
+        <Route path="/dashboard/org" component={OrgDashboard} />
+        <Route path="/dashboard/manpower-analysis" component={ManpowerAnalysis} />
         <Route path="/employee/:employeeId" component={EmployeeProfile} />
         <Route path="/hiring/create" component={CreateHiringRequest} />
         <Route path="/hiring/requests" component={ViewHiringRequests} />
@@ -53,6 +58,7 @@ function Router() {
         <Route path="/management/reports" component={Reports} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/analytics/hiring" component={HiringAnalytics} />
+        <Route path="/manpower-planning" component={ManpowerPlanning} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

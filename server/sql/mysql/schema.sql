@@ -185,13 +185,10 @@ CREATE TABLE IF NOT EXISTS recruiters (
     email TEXT NOT NULL,
     phone VARCHAR(10),
     city_id INT,
-    vendor_id INT,
-    management_fee TEXT,
     is_active BOOLEAN DEFAULT true,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_recruiter_email (email(255)),
-    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
-    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE SET NULL
+    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

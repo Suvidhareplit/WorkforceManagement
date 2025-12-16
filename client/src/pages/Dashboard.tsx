@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Briefcase, Users, Clock, TrendingUp, ArrowUp } from "lucide-react";
+import { Plus, Briefcase, Users, TrendingUp, XCircle, GraduationCap } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { api } from "@/lib/api";
@@ -22,9 +22,8 @@ export default function Dashboard() {
     staleTime: 0, // Always refetch when component mounts
   });
 
-  const { data: rolesResponse } = useQuery({
-    queryKey: ['/api/master-data/role'],
-    queryFn: () => api.masterData.getRoles(),
+  const { data: designationsResponse } = useQuery({
+    queryKey: ['/api/designations'],
     refetchOnWindowFocus: true,
     staleTime: 0,
   });
@@ -44,15 +43,31 @@ export default function Dashboard() {
     staleTime: 0, // Always fetch fresh data
   });
 
+  // Fetch classroom training data
+  const { data: classroomResponse, isLoading: loadingClassroom } = useQuery({
+    queryKey: ['/api/training/classroom'],
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+  });
+
+  // Fetch field training data
+  const { data: fieldResponse, isLoading: loadingField } = useQuery({
+    queryKey: ['/api/training/field'],
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+  });
+
   // Extract data from API responses
   const citiesData = (citiesResponse as any)?.data || [];
-  const rolesData = (rolesResponse as any)?.data || [];
+  const designationsData = Array.isArray(designationsResponse) ? designationsResponse : (designationsResponse as any)?.data || [];
   const clustersData = (clustersResponse as any)?.data || [];
   const hiringRequestsData = (hiringResponse as any)?.data || [];
+  const classroomData = Array.isArray(classroomResponse) ? classroomResponse : [];
+  const fieldData = Array.isArray(fieldResponse) ? fieldResponse : [];
 
   console.log('📊 Dashboard Data:', {
     citiesCount: citiesData.length,
-    rolesCount: rolesData.length,
+    designationsCount: designationsData.length,
     clustersCount: clustersData.length,
     hiringRequestsCount: hiringRequestsData.length,
     selectedCity,
@@ -75,15 +90,17 @@ export default function Dashboard() {
 
   // First pass: identify which clusters have open positions
   const clustersWithPositions = new Set<number>();
-  const rolePositionsMap = new Map<number, Map<number, number>>();
+  const designationPositionsMap = new Map<number, Map<number, number>>();
 
-  // Calculate positions for each role-cluster combination
-  (rolesData as any[])?.forEach((role: any) => {
-    const roleRequests = filteredHiringRequests.filter((req: any) => req.role_id === role.id);
+  // Calculate positions for each designation-cluster combination
+  (designationsData as any[])?.forEach((designation: any) => {
+    const designationRequests = filteredHiringRequests.filter((req: any) => 
+      req.designation_id === designation.id || req.designationId === designation.id
+    );
     const clusterMap = new Map<number, number>();
     
     allClusters.forEach((cluster: any) => {
-      const clusterRequests = roleRequests.filter((req: any) => req.cluster_id === cluster.id);
+      const clusterRequests = designationRequests.filter((req: any) => req.cluster_id === cluster.id);
       const positions = clusterRequests.reduce((sum: number, req: any) => 
         sum + (parseInt(req.no_of_openings) || 0), 0
       );
@@ -95,7 +112,7 @@ export default function Dashboard() {
     });
     
     if (clusterMap.size > 0) {
-      rolePositionsMap.set(role.id, clusterMap);
+      designationPositionsMap.set(designation.id, clusterMap);
     }
   });
 
@@ -104,26 +121,26 @@ export default function Dashboard() {
     clustersWithPositions.has(cluster.id)
   );
 
-  // Build final role-wise open positions data
-  const roleWiseOpenPositions = (rolesData as any[])?.map((role: any) => {
-    const clusterMap = rolePositionsMap.get(role.id);
+  // Build final designation-wise open positions data
+  const designationWiseOpenPositions = (designationsData as any[])?.map((designation: any) => {
+    const clusterMap = designationPositionsMap.get(designation.id);
     if (!clusterMap) return null;
     
     const clusterPositions: any = {};
     let totalPositions = 0;
     
-    clusterMap.forEach((positions, clusterId) => {
+    clusterMap.forEach((positions: number, clusterId: number) => {
       clusterPositions[clusterId] = positions;
       totalPositions += positions;
     });
     
     return {
-      roleId: role.id,
-      roleName: role.name,
+      designationId: designation.id,
+      designationName: designation.name,
       clusterPositions,
       totalPositions
     };
-  }).filter(role => role !== null) || [];
+  }).filter(d => d !== null) || [];
 
   // Calculate metrics from hiring requests data (using correct field names)
   const openPositions = hiringRequestsData && Array.isArray(hiringRequestsData) 
@@ -131,10 +148,35 @@ export default function Dashboard() {
         .reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
     : 0;
   
+  // Total positions raised (all time - sum of all no_of_openings)
+  const totalPositionsRaised = hiringRequestsData && Array.isArray(hiringRequestsData)
+    ? hiringRequestsData.reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
+    : 0;
+
+  // Closed positions (sum of no_of_openings where status is 'closed')
   const closedPositions = hiringRequestsData && Array.isArray(hiringRequestsData)
     ? hiringRequestsData.filter((req: any) => req.status === 'closed')
         .reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
     : 0;
+
+  // Called off positions (sum of no_of_openings where status is 'called_off')
+  const calledOffPositions = hiringRequestsData && Array.isArray(hiringRequestsData)
+    ? hiringRequestsData.filter((req: any) => req.status === 'called_off')
+        .reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
+    : 0;
+
+  // YTD Hired = Closed positions (same as closed, represents hired/filled positions)
+  const ytdHired = closedPositions;
+
+  // Employees under Classroom Training (crt_feedback = 'under_classroom_training')
+  const underClassroomTraining = classroomData.filter((record: any) => 
+    (record.crtFeedback || record.crt_feedback) === 'under_classroom_training'
+  ).length;
+
+  // Employees under Field Training (ft_feedback = 'under_field_training')
+  const underFieldTraining = fieldData.filter((record: any) => 
+    (record.ftFeedback || record.ft_feedback) === 'under_field_training'
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -154,25 +196,27 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards - Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {/* 1. Pan India Total Positions Raised */}
         <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">Pan India Open Positions</p>
+                <p className="text-slate-600 text-sm font-medium">Pan India Positions Raised</p>
                 <p className="text-2xl font-bold text-slate-800 mt-1">
-                  {loadingHiring ? "..." : openPositions}
+                  {loadingHiring ? "..." : totalPositionsRaised}
                 </p>
-                <p className="text-slate-400 text-sm mt-1">Active positions</p>
+                <p className="text-slate-400 text-sm mt-1">All time raised</p>
               </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Briefcase className="text-blue-600 h-6 w-6" />
+              <div className="bg-indigo-100 p-3 rounded-lg">
+                <TrendingUp className="text-indigo-600 h-6 w-6" />
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* 2. Pan India Closed Positions */}
         <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -184,63 +228,111 @@ export default function Dashboard() {
                 <p className="text-slate-400 text-sm mt-1">Completed positions</p>
               </div>
               <div className="bg-green-100 p-3 rounded-lg">
-                <TrendingUp className="text-green-600 h-6 w-6" />
+                <Briefcase className="text-green-600 h-6 w-6" />
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* 3. Pan India Called Off Positions */}
         <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">Active Candidates</p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">--</p>
-                <p className="text-slate-400 text-sm mt-1">In pipeline</p>
+                <p className="text-slate-600 text-sm font-medium">Pan India Called Off</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">
+                  {loadingHiring ? "..." : calledOffPositions}
+                </p>
+                <p className="text-slate-400 text-sm mt-1">Cancelled positions</p>
               </div>
-              <div className="bg-cyan-100 p-3 rounded-lg">
-                <Users className="text-cyan-600 h-6 w-6" />
+              <div className="bg-red-100 p-3 rounded-lg">
+                <XCircle className="text-red-600 h-6 w-6" />
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* 4. Pan India Open Positions */}
         <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">Avg. Time to Hire</p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">--</p>
-                <p className="text-slate-400 text-sm mt-1">No data available</p>
+                <p className="text-slate-600 text-sm font-medium">Pan India Open Positions</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">
+                  {loadingHiring ? "..." : openPositions}
+                </p>
+                <p className="text-slate-400 text-sm mt-1">Current active</p>
               </div>
-              <div className="bg-amber-100 p-3 rounded-lg">
-                <Clock className="text-amber-600 h-6 w-6" />
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <Briefcase className="text-blue-600 h-6 w-6" />
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* 5. YTD Hired */}
         <Card className="shadow-md hover:shadow-lg transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-600 text-sm font-medium">Success Rate</p>
-                <p className="text-2xl font-bold text-slate-800 mt-1">--</p>
-                <p className="text-slate-400 text-sm mt-1">No data available</p>
+                <p className="text-slate-600 text-sm font-medium">YTD Hired</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">
+                  {loadingHiring ? "..." : ytdHired}
+                </p>
+                <p className="text-slate-400 text-sm mt-1">Positions filled</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <ArrowUp className="text-purple-600 h-6 w-6" />
+              <div className="bg-emerald-100 p-3 rounded-lg">
+                <Users className="text-emerald-600 h-6 w-6" />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Role-wise Open Positions Table */}
+      {/* KPI Cards - Row 2: Training */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        {/* Under Classroom Training */}
+        <Card className="shadow-md hover:shadow-lg transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-600 text-sm font-medium">Under Classroom Training</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">
+                  {loadingClassroom ? "..." : underClassroomTraining}
+                </p>
+                <p className="text-slate-400 text-sm mt-1">Employees in CRT</p>
+              </div>
+              <div className="bg-amber-100 p-3 rounded-lg">
+                <GraduationCap className="text-amber-600 h-6 w-6" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Under Field Training */}
+        <Card className="shadow-md hover:shadow-lg transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-600 text-sm font-medium">Under Field Training</p>
+                <p className="text-2xl font-bold text-slate-800 mt-1">
+                  {loadingField ? "..." : underFieldTraining}
+                </p>
+                <p className="text-slate-400 text-sm mt-1">Employees in FT</p>
+              </div>
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <Users className="text-purple-600 h-6 w-6" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Designation-wise Open Positions Table */}
       <Card className="shadow-md">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Open Positions - City wise_Role wise_Cluster wise</CardTitle>
+            <CardTitle>Open Positions - City wise_Designation wise_Cluster wise</CardTitle>
             <div className="flex gap-3">
               <Select value={selectedCity} onValueChange={setSelectedCity}>
                 <SelectTrigger className="w-[180px]">
@@ -276,7 +368,7 @@ export default function Dashboard() {
               <Table className="w-auto">
                 <TableHeader>
                   <TableRow className="bg-slate-50">
-                    <TableHead className="sticky left-0 bg-slate-50 z-10 font-semibold">Role</TableHead>
+                    <TableHead className="sticky left-0 bg-slate-50 z-10 font-semibold">Designation</TableHead>
                     {clustersWithOpenPositions.map((cluster: any) => (
                       <TableHead key={cluster.id} className="text-center px-4">
                         {cluster.name}
@@ -286,23 +378,23 @@ export default function Dashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {roleWiseOpenPositions.length > 0 ? (
+                  {designationWiseOpenPositions.length > 0 ? (
                     <>
-                      {roleWiseOpenPositions.map((role: any) => (
-                        <TableRow key={role.roleId}>
+                      {designationWiseOpenPositions.map((designation: any) => (
+                        <TableRow key={designation.designationId}>
                           <TableCell className="font-medium sticky left-0 bg-white z-10 pr-6">
-                            {role.roleName}
+                            {designation.designationName}
                           </TableCell>
                           {clustersWithOpenPositions.map((cluster: any) => (
                             <TableCell key={cluster.id} className="text-center px-4">
                               <span className="font-semibold text-blue-600">
-                                {role.clusterPositions[cluster.id] || "-"}
+                                {designation.clusterPositions[cluster.id] || "-"}
                               </span>
                             </TableCell>
                           ))}
                           <TableCell className="text-center bg-slate-50 px-4">
                             <span className="font-bold text-slate-800">
-                              {role.totalPositions}
+                              {designation.totalPositions}
                             </span>
                           </TableCell>
                         </TableRow>
@@ -313,8 +405,8 @@ export default function Dashboard() {
                           Grand Total
                         </TableCell>
                         {clustersWithOpenPositions.map((cluster: any) => {
-                          const clusterTotal = roleWiseOpenPositions.reduce((sum: number, role: any) => 
-                            sum + (role.clusterPositions[cluster.id] || 0), 0
+                          const clusterTotal = designationWiseOpenPositions.reduce((sum: number, d: any) => 
+                            sum + (d.clusterPositions[cluster.id] || 0), 0
                           );
                           return (
                             <TableCell key={cluster.id} className="text-center font-bold px-4">
@@ -324,8 +416,8 @@ export default function Dashboard() {
                         })}
                         <TableCell className="text-center bg-slate-200 px-4">
                           <span className="font-bold text-lg text-blue-700">
-                            {roleWiseOpenPositions.reduce((sum: number, role: any) => 
-                              sum + role.totalPositions, 0
+                            {designationWiseOpenPositions.reduce((sum: number, d: any) => 
+                              sum + d.totalPositions, 0
                             )}
                           </span>
                         </TableCell>

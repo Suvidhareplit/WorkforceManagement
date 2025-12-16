@@ -65,19 +65,20 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
     const userId = (req as any).user?.id || null;
     
     // Create employee record with ALL onboarding data + new fields
+    // For migration records, candidate_id and field_training_id can be null
     const values = [
-      onboarding.candidate_id,
+      onboarding.candidate_id || null,
       onboarding.id,
-      onboarding.field_training_id,
+      onboarding.field_training_id || null,
       onboarding.name,
       onboarding.mobile_number,
       onboarding.email,
       onboarding.city,
       onboarding.cluster,
       onboarding.role,
+      onboarding.designation,
       onboarding.legal_entity,
       onboarding.business_unit_name,
-      onboarding.function_name,
       onboarding.department_name,
       onboarding.sub_department_name,
       onboarding.employment_type,
@@ -123,18 +124,15 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
       documents || null,
       paygrade || null,
       payband || null,
-      'active',
-      null,  // date_of_exit - optional, can be filled later
-      null,  // exit_initiated_date - optional, can be filled later
-      null,  // lwd - optional, can be filled later
+      'working',
       userId
     ];
     
     const result = await query(
       `INSERT INTO employees (
         candidate_id, onboarding_id, field_training_id,
-        name, mobile_number, email, city, cluster, role,
-        legal_entity, business_unit_name, function_name, department_name, sub_department_name, employment_type,
+        name, mobile_number, email, city, cluster, role, designation,
+        legal_entity, business_unit_name, department_name, sub_department_name, employment_type,
         manager_name, date_of_joining, gross_salary,
         resume_source, cost_centre, vendor_id, vendor_name, recruiter_id, recruiter_name, referral_name,
         referral_contact, referral_relation, direct_source,
@@ -147,9 +145,9 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
         father_name,
         user_id, employee_id, uan_number, esic_ip_number,
         group_doj, assets, documents, paygrade, payband,
-        working_status, date_of_exit, exit_initiated_date, lwd,
+        working_status,
         profile_created_at, profile_created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
       values
     );
     
@@ -847,6 +845,354 @@ const completeExit = async (req: Request, res: Response) => {
   }
 };
 
+// Get org hierarchy for dashboard
+const getOrgHierarchy = async (req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-store');
+  try {
+    const { city, cluster, employment_type, business_unit } = req.query;
+    
+    // Build WHERE clause
+    let whereConditions = ["working_status = 'working'"];
+    const params: any[] = [];
+    
+    if (city && city !== 'all') {
+      whereConditions.push("city = ?");
+      params.push(city);
+    }
+    if (cluster && cluster !== 'all') {
+      whereConditions.push("cluster = ?");
+      params.push(cluster);
+    }
+    if (employment_type && employment_type !== 'all') {
+      whereConditions.push("employment_type = ?");
+      params.push(employment_type);
+    }
+    if (business_unit && business_unit !== 'all') {
+      whereConditions.push("business_unit_name = ?");
+      params.push(business_unit);
+    }
+    
+    const whereClause = whereConditions.join(" AND ");
+    
+    // Get hierarchical data from employees table
+    const result = await query(
+      `SELECT 
+        department_name,
+        sub_department_name,
+        role,
+        designation,
+        COUNT(*) as count
+      FROM employees
+      WHERE ${whereClause}
+      GROUP BY department_name, sub_department_name, role, designation
+      ORDER BY department_name, sub_department_name, role, designation`,
+      params
+    );
+    
+    const rows = result.rows || [];
+    
+    // Build hierarchy structure
+    const departmentMap = new Map();
+    let totalCount = 0;
+    
+    rows.forEach((row: any) => {
+      totalCount += parseInt(row.count);
+      
+      const deptName = row.department_name || 'Unassigned';
+      const subDeptName = row.sub_department_name || 'Unassigned';
+      const roleName = row.role || 'Unassigned';
+      const designationName = row.designation || 'Unassigned';
+      
+      // EV - Ops Data Correction (Handle any legacy data that might have slipped through)
+      const normalizedRoleName = (roleName === 'Ev-Ops' || roleName === 'EV-Ops') ? 'EV - Ops' : roleName;
+      
+      if (!departmentMap.has(deptName)) {
+        departmentMap.set(deptName, { name: deptName, count: 0, children: new Map() });
+      }
+      const dept = departmentMap.get(deptName);
+      dept.count += parseInt(row.count);
+      
+      if (!dept.children.has(subDeptName)) {
+        dept.children.set(subDeptName, { name: subDeptName, count: 0, children: new Map() });
+      }
+      const subDept = dept.children.get(subDeptName);
+      subDept.count += parseInt(row.count);
+      
+      if (!subDept.children.has(normalizedRoleName)) {
+        subDept.children.set(normalizedRoleName, { name: normalizedRoleName, count: 0, children: new Map() });
+      }
+      const role = subDept.children.get(normalizedRoleName);
+      role.count += parseInt(row.count);
+      
+      if (!role.children.has(designationName)) {
+        role.children.set(designationName, { name: designationName, count: 0 });
+      }
+      const designation = role.children.get(designationName);
+      designation.count += parseInt(row.count);
+    });
+    
+    // Convert Maps to arrays
+    const hierarchy = Array.from(departmentMap.values()).map((dept: any) => ({
+      name: dept.name,
+      count: dept.count,
+      children: Array.from(dept.children.values()).map((subDept: any) => ({
+        name: subDept.name,
+        count: subDept.count,
+        children: Array.from(subDept.children.values()).map((role: any) => ({
+          name: role.name,
+          count: role.count,
+          children: Array.from(role.children.values())
+        }))
+      }))
+    }));
+    
+    // Sort by count descending
+    hierarchy.sort((a: any, b: any) => b.count - a.count);
+    hierarchy.forEach((dept: any) => {
+      dept.children.sort((a: any, b: any) => b.count - a.count);
+      dept.children.forEach((subDept: any) => {
+        subDept.children.sort((a: any, b: any) => b.count - a.count);
+        subDept.children.forEach((role: any) => {
+          role.children.sort((a: any, b: any) => b.count - a.count);
+        });
+      });
+    });
+    
+    // Get unique counts from master data tables - FILTERED based on employees (except clusters which uses master data)
+    const deptCountResult = await query(`SELECT COUNT(DISTINCT department_name) as count FROM employees WHERE ${whereClause}`, params);
+    const subDeptCountResult = await query(`SELECT COUNT(DISTINCT sub_department_name) as count FROM employees WHERE ${whereClause}`, params);
+    const roleCountResult = await query(`SELECT COUNT(DISTINCT role) as count FROM employees WHERE ${whereClause}`, params);
+    const designationCountResult = await query(`SELECT COUNT(DISTINCT designation) as count FROM employees WHERE ${whereClause}`, params);
+    const cityCountResult = await query(`SELECT COUNT(DISTINCT city) as count FROM employees WHERE ${whereClause}`, params);
+    // Clusters count from master data table (not filtered)
+    const clusterCountResult = await query("SELECT COUNT(DISTINCT name) as count FROM clusters");
+    const costCentreCountResult = await query(`SELECT COUNT(DISTINCT cost_centre) as count FROM employees WHERE ${whereClause} AND cost_centre IS NOT NULL`, params);
+    
+    // Centres count - difficult to filter by BU directly as it's not on employees table usually, 
+    // but we can filter by city/cluster if present in params.
+    // For now, we'll keep it as total centres or filter by city/cluster if possible.
+    // Let's rely on the centresList logic below which we can filter by city/cluster.
+    
+    // Get business units for filter (global list, not filtered)
+    const businessUnitResult = await query("SELECT DISTINCT business_unit_name FROM employees WHERE working_status = 'working' AND business_unit_name IS NOT NULL ORDER BY business_unit_name");
+    const businessUnits = (businessUnitResult.rows || []).map((row: any) => row.business_unit_name);
+    
+    // Get clusters with centre counts - Filter by City if selected
+    let clustersWhere = "c.is_active = 1 OR c.is_active IS NULL";
+    const clustersParams: any[] = [];
+    if (city && city !== 'all') {
+      clustersWhere += " AND ci.name = ?";
+      clustersParams.push(city);
+    }
+    // Note: We can't easily filter clusters/cities/centres by Business Unit without a join, 
+    // and the request specifically asked for Metric Cards and Headcounts to work.
+    
+    const clustersWithCentres = await query(`
+      SELECT c.id, c.name, c.city_id, ci.name as city_name, CAST(COUNT(ce.id) AS SIGNED) as centre_count
+      FROM clusters c
+      LEFT JOIN centres ce ON ce.cluster_id = c.id
+      LEFT JOIN cities ci ON c.city_id = ci.id
+      WHERE ${clustersWhere}
+      GROUP BY c.id, c.name, c.city_id, ci.name
+      ORDER BY centre_count DESC, ci.name, c.name
+    `, clustersParams);
+    
+    // Get cities with cluster counts
+    const citiesWithClusters = await query(`
+      SELECT ci.id, ci.name, CAST(COUNT(c.id) AS SIGNED) as cluster_count
+      FROM cities ci
+      LEFT JOIN clusters c ON c.city_id = ci.id
+      WHERE ci.is_active = 1 OR ci.is_active IS NULL
+      GROUP BY ci.id, ci.name
+      ORDER BY ci.name
+    `);
+    
+    // Get all centres with cluster and city info - Filter by City/Cluster
+    let centresWhere = "1=1";
+    const centresParams: any[] = [];
+    if (city && city !== 'all') {
+      centresWhere += " AND ci.name = ?";
+      centresParams.push(city);
+    }
+    if (cluster && cluster !== 'all') {
+      centresWhere += " AND c.name = ?";
+      centresParams.push(cluster);
+    }
+
+    // Centres count - Hardcode to 0 for Yumove business unit, otherwise count from master data
+    let centreCount = 0;
+    if (business_unit && business_unit === 'Yumove') {
+      centreCount = 0;
+    } else {
+      const centreCountResult = await query("SELECT COUNT(*) as count FROM centres");
+      centreCount = parseInt((centreCountResult.rows?.[0] as any)?.count) || 0;
+    }
+
+    // Get all centres with cluster and city info - Filter by City/Cluster (kept for list view)
+    const centresList = await query(`
+      SELECT ce.id, ce.name, c.name as cluster_name, ci.name as city_name
+      FROM centres ce
+      LEFT JOIN clusters c ON ce.cluster_id = c.id
+      LEFT JOIN cities ci ON c.city_id = ci.id
+      WHERE ${centresWhere}
+      ORDER BY ci.name, c.name, ce.name
+    `, centresParams);
+    
+    // Get cost centres with employee counts - FILTERED
+    const costCentresList = await query(`
+      SELECT cost_centre as name, CAST(COUNT(*) AS SIGNED) as employee_count
+      FROM employees
+      WHERE ${whereClause} AND cost_centre IS NOT NULL
+      GROUP BY cost_centre
+      ORDER BY employee_count DESC
+    `, params);
+    
+    // Get city-wise employee headcount - FILTERED
+    const cityWiseHeadcount = await query(`
+      SELECT city as name, CAST(COUNT(*) AS SIGNED) as employee_count
+      FROM employees
+      WHERE ${whereClause} AND city IS NOT NULL
+      GROUP BY city
+      ORDER BY city
+    `, params);
+
+    // Get cluster-wise employee headcount with city info - FILTERED
+    const clusterWiseHeadcount = await query(`
+      SELECT cluster as name, city, CAST(COUNT(*) AS SIGNED) as employee_count
+      FROM employees
+      WHERE ${whereClause} AND cluster IS NOT NULL
+      GROUP BY cluster, city
+      ORDER BY city, employee_count DESC
+    `, params);
+
+    // Get designation-wise headcount per cluster - FILTERED
+    const clusterDesignationHeadcount = await query(`
+      SELECT cluster, designation, CAST(COUNT(*) AS SIGNED) as count
+      FROM employees
+      WHERE ${whereClause} AND cluster IS NOT NULL AND designation IS NOT NULL
+      GROUP BY cluster, designation
+      ORDER BY cluster, count DESC
+    `, params);
+
+    // Get city-wise designation headcount - FILTERED
+    const cityDesignationHeadcount = await query(`
+      SELECT city, designation, CAST(COUNT(*) AS SIGNED) as count
+      FROM employees
+      WHERE ${whereClause} AND city IS NOT NULL AND designation IS NOT NULL
+      GROUP BY city, designation
+      ORDER BY city, count DESC
+    `, params);
+    
+    const masterCounts = {
+      departments: parseInt((deptCountResult.rows?.[0] as any)?.count) || 0,
+      subDepartments: parseInt((subDeptCountResult.rows?.[0] as any)?.count) || 0,
+      roles: parseInt((roleCountResult.rows?.[0] as any)?.count) || 0,
+      designations: parseInt((designationCountResult.rows?.[0] as any)?.count) || 0,
+      cities: parseInt((cityCountResult.rows?.[0] as any)?.count) || 0,
+      clusters: parseInt((clusterCountResult.rows?.[0] as any)?.count) || 0,
+      centres: centreCount,
+      costCentres: parseInt((costCentreCountResult.rows?.[0] as any)?.count) || 0
+    };
+    
+    // Explicitly map data to ensure correct types
+    const clustersData = (clustersWithCentres.rows || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      city_id: c.city_id,
+      city_name: c.city_name,
+      centre_count: Number(c.centre_count) || 0
+    }));
+
+    const citiesData = (citiesWithClusters.rows || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      cluster_count: Number(c.cluster_count) || 0
+    }));
+
+    const costCentresData = (costCentresList.rows || []).map((c: any) => ({
+      name: c.name,
+      employee_count: Number(c.employee_count) || 0
+    }));
+
+    // Map centres with city info
+    const centresData = (centresList.rows || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      cluster_name: c.cluster_name,
+      city_name: c.city_name || 'Unknown'
+    }));
+
+    // Map city-wise headcount
+    const cityWiseData = (cityWiseHeadcount.rows || []).map((c: any) => ({
+      city: c.name,
+      count: Number(c.employee_count) || 0
+    }));
+
+    const clusterWiseData = (clusterWiseHeadcount.rows || []).map((c: any) => ({
+      name: c.name,
+      city: c.city,
+      employeeCount: Number(c.employee_count) || 0
+    }));
+
+    const clusterDesignationData = (clusterDesignationHeadcount.rows || []).map((c: any) => ({
+      cluster: c.cluster,
+      designation: c.designation,
+      count: Number(c.count) || 0
+    }));
+
+    const cityDesignationData = (cityDesignationHeadcount.rows || []).map((c: any) => ({
+      city: c.city,
+      designation: c.designation,
+      count: Number(c.count) || 0
+    }));
+
+    res.json({ 
+      hierarchy, 
+      totalCount, 
+      masterCounts, 
+      clustersWithCentres: clustersData, 
+      citiesWithClusters: citiesData,
+      centresList: centresList.rows || [],
+      costCentresList: costCentresData,
+      cityWiseHeadcount: cityWiseData,
+      clusterWiseHeadcount: clusterWiseData,
+      clusterDesignationHeadcount: clusterDesignationData,
+      cityDesignationHeadcount: cityDesignationData,
+      businessUnits // Include business units in response
+    });
+  } catch (error) {
+    console.error('Get org hierarchy error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get filter options for org dashboard - from master data tables
+const getFilterOptions = async (req: Request, res: Response) => {
+  try {
+    // Get cities from master data
+    const citiesResult = await query(
+      "SELECT name FROM cities WHERE is_active = 1 OR is_active IS NULL ORDER BY name"
+    );
+    // Get clusters from master data
+    const clustersResult = await query(
+      "SELECT name FROM clusters WHERE is_active = 1 OR is_active IS NULL ORDER BY name"
+    );
+    // Employment types are typically fixed values
+    const employmentTypesResult = await query(
+      "SELECT DISTINCT employment_type FROM employees WHERE working_status = 'working' AND employment_type IS NOT NULL ORDER BY employment_type"
+    );
+    
+    res.json({
+      cities: (citiesResult.rows || []).map((r: any) => r.name),
+      clusters: (clustersResult.rows || []).map((r: any) => r.name),
+      employmentTypes: (employmentTypesResult.rows || []).map((r: any) => r.employment_type)
+    });
+  } catch (error) {
+    console.error('Get filter options error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const employeeController = {
   createEmployeeProfile,
   getEmployees,
@@ -858,5 +1204,7 @@ export const employeeController = {
   getExitSummary,
   getExitProcessList,
   reviewExit,
-  completeExit
+  completeExit,
+  getOrgHierarchy,
+  getFilterOptions
 };

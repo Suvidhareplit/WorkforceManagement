@@ -17,7 +17,7 @@ import { useLocation } from "wouter";
 const formSchema = z.object({
   cityId: z.string().min(1, "City is required"),
   clusterId: z.string().min(1, "Cluster is required"),
-  roleId: z.string().min(1, "Role is required"),
+  designationId: z.string().min(1, "Designation is required"),
   numberOfPositions: z.string().min(1, "Number of positions is required"),
   priority: z.enum(["P0", "P1", "P2", "P3"]),
   requestType: z.enum(["backfill", "fresh", "training_attrition"]),
@@ -39,20 +39,14 @@ export default function CreateHiringRequest() {
 
   const { data: cities = [] } = useQuery({
     queryKey: ["/api/master-data/city"],
-    staleTime: 0,
-    refetchOnMount: true,
   });
 
   const { data: clusters = [] } = useQuery({
     queryKey: ["/api/master-data/cluster"],
-    staleTime: 0,
-    refetchOnMount: true,
   });
 
-  const { data: roles = [] } = useQuery({
-    queryKey: ["/api/master-data/role"],
-    staleTime: 0,
-    refetchOnMount: true,
+  const { data: designations = [] } = useQuery({
+    queryKey: ["/api/designations"],
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -60,7 +54,7 @@ export default function CreateHiringRequest() {
     defaultValues: {
       cityId: "",
       clusterId: "",
-      roleId: "",
+      designationId: "",
       numberOfPositions: "",
       priority: "P1",
       requestType: "fresh",
@@ -76,7 +70,7 @@ export default function CreateHiringRequest() {
         body: JSON.stringify({
           cityId: parseInt(data.cityId),
           clusterId: parseInt(data.clusterId),
-          roleId: parseInt(data.roleId),
+          designationId: parseInt(data.designationId),
           numberOfPositions: parseInt(data.numberOfPositions),
           priority: data.priority,
           requestType: data.requestType,
@@ -91,7 +85,18 @@ export default function CreateHiringRequest() {
         title: "Success",
         description: "Hiring request(s) created successfully",
       });
-      setLocation("/hiring/requests");
+      // Reset form for next creation instead of navigating away
+      form.reset({
+        cityId: "",
+        clusterId: "",
+        designationId: "",
+        numberOfPositions: "",
+        priority: "P1",
+        requestType: "fresh",
+        requestDate: new Date().toISOString().split("T")[0],
+        notes: "",
+      });
+      setSelectedCityId("");
     },
     onError: (error: any) => {
       toast({
@@ -193,20 +198,20 @@ export default function CreateHiringRequest() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="roleId"
+                  name="designationId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role</FormLabel>
+                      <FormLabel>Designation</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select Role" />
+                            <SelectValue placeholder="Select Designation" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
-                          {Array.isArray(roles) && roles.filter((role: any) => role.id && role.id.toString() && role.name).map((role: any) => (
-                            <SelectItem key={role.id} value={role.id.toString()}>
-                              {role.name}
+                        <SelectContent position="popper" sideOffset={4} className="max-h-[300px] overflow-y-auto">
+                          {Array.isArray(designations) && designations.filter((d: any) => d.id && d.id.toString() && d.name).map((d: any) => (
+                            <SelectItem key={d.id} value={d.id.toString()}>
+                              {d.name} {d.code ? `(${d.code})` : ''}
                             </SelectItem>
                           ))}
                         </SelectContent>

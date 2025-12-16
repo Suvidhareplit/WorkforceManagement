@@ -22,7 +22,7 @@ export interface FilterOptions {
   hiringRequestId?: number;
   cityId?: number;
   clusterId?: number;
-  roleId?: number;
+  designationId?: number;
   vendorId?: number;
   recruiterId?: number;
   status?: string;

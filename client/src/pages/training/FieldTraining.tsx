@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Edit, Save, X, Download } from "lucide-react";
+import { Edit, Save, X, Download, Lock } from "lucide-react";
 import { format } from "date-fns";
 
 export default function FieldTraining() {
@@ -116,7 +116,25 @@ export default function FieldTraining() {
     },
   });
 
+  // Check if feedback is locked (final feedback given)
+  const isFeedbackLocked = (field: any) => {
+    const feedback = field.ftFeedback || field.ft_feedback;
+    // Feedback is locked if it's a final status (not under_field_training or empty)
+    const lockedStatuses = ['fit', 'fit_need_refresher_training', 'not_fit_ft_rejection', 'ft_absconding'];
+    return feedback && lockedStatuses.includes(feedback);
+  };
+
   const handleEdit = (field: any) => {
+    // Check if feedback is locked
+    if (isFeedbackLocked(field)) {
+      toast({
+        title: "Feedback Locked",
+        description: "This feedback has been finalized and cannot be edited. Please contact admin for any changes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setEditingId(field.id);
     setEditData({
       buddy_aligned: field.buddyAligned || field.buddy_aligned,
@@ -267,6 +285,7 @@ export default function FieldTraining() {
                               <SelectValue placeholder="Select Status" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="under_field_training">Under Field Training</SelectItem>
                               <SelectItem value="fit">Fit</SelectItem>
                               <SelectItem value="fit_need_refresher_training">Fit - Need Refresher Training</SelectItem>
                               <SelectItem value="not_fit_ft_rejection">Not Fit - FT Rejection</SelectItem>
@@ -275,7 +294,11 @@ export default function FieldTraining() {
                           </Select>
                         ) : (
                           (field.ftFeedback || field.ft_feedback) ? (
-                            <Badge variant={(field.ftFeedback || field.ft_feedback) === 'fit' ? 'default' : 'destructive'}>
+                            <Badge variant={
+                              (field.ftFeedback || field.ft_feedback) === 'fit' || 
+                              (field.ftFeedback || field.ft_feedback) === 'fit_need_refresher_training' ? 'default' : 
+                              (field.ftFeedback || field.ft_feedback) === 'under_field_training' ? 'outline' : 'destructive'
+                            }>
                               {(field.ftFeedback || field.ft_feedback).replace(/_/g, ' ')}
                             </Badge>
                           ) : '-'
@@ -379,10 +402,15 @@ export default function FieldTraining() {
                         ) : (
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant={isFeedbackLocked(field) ? "ghost" : "outline"}
                             onClick={() => handleEdit(field)}
+                            title={isFeedbackLocked(field) ? "Feedback locked - Contact admin" : "Edit"}
                           >
-                            <Edit className="h-4 w-4" />
+                            {isFeedbackLocked(field) ? (
+                              <Lock className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <Edit className="h-4 w-4" />
+                            )}
                           </Button>
                         )}
                       </TableCell>

@@ -14,6 +14,7 @@ import attachmentRoutes from "./routes/attachmentRoutes";
 import employeeRoutes from "./routes/employeeRoutes";
 import designationRoutes from "./routes/designationRoutes";
 import centreRoutes from "./routes/centreRoutes";
+import manpowerPlanningRoutes from "./routes/manpowerPlanningRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure CORS for authentication state persistence
@@ -39,6 +40,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/attachments', attachmentRoutes);
   app.use('/api/designations', designationRoutes);
   app.use('/api/centres', centreRoutes);
+  app.use('/api/manpower-planning', manpowerPlanningRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

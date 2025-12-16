@@ -9,7 +9,7 @@ const getOnboardingRecords = async (req: Request, res: Response) => {
         o.*, 
         ft.ft_feedback
       FROM onboarding o
-      JOIN field_training ft ON o.field_training_id = ft.id
+      LEFT JOIN field_training ft ON o.field_training_id = ft.id
       ORDER BY o.created_at DESC`
     );
     
@@ -320,75 +320,74 @@ const bulkUploadMigration = async (req: Request, res: Response) => {
           continue;
         }
 
-        // Step 1: Create candidate record
-        const candidateResult = await query(
-          `INSERT INTO candidates (name, mobile_number, email, status, resume_source_type, resume_source_name, created_at, updated_at)
-           VALUES (?, ?, ?, 'approved', 'migration', 'Data Migration', NOW(), NOW())`,
-          [record.name, record.mobile_number, record.email]
-        );
-        const candidateId = (candidateResult as any).insertId;
-        console.log(`Created candidate ID: ${candidateId}`);
+        // For migration: Insert ONLY into onboarding table (no candidates, classroom, field training)
+        const employmentType = record.employment_type || 'Permanent';
         
-        // Step 2: Create pre_screening record
-        const prescreeningResult = await query(
-          `INSERT INTO pre_screening (candidate_id, status, approved_by, approved_at, created_at, updated_at)
-           VALUES (?, 'approved', 'Migration', NOW(), NOW(), NOW())`,
-          [candidateId]
-        );
-        const prescreeningId = (prescreeningResult as any).insertId;
+        // VALIDATION: Validate against master data
+        const validationErrors: string[] = [];
         
-        // Step 3: Create technical_rounds record
-        const technicalResult = await query(
-          `INSERT INTO technical_rounds (candidate_id, pre_screening_id, overall_status, created_at, updated_at)
-           VALUES (?, ?, 'passed', NOW(), NOW())`,
-          [candidateId, prescreeningId]
-        );
-        const technicalId = (technicalResult as any).insertId;
+        // Validate City
+        if (record.city) {
+          const cityResult = await query("SELECT id FROM cities WHERE name = ?", [record.city]);
+          if (!cityResult.rows || cityResult.rows.length === 0) {
+            validationErrors.push(`Invalid city: "${record.city}"`);
+          }
+        }
         
-        // Step 4: Create offers record
-        const offersResult = await query(
-          `INSERT INTO offers (candidate_id, technical_id, status, offer_status, city, cluster, role, manager_name, 
-            date_of_joining, gross_salary, cost_centre, function_name, business_unit_name, department_name, 
-            sub_department_name, created_at, updated_at)
-           VALUES (?, ?, 'accepted', 'accepted', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-          [candidateId, technicalId, record.city || 'N/A', record.cluster || 'N/A', record.role || 'N/A',
-           record.manager_name || 'N/A', record.date_of_joining || null, record.gross_salary || null,
-           record.cost_centre || 'N/A', record.function_name || 'N/A', record.business_unit_name || 'N/A',
-           record.department_name || 'N/A', record.sub_department_name || 'N/A']
-        );
-        const offerId = (offersResult as any).insertId;
+        // Validate Cluster
+        if (record.cluster) {
+          const clusterResult = await query("SELECT id FROM clusters WHERE name = ?", [record.cluster]);
+          if (!clusterResult.rows || clusterResult.rows.length === 0) {
+            validationErrors.push(`Invalid cluster: "${record.cluster}"`);
+          }
+        }
         
-        // Step 5: Create induction_training record
-        const inductionResult = await query(
-          `INSERT INTO induction_training (candidate_id, offer_id, induction_status, created_at, updated_at)
-           VALUES (?, ?, 'completed', NOW(), NOW())`,
-          [candidateId, offerId]
-        );
-        const inductionId = (inductionResult as any).insertId;
+        // Validate Department
+        if (record.department_name) {
+          const deptResult = await query("SELECT id FROM departments WHERE name = ?", [record.department_name]);
+          if (!deptResult.rows || deptResult.rows.length === 0) {
+            validationErrors.push(`Invalid department: "${record.department_name}"`);
+          }
+        }
         
-        // Step 6: Create classroom_training record
-        const classroomResult = await query(
-          `INSERT INTO classroom_training (candidate_id, induction_id, training_status, created_at, updated_at)
-           VALUES (?, ?, 'completed', NOW(), NOW())`,
-          [candidateId, inductionId]
-        );
-        const classroomId = (classroomResult as any).insertId;
+        // Validate Sub-Department
+        if (record.sub_department_name) {
+          const subDeptResult = await query("SELECT id FROM sub_departments WHERE name = ?", [record.sub_department_name]);
+          if (!subDeptResult.rows || subDeptResult.rows.length === 0) {
+            validationErrors.push(`Invalid sub-department: "${record.sub_department_name}"`);
+          }
+        }
         
-        // Step 7: Create field_training record
-        const fieldResult = await query(
-          `INSERT INTO field_training (candidate_id, classroom_training_id, ft_status, ft_feedback, created_at, updated_at)
-           VALUES (?, ?, 'completed', 'Migration - No feedback available', NOW(), NOW())`,
-          [candidateId, classroomId]
-        );
-        const fieldTrainingId = (fieldResult as any).insertId;
+        // Validate Role
+        if (record.role) {
+          const roleResult = await query("SELECT id FROM roles WHERE name = ?", [record.role]);
+          if (!roleResult.rows || roleResult.rows.length === 0) {
+            validationErrors.push(`Invalid role: "${record.role}"`);
+          }
+        }
         
-        // Step 8: Create onboarding record with migrated_data = 'YES'
-        // Calculate employment type (migrate data is always Permanent since no vendor info)
-        const employmentType = 'Permanent';
+        // Validate Designation
+        if (record.designation) {
+          const designationResult = await query("SELECT id FROM designations WHERE name = ?", [record.designation]);
+          if (!designationResult.rows || designationResult.rows.length === 0) {
+            validationErrors.push(`Invalid designation: "${record.designation}"`);
+          }
+        }
+        
+        // If validation errors, skip this record
+        if (validationErrors.length > 0) {
+          console.log(`⚠️ Validation failed for ${record.name}: ${validationErrors.join(', ')}`);
+          results.failed++;
+          results.errors.push({ 
+            name: record.name, 
+            error: validationErrors.join('; ') 
+          });
+          continue;
+        }
         
         const onboardingResult = await query(
           `INSERT INTO onboarding (
-            candidate_id, field_training_id, name, mobile_number, email, employee_id, user_id,
+            name, mobile_number, email, employee_id, user_id,
             gender, date_of_birth, blood_group, marital_status,
             physically_handicapped, nationality, international_worker,
             name_as_per_aadhar, aadhar_number,
@@ -397,11 +396,16 @@ const bulkUploadMigration = async (req: Request, res: Response) => {
             nominee_name, nominee_relation, present_address, permanent_address,
             emergency_contact_name, emergency_contact_number, emergency_contact_relation,
             pan_number, name_as_per_pan, account_number, ifsc_code, name_as_per_bank, bank_name,
-            uan_number, esic_ip_number, legal_entity, employment_type, onboarding_status, migrated_data,
+            uan_number, esic_ip_number, legal_entity, employment_type,
+            city, cluster, role, designation, manager_name, date_of_joining, gross_salary,
+            business_unit_name, department_name, sub_department_name,
+            resume_source, cost_centre,
+            group_doj, group_doj_reason, group_doj_vendor_name,
+            onboarding_status, migrated_data, is_locked, locked_at,
             created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'yet_to_be_onboarded', 'YES', NOW(), NOW())`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'onboarded', 'YES', 1, NOW(), NOW(), NOW())`,
           [
-            candidateId, fieldTrainingId, record.name, record.mobile_number, record.email,
+            record.name, record.mobile_number, record.email,
             record.employee_id, record.user_id, record.gender, record.date_of_birth, record.blood_group,
             record.marital_status,
             record.physically_handicapped, record.nationality || 'Indian', record.international_worker,
@@ -413,7 +417,12 @@ const bulkUploadMigration = async (req: Request, res: Response) => {
             record.emergency_contact_name, record.emergency_contact_number, record.emergency_contact_relation,
             record.pan_number, record.name_as_per_pan, record.account_number, record.ifsc_code,
             record.name_as_per_bank, record.bank_name, record.uan_number, record.esic_ip_number, record.legal_entity,
-            employmentType
+            employmentType,
+            record.city, record.cluster, record.role, record.designation, record.manager_name,
+            record.date_of_joining, record.gross_salary,
+            record.business_unit_name, record.department_name, record.sub_department_name,
+            record.resume_source_type, record.cost_centre,
+            record.group_doj, record.group_doj_reason, record.group_doj_vendor_name
           ]
         );
         

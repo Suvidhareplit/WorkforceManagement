@@ -767,6 +767,7 @@ export default function ExitManagement() {
                                 type="checkbox" 
                                 checked={isSelected}
                                 onChange={() => handleSelectRow(exit.id)}
+                                aria-label={`Select ${exit.employeeName}`}
                                 className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                               />
                             </td>

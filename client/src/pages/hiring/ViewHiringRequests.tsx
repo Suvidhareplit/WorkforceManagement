@@ -1,23 +1,24 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { queryClient } from "@/lib/queryClient";
-// Removed HiringRequest import since backend returns snake_case fields
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
-import { Plus, Filter, Search, Download, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Filter, Search, Download, ChevronLeft, ChevronRight, Edit } from "lucide-react";
 
 export default function ViewHiringRequests() {
   const [filters, setFilters] = useState({
     cityId: "all",
     clusterId: "all",
-    roleId: "all",
+    designationId: "all",
     status: "all",
     priority: "all",
     search: "",
@@ -25,6 +26,18 @@ export default function ViewHiringRequests() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
   const { toast } = useToast();
+  
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingRequest, setEditingRequest] = useState<any>(null);
+  const [editDesignationId, setEditDesignationId] = useState<string>("");
+  const [editClusterId, setEditClusterId] = useState<string>("");
+  const [editPriority, setEditPriority] = useState<string>("");
+
+  // Fetch all designations for edit dropdown
+  const { data: allDesignations = [] } = useQuery({
+    queryKey: ["/api/designations"],
+  });
 
   const { data: requestsResponse, isLoading } = useQuery({
     queryKey: ["/api/hiring"],
@@ -38,16 +51,16 @@ export default function ViewHiringRequests() {
   const filteredRequests = allRequests.filter((request: any) => {
     const matchesCity = filters.cityId === "all" || request.cityId?.toString() === filters.cityId || request.city_id?.toString() === filters.cityId;
     const matchesCluster = filters.clusterId === "all" || request.clusterId?.toString() === filters.clusterId || request.cluster_id?.toString() === filters.clusterId;
-    const matchesRole = filters.roleId === "all" || request.roleId?.toString() === filters.roleId || request.role_id?.toString() === filters.roleId;
+    const matchesDesignation = filters.designationId === "all" || request.designationId?.toString() === filters.designationId || request.designation_id?.toString() === filters.designationId;
     const matchesStatus = filters.status === "all" || request.status === filters.status;
     const matchesPriority = filters.priority === "all" || request.priority === filters.priority;
     const matchesSearch = filters.search === "" || 
       (request.request_id || request.requestId || "").toLowerCase().includes(filters.search.toLowerCase()) ||
-      (request.role_name || request.roleName || "").toLowerCase().includes(filters.search.toLowerCase()) ||
+      (request.designation_name || request.designationName || "").toLowerCase().includes(filters.search.toLowerCase()) ||
       (request.city_name || request.cityName || "").toLowerCase().includes(filters.search.toLowerCase()) ||
       (request.cluster_name || request.clusterName || "").toLowerCase().includes(filters.search.toLowerCase());
     
-    return matchesCity && matchesCluster && matchesRole && matchesStatus && matchesPriority && matchesSearch;
+    return matchesCity && matchesCluster && matchesDesignation && matchesStatus && matchesPriority && matchesSearch;
   });
 
   // Calculate pagination
@@ -62,36 +75,50 @@ export default function ViewHiringRequests() {
     setCurrentPage(1);
   };
 
+  // Extract unique cities, clusters, and designations from hiring requests data
+  // This avoids separate API calls for filter dropdowns
+  const cities = useMemo(() => {
+    const uniqueCities = new Map();
+    allRequests.forEach((req: any) => {
+      const cityId = req.city_id || req.cityId;
+      const cityName = req.city_name || req.cityName;
+      if (cityId && cityName && !uniqueCities.has(cityId)) {
+        uniqueCities.set(cityId, { id: cityId, name: cityName });
+      }
+    });
+    return Array.from(uniqueCities.values());
+  }, [allRequests]);
 
+  const allClusters = useMemo(() => {
+    const uniqueClusters = new Map();
+    allRequests.forEach((req: any) => {
+      const clusterId = req.cluster_id || req.clusterId;
+      const clusterName = req.cluster_name || req.clusterName;
+      const cityId = req.city_id || req.cityId;
+      if (clusterId && clusterName && !uniqueClusters.has(clusterId)) {
+        uniqueClusters.set(clusterId, { id: clusterId, name: clusterName, cityId });
+      }
+    });
+    return Array.from(uniqueClusters.values());
+  }, [allRequests]);
 
-  const { data: citiesResponse } = useQuery({
-    queryKey: ["/api/master-data/city"],
-    staleTime: 0,
-    refetchOnMount: true,
-  });
-
-  const { data: clustersResponse } = useQuery({
-    queryKey: ["/api/master-data/cluster"],
-    staleTime: 0,
-    refetchOnMount: true,
-  });
-
-  const { data: rolesResponse } = useQuery({
-    queryKey: ["/api/master-data/role"],
-    staleTime: 0,
-    refetchOnMount: true,
-  });
-
-  const cities = (citiesResponse as any) || [];
-  const allClusters = (clustersResponse as any) || [];
-  const roles = (rolesResponse as any) || [];
+  const designations = useMemo(() => {
+    const uniqueDesignations = new Map();
+    allRequests.forEach((req: any) => {
+      const designationId = req.designation_id || req.designationId;
+      const designationName = req.designation_name || req.designationName;
+      if (designationId && designationName && !uniqueDesignations.has(designationId)) {
+        uniqueDesignations.set(designationId, { id: designationId, name: designationName });
+      }
+    });
+    return Array.from(uniqueDesignations.values());
+  }, [allRequests]);
   
   // Filter clusters by selected city
   const clusters = filters.cityId === "all" 
     ? allClusters 
     : allClusters.filter((cluster: any) => 
-        cluster.cityId?.toString() === filters.cityId || 
-        cluster.city_id?.toString() === filters.cityId
+        cluster.cityId?.toString() === filters.cityId
       );
 
   const updateStatusMutation = useMutation({
@@ -113,6 +140,55 @@ export default function ViewHiringRequests() {
       });
     },
   });
+
+  // Edit hiring request mutation
+  const editRequestMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      return await apiRequest(`/api/hiring/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/hiring"] });
+      toast({
+        title: "Success",
+        description: "Hiring request updated successfully",
+      });
+      setEditDialogOpen(false);
+      setEditingRequest(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update hiring request",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Open edit dialog
+  const handleEditClick = (request: any) => {
+    setEditingRequest(request);
+    setEditDesignationId((request.designation_id || request.designationId)?.toString() || "");
+    setEditClusterId((request.cluster_id || request.clusterId)?.toString() || "");
+    setEditPriority(request.priority || "P2");
+    setEditDialogOpen(true);
+  };
+
+  // Save edit
+  const handleSaveEdit = () => {
+    if (!editingRequest || !editDesignationId || !editClusterId) return;
+    
+    editRequestMutation.mutate({
+      id: editingRequest.id,
+      data: {
+        designation_id: parseInt(editDesignationId),
+        cluster_id: parseInt(editClusterId),
+        priority: editPriority,
+      },
+    });
+  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -221,17 +297,17 @@ export default function ViewHiringRequests() {
             </Select>
 
             <Select
-              value={filters.roleId}
-              onValueChange={(value) => handleFilterChange({ ...filters, roleId: value })}
+              value={filters.designationId}
+              onValueChange={(value) => handleFilterChange({ ...filters, designationId: value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="All Roles" />
+                <SelectValue placeholder="All Designations" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                {Array.isArray(roles) && roles.filter((role: any) => role.id && role.id.toString() && role.name).map((role: any) => (
-                  <SelectItem key={role.id} value={role.id.toString()}>
-                    {role.name}
+                <SelectItem value="all">All Designations</SelectItem>
+                {Array.isArray(designations) && designations.filter((d: any) => d.id && d.id.toString() && d.name).map((d: any) => (
+                  <SelectItem key={d.id} value={d.id.toString()}>
+                    {d.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -278,7 +354,7 @@ export default function ViewHiringRequests() {
             <TableHeader>
               <TableRow>
                 <TableHead>Request ID</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Designation</TableHead>
                 <TableHead>City</TableHead>
                 <TableHead>Cluster</TableHead>
                 <TableHead>Positions</TableHead>
@@ -309,7 +385,7 @@ export default function ViewHiringRequests() {
                       {request.request_id || request.requestId}
                     </TableCell>
                     <TableCell className="font-medium">
-                      {request.role_name || request.roleName || 'Unknown Role'}
+                      {request.designation_name || request.designationName || 'Unknown Designation'}
                     </TableCell>
                     <TableCell>
                       {request.city_name || request.cityName || 'Unknown City'}
@@ -336,8 +412,13 @@ export default function ViewHiringRequests() {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleEditClick(request)}
+                          title="Edit Request"
+                        >
+                          <Edit className="h-4 w-4" />
                         </Button>
                         <Select
                           value={request.status}
@@ -416,6 +497,82 @@ export default function ViewHiringRequests() {
           </div>
         )}
       </Card>
+
+      {/* Edit Hiring Request Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Hiring Request</DialogTitle>
+          </DialogHeader>
+          
+          {editingRequest && (
+            <div className="space-y-4 py-4">
+              <div className="text-sm text-slate-600 mb-4">
+                <span className="font-medium">Request ID:</span> {editingRequest.request_id || editingRequest.requestId}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-designation">Designation</Label>
+                <Select value={editDesignationId} onValueChange={setEditDesignationId}>
+                  <SelectTrigger id="edit-designation">
+                    <SelectValue placeholder="Select Designation" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" sideOffset={4} className="max-h-[200px] overflow-y-auto">
+                    {Array.isArray(allDesignations) && allDesignations.map((d: any) => (
+                      <SelectItem key={d.id} value={d.id.toString()}>
+                        {d.name} {d.code ? `(${d.code})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-cluster">Cluster</Label>
+                <Select value={editClusterId} onValueChange={setEditClusterId}>
+                  <SelectTrigger id="edit-cluster">
+                    <SelectValue placeholder="Select Cluster" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" sideOffset={4} className="max-h-[200px] overflow-y-auto">
+                    {Array.isArray(allClusters) && allClusters.map((c: any) => (
+                      <SelectItem key={c.id} value={c.id.toString()}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-priority">Priority</Label>
+                <Select value={editPriority} onValueChange={setEditPriority}>
+                  <SelectTrigger id="edit-priority">
+                    <SelectValue placeholder="Select Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="P0">P0 - Critical</SelectItem>
+                    <SelectItem value="P1">P1 - High</SelectItem>
+                    <SelectItem value="P2">P2 - Medium</SelectItem>
+                    <SelectItem value="P3">P3 - Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveEdit}
+              disabled={editRequestMutation.isPending || !editDesignationId || !editClusterId}
+            >
+              {editRequestMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

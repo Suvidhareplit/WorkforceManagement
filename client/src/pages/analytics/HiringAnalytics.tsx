@@ -19,8 +19,8 @@ interface HiringRequest {
   cityName: string;
   clusterId: number;
   clusterName: string;
-  roleId: number;
-  roleName: string;
+  designationId: number;
+  designationName: string;
   noOfOpenings: number;
   priority: string;
   requestType: string;
@@ -77,17 +77,16 @@ export default function HiringAnalytics() {
     queryFn: () => api.masterData.getCities(),
   });
 
-  // Fetch roles for filtering
-  const { data: rolesResponse } = useQuery({
-    queryKey: ["/api/master-data/role"],
-    queryFn: () => api.masterData.getRoles(),
+  // Fetch designations for filtering
+  const { data: designationsResponse } = useQuery({
+    queryKey: ["/api/designations"],
   });
 
   // Extract data from API responses with safe fallbacks
   const hiringRequests = (hiringRequestsResponse as any)?.data || [];
   const vendors = (vendorsResponse as any)?.data || [];
   const cities = (citiesResponse as any)?.data || [];
-  const roles = (rolesResponse as any)?.data || [];
+  const designations = Array.isArray(designationsResponse) ? designationsResponse : (designationsResponse as any)?.data || [];
 
   // Send email mutation
   const sendEmailMutation = useMutation({
@@ -132,41 +131,43 @@ export default function HiringAnalytics() {
   // Filter hiring requests
   const filteredRequests = (hiringRequests as any[])?.filter((request: any) => {
     const cityId = request.city_id || request.cityId;
-    const roleId = request.role_id || request.roleId;
+    const designationId = request.designation_id || request.designationId;
     return (
       (cityFilter === "all" || (cityId && cityId.toString() === cityFilter)) &&
-      (roleFilter === "all" || (roleId && roleId.toString() === roleFilter)) &&
+      (roleFilter === "all" || (designationId && designationId.toString() === roleFilter)) &&
       (statusFilter === "all" || request.status === statusFilter)
     );
   });
 
   // Group requests by city for detailed analytics
   const cityAnalytics = filteredRequests.reduce((acc: any, request: any) => {
-    const cityKey = request.city_name || request.cityName;
-    const roleKey = request.role_name || request.roleName;
-    const clusterKey = request.cluster_name || request.clusterName;
+    const cityKey = request.city_name || request.cityName || 'Unknown City';
+    const designationKey = request.designation_name || request.designationName || 'Unknown Designation';
+    const clusterKey = request.cluster_name || request.clusterName || 'Unknown Cluster';
+    
+    if (!cityKey || cityKey === 'Unknown City') return acc;
     
     if (!acc[cityKey]) {
       acc[cityKey] = {
         cityId: request.city_id || request.cityId,
         cityName: request.city_name || request.cityName,
-        roles: {},
+        designations: {},
         clusters: new Set(),
         totalOpenPositions: 0,
       };
     }
     
-    if (!acc[cityKey].roles[roleKey]) {
-      acc[cityKey].roles[roleKey] = {
-        roleId: request.role_id || request.roleId,
-        roleName: request.role_name || request.roleName,
+    if (!acc[cityKey].designations[designationKey]) {
+      acc[cityKey].designations[designationKey] = {
+        designationId: request.designation_id || request.designationId,
+        designationName: request.designation_name || request.designationName,
         clusters: {},
         totalOpenPositions: 0,
       };
     }
     
-    if (!acc[cityKey].roles[roleKey].clusters[clusterKey]) {
-      acc[cityKey].roles[roleKey].clusters[clusterKey] = {
+    if (!acc[cityKey].designations[designationKey].clusters[clusterKey]) {
+      acc[cityKey].designations[designationKey].clusters[clusterKey] = {
         clusterId: request.cluster_id || request.clusterId,
         clusterName: request.cluster_name || request.clusterName,
         openPositions: 0,
@@ -178,14 +179,14 @@ export default function HiringAnalytics() {
     acc[cityKey].clusters.add(clusterKey);
     
     // Only count open positions (not closed)
-    const numberOfPositions = request.no_of_openings || request.noOfOpenings;
+    const numberOfPositions = request.no_of_openings || request.noOfOpenings || 1;
     if (request.status !== 'closed') {
-      acc[cityKey].roles[roleKey].clusters[clusterKey].openPositions += numberOfPositions;
-      acc[cityKey].roles[roleKey].totalOpenPositions += numberOfPositions;
+      acc[cityKey].designations[designationKey].clusters[clusterKey].openPositions += numberOfPositions;
+      acc[cityKey].designations[designationKey].totalOpenPositions += numberOfPositions;
       acc[cityKey].totalOpenPositions += numberOfPositions;
     }
     
-    acc[cityKey].roles[roleKey].clusters[clusterKey].totalRequests += 1;
+    acc[cityKey].designations[designationKey].clusters[clusterKey].totalRequests += 1;
     
     return acc;
   }, {});
@@ -217,20 +218,20 @@ export default function HiringAnalytics() {
   };
 
   const handleSelectAllCityRows = (cityId: string) => {
-    const cityKey = Object.keys(cityAnalytics as any).find(key => (cityAnalytics as any)[key].cityId.toString() === cityId);
+    const cityKey = Object.keys(cityAnalytics as any).find(key => (cityAnalytics as any)[key]?.cityId?.toString() === cityId);
     const cityData = cityKey ? (cityAnalytics as any)[cityKey] : null;
     if (!cityData) return;
     
-    const allRoleIds = Object.values(cityData.roles).map((role: any) => role.roleId.toString());
+    const allDesignationIds = Object.values(cityData.designations || {}).map((d: any) => d?.designationId?.toString() || '').filter(Boolean);
     const currentSelections = selectedCityRows[cityId] || [];
     
-    if (currentSelections.length === allRoleIds.length) {
+    if (currentSelections.length === allDesignationIds.length) {
       // Deselect all
       const { [cityId]: _, ...rest } = selectedCityRows;
       setSelectedCityRows(rest);
     } else {
       // Select all
-      setSelectedCityRows(prev => ({ ...prev, [cityId]: allRoleIds }));
+      setSelectedCityRows(prev => ({ ...prev, [cityId]: allDesignationIds }));
     }
   };
 
@@ -388,19 +389,19 @@ export default function HiringAnalytics() {
             </div>
 
             <div className="p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">Selected Roles:</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">Selected Designations:</h4>
               <div className="space-y-1">
-                {selectedCityForEmail && (selectedCityRows[selectedCityForEmail] || []).map((roleId: string) => {
+                {selectedCityForEmail && (selectedCityRows[selectedCityForEmail] || []).map((designationId: string) => {
                   const cityData = Object.values(cityAnalytics as any).find((city: any) => 
-                    city.cityId.toString() === selectedCityForEmail
+                    city?.cityId?.toString() === selectedCityForEmail
                   );
-                  const roleData = cityData && Object.values((cityData as any).roles).find((role: any) => 
-                    role.roleId.toString() === roleId
+                  const designationData = cityData && Object.values((cityData as any)?.designations || {}).find((d: any) => 
+                    d?.designationId?.toString() === designationId
                   );
                   return (
-                    <div key={roleId} className="flex justify-between">
-                      <span>{(roleData as any)?.roleName}</span>
-                      <span className="font-semibold">{(roleData as any)?.totalOpenPositions} positions</span>
+                    <div key={designationId} className="flex justify-between">
+                      <span>{(designationData as any)?.designationName || 'Unknown'}</span>
+                      <span className="font-semibold">{(designationData as any)?.totalOpenPositions || 0} positions</span>
                     </div>
                   );
                 })}
@@ -439,7 +440,7 @@ export default function HiringAnalytics() {
                 // TODO: Implement city vendor email sending
                 console.log('Send to city vendors:', {
                   cityId: selectedCityForEmail,
-                  selectedRoles: selectedCityRows[selectedCityForEmail],
+                  selectedDesignations: selectedCityRows[selectedCityForEmail],
                   vendors: getVendorsForCity(selectedCityForEmail),
                   customMessage
                 });
@@ -484,16 +485,16 @@ export default function HiringAnalytics() {
               </Select>
             </div>
             <div className="flex-1">
-              <Label>Role</Label>
+              <Label>Designation</Label>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  {(roles as any[]).map((role: any) => (
-                    <SelectItem key={role.id} value={role.id.toString()}>
-                      {role.name}
+                  <SelectItem value="all">All Designations</SelectItem>
+                  {(designations as any[]).map((d: any) => (
+                    <SelectItem key={d.id} value={d.id.toString()}>
+                      {d.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -566,7 +567,7 @@ export default function HiringAnalytics() {
                   {cityData?.cityName || 'Unknown City'}
                 </CardTitle>
                 <CardDescription className="mt-2">
-                  Role-wise open positions by cluster
+                  Designation-wise open positions by cluster
                 </CardDescription>
               </div>
               <div className="flex gap-2">
@@ -575,7 +576,7 @@ export default function HiringAnalytics() {
                   size="sm"
                   onClick={() => handleSelectAllCityRows(cityData?.cityId?.toString() || '')}
                 >
-                  {(selectedCityRows[cityData?.cityId?.toString() || ''] || []).length === Object.keys(cityData?.roles || {}).length && Object.keys(cityData?.roles || {}).length > 0
+                  {(selectedCityRows[cityData?.cityId?.toString() || ''] || []).length === Object.keys(cityData?.designations || {}).length && Object.keys(cityData?.designations || {}).length > 0
                     ? "Deselect All" 
                     : "Select All"}
                 </Button>
@@ -598,11 +599,11 @@ export default function HiringAnalytics() {
                   <TableRow>
                     <TableHead className="w-12">
                       <Checkbox
-                        checked={(selectedCityRows[cityData?.cityId?.toString() || ''] || []).length === Object.keys(cityData?.roles || {}).length && Object.keys(cityData?.roles || {}).length > 0}
+                        checked={(selectedCityRows[cityData?.cityId?.toString() || ''] || []).length === Object.keys(cityData?.designations || {}).length && Object.keys(cityData?.designations || {}).length > 0}
                         onCheckedChange={() => handleSelectAllCityRows(cityData?.cityId?.toString() || '')}
                       />
                     </TableHead>
-                    <TableHead className="bg-yellow-100 font-semibold">Role</TableHead>
+                    <TableHead className="bg-yellow-100 font-semibold">Designation</TableHead>
                     {cityData?.clustersArray?.map((cluster: string) => (
                       <TableHead key={cluster} className="text-center min-w-[100px]">
                         {cluster}
@@ -614,24 +615,24 @@ export default function HiringAnalytics() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {Object.entries(cityData?.roles || {}).map(([roleKey, roleData]: [string, any]) => (
-                    <TableRow key={roleKey}>
+                  {Object.entries(cityData?.designations || {}).map(([designationKey, designationData]: [string, any]) => (
+                    <TableRow key={designationKey}>
                       <TableCell>
                         <Checkbox
-                          checked={(selectedCityRows[cityData?.cityId?.toString() || ''] || []).includes(roleData.roleId.toString())}
-                          onCheckedChange={() => handleSelectCityRow(cityData?.cityId?.toString() || '', roleData.roleId.toString())}
+                          checked={(selectedCityRows[cityData?.cityId?.toString() || ''] || []).includes(designationData?.designationId?.toString() || '')}
+                          onCheckedChange={() => handleSelectCityRow(cityData?.cityId?.toString() || '', designationData?.designationId?.toString() || '')}
                         />
                       </TableCell>
                       <TableCell className="font-medium bg-yellow-50">
-                        {roleData.roleName}
+                        {designationData?.designationName || designationKey}
                       </TableCell>
                       {cityData?.clustersArray?.map((cluster: string) => (
                         <TableCell key={cluster} className="text-center">
-                          {roleData.clusters[cluster]?.openPositions || 0}
+                          {designationData?.clusters?.[cluster]?.openPositions || 0}
                         </TableCell>
                       ))}
                       <TableCell className="text-center font-semibold bg-orange-50">
-                        {roleData.totalOpenPositions}
+                        {designationData?.totalOpenPositions || 0}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -640,8 +641,8 @@ export default function HiringAnalytics() {
                     <TableCell className="font-bold">Cluster-wise Total</TableCell>
                     {cityData?.clustersArray?.map((cluster: string) => (
                       <TableCell key={cluster} className="text-center font-bold">
-                        {Object.values(cityData?.roles || {}).reduce((sum: number, role: any) => 
-                          sum + (role.clusters[cluster]?.openPositions || 0), 0
+                        {Object.values(cityData?.designations || {}).reduce((sum: number, designation: any) => 
+                          sum + (designation?.clusters?.[cluster]?.openPositions || 0), 0
                         )}
                       </TableCell>
                     ))}

@@ -25,6 +25,9 @@ export default function Onboarding() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'single' | 'bulk'>('single');
   const [singleRecordId, setSingleRecordId] = useState<number | null>(null);
+  const [profileFilter, setProfileFilter] = useState<'all' | 'pending' | 'created'>('pending');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 25;
   const { toast } = useToast();
 
   // Fetch onboarding records
@@ -109,6 +112,194 @@ export default function Onboarding() {
     },
   });
 
+  // Bulk create employee profiles mutation
+  const bulkCreateProfilesMutation = useMutation({
+    mutationFn: async (onboardingIds: number[]) => {
+      const results = { success: 0, failed: 0, errors: [] as string[] };
+      for (const id of onboardingIds) {
+        try {
+          await apiRequest('/api/employees/profile', {
+            method: "POST",
+            body: { onboarding_id: id }
+          });
+          results.success++;
+        } catch (error: any) {
+          results.failed++;
+          results.errors.push(error.message || `Failed for ID ${id}`);
+        }
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/onboarding/onboarding"] });
+      setSelectedRecords(new Set());
+      toast({
+        title: "Bulk Profile Creation Complete",
+        description: `✓ Success: ${results.success} | ✗ Failed: ${results.failed}`,
+        variant: results.failed > 0 ? "destructive" : "default",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create employee profiles",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Download Migration CSV template with Group DOJ fields
+  const downloadMigrationSampleTemplate = () => {
+    const headers = [
+      // BASIC DETAILS
+      "Employee ID",
+      "User ID (numbers only)",
+      "Name (DO NOT EDIT)", 
+      "Phone Number (DO NOT EDIT)", 
+      "Email (DO NOT EDIT)", 
+      "Gender", 
+      "Date of Birth (DD-MMM-YYYY)",
+      "Blood Group", 
+      "Marital Status",
+      "Physically Handicapped (Yes/No)",
+      "Nationality",
+      "International Worker (Yes/No)",
+      "Name as per Aadhar", 
+      "Aadhar Number",
+      "Father Name",
+      "Father DOB (DD-MMM-YYYY)",
+      "Mother Name",
+      "Mother DOB (DD-MMM-YYYY)",
+      "Wife Name",
+      "Wife DOB (DD-MMM-YYYY)",
+      "Child 1 Name",
+      "Child 1 Gender (male/female)",
+      "Child 1 DOB (DD-MMM-YYYY)",
+      "Child 2 Name",
+      "Child 2 Gender (male/female)",
+      "Child 2 DOB (DD-MMM-YYYY)",
+      "Nominee Name",
+      "Nominee Relation",
+      "Present Address", 
+      "Permanent Address",
+      "Emergency Contact Name", 
+      "Emergency Contact Number", 
+      "Relation with Emergency Contact",
+      // JOB DETAILS
+      "Legal Entity",
+      "Business Unit",
+      "Department",
+      "Sub Department",
+      "Employment Type",
+      "City", 
+      "Cluster", 
+      "Role",
+      "Designation",
+      "Reporting Manager", 
+      "Date of Joining (DD-MMM-YYYY)", 
+      "Gross Salary",
+      "Resume Source Type (vendor/field_recruiter/referral/direct)",
+      "Resume Source Name",
+      "Cost Centre",
+      // FINANCIAL DETAILS
+      "PAN Number", 
+      "Name as Per PAN",
+      "Account Number", 
+      "IFSC Code",
+      "Name as per Bank", 
+      "Bank Name",
+      "UAN Number (12 digits)",
+      "ESIC IP Number (10 digits or N/A)",
+      // MIGRATION DETAILS (Only for migration uploads)
+      "Group DOJ (DD-MMM-YYYY) - Original DOJ with previous entity",
+      "Group DOJ Reason (absorption_from_vendor/entity_transfer)",
+      "Vendor Name (Only if reason is absorption_from_vendor)"
+    ];
+
+    // Create sample row with example data for migration
+    const sampleRow = [
+      "EMP001",
+      "12345",
+      "John Doe",
+      "9876543210",
+      "john.doe@example.com",
+      "male",
+      "15-Aug-1990",
+      "B+",
+      "Single",
+      "No",
+      "Indian",
+      "No",
+      "John Doe",
+      "123456789012",
+      "Father Name",
+      "01-Jan-1960",
+      "Mother Name",
+      "01-Jan-1962",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "Nominee Name",
+      "Relation",
+      "Present Address",
+      "Permanent Address",
+      "Emergency Contact",
+      "9876543210",
+      "Relation",
+      // JOB DETAILS
+      "Legal Entity",
+      "Business Unit",
+      "Department",
+      "Sub Department",
+      "Permanent",
+      "City",
+      "Cluster",
+      "Role",
+      "Sales Executive",
+      "Manager Name",
+      "15-Jan-2025",
+      "25000",
+      "direct",
+      "Walk-in",
+      "CC001",
+      // FINANCIAL DETAILS
+      "ABCDE1234F",
+      "John Doe",
+      "1234567890123456",
+      "SBIN0001234",
+      "John Doe",
+      "State Bank of India",
+      "123456789012",
+      "1234567890",
+      // MIGRATION DETAILS
+      "15-Aug-2020",
+      "absorption_from_vendor",
+      "ABC Staffing Solutions"
+    ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+
+    const csvContent = [headers.map(h => `"${h}"`).join(','), sampleRow].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `onboarding_migration_sample_template.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Success",
+      description: "Migration upload sample template downloaded",
+    });
+  };
+
   // Download CSV template with prefilled data for pending onboarding candidates
   const downloadTemplate = () => {
     // Filter pending onboarding candidates (fit or fit_need_refresher_training)
@@ -163,7 +354,6 @@ export default function Onboarding() {
       // JOB DETAILS
       "Legal Entity",
       "Business Unit (DO NOT EDIT)",
-      "Function (DO NOT EDIT)",
       "Department (DO NOT EDIT)",
       "Sub Department (DO NOT EDIT)",
       "Employment Type (DO NOT EDIT)",
@@ -250,7 +440,6 @@ export default function Onboarding() {
         // JOB DETAILS
         record.legalEntity || record.legal_entity || '',
         record.businessUnitName || record.business_unit_name || '',
-        record.functionName || record.function_name || '',
         record.departmentName || record.department_name || '',
         record.subDepartmentName || record.sub_department_name || '',
         employmentType,
@@ -312,7 +501,13 @@ export default function Onboarding() {
       // - DD-MM-YYYY (e.g., 25-08-1995)
       // - DD/MM/YYYY (e.g., 25/08/1995)
       // - YYYY-MM-DD (e.g., 1995-08-25)
-      const trimmed = dateStr.trim();
+      // - DD MMM, YYYY (e.g., 01 Apr, 2019)
+      let trimmed = dateStr.trim();
+      
+      // Handle "01 Apr, 2019" format - convert to "01-Apr-2019"
+      if (trimmed.match(/^\d{1,2}\s+[A-Za-z]{3},?\s+\d{4}$/)) {
+        trimmed = trimmed.replace(/,/g, '').replace(/\s+/g, '-');
+      }
       
       // Split by dash or slash
       let parts = trimmed.includes('-') ? trimmed.split('-') : trimmed.split('/');
@@ -410,10 +605,157 @@ export default function Onboarding() {
     return suggestions.sort((a, b) => b.score - a.score).slice(0, 3);
   };
 
-  const validateRecord = (row: any, index: number) => {
+  const validateRecord = (row: any, index: number, isMigration: boolean = false) => {
     const errors: string[] = [];
     const warnings: string[] = [];
     const suggestions = findMatchingSuggestions(row);
+
+    // For Migration Upload: Fields are optional but validate format if data is provided
+    if (isMigration) {
+      // Only require Name or Employee ID for migration
+      if (!row['Name (DO NOT EDIT)']?.trim() && !row['Employee ID']?.trim() && !row['Name']?.trim()) {
+        errors.push('Either Name or Employee ID is required for migration');
+      }
+
+      // Validate formats only if data is provided (not mandatory)
+      
+      // Gender validation (if provided)
+      if (row['Gender']?.trim() && !['male', 'female', 'm', 'f'].includes(row['Gender'].toLowerCase().trim())) {
+        errors.push(`Invalid Gender: "${row['Gender']}" (should be male, female, m, or f)`);
+      }
+
+      // Marital Status validation (if provided)
+      const validMaritalStatuses = ['single', 'married', 'divorced', 'widowed', 'unmarried', 'none'];
+      if (row['Marital Status']?.trim() && !validMaritalStatuses.includes(row['Marital Status'].toLowerCase().trim())) {
+        errors.push(`Invalid Marital Status: "${row['Marital Status']}" (should be single/unmarried/married/divorced/widowed/none)`);
+      }
+
+      // Physically Handicapped validation (if provided)
+      if (row['Physically Handicapped (Yes/No)']?.trim()) {
+        const ph = row['Physically Handicapped (Yes/No)'].toLowerCase().trim();
+        if (!['yes', 'no', 'y', 'n'].includes(ph)) {
+          errors.push(`Invalid Physically Handicapped: "${row['Physically Handicapped (Yes/No)']}" (should be Yes or No)`);
+        }
+      }
+
+      // International Worker validation (if provided)
+      if (row['International Worker (Yes/No)']?.trim()) {
+        const iw = row['International Worker (Yes/No)'].toLowerCase().trim();
+        if (!['yes', 'no', 'y', 'n'].includes(iw)) {
+          errors.push(`Invalid International Worker: "${row['International Worker (Yes/No)']}" (should be Yes or No)`);
+        }
+      }
+
+      // Blood Group validation (if provided)
+      if (row['Blood Group']?.trim()) {
+        const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+        let bg = row['Blood Group'].trim().toUpperCase();
+        // Skip validation for N/A or Not Available
+        const skipValues = ['N/A', 'NA', 'NOT AVAILABLE', 'NIL', '-'];
+        if (!skipValues.includes(bg)) {
+          // Handle formats like "AB+ (AB Positive)" - extract just the blood group part
+          const match = bg.match(/^([ABO]{1,2}[+-])/i);
+          if (match) {
+            bg = match[1].toUpperCase();
+          } else {
+            bg = bg.replace('POSITIVE', '+').replace('NEGATIVE', '-').replace(/[\s()]/g, '');
+          }
+          if (!validBloodGroups.includes(bg)) {
+            errors.push(`Invalid Blood Group: "${row['Blood Group']}" (should be A+, A-, B+, B-, AB+, AB-, O+, O-, or Not Available)`);
+          }
+        }
+      }
+
+      // Date format validations (if provided)
+      const dateFields = [
+        'Date of Birth (DD-MMM-YYYY)', 'Father DOB (DD-MMM-YYYY)', 'Mother DOB (DD-MMM-YYYY)',
+        'Wife DOB (DD-MMM-YYYY)', 'Child 1 DOB (DD-MMM-YYYY)', 'Child 2 DOB (DD-MMM-YYYY)',
+        'Date of Joining (DD-MMM-YYYY)', 'Group DOJ (DD-MMM-YYYY) - Original DOJ with previous entity'
+      ];
+      const skipValues = ['n/a', 'na', 'not available', 'nil', '-', ''];
+      dateFields.forEach(field => {
+        const value = row[field]?.trim();
+        if (value && !skipValues.includes(value.toLowerCase())) {
+          const parsed = parseDateDDMMMYYYY(value);
+          if (!parsed) {
+            errors.push(`Invalid date format for ${field.split(' (')[0]}: "${value}" (should be DD-MMM-YYYY like 15-Jan-2025 or "01 Apr, 2019")`);
+          }
+        }
+      });
+
+      // Aadhar validation (if provided)
+      if (row['Aadhar Number']?.trim()) {
+        const aadhar = row['Aadhar Number'].replace(/\s/g, '');
+        if (aadhar.toLowerCase() !== 'n/a' && !/^\d{12}$/.test(aadhar)) {
+          errors.push(`Invalid Aadhar Number: "${row['Aadhar Number']}" (must be exactly 12 digits)`);
+        }
+      }
+
+      // PAN validation (if provided)
+      if (row['PAN Number']?.trim()) {
+        const pan = row['PAN Number'].trim().toUpperCase();
+        if (pan.toLowerCase() !== 'n/a' && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan)) {
+          errors.push(`Invalid PAN format: "${row['PAN Number']}" (should be like ABCDE1234F)`);
+        }
+      }
+
+      // Account Number validation (if provided)
+      if (row['Account Number']?.trim()) {
+        const account = row['Account Number'].trim();
+        if (account.toLowerCase() !== 'n/a' && !/^\d{9,18}$/.test(account)) {
+          errors.push(`Invalid Account Number: "${row['Account Number']}" (should be 9-18 digits)`);
+        }
+      }
+
+      // IFSC Code validation (if provided)
+      if (row['IFSC Code']?.trim()) {
+        const ifsc = row['IFSC Code'].trim().toUpperCase();
+        if (ifsc.toLowerCase() !== 'n/a' && (!/^[A-Z]{4}[0-9A-Z]{7,11}$/.test(ifsc) || ifsc.length < 11)) {
+          errors.push(`Invalid IFSC Code: "${row['IFSC Code']}" (should be like SBIN0001234)`);
+        }
+      }
+
+      // UAN validation (if provided)
+      if (row['UAN Number (12 digits)']?.trim()) {
+        const uan = row['UAN Number (12 digits)'].replace(/\s/g, '');
+        if (uan.toLowerCase() !== 'n/a' && !/^\d{12}$/.test(uan)) {
+          errors.push(`Invalid UAN Number: "${row['UAN Number (12 digits)']}" (must be exactly 12 digits)`);
+        }
+      }
+
+      // ESIC validation (if provided)
+      if (row['ESIC IP Number (10 digits or N/A)']?.trim()) {
+        const esic = row['ESIC IP Number (10 digits or N/A)'].replace(/\s/g, '');
+        if (esic.toLowerCase() !== 'n/a' && !/^\d{10}$/.test(esic)) {
+          errors.push(`Invalid ESIC IP Number: "${row['ESIC IP Number (10 digits or N/A)']}" (must be 10 digits or N/A)`);
+        }
+      }
+
+      // Group DOJ Reason validation (if provided)
+      if (row['Group DOJ Reason (absorption_from_vendor/entity_transfer)']?.trim()) {
+        const reason = row['Group DOJ Reason (absorption_from_vendor/entity_transfer)'].toLowerCase().trim();
+        if (reason !== 'n/a' && !['absorption_from_vendor', 'entity_transfer'].includes(reason)) {
+          errors.push(`Invalid Group DOJ Reason: "${row['Group DOJ Reason (absorption_from_vendor/entity_transfer)']}" (should be absorption_from_vendor or entity_transfer)`);
+        }
+      }
+
+      // Resume Source Type validation (if provided)
+      if (row['Resume Source Type (vendor/field_recruiter/referral/direct)']?.trim()) {
+        const source = row['Resume Source Type (vendor/field_recruiter/referral/direct)'].toLowerCase().trim();
+        if (!['vendor', 'field_recruiter', 'referral', 'direct', 'n/a'].includes(source)) {
+          errors.push(`Invalid Resume Source Type: should be vendor, field_recruiter, referral, or direct`);
+        }
+      }
+
+      return { 
+        rowIndex: index + 1, 
+        row, 
+        errors, 
+        warnings: [], 
+        suggestions,
+        status: errors.length > 0 ? 'error' : 'success' 
+      };
+    }
 
     // DEBUG: Log actual column values
     console.log(`\n=== Validating Row ${index + 1} ===`);
@@ -446,9 +788,9 @@ export default function Onboarding() {
     }
 
     // Marital Status validation
-    const validMaritalStatuses = ['single', 'married', 'divorced', 'widowed', 'unmarried'];
+    const validMaritalStatuses = ['single', 'married', 'divorced', 'widowed', 'unmarried', 'none'];
     if (row['Marital Status'] && !validMaritalStatuses.includes(row['Marital Status'].toLowerCase().trim())) {
-      errors.push(`Invalid Marital Status: "${row['Marital Status']}" (should be single/unmarried/married/divorced/widowed)`);
+      errors.push(`Invalid Marital Status: "${row['Marital Status']}" (should be single/unmarried/married/divorced/widowed/none)`);
     }
 
     // Physically Handicapped validation (Yes/No only)
@@ -469,11 +811,21 @@ export default function Onboarding() {
 
     // Blood Group validation
     if (row['Blood Group']) {
-      const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'A POSITIVE', 'A NEGATIVE', 'B POSITIVE', 'B NEGATIVE', 'AB POSITIVE', 'AB NEGATIVE', 'O POSITIVE', 'O NEGATIVE'];
-      const bloodGroup = row['Blood Group'].trim().toUpperCase().replace(' ', '');
-      const normalized = bloodGroup.replace('POSITIVE', '+').replace('NEGATIVE', '-');
-      if (!validBloodGroups.map(bg => bg.replace(' ', '')).includes(bloodGroup) && !['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].includes(normalized)) {
-        errors.push(`Invalid Blood Group: "${row['Blood Group']}" (should be A+, A-, B+, B-, AB+, AB-, O+, or O-)`);
+      const validBloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+      let bg = row['Blood Group'].trim().toUpperCase();
+      // Skip validation for N/A or Not Available
+      const skipValues = ['N/A', 'NA', 'NOT AVAILABLE', 'NIL', '-'];
+      if (!skipValues.includes(bg)) {
+        // Handle formats like "AB+ (AB Positive)" - extract just the blood group part
+        const match = bg.match(/^([ABO]{1,2}[+-])/i);
+        if (match) {
+          bg = match[1].toUpperCase();
+        } else {
+          bg = bg.replace('POSITIVE', '+').replace('NEGATIVE', '-').replace(/[\s()]/g, '');
+        }
+        if (!validBloodGroups.includes(bg)) {
+          errors.push(`Invalid Blood Group: "${row['Blood Group']}" (should be A+, A-, B+, B-, AB+, AB-, O+, O-, or Not Available)`);
+        }
       }
     }
 
@@ -704,8 +1056,8 @@ export default function Onboarding() {
         return obj;
       });
 
-      // Validate all rows
-      const validatedData = jsonData.map((row, index) => validateRecord(row, index));
+      // Validate all rows (pass isMigration flag to skip validations for migration upload)
+      const validatedData = jsonData.map((row, index) => validateRecord(row, index, isMigration));
       
       // Set validation results
       setValidationErrors(validatedData);
@@ -859,7 +1211,25 @@ export default function Onboarding() {
           name_as_per_bank: trimOrNull(row['Name as per Bank']),
           bank_name: trimOrNull(row['Bank Name']),
           uan_number: row['UAN Number (12 digits)'] ? row['UAN Number (12 digits)'].trim().replace(/\s/g, '') : null,
-          esic_ip_number: trimOrNull(row['ESIC IP Number (10 digits or N/A)'])
+          esic_ip_number: trimOrNull(row['ESIC IP Number (10 digits or N/A)']),
+          // Migration-specific fields (only used in migration upload)
+          city: trimOrNull(row['City']) || trimOrNull(row['City (DO NOT EDIT)']),
+          cluster: trimOrNull(row['Cluster']) || trimOrNull(row['Cluster (DO NOT EDIT)']),
+          role: trimOrNull(row['Role']) || trimOrNull(row['Role (DO NOT EDIT)']),
+          designation: trimOrNull(row['Designation']),
+          manager_name: trimOrNull(row['Reporting Manager']) || trimOrNull(row['Reporting Manager (DO NOT EDIT)']),
+          date_of_joining: parseDateField('Date of Joining (DD-MMM-YYYY)', 'Date of Joining (DO NOT EDIT)', 'Date of Joining'),
+          gross_salary: trimOrNull(row['Gross Salary']) || trimOrNull(row['Gross Salary (DO NOT EDIT)']),
+          business_unit_name: trimOrNull(row['Business Unit']) || trimOrNull(row['Business Unit (DO NOT EDIT)']),
+          department_name: trimOrNull(row['Department']) || trimOrNull(row['Department (DO NOT EDIT)']),
+          sub_department_name: trimOrNull(row['Sub Department']) || trimOrNull(row['Sub Department (DO NOT EDIT)']),
+          employment_type: trimOrNull(row['Employment Type']) || trimOrNull(row['Employment Type (DO NOT EDIT)']),
+          resume_source_type: trimOrNull(row['Resume Source Type (vendor/field_recruiter/referral/direct)']) || trimOrNull(row['Resume Source Type (DO NOT EDIT)']),
+          cost_centre: trimOrNull(row['Cost Centre']) || trimOrNull(row['Cost Centre (DO NOT EDIT)']),
+          // Group DOJ fields (migration only)
+          group_doj: parseDateField('Group DOJ (DD-MMM-YYYY) - Original DOJ with previous entity'),
+          group_doj_reason: trimOrNull(row['Group DOJ Reason (absorption_from_vendor/entity_transfer)']),
+          group_doj_vendor_name: trimOrNull(row['Vendor Name (Only if reason is absorption_from_vendor)'])
         };
         
         console.log('Transformed record:', transformedRecord);
@@ -876,13 +1246,41 @@ export default function Onboarding() {
       console.log('First record sample:', records[0]);
       console.log('API endpoint:', apiEndpoint);
       
-      const response = await apiRequest(apiEndpoint, {
-        method: 'POST',
-        body: { records }
-      });
+      // Batch records into chunks of 500 to avoid 413 error (Vite proxy limit)
+      const BATCH_SIZE = 500;
+      const batches = [];
+      for (let i = 0; i < records.length; i += BATCH_SIZE) {
+        batches.push(records.slice(i, i + BATCH_SIZE));
+      }
+      
+      console.log(`Splitting ${records.length} records into ${batches.length} batches`);
+      
+      let totalSuccess = 0;
+      let totalFailed = 0;
+      const allErrors: any[] = [];
+      
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex];
+        console.log(`Uploading batch ${batchIndex + 1}/${batches.length} (${batch.length} records)`);
+        
+        const response = await apiRequest(apiEndpoint, {
+          method: 'POST',
+          body: { records: batch }
+        });
+        
+        totalSuccess += (response as any).results.success || 0;
+        totalFailed += (response as any).results.failed || 0;
+        if ((response as any).results.errors?.length > 0) {
+          allErrors.push(...(response as any).results.errors);
+        }
+        
+        // Update progress based on batches completed
+        const progressPercent = Math.round(((batchIndex + 1) / batches.length) * 90);
+        setUploadProgress(progressPercent);
+      }
 
-      console.log('=== FRONTEND: Received response ===');
-      console.log('Response:', response);
+      console.log('=== FRONTEND: All batches completed ===');
+      console.log(`Total Success: ${totalSuccess}, Total Failed: ${totalFailed}`);
 
       // Complete progress
       clearInterval(progressInterval);
@@ -892,11 +1290,59 @@ export default function Onboarding() {
 
       toast({
         title: "Upload Complete",
-        description: `✓ Success: ${(response as any).results.success} | ✗ Failed: ${(response as any).results.failed}`,
+        description: `✓ Success: ${totalSuccess} | ✗ Failed: ${totalFailed}`,
       });
 
-      if ((response as any).results.errors.length > 0) {
-        console.error('Upload errors:', (response as any).results.errors);
+      if (allErrors.length > 0) {
+        console.error('Upload errors:', allErrors);
+        
+        // Auto-download failed records as CSV
+        const failedRecords = allErrors.map((err: any) => ({
+          name: err.name || 'Unknown',
+          error: err.error || 'Unknown error'
+        }));
+        
+        // Find the original record data for failed records
+        const validRows = validationErrors.filter(v => v.status !== 'error');
+        const failedWithData = allErrors.map((err: any) => {
+          const originalRow = validRows.find(v => v.row['Name (DO NOT EDIT)'] === err.name || v.row['Name'] === err.name);
+          return {
+            ...originalRow?.row,
+            'Upload Error': err.error
+          };
+        });
+        
+        // Generate CSV content
+        if (failedWithData.length > 0) {
+          const headers = Object.keys(failedWithData[0] || {});
+          const csvContent = [
+            headers.join(','),
+            ...failedWithData.map(row => 
+              headers.map(h => {
+                const val = row[h];
+                if (val === null || val === undefined) return '';
+                const strVal = String(val);
+                return strVal.includes(',') || strVal.includes('"') || strVal.includes('\n') 
+                  ? `"${strVal.replace(/"/g, '""')}"` 
+                  : strVal;
+              }).join(',')
+            )
+          ].join('\n');
+          
+          const blob = new Blob([csvContent], { type: 'text/csv' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `migration_failed_records_${new Date().toISOString().split('T')[0]}.csv`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          
+          toast({
+            title: "Failed Records Downloaded",
+            description: `${allErrors.length} failed records saved to CSV for review.`,
+            variant: "destructive",
+          });
+        }
       }
 
       // Wait a moment to show 100% before closing
@@ -944,22 +1390,22 @@ export default function Onboarding() {
     setSelectedRecords(newSelected);
   };
 
-  // Select all unlocked pending records
+  // Select all records that can have profiles created (onboarded but no profile yet)
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const unlockedPending = onboardingRecords
+      const selectableRecords = onboardingRecords
         .filter((r: any) => 
-          (r.onboardingStatus || r.onboarding_status) === 'yet_to_be_onboarded' && 
-          !(r.isLocked || r.is_locked)
+          (r.onboardingStatus || r.onboarding_status) === 'onboarded' && 
+          !(r.profileCreated || r.profile_created)
         )
         .map((r: any) => r.id);
-      setSelectedRecords(new Set(unlockedPending));
+      setSelectedRecords(new Set(selectableRecords));
     } else {
       setSelectedRecords(new Set());
     }
   };
 
-  // Handle bulk submission
+  // Handle bulk submission for onboarding
   const handleBulkSubmit = () => {
     if (selectedRecords.size === 0) {
       toast({
@@ -973,6 +1419,19 @@ export default function Onboarding() {
     setShowConfirmDialog(true);
   };
 
+  // Handle bulk create profiles
+  const handleBulkCreateProfiles = () => {
+    if (selectedRecords.size === 0) {
+      toast({
+        title: "No Records Selected",
+        description: "Please select at least one record to create profiles",
+        variant: "destructive",
+      });
+      return;
+    }
+    bulkCreateProfilesMutation.mutate(Array.from(selectedRecords));
+  };
+
   // Confirm and submit
   const handleConfirmSubmit = () => {
     if (confirmAction === 'single' && singleRecordId) {
@@ -982,14 +1441,47 @@ export default function Onboarding() {
     }
   };
 
-  // Get count of unlocked pending records
+  // Get count of onboarded records without profiles (can create profiles)
+  const onboardedWithoutProfileCount = onboardingRecords.filter((r: any) =>
+    (r.onboardingStatus || r.onboarding_status) === 'onboarded' &&
+    !(r.profileCreated || r.profile_created)
+  ).length;
+
+  // Get count of unlocked pending records (for onboarding submission)
   const unlockedPendingCount = onboardingRecords.filter((r: any) =>
     (r.onboardingStatus || r.onboarding_status) === 'yet_to_be_onboarded' &&
     !(r.isLocked || r.is_locked)
   ).length;
 
   const allSelectedCount = selectedRecords.size;
-  const allUnlockedSelected = unlockedPendingCount > 0 && allSelectedCount === unlockedPendingCount;
+  const allOnboardedSelected = onboardedWithoutProfileCount > 0 && allSelectedCount === onboardedWithoutProfileCount;
+
+  // Filter records based on profile status
+  const filteredRecords = onboardingRecords.filter((r: any) => {
+    const isOnboarded = (r.onboardingStatus || r.onboarding_status) === 'onboarded';
+    const hasProfile = r.profileCreated || r.profile_created;
+    
+    if (profileFilter === 'pending') {
+      return isOnboarded && !hasProfile;
+    } else if (profileFilter === 'created') {
+      return isOnboarded && hasProfile;
+    }
+    return true; // 'all' filter
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredRecords.length / ITEMS_PER_PAGE);
+  const paginatedRecords = filteredRecords.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when filter changes
+  const handleFilterChange = (filter: 'all' | 'pending' | 'created') => {
+    setProfileFilter(filter);
+    setCurrentPage(1);
+    setSelectedRecords(new Set());
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -1029,7 +1521,11 @@ export default function Onboarding() {
               />
               {uploading && <span className="text-sm text-slate-600">Uploading...</span>}
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <Button onClick={downloadMigrationSampleTemplate} variant="default" className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700">
+                <Download className="h-4 w-4" />
+                Download Migration Upload Sample CSV
+              </Button>
               <label htmlFor="migration-upload" className="cursor-pointer">
                 <Button variant="default" className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700" asChild>
                   <span>
@@ -1038,15 +1534,15 @@ export default function Onboarding() {
                   </span>
                 </Button>
               </label>
-              <Input
-                id="migration-upload"
-                type="file"
-                accept=".csv"
-                onChange={(e) => handleFileUpload(e, true)}
-                disabled={uploading}
-                className="hidden"
-              />
             </div>
+            <Input
+              id="migration-upload"
+              type="file"
+              accept=".csv"
+              onChange={(e) => handleFileUpload(e, true)}
+              disabled={uploading}
+              className="hidden"
+            />
           </div>
           <p className="text-xs text-slate-500 mt-2">
             <strong>Regular Upload:</strong> For new candidates who completed all stages.<br/>
@@ -1061,23 +1557,64 @@ export default function Onboarding() {
       {/* Onboarding Records Table */}
       <Card className="shadow-sm border-slate-200">
         <CardHeader className="bg-white border-b border-slate-100">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-semibold text-slate-800">Onboarding Records</CardTitle>
-            {selectedRecords.size > 0 && (
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="text-sm px-3 py-1">
-                  {selectedRecords.size} selected
-                </Badge>
-                <Button 
-                  onClick={handleBulkSubmit} 
-                  className="flex items-center gap-2"
-                  disabled={bulkOnboardingMutation.isPending}
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <CardTitle className="text-xl font-semibold text-slate-800">Onboarding Records</CardTitle>
+              <Badge variant="outline" className="text-sm">
+                {filteredRecords.length} records
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              {/* Filter Buttons */}
+              <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                <Button
+                  size="sm"
+                  variant={profileFilter === 'pending' ? 'default' : 'ghost'}
+                  onClick={() => handleFilterChange('pending')}
+                  className={profileFilter === 'pending' ? 'bg-orange-500 hover:bg-orange-600' : ''}
                 >
-                  <UserCheck className="h-4 w-4" />
-                  Submit {selectedRecords.size} for Onboarding
+                  Create Profile ({onboardedWithoutProfileCount})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={profileFilter === 'created' ? 'default' : 'ghost'}
+                  onClick={() => handleFilterChange('created')}
+                  className={profileFilter === 'created' ? 'bg-blue-500 hover:bg-blue-600' : ''}
+                >
+                  Profile Created ({onboardingRecords.filter((r: any) => 
+                    (r.onboardingStatus || r.onboarding_status) === 'onboarded' && 
+                    (r.profileCreated || r.profile_created)
+                  ).length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={profileFilter === 'all' ? 'default' : 'ghost'}
+                  onClick={() => handleFilterChange('all')}
+                >
+                  All
                 </Button>
               </div>
-            )}
+              {/* Bulk Action Button */}
+              {selectedRecords.size > 0 && profileFilter === 'pending' && (
+                <Button 
+                  onClick={handleBulkCreateProfiles} 
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  disabled={bulkCreateProfilesMutation.isPending}
+                >
+                  {bulkCreateProfilesMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Creating Profiles...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4" />
+                      Create {selectedRecords.size} Profiles
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -1090,10 +1627,10 @@ export default function Onboarding() {
                     <div className="flex flex-col items-center gap-1">
                       <span>Select</span>
                       <Checkbox 
-                        checked={allUnlockedSelected}
+                        checked={allOnboardedSelected}
                         onCheckedChange={handleSelectAll}
-                        disabled={unlockedPendingCount === 0}
-                        title={unlockedPendingCount === 0 ? "No unlocked records to select" : "Select all unlocked pending records"}
+                        disabled={onboardedWithoutProfileCount === 0}
+                        title={onboardedWithoutProfileCount === 0 ? "No records available for profile creation" : "Select all onboarded records without profiles"}
                       />
                     </div>
                   </TableHead>
@@ -1134,7 +1671,6 @@ export default function Onboarding() {
                   {/* JOB DETAILS */}
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Entity</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Business Unit</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Function</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Department</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Sub Department</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Employment Type</TableHead>
@@ -1169,14 +1705,14 @@ export default function Onboarding() {
                       Loading...
                     </TableCell>
                   </TableRow>
-                ) : onboardingRecords.length === 0 ? (
+                ) : filteredRecords.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={54} className="text-center py-8">
-                      No onboarding records found
+                      No records found for the selected filter
                     </TableCell>
                   </TableRow>
                 ) : (
-                  onboardingRecords.map((record: any) => {
+                  paginatedRecords.map((record: any) => {
                     // Format resume source type and name
                     const sourceType = record.resumeSource || record.resume_source;
                     let resumeSourceType = '-';
@@ -1299,9 +1835,6 @@ export default function Onboarding() {
                         <div className="max-w-[150px] text-sm leading-tight break-words">{record.businessUnitName || record.business_unit_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.functionName || record.function_name || 'N/A'}</div>
-                      </TableCell>
-                      <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[150px] text-sm leading-tight break-words">{record.departmentName || record.department_name || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
@@ -1411,6 +1944,52 @@ export default function Onboarding() {
               </TableBody>
             </Table>
           </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t">
+              <div className="text-sm text-gray-600">
+                Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredRecords.length)} of {filteredRecords.length} records
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  First
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <span className="px-3 py-1 text-sm">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  Last
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -1465,6 +2044,23 @@ export default function Onboarding() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Action Buttons - Top */}
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowPreview(false)}
+                disabled={uploading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmUpload}
+                disabled={uploading || validationErrors.filter(v => v.status !== 'error').length === 0}
+              >
+                {uploading ? 'Uploading...' : `Upload ${validationErrors.filter(v => v.status !== 'error').length} Valid Rows`}
+              </Button>
             </div>
 
             {/* Validation Details */}
@@ -1578,23 +2174,7 @@ export default function Onboarding() {
               </div>
             )}
             
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowPreview(false)}
-                disabled={uploading}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={confirmUpload}
-                disabled={uploading || validationErrors.filter(v => v.status !== 'error').length === 0}
-              >
-                {uploading ? 'Uploading...' : `Upload ${validationErrors.filter(v => v.status !== 'error').length} Valid Rows`}
-              </Button>
-            </div>
-          </DialogFooter>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
 

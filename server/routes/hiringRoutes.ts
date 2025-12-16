@@ -16,6 +16,9 @@ router.get('/', hiringController.getHiringRequests.bind(hiringController));
 // Get hiring request by ID
 router.get('/:id', hiringController.getHiringRequest.bind(hiringController));
 
+// Update hiring request (edit designation, priority, etc.)
+router.patch('/:id', hiringController.updateHiringRequest.bind(hiringController));
+
 // Update hiring request status
 router.patch('/:id/status', hiringController.updateHiringRequestStatus.bind(hiringController));
 

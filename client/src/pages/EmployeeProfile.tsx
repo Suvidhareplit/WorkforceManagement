@@ -378,7 +378,7 @@ export default function EmployeeProfile() {
               <CardContent className="space-y-3">
                 <InfoRow label="Legal Entity" value={employee.legalEntity || employee.legal_entity} />
                 <InfoRow label="Business Unit" value={employee.businessUnitName || employee.business_unit_name} />
-                <InfoRow label="Function" value={employee.functionName || employee.function_name} />
+                <InfoRow label="Department" value={employee.departmentName || employee.department_name} />
                 <InfoRow label="Sub Department" value={employee.subDepartmentName || employee.sub_department_name} />
                 <InfoRow label="City" value={employee.city} />
                 <InfoRow label="Cluster" value={employee.cluster} />
