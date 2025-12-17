@@ -125,6 +125,7 @@ export default function ManpowerPlanning() {
   const [selectedCentre, setSelectedCentre] = useState<Centre | null>(null);
   const [planningModalOpen, setPlanningModalOpen] = useState(false);
   const [planningData, setPlanningData] = useState<Record<number, ManpowerPlan>>({});
+  const [shiftData, setShiftData] = useState<Record<number, ManpowerShift[]>>({});
   const [activeTab, setActiveTab] = useState("regular");
   const [workshopData, setWorkshopData] = useState<Record<number, WorkshopTechnicianPlan>>({});
   const [selectedClusterForSummary, setSelectedClusterForSummary] = useState<Cluster | null>(null);
@@ -370,6 +371,7 @@ export default function ManpowerPlanning() {
     setPlanningModalOpen(true);
     // Clear planning data - will be populated by useEffect when existingPlans loads
     setPlanningData({});
+    setShiftData({});
   };
 
   // State for last updated info in centre planning
@@ -386,53 +388,48 @@ export default function ManpowerPlanning() {
     return workshopData?.shrinkagePercent ?? 15;
   };
 
-  // Populate planning data when existing plans are loaded
+  // Populate shift data when existing plans are loaded
   useEffect(() => {
     if (!planningModalOpen || !selectedCentre) {
       return;
     }
 
     if (Array.isArray(existingPlans) && existingPlans.length > 0) {
-      const initialData: Record<number, ManpowerPlan> = {};
+      const initialShiftData: Record<number, ManpowerShift[]> = {};
       let latestUpdate: { name: string; date: string } | null = null;
       
-      existingPlans.forEach((plan: any) => {
-        initialData[plan.designationId] = {
-          id: plan.id,
-          centreId: plan.centreId,
-          designationId: plan.designationId,
-          numShifts: plan.numShifts ?? 0,
-          employeesPerShift: plan.employeesPerShift ?? 0,
-        };
+      existingPlans.forEach((shift: any) => {
+        if (!initialShiftData[shift.designationId]) {
+          initialShiftData[shift.designationId] = [];
+        }
+        initialShiftData[shift.designationId].push({
+          id: shift.id,
+          centreId: shift.centreId,
+          designationId: shift.designationId,
+          shiftName: shift.shiftName,
+          shiftStartTime: shift.shiftStartTime,
+          shiftEndTime: shift.shiftEndTime,
+          requiredManpower: shift.requiredManpower ?? 0,
+        });
         // Track the most recent update
-        if (plan.updatedByName && plan.updatedAt) {
-          if (!latestUpdate || new Date(plan.updatedAt) > new Date(latestUpdate.date)) {
-            latestUpdate = { name: plan.updatedByName, date: plan.updatedAt };
+        if (shift.updatedByName && shift.updatedAt) {
+          if (!latestUpdate || new Date(shift.updatedAt) > new Date(latestUpdate.date)) {
+            latestUpdate = { name: shift.updatedByName, date: shift.updatedAt };
           }
         }
       });
-      setPlanningData(initialData);
+      setShiftData(initialShiftData);
       setCentreLastUpdated(latestUpdate);
     } else {
-      // Initialize with 0 shifts for all planning designations when no existing data
-      const initialData: Record<number, ManpowerPlan> = {};
-      planningDesignations.forEach((designation: Designation) => {
-        const isOperator = designation.name.toLowerCase() === 'operator';
-        initialData[designation.id] = {
-          centreId: selectedCentre.id,
-          designationId: designation.id,
-          numShifts: 0,
-          employeesPerShift: isOperator ? 1 : 0,
-        };
-      });
-      setPlanningData(initialData);
+      // Initialize with empty shifts for all planning designations
+      setShiftData({});
       setCentreLastUpdated(null);
     }
   }, [existingPlans, planningModalOpen, selectedCentre]);
 
-  // Save manpower planning mutation
+  // Save manpower planning mutation (shift-based)
   const savePlanningMutation = useMutation({
-    mutationFn: async (data: { centreId: number; plans: ManpowerPlan[] }) => {
+    mutationFn: async (data: { centreId: number; shifts: ManpowerShift[] }) => {
       return await apiRequest("/api/manpower-planning/centre", {
         method: "POST",
         body: data,
@@ -455,45 +452,63 @@ export default function ManpowerPlanning() {
     },
   });
 
-  // Handle save planning
+  // Handle save planning (shift-based)
   const handleSavePlanning = () => {
     if (!selectedCentre) return;
     
-    // Include all plans (even with 0 shifts) so they get saved
-    const plans = Object.values(planningData);
+    // Flatten all shifts from all designations
+    const allShifts: ManpowerShift[] = [];
+    Object.values(shiftData).forEach(shifts => {
+      allShifts.push(...shifts);
+    });
     
     savePlanningMutation.mutate({
       centreId: selectedCentre.id,
-      plans,
+      shifts: allShifts,
     });
   };
 
-  // Update planning data for a designation
-  const updatePlanningData = (
-    designationId: number,
-    field: "numShifts" | "employeesPerShift",
-    value: number
-  ) => {
-    setPlanningData((prev) => ({
+  // Add a new shift for a designation
+  const addShift = (designationId: number) => {
+    if (!selectedCentre) return;
+    
+    const newShift: ManpowerShift = {
+      centreId: selectedCentre.id,
+      designationId: designationId,
+      shiftName: `Shift ${(shiftData[designationId]?.length || 0) + 1}`,
+      shiftStartTime: "09:00",
+      shiftEndTime: "17:00",
+      requiredManpower: 1,
+    };
+    
+    setShiftData(prev => ({
       ...prev,
-      [designationId]: {
-        ...prev[designationId],
-        centreId: selectedCentre?.id || 0,
-        designationId,
-        [field]: value,
-        numShifts: field === "numShifts" ? value : (prev[designationId]?.numShifts ?? 0),
-        employeesPerShift: field === "employeesPerShift" ? value : (prev[designationId]?.employeesPerShift ?? 0),
-      },
+      [designationId]: [...(prev[designationId] || []), newShift],
     }));
   };
 
-  // Calculate base manpower for a designation
-  const calculateBaseManpower = (designationId: number) => {
-    const plan = planningData[designationId];
-    if (!plan) return 0;
-    const shifts = plan.numShifts ?? 0;
-    const employees = plan.employeesPerShift ?? 0;
-    return shifts * employees;
+  // Update a shift
+  const updateShift = (designationId: number, shiftIndex: number, field: keyof ManpowerShift, value: any) => {
+    setShiftData(prev => {
+      const shifts = [...(prev[designationId] || [])];
+      shifts[shiftIndex] = { ...shifts[shiftIndex], [field]: value };
+      return { ...prev, [designationId]: shifts };
+    });
+  };
+
+  // Delete a shift
+  const deleteShift = (designationId: number, shiftIndex: number) => {
+    setShiftData(prev => {
+      const shifts = [...(prev[designationId] || [])];
+      shifts.splice(shiftIndex, 1);
+      return { ...prev, [designationId]: shifts };
+    });
+  };
+
+  // Calculate total manpower for a designation
+  const calculateTotalManpower = (designationId: number) => {
+    const shifts = shiftData[designationId] || [];
+    return shifts.reduce((sum, shift) => sum + (shift.requiredManpower || 0), 0);
   };
 
   return (
@@ -977,12 +992,8 @@ export default function ManpowerPlanning() {
               </div>
             ) : (
               planningDesignations.map((designation: Designation) => {
-                const isOperator = designation.name.toLowerCase() === 'operator';
-                const baseManpower = calculateBaseManpower(designation.id);
-                const plan = planningData[designation.id];
-                
                 return (
-                  <Card key={designation.id} className={`border ${isOperator ? 'border-purple-200 bg-purple-50/30' : ''}`}>
+                  <Card key={designation.id} className="border">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-4">
                         <div>
@@ -991,148 +1002,107 @@ export default function ManpowerPlanning() {
                             {designation.roleName} - {designation.subDepartmentName}
                           </p>
                         </div>
-                        <Badge variant="outline" className={isOperator ? "text-purple-600 border-purple-200" : "text-green-600 border-green-200"}>
-                          {isOperator ? 'Truck Based' : 'Requires Planning'}
+                        <Badge variant="outline" className="text-green-600 border-green-200">
+                          Requires Planning
                         </Badge>
                       </div>
 
-                      {isOperator ? (
-                        /* Operator - Truck based calculation */
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <Label>Number of Trucks</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={Math.floor((plan?.numShifts ?? 0) / 2)}
-                              onChange={(e) => {
-                                const trucks = parseInt(e.target.value) || 0;
-                                setPlanningData((prev) => {
-                                  const currentPlan = prev[designation.id] || {};
-                                  return {
-                                    ...prev,
-                                    [designation.id]: {
-                                      ...currentPlan,
-                                      centreId: selectedCentre?.id || 0,
-                                      designationId: designation.id,
-                                      numShifts: trucks * 2,
-                                      employeesPerShift: currentPlan.employeesPerShift ?? 1,
-                                    },
-                                  };
-                                });
-                              }}
-                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <p className="text-xs text-purple-600 mt-1">Each truck = 2 shifts</p>
-                          </div>
-                          <div>
-                            <Label>Employees per Shift</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={plan?.employeesPerShift ?? 1}
-                              onChange={(e) => {
-                                const employees = parseInt(e.target.value) || 0;
-                                setPlanningData((prev) => {
-                                  const currentPlan = prev[designation.id] || {};
-                                  return {
-                                    ...prev,
-                                    [designation.id]: {
-                                      ...currentPlan,
-                                      centreId: selectedCentre?.id || 0,
-                                      designationId: designation.id,
-                                      numShifts: currentPlan.numShifts ?? 0,
-                                      employeesPerShift: employees,
-                                    },
-                                  };
-                                });
-                              }}
-                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">Usually 1 per shift</p>
-                          </div>
+                      {/* Shift Management Section */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-base">Shifts</Label>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => addShift(designation.id)}
+                            className="bg-[#2563EB] hover:bg-[#1D4ED8]"
+                          >
+                            + Create Shift
+                          </Button>
                         </div>
-                      ) : (
-                        /* Regular designation */
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <Label>Number of Shifts</Label>
-                            <Select
-                              value={(plan?.numShifts ?? 0).toString()}
-                              onValueChange={(value) => {
-                                const numShifts = parseInt(value);
-                                setPlanningData((prev) => {
-                                  const currentPlan = prev[designation.id] || {};
-                                  const currentEmployees = currentPlan.employeesPerShift ?? 0;
-                                  
-                                  // Determine new employees value
-                                  let newEmployees = currentEmployees;
-                                  if (numShifts === 0) {
-                                    newEmployees = 0;
-                                  } else if (currentEmployees === 0) {
-                                    newEmployees = 1;
-                                  }
-                                  
-                                  return {
-                                    ...prev,
-                                    [designation.id]: {
-                                      ...currentPlan,
-                                      centreId: selectedCentre?.id || 0,
-                                      designationId: designation.id,
-                                      numShifts: numShifts,
-                                      employeesPerShift: newEmployees,
-                                    },
-                                  };
-                                });
-                              }}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="0">0 Shifts</SelectItem>
-                                <SelectItem value="1">1 Shift</SelectItem>
-                                <SelectItem value="2">2 Shifts</SelectItem>
-                                <SelectItem value="3">3 Shifts</SelectItem>
-                                <SelectItem value="4">4 Shifts</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label>Employees per Shift</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={plan?.numShifts === 0 ? 0 : (plan?.employeesPerShift ?? 0)}
-                              disabled={plan?.numShifts === 0}
-                              onChange={(e) =>
-                                updatePlanningData(
-                                  designation.id,
-                                  "employeesPerShift",
-                                  parseInt(e.target.value) || 0
-                                )
-                              }
-                              className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
-                          </div>
-                        </div>
-                      )}
 
-                      <div className={`rounded-lg p-3 ${isOperator ? 'bg-purple-50' : 'bg-blue-50'}`}>
+                        {/* Display existing shifts */}
+                        {(shiftData[designation.id] || []).length === 0 ? (
+                          <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                            <p className="text-sm text-gray-500">No shifts created yet</p>
+                            <p className="text-xs text-gray-400 mt-1">Click "Create Shift" to add a shift</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {(shiftData[designation.id] || []).map((shift, index) => (
+                              <div key={index} className="border border-gray-200 rounded-lg p-3 bg-white">
+                                <div className="grid grid-cols-4 gap-3">
+                                  <div>
+                                    <Label className="text-xs">Shift Name</Label>
+                                    <Input
+                                      type="text"
+                                      value={shift.shiftName}
+                                      onChange={(e) => updateShift(designation.id, index, 'shiftName', e.target.value)}
+                                      placeholder="e.g., Morning Shift"
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs">Start Time</Label>
+                                    <Input
+                                      type="time"
+                                      value={shift.shiftStartTime}
+                                      onChange={(e) => updateShift(designation.id, index, 'shiftStartTime', e.target.value)}
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs">End Time</Label>
+                                    <Input
+                                      type="time"
+                                      value={shift.shiftEndTime}
+                                      onChange={(e) => updateShift(designation.id, index, 'shiftEndTime', e.target.value)}
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <div className="flex-1">
+                                      <Label className="text-xs">Manpower</Label>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        value={shift.requiredManpower}
+                                        onChange={(e) => updateShift(designation.id, index, 'requiredManpower', parseInt(e.target.value) || 0)}
+                                        className="h-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                      />
+                                    </div>
+                                    <div className="flex items-end">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => deleteShift(designation.id, index)}
+                                        className="h-9 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Total Manpower Summary */}
+                      <div className="rounded-lg p-3 bg-blue-50 mt-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className={`text-sm font-medium ${isOperator ? 'text-purple-900' : 'text-blue-900'}`}>
-                              Base Manpower (This Center):
+                            <p className="text-sm font-medium text-blue-900">
+                              Total Required Manpower (This Center):
                             </p>
-                            <p className={`text-xs ${isOperator ? 'text-purple-600' : 'text-blue-600'}`}>
-                              {isOperator 
-                                ? `Formula: Trucks (${Math.floor((plan?.numShifts ?? 0) / 2)}) × 2 shifts × ${plan?.employeesPerShift || 1} emp/shift`
-                                : 'Formula: Shifts × Employees per Shift'
-                              }
+                            <p className="text-xs text-blue-600">
+                              Sum of all shifts for this designation
                             </p>
                           </div>
-                          <span className={`text-xl font-bold ${isOperator ? 'text-purple-600' : 'text-blue-600'}`}>
-                            {baseManpower}
+                          <span className="text-xl font-bold text-blue-600">
+                            {calculateTotalManpower(designation.id)}
                           </span>
                         </div>
                         <p className="text-xs text-orange-600 mt-2 flex items-center gap-1">
