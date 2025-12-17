@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { query } from '../config/db';
 
-// Get manpower planning for a centre
+// Get manpower planning shifts for a centre
 const getCentrePlanning = async (req: Request, res: Response) => {
   try {
     const centreId = parseInt(req.params.centreId);
@@ -12,25 +12,27 @@ const getCentrePlanning = async (req: Request, res: Response) => {
 
     const result = await query(`
       SELECT 
-        cmp.id,
-        cmp.centre_id as centreId,
-        cmp.designation_id as designationId,
-        cmp.num_shifts as numShifts,
-        cmp.employees_per_shift as employeesPerShift,
+        cms.id,
+        cms.centre_id as centreId,
+        cms.designation_id as designationId,
+        cms.shift_name as shiftName,
+        cms.shift_start_time as shiftStartTime,
+        cms.shift_end_time as shiftEndTime,
+        cms.required_manpower as requiredManpower,
         d.name as designationName,
         d.code as designationCode,
         r.name as roleName,
         sd.name as subDepartmentName,
-        cmp.updated_by as updatedBy,
-        cmp.updated_at as updatedAt,
+        cms.updated_by as updatedBy,
+        cms.updated_at as updatedAt,
         u.name as updatedByName
-      FROM centre_manpower_planning cmp
-      JOIN designations d ON cmp.designation_id = d.id
+      FROM centre_manpower_shifts cms
+      JOIN designations d ON cms.designation_id = d.id
       LEFT JOIN roles r ON d.role_id = r.id
       LEFT JOIN sub_departments sd ON d.sub_department_id = sd.id
-      LEFT JOIN users u ON cmp.updated_by = u.id
-      WHERE cmp.centre_id = ?
-      ORDER BY d.name
+      LEFT JOIN users u ON cms.updated_by = u.id
+      WHERE cms.centre_id = ?
+      ORDER BY d.name, cms.shift_start_time
     `, [centreId]);
 
     res.json(result.rows || []);
@@ -40,35 +42,38 @@ const getCentrePlanning = async (req: Request, res: Response) => {
   }
 };
 
-// Save manpower planning for a centre
+// Save manpower planning shifts for a centre
 const saveCentrePlanning = async (req: Request, res: Response) => {
   try {
     // Accept both camelCase and snake_case (frontend converts to snake_case)
     const centreId = req.body.centre_id || req.body.centreId;
-    const plans = req.body.plans;
+    const shifts = req.body.shifts;
     // Get user ID from authenticated session
     const updatedBy = (req as any).user?.id || null;
 
-    if (!centreId || !Array.isArray(plans)) {
+    if (!centreId || !Array.isArray(shifts)) {
       return res.status(400).json({ message: "Invalid request data" });
     }
 
-    // Delete existing plans for this centre
-    await query('DELETE FROM centre_manpower_planning WHERE centre_id = ?', [centreId]);
+    // Delete existing shifts for this centre
+    await query('DELETE FROM centre_manpower_shifts WHERE centre_id = ?', [centreId]);
 
-    // Insert new plans
-    for (const plan of plans) {
-      // Accept both camelCase and snake_case for plan fields
-      const designationId = plan.designation_id || plan.designationId;
-      const numShifts = plan.num_shifts ?? plan.numShifts ?? 0;
-      const employeesPerShift = plan.employees_per_shift ?? plan.employeesPerShift ?? 0;
+    // Insert new shifts
+    for (const shift of shifts) {
+      // Accept both camelCase and snake_case for shift fields
+      const designationId = shift.designation_id || shift.designationId;
+      const shiftName = shift.shift_name || shift.shiftName;
+      const shiftStartTime = shift.shift_start_time || shift.shiftStartTime;
+      const shiftEndTime = shift.shift_end_time || shift.shiftEndTime;
+      const requiredManpower = shift.required_manpower ?? shift.requiredManpower ?? 0;
       
-      // Save all plans including those with 0 shifts
-      if (designationId) {
+      // Save all shifts
+      if (designationId && shiftName && shiftStartTime && shiftEndTime) {
         await query(`
-          INSERT INTO centre_manpower_planning (centre_id, designation_id, num_shifts, employees_per_shift, updated_by)
-          VALUES (?, ?, ?, ?, ?)
-        `, [centreId, designationId, numShifts, employeesPerShift, updatedBy]);
+          INSERT INTO centre_manpower_shifts 
+          (centre_id, designation_id, shift_name, shift_start_time, shift_end_time, required_manpower, updated_by)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [centreId, designationId, shiftName, shiftStartTime, shiftEndTime, requiredManpower, updatedBy]);
       }
     }
 

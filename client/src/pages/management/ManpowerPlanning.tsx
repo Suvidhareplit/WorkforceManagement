@@ -86,6 +86,16 @@ interface ManpowerPlan {
   employeesPerShift: number;
 }
 
+interface ManpowerShift {
+  id?: number;
+  centreId: number;
+  designationId: number;
+  shiftName: string;
+  shiftStartTime: string;
+  shiftEndTime: string;
+  requiredManpower: number;
+}
+
 interface WorkshopTechnicianPlan {
   id?: number;
   cityId: number;
@@ -515,7 +525,7 @@ export default function ManpowerPlanning() {
         <TabsList className="grid w-full grid-cols-2 mb-4 bg-gray-100 p-1">
           <TabsTrigger value="regular" className="flex items-center gap-2 data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
             <Users className="h-4 w-4" />
-            Regular Manpower Planning
+            Manpower Planning
           </TabsTrigger>
           <TabsTrigger value="workshop" className="flex items-center gap-2 data-[state=active]:bg-[#2563EB] data-[state=active]:text-white">
             <Wrench className="h-4 w-4" />
