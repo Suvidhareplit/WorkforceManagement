@@ -6,13 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -124,7 +117,6 @@ export default function ManpowerPlanning() {
   const [expandedClusters, setExpandedClusters] = useState<Set<number>>(new Set());
   const [selectedCentre, setSelectedCentre] = useState<Centre | null>(null);
   const [planningModalOpen, setPlanningModalOpen] = useState(false);
-  const [planningData, setPlanningData] = useState<Record<number, ManpowerPlan>>({});
   const [shiftData, setShiftData] = useState<Record<number, ManpowerShift[]>>({});
   const [activeTab, setActiveTab] = useState("regular");
   const [workshopData, setWorkshopData] = useState<Record<number, WorkshopTechnicianPlan>>({});
@@ -369,8 +361,7 @@ export default function ManpowerPlanning() {
   const openCentrePlanning = (centre: Centre) => {
     setSelectedCentre(centre);
     setPlanningModalOpen(true);
-    // Clear planning data - will be populated by useEffect when existingPlans loads
-    setPlanningData({});
+    // Clear shift data - will be populated by useEffect when existingPlans loads
     setShiftData({});
   };
 
