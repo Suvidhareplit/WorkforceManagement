@@ -1364,7 +1364,7 @@ export default function ManpowerPlanning() {
               </p>
             </div>
 
-            {/* Capacity and Shrinkage - Read Only */}
+            {/* Capacity and Shrinkage */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Per Mechanic Capacity - From City</Label>
@@ -1376,13 +1376,22 @@ export default function ManpowerPlanning() {
                 />
               </div>
               <div>
-                <Label>Shrinkage % - From City</Label>
+                <Label>Shrinkage %</Label>
                 <Input
                   type="number"
+                  min="0"
+                  step="0.1"
                   value={clusterWorkshopData.shrinkagePercent}
-                  disabled
-                  className="bg-gray-100 cursor-not-allowed"
+                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, shrinkagePercent: parseFloat(e.target.value) || 0 }))}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Default from city: {(() => {
+                    const cluster = safeClusters.find((c: Cluster) => c.id === selectedClusterForWorkshop?.id);
+                    const cityData = safeWorkshopData.find((w: any) => w.cityId === cluster?.cityId);
+                    return cityData?.shrinkagePercent ?? 0;
+                  })()}%
+                </p>
               </div>
             </div>
 
