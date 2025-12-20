@@ -19,10 +19,14 @@ router.get('/all', manpowerPlanningController.getAllPlanning);
 // Get cluster summary with shrinkage
 router.get('/cluster/:clusterId/summary', manpowerPlanningController.getClusterSummary);
 
-// Workshop Technician Planning routes
+// Workshop Technician Planning routes (city-level)
 router.get('/workshop-technician', manpowerPlanningController.getWorkshopTechnicianPlanning);
 router.post('/workshop-technician', manpowerPlanningController.saveWorkshopTechnicianPlanning);
 router.delete('/workshop-technician/:cityId', manpowerPlanningController.deleteWorkshopTechnicianPlanning);
+
+// Workshop Technician Planning routes (cluster-level)
+router.get('/cluster/:clusterId/workshop-technician', manpowerPlanningController.getClusterWorkshopPlanning);
+router.post('/cluster/workshop-technician', manpowerPlanningController.saveClusterWorkshopPlanning);
 
 // Bikes per employee analysis
 router.get('/bikes-per-employee', manpowerPlanningController.getBikesPerEmployeeAnalysis);

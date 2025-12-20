@@ -585,6 +585,91 @@ const getCityManpowerAnalysis = async (req: Request, res: Response) => {
   }
 };
 
+// Get cluster workshop technician planning
+const getClusterWorkshopPlanning = async (req: Request, res: Response) => {
+  try {
+    const clusterId = parseInt(req.params.clusterId);
+    
+    if (!clusterId || isNaN(clusterId)) {
+      return res.status(400).json({ message: "Invalid cluster ID" });
+    }
+
+    const result = await query(`
+      SELECT 
+        id,
+        cluster_id as clusterId,
+        dau,
+        bikes_in_city as bikesInCity,
+        fault_rate_percent as faultRatePercent,
+        per_mechanic_capacity as perMechanicCapacity,
+        shrinkage_percent as shrinkagePercent,
+        use_dau as useDau,
+        use_bic as useBic,
+        updated_by as updatedBy,
+        updated_at as updatedAt
+      FROM cluster_workshop_technician_planning
+      WHERE cluster_id = ?
+    `, [clusterId]);
+
+    if (result.rows && result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.json(null);
+    }
+  } catch (error) {
+    console.error('Get cluster workshop planning error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Save cluster workshop technician planning
+const saveClusterWorkshopPlanning = async (req: Request, res: Response) => {
+  try {
+    const clusterId = req.body.cluster_id || req.body.clusterId;
+    const dau = req.body.dau ?? 0;
+    const bikesInCity = req.body.bikes_in_city ?? req.body.bikesInCity ?? 0;
+    const faultRatePercent = req.body.fault_rate_percent ?? req.body.faultRatePercent ?? 0;
+    const perMechanicCapacity = req.body.per_mechanic_capacity ?? req.body.perMechanicCapacity ?? 1;
+    const shrinkagePercent = req.body.shrinkage_percent ?? req.body.shrinkagePercent ?? 0;
+    const useDau = req.body.use_dau ?? req.body.useDau ?? true;
+    const useBic = req.body.use_bic ?? req.body.useBic ?? false;
+    const updatedBy = (req as any).user?.id || null;
+
+    if (!clusterId) {
+      return res.status(400).json({ message: "Cluster ID is required" });
+    }
+
+    // Check if planning already exists for this cluster
+    const existing = await query(
+      'SELECT id FROM cluster_workshop_technician_planning WHERE cluster_id = ?',
+      [clusterId]
+    );
+
+    if (existing.rows && existing.rows.length > 0) {
+      // Update existing
+      await query(`
+        UPDATE cluster_workshop_technician_planning 
+        SET dau = ?, bikes_in_city = ?, fault_rate_percent = ?, 
+            per_mechanic_capacity = ?, shrinkage_percent = ?, 
+            use_dau = ?, use_bic = ?, updated_by = ?, updated_at = NOW()
+        WHERE cluster_id = ?
+      `, [dau, bikesInCity, faultRatePercent, perMechanicCapacity, shrinkagePercent, useDau, useBic, updatedBy, clusterId]);
+    } else {
+      // Insert new
+      await query(`
+        INSERT INTO cluster_workshop_technician_planning 
+        (cluster_id, dau, bikes_in_city, fault_rate_percent, per_mechanic_capacity, shrinkage_percent, use_dau, use_bic, updated_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [clusterId, dau, bikesInCity, faultRatePercent, perMechanicCapacity, shrinkagePercent, useDau, useBic, updatedBy]);
+    }
+
+    res.json({ message: "Cluster workshop planning saved successfully" });
+  } catch (error) {
+    console.error('Save cluster workshop planning error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const manpowerPlanningController = {
   getCentrePlanning,
   saveCentrePlanning,
@@ -593,6 +678,8 @@ export const manpowerPlanningController = {
   getWorkshopTechnicianPlanning,
   saveWorkshopTechnicianPlanning,
   deleteWorkshopTechnicianPlanning,
+  getClusterWorkshopPlanning,
+  saveClusterWorkshopPlanning,
   getBikesPerEmployeeAnalysis,
   getCityManpowerAnalysis
 };

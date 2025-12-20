@@ -136,6 +136,27 @@ export default function ManpowerPlanning() {
     useBic: boolean;
   }>({ dau: 0, bikesInCity: 0, faultRatePercent: 0, perMechanicCapacity: 1, shrinkagePercent: 0, useDau: true, useBic: false });
 
+  // Fetch cluster workshop planning data when modal opens
+  const { data: clusterWorkshopPlanningData } = useQuery({
+    queryKey: ["/api/manpower-planning/cluster", selectedClusterForWorkshop?.id, "workshop-technician"],
+    enabled: !!selectedClusterForWorkshop?.id && showClusterWorkshopModal,
+  });
+
+  // Load cluster workshop data when fetched
+  useEffect(() => {
+    if (clusterWorkshopPlanningData && showClusterWorkshopModal) {
+      setClusterWorkshopData({
+        dau: clusterWorkshopPlanningData.dau ?? 0,
+        bikesInCity: clusterWorkshopPlanningData.bikesInCity ?? 0,
+        faultRatePercent: clusterWorkshopPlanningData.faultRatePercent ?? 0,
+        perMechanicCapacity: clusterWorkshopPlanningData.perMechanicCapacity ?? 1,
+        shrinkagePercent: clusterWorkshopPlanningData.shrinkagePercent ?? 0,
+        useDau: clusterWorkshopPlanningData.useDau ?? true,
+        useBic: clusterWorkshopPlanningData.useBic ?? false,
+      });
+    }
+  }, [clusterWorkshopPlanningData, showClusterWorkshopModal]);
+
   // Fetch cities
   const { data: cities = [] } = useQuery({
     queryKey: ["/api/master-data/city"],
@@ -524,6 +545,41 @@ export default function ManpowerPlanning() {
   const calculateTotalManpower = (designationId: number) => {
     const shifts = shiftData[designationId] || [];
     return shifts.reduce((sum, shift) => sum + (shift.requiredManpower || 0), 0);
+  };
+
+  // Save cluster workshop planning mutation
+  const saveClusterWorkshopMutation = useMutation({
+    mutationFn: async (data: { clusterId: number; dau: number; bikesInCity: number; faultRatePercent: number; perMechanicCapacity: number; shrinkagePercent: number; useDau: boolean; useBic: boolean }) => {
+      return await apiRequest("/api/manpower-planning/cluster/workshop-technician", {
+        method: "POST",
+        body: data,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/manpower-planning/cluster", selectedClusterForWorkshop?.id, "workshop-technician"] });
+      toast({
+        title: "Success",
+        description: "Cluster workshop planning saved successfully",
+      });
+      setShowClusterWorkshopModal(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save cluster workshop planning",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle save cluster workshop planning
+  const handleSaveClusterWorkshop = () => {
+    if (!selectedClusterForWorkshop) return;
+    
+    saveClusterWorkshopMutation.mutate({
+      clusterId: selectedClusterForWorkshop.id,
+      ...clusterWorkshopData,
+    });
   };
 
   return (
@@ -1355,8 +1411,12 @@ export default function ManpowerPlanning() {
             <Button variant="outline" onClick={() => setShowClusterWorkshopModal(false)}>
               Cancel
             </Button>
-            <Button className="bg-[#2563EB] hover:bg-[#1D4ED8]">
-              Save Planning
+            <Button 
+              className="bg-[#2563EB] hover:bg-[#1D4ED8]"
+              onClick={handleSaveClusterWorkshop}
+              disabled={saveClusterWorkshopMutation.isPending}
+            >
+              {saveClusterWorkshopMutation.isPending ? "Saving..." : "Save Planning"}
             </Button>
           </div>
         </DialogContent>
