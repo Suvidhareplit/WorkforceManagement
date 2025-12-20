@@ -71,13 +71,6 @@ interface Designation {
   manpowerPlanningRequired: boolean;
 }
 
-interface ManpowerPlan {
-  id?: number;
-  centreId: number;
-  designationId: number;
-  numShifts: number;
-  employeesPerShift: number;
-}
 
 interface ManpowerShift {
   id?: number;
@@ -102,12 +95,6 @@ interface WorkshopTechnicianPlan {
   useBic: boolean;
 }
 
-// Workshop technician designation names (now included in regular planning)
-const WORKSHOP_TECHNICIAN_DESIGNATIONS = [
-  'Associate Workshop Technician',
-  'Workshop Technician',
-  'Senior Workshop Technician',
-];
 
 export default function ManpowerPlanning() {
   const { toast } = useToast();
@@ -138,7 +125,16 @@ export default function ManpowerPlanning() {
   }>({ dau: 0, bikesInCity: 0, outflowNumber: 0, faultRatePercent: 0, perMechanicCapacity: 1, shrinkagePercent: 0, useDau: true, useBic: false });
 
   // Fetch cluster workshop planning data when modal opens
-  const { data: clusterWorkshopPlanningData } = useQuery({
+  const { data: clusterWorkshopPlanningData } = useQuery<{
+    dau: number;
+    bikesInCity: number;
+    outflowNumber: number;
+    faultRatePercent: number;
+    perMechanicCapacity: number;
+    shrinkagePercent: number;
+    useDau: boolean;
+    useBic: boolean;
+  }>({
     queryKey: ["/api/manpower-planning/cluster", selectedClusterForWorkshop?.id, "workshop-technician"],
     enabled: !!selectedClusterForWorkshop?.id && showClusterWorkshopModal,
   });
