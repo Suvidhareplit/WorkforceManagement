@@ -704,31 +704,23 @@ export default function ManpowerPlanning() {
 
                             {/* Workshop Technician Planning Section - Inside Dropdown */}
                             {isClusterExpanded && (
-                              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500">
-                                <div className="px-6 py-4">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                                        <Wrench className="h-4 w-4 text-white" />
-                                      </div>
-                                      <div>
-                                        <h4 className="text-sm font-semibold text-gray-900">Workshop Technician Planning</h4>
-                                        <p className="text-xs text-gray-600">Configure cluster-level workshop requirements</p>
-                                      </div>
-                                    </div>
-                                    <Button
-                                      variant="default"
-                                      size="sm"
-                                      className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        openClusterWorkshopPlanning(cluster);
-                                      }}
-                                    >
-                                      <Wrench className="h-4 w-4 mr-2" />
-                                      Configure
-                                    </Button>
+                              <div className="mx-6 my-3">
+                                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-3 py-2">
+                                  <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+                                    <Wrench className="h-3 w-3 text-white" />
                                   </div>
+                                  <span className="text-sm font-medium text-gray-900">Workshop Technician Planning</span>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-3 ml-2"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openClusterWorkshopPlanning(cluster);
+                                    }}
+                                  >
+                                    Configure
+                                  </Button>
                                 </div>
                               </div>
                             )}
