@@ -102,7 +102,7 @@ interface WorkshopTechnicianPlan {
   useBic: boolean;
 }
 
-// Workshop technician designation names to exclude from regular planning
+// Workshop technician designation names (now included in regular planning)
 const WORKSHOP_TECHNICIAN_DESIGNATIONS = [
   'Associate Workshop Technician',
   'Workshop Technician',
@@ -124,6 +124,17 @@ export default function ManpowerPlanning() {
   const [showClusterSummary, setShowClusterSummary] = useState(false);
   const [selectedHistoryCity, setSelectedHistoryCity] = useState<City | null>(null);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedClusterForWorkshop, setSelectedClusterForWorkshop] = useState<Cluster | null>(null);
+  const [showClusterWorkshopModal, setShowClusterWorkshopModal] = useState(false);
+  const [clusterWorkshopData, setClusterWorkshopData] = useState<{
+    dau: number;
+    bikesInCity: number;
+    faultRatePercent: number;
+    perMechanicCapacity: number;
+    shrinkagePercent: number;
+    useDau: boolean;
+    useBic: boolean;
+  }>({ dau: 0, bikesInCity: 0, faultRatePercent: 0, perMechanicCapacity: 1, shrinkagePercent: 0, useDau: true, useBic: false });
 
   // Fetch cities
   const { data: cities = [] } = useQuery({
@@ -165,12 +176,9 @@ export default function ManpowerPlanning() {
     ? ((designationsData as any)?.data || designationsData) 
     : [];
 
-  // Filter designations that require manpower planning (exclude workshop technicians)
+  // Filter designations that require manpower planning (now includes workshop technicians)
   const planningDesignations = safeDesignations.filter(
-    (d: Designation) => d.manpowerPlanningRequired && 
-      !WORKSHOP_TECHNICIAN_DESIGNATIONS.some(wt => 
-        d.name.toLowerCase().includes(wt.toLowerCase())
-      )
+    (d: Designation) => d.manpowerPlanningRequired
   );
 
   // Fetch workshop technician planning data
@@ -363,6 +371,22 @@ export default function ManpowerPlanning() {
     setPlanningModalOpen(true);
     // Clear shift data - will be populated by useEffect when existingPlans loads
     setShiftData({});
+  };
+
+  // Open cluster workshop planning modal
+  const openClusterWorkshopPlanning = (cluster: Cluster) => {
+    setSelectedClusterForWorkshop(cluster);
+    setShowClusterWorkshopModal(true);
+    // Initialize with default values
+    setClusterWorkshopData({
+      dau: 0,
+      bikesInCity: 0,
+      faultRatePercent: 0,
+      perMechanicCapacity: 1,
+      shrinkagePercent: 0,
+      useDau: true,
+      useBic: false,
+    });
   };
 
   // State for last updated info in centre planning
@@ -600,19 +624,33 @@ export default function ManpowerPlanning() {
                                   ({clusterCentres.length} centers)
                                 </span>
                               </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-orange-600 border-orange-200 hover:bg-orange-50"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedClusterForSummary(cluster);
-                                  setShowClusterSummary(true);
-                                }}
-                              >
-                                <Info className="h-4 w-4 mr-2" />
-                                View Summary
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openClusterWorkshopPlanning(cluster);
+                                  }}
+                                >
+                                  <Wrench className="h-4 w-4 mr-2" />
+                                  Workshop Planning
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-orange-600 border-orange-200 hover:bg-orange-50"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedClusterForSummary(cluster);
+                                    setShowClusterSummary(true);
+                                  }}
+                                >
+                                  <Info className="h-4 w-4 mr-2" />
+                                  View Summary
+                                </Button>
+                              </div>
                             </div>
 
                             {/* Centres */}
@@ -1188,6 +1226,137 @@ export default function ManpowerPlanning() {
           <div className="flex justify-end mt-6 pt-4 border-t">
             <Button variant="outline" onClick={() => setShowClusterSummary(false)}>
               Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cluster Workshop Planning Modal */}
+      <Dialog open={showClusterWorkshopModal} onOpenChange={setShowClusterWorkshopModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-[#2563EB]" />
+              Workshop Technician Planning - {selectedClusterForWorkshop?.name}
+            </DialogTitle>
+            <p className="text-sm text-gray-500 mt-2">
+              Configure DAU and capacity parameters to calculate required workshop technicians for this cluster
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* DAU and BIC Inputs */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>DAU (Daily Active Users)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={clusterWorkshopData.dau}
+                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, dau: parseInt(e.target.value) || 0 }))}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+              <div>
+                <Label>BIC (Bikes in City)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={clusterWorkshopData.bikesInCity}
+                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, bikesInCity: parseInt(e.target.value) || 0 }))}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+            </div>
+
+            {/* Use DAU or BIC Toggle */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={clusterWorkshopData.useDau ? "default" : "outline"}
+                size="sm"
+                onClick={() => setClusterWorkshopData(prev => ({ ...prev, useDau: true, useBic: false }))}
+                className={clusterWorkshopData.useDau ? "bg-[#2563EB] hover:bg-[#1D4ED8]" : ""}
+              >
+                Use DAU
+              </Button>
+              <Button
+                type="button"
+                variant={clusterWorkshopData.useBic ? "default" : "outline"}
+                size="sm"
+                onClick={() => setClusterWorkshopData(prev => ({ ...prev, useDau: false, useBic: true }))}
+                className={clusterWorkshopData.useBic ? "bg-[#2563EB] hover:bg-[#1D4ED8]" : ""}
+              >
+                Use BIC
+              </Button>
+            </div>
+
+            {/* Outflow, Capacity, Shrinkage */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Outflow %</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={clusterWorkshopData.faultRatePercent}
+                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, faultRatePercent: parseFloat(e.target.value) || 0 }))}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+              <div>
+                <Label>Per Mechanic Capacity</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={clusterWorkshopData.perMechanicCapacity}
+                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, perMechanicCapacity: parseInt(e.target.value) || 1 }))}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+              <div>
+                <Label>Shrinkage %</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={clusterWorkshopData.shrinkagePercent}
+                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, shrinkagePercent: parseFloat(e.target.value) || 0 }))}
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              </div>
+            </div>
+
+            {/* Calculation Result */}
+            <div className="rounded-lg p-4 bg-blue-50 border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-900">Required Workshop Technicians:</p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Formula: (({clusterWorkshopData.useBic ? 'BIC' : 'DAU'} × Outflow%) ÷ Capacity) / (1 - Shrinkage%)
+                  </p>
+                </div>
+                <span className="text-2xl font-bold text-blue-600">
+                  {(() => {
+                    const baseValue = clusterWorkshopData.useBic ? clusterWorkshopData.bikesInCity : clusterWorkshopData.dau;
+                    if (baseValue === 0 || clusterWorkshopData.perMechanicCapacity === 0) return 0;
+                    const faultyBikes = baseValue * (clusterWorkshopData.faultRatePercent / 100);
+                    const baseTechnicians = faultyBikes / clusterWorkshopData.perMechanicCapacity;
+                    const shrinkageFactor = 1 - (clusterWorkshopData.shrinkagePercent / 100);
+                    const withShrinkage = shrinkageFactor > 0 ? baseTechnicians / shrinkageFactor : baseTechnicians;
+                    return Math.ceil(withShrinkage);
+                  })()}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowClusterWorkshopModal(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-[#2563EB] hover:bg-[#1D4ED8]">
+              Save Planning
             </Button>
           </div>
         </DialogContent>
