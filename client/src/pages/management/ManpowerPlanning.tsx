@@ -702,24 +702,40 @@ export default function ManpowerPlanning() {
                               </Button>
                             </div>
 
-                            {/* Workshop Technician Planning Button - Inside Dropdown */}
+                            {/* Workshop Technician Planning Section - Inside Dropdown */}
+                            {isClusterExpanded && (
+                              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500">
+                                <div className="px-6 py-4">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                                        <Wrench className="h-4 w-4 text-white" />
+                                      </div>
+                                      <div>
+                                        <h4 className="text-sm font-semibold text-gray-900">Workshop Technician Planning</h4>
+                                        <p className="text-xs text-gray-600">Configure cluster-level workshop requirements</p>
+                                      </div>
+                                    </div>
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        openClusterWorkshopPlanning(cluster);
+                                      }}
+                                    >
+                                      <Wrench className="h-4 w-4 mr-2" />
+                                      Configure
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Centres */}
                             {isClusterExpanded && (
                               <div className="bg-white pl-12 py-2">
-                                <div className="px-6 py-3 border-b">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-blue-600 border-blue-200 hover:bg-blue-50 w-full"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      openClusterWorkshopPlanning(cluster);
-                                    }}
-                                  >
-                                    <Wrench className="h-4 w-4 mr-2" />
-                                    Workshop Technician Planning
-                                  </Button>
-                                </div>
-                                {/* Centres */}
                                 {clusterCentres.length === 0 ? (
                                   <div className="px-6 py-3 text-gray-500 text-sm">
                                     No centres in this cluster
