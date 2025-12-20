@@ -600,6 +600,7 @@ const getClusterWorkshopPlanning = async (req: Request, res: Response) => {
         cluster_id as clusterId,
         dau,
         bikes_in_city as bikesInCity,
+        outflow_number as outflowNumber,
         fault_rate_percent as faultRatePercent,
         per_mechanic_capacity as perMechanicCapacity,
         shrinkage_percent as shrinkagePercent,
@@ -628,6 +629,7 @@ const saveClusterWorkshopPlanning = async (req: Request, res: Response) => {
     const clusterId = req.body.cluster_id || req.body.clusterId;
     const dau = req.body.dau ?? 0;
     const bikesInCity = req.body.bikes_in_city ?? req.body.bikesInCity ?? 0;
+    const outflowNumber = req.body.outflow_number ?? req.body.outflowNumber ?? 0;
     const faultRatePercent = req.body.fault_rate_percent ?? req.body.faultRatePercent ?? 0;
     const perMechanicCapacity = req.body.per_mechanic_capacity ?? req.body.perMechanicCapacity ?? 1;
     const shrinkagePercent = req.body.shrinkage_percent ?? req.body.shrinkagePercent ?? 0;
@@ -649,18 +651,18 @@ const saveClusterWorkshopPlanning = async (req: Request, res: Response) => {
       // Update existing
       await query(`
         UPDATE cluster_workshop_technician_planning 
-        SET dau = ?, bikes_in_city = ?, fault_rate_percent = ?, 
+        SET dau = ?, bikes_in_city = ?, outflow_number = ?, fault_rate_percent = ?, 
             per_mechanic_capacity = ?, shrinkage_percent = ?, 
             use_dau = ?, use_bic = ?, updated_by = ?, updated_at = NOW()
         WHERE cluster_id = ?
-      `, [dau, bikesInCity, faultRatePercent, perMechanicCapacity, shrinkagePercent, useDau, useBic, updatedBy, clusterId]);
+      `, [dau, bikesInCity, outflowNumber, faultRatePercent, perMechanicCapacity, shrinkagePercent, useDau, useBic, updatedBy, clusterId]);
     } else {
       // Insert new
       await query(`
         INSERT INTO cluster_workshop_technician_planning 
-        (cluster_id, dau, bikes_in_city, fault_rate_percent, per_mechanic_capacity, shrinkage_percent, use_dau, use_bic, updated_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [clusterId, dau, bikesInCity, faultRatePercent, perMechanicCapacity, shrinkagePercent, useDau, useBic, updatedBy]);
+        (cluster_id, dau, bikes_in_city, outflow_number, fault_rate_percent, per_mechanic_capacity, shrinkage_percent, use_dau, use_bic, updated_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [clusterId, dau, bikesInCity, outflowNumber, faultRatePercent, perMechanicCapacity, shrinkagePercent, useDau, useBic, updatedBy]);
     }
 
     res.json({ message: "Cluster workshop planning saved successfully" });

@@ -129,12 +129,13 @@ export default function ManpowerPlanning() {
   const [clusterWorkshopData, setClusterWorkshopData] = useState<{
     dau: number;
     bikesInCity: number;
+    outflowNumber: number;
     faultRatePercent: number;
     perMechanicCapacity: number;
     shrinkagePercent: number;
     useDau: boolean;
     useBic: boolean;
-  }>({ dau: 0, bikesInCity: 0, faultRatePercent: 0, perMechanicCapacity: 1, shrinkagePercent: 0, useDau: true, useBic: false });
+  }>({ dau: 0, bikesInCity: 0, outflowNumber: 0, faultRatePercent: 0, perMechanicCapacity: 1, shrinkagePercent: 0, useDau: true, useBic: false });
 
   // Fetch cluster workshop planning data when modal opens
   const { data: clusterWorkshopPlanningData } = useQuery({
@@ -148,6 +149,7 @@ export default function ManpowerPlanning() {
       setClusterWorkshopData({
         dau: clusterWorkshopPlanningData.dau ?? 0,
         bikesInCity: clusterWorkshopPlanningData.bikesInCity ?? 0,
+        outflowNumber: clusterWorkshopPlanningData.outflowNumber ?? 0,
         faultRatePercent: clusterWorkshopPlanningData.faultRatePercent ?? 0,
         perMechanicCapacity: clusterWorkshopPlanningData.perMechanicCapacity ?? 1,
         shrinkagePercent: clusterWorkshopPlanningData.shrinkagePercent ?? 0,
@@ -398,15 +400,20 @@ export default function ManpowerPlanning() {
   const openClusterWorkshopPlanning = (cluster: Cluster) => {
     setSelectedClusterForWorkshop(cluster);
     setShowClusterWorkshopModal(true);
-    // Initialize with default values
+    
+    // Find city data for this cluster to inherit DAU, BIC, and mechanic capacity
+    const cityData = safeWorkshopData.find((w: any) => w.cityId === cluster.cityId);
+    
+    // Initialize with city-level values
     setClusterWorkshopData({
-      dau: 0,
-      bikesInCity: 0,
+      dau: cityData?.dau ?? 0,
+      bikesInCity: cityData?.bikesInCity ?? 0,
+      outflowNumber: 0,
       faultRatePercent: 0,
-      perMechanicCapacity: 1,
-      shrinkagePercent: 0,
-      useDau: true,
-      useBic: false,
+      perMechanicCapacity: cityData?.perMechanicCapacity ?? 1,
+      shrinkagePercent: cityData?.shrinkagePercent ?? 0,
+      useDau: cityData?.useDau ?? true,
+      useBic: cityData?.useBic ?? false,
     });
   };
 
@@ -549,7 +556,7 @@ export default function ManpowerPlanning() {
 
   // Save cluster workshop planning mutation
   const saveClusterWorkshopMutation = useMutation({
-    mutationFn: async (data: { clusterId: number; dau: number; bikesInCity: number; faultRatePercent: number; perMechanicCapacity: number; shrinkagePercent: number; useDau: boolean; useBic: boolean }) => {
+    mutationFn: async (data: { clusterId: number; dau: number; bikesInCity: number; outflowNumber: number; faultRatePercent: number; perMechanicCapacity: number; shrinkagePercent: number; useDau: boolean; useBic: boolean }) => {
       return await apiRequest("/api/manpower-planning/cluster/workshop-technician", {
         method: "POST",
         body: data,
@@ -1296,89 +1303,85 @@ export default function ManpowerPlanning() {
               Workshop Technician Planning - {selectedClusterForWorkshop?.name}
             </DialogTitle>
             <p className="text-sm text-gray-500 mt-2">
-              Configure DAU and capacity parameters to calculate required workshop technicians for this cluster
+              DAU, BIC, and Mechanic Capacity are inherited from city-level configuration. Enter cluster-specific outflow number.
             </p>
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
-            {/* DAU and BIC Inputs */}
+            {/* DAU and BIC - Read Only (Inherited from City) */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>DAU (Daily Active Users)</Label>
+                <Label>DAU (Daily Active Users) - From City</Label>
                 <Input
                   type="number"
-                  min="0"
                   value={clusterWorkshopData.dau}
-                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, dau: parseInt(e.target.value) || 0 }))}
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  disabled
+                  className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
               <div>
-                <Label>BIC (Bikes in City)</Label>
+                <Label>BIC (Bikes in City) - From City</Label>
                 <Input
                   type="number"
-                  min="0"
                   value={clusterWorkshopData.bikesInCity}
-                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, bikesInCity: parseInt(e.target.value) || 0 }))}
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  disabled
+                  className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
             </div>
 
-            {/* Use DAU or BIC Toggle */}
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant={clusterWorkshopData.useDau ? "default" : "outline"}
-                size="sm"
-                onClick={() => setClusterWorkshopData(prev => ({ ...prev, useDau: true, useBic: false }))}
-                className={clusterWorkshopData.useDau ? "bg-[#2563EB] hover:bg-[#1D4ED8]" : ""}
-              >
-                Use DAU
-              </Button>
-              <Button
-                type="button"
-                variant={clusterWorkshopData.useBic ? "default" : "outline"}
-                size="sm"
-                onClick={() => setClusterWorkshopData(prev => ({ ...prev, useDau: false, useBic: true }))}
-                className={clusterWorkshopData.useBic ? "bg-[#2563EB] hover:bg-[#1D4ED8]" : ""}
-              >
-                Use BIC
-              </Button>
+            {/* Use DAU or BIC Toggle - Read Only */}
+            <div className="flex gap-2 items-center">
+              <span className="text-sm text-gray-600">Using:</span>
+              <Badge variant="default" className="bg-[#2563EB]">
+                {clusterWorkshopData.useBic ? 'BIC' : 'DAU'} (from city configuration)
+              </Badge>
             </div>
 
-            {/* Outflow, Capacity, Shrinkage */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Outflow Number Input */}
+            <div className="space-y-2">
+              <Label>Cluster Outflow (Number of Bikes)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={clusterWorkshopData.outflowNumber}
+                onChange={(e) => {
+                  const outflowNum = parseInt(e.target.value) || 0;
+                  const baseValue = clusterWorkshopData.useBic ? clusterWorkshopData.bikesInCity : clusterWorkshopData.dau;
+                  const calculatedPercent = baseValue > 0 ? (outflowNum / baseValue) * 100 : 0;
+                  setClusterWorkshopData(prev => ({ 
+                    ...prev, 
+                    outflowNumber: outflowNum,
+                    faultRatePercent: calculatedPercent 
+                  }));
+                }}
+                placeholder="Enter number of bikes in outflow"
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <p className="text-xs text-gray-500">
+                Auto-calculated percentage: {clusterWorkshopData.faultRatePercent.toFixed(2)}% 
+                (Outflow / {clusterWorkshopData.useBic ? 'BIC' : 'DAU'})
+              </p>
+            </div>
+
+            {/* Capacity and Shrinkage - Read Only */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Outflow %</Label>
+                <Label>Per Mechanic Capacity - From City</Label>
                 <Input
                   type="number"
-                  min="0"
-                  step="0.1"
-                  value={clusterWorkshopData.faultRatePercent}
-                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, faultRatePercent: parseFloat(e.target.value) || 0 }))}
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-              </div>
-              <div>
-                <Label>Per Mechanic Capacity</Label>
-                <Input
-                  type="number"
-                  min="1"
                   value={clusterWorkshopData.perMechanicCapacity}
-                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, perMechanicCapacity: parseInt(e.target.value) || 1 }))}
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  disabled
+                  className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
               <div>
-                <Label>Shrinkage %</Label>
+                <Label>Shrinkage % - From City</Label>
                 <Input
                   type="number"
-                  min="0"
-                  step="0.1"
                   value={clusterWorkshopData.shrinkagePercent}
-                  onChange={(e) => setClusterWorkshopData(prev => ({ ...prev, shrinkagePercent: parseFloat(e.target.value) || 0 }))}
-                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  disabled
+                  className="bg-gray-100 cursor-not-allowed"
                 />
               </div>
             </div>
