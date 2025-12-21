@@ -164,32 +164,36 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
       });
 
       console.log('Validation response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Is array:', Array.isArray(response));
 
       // apiRequest returns response.data.data || response.data
       // Backend returns { totalRows, validRows, errorRows, data: [...] }
       // So apiRequest extracts the data array directly
       // We need to handle both cases: array directly or object with data property
       let dataArray: any[] = [];
-      let totalRows = 0;
-      let validRows = 0;
-      let errorRows = 0;
 
       if (Array.isArray(response)) {
         // Response is the data array directly
         dataArray = response;
-        totalRows = dataArray.length;
-        validRows = dataArray.filter((r: any) => !r.errors || r.errors.length === 0).length;
-        errorRows = dataArray.filter((r: any) => r.errors && r.errors.length > 0).length;
+        console.log('Using response as array directly, length:', dataArray.length);
       } else if (response && typeof response === 'object') {
         // Response is an object with data property
-        dataArray = response.data || [];
-        totalRows = response.totalRows || dataArray.length;
-        validRows = response.validRows || dataArray.filter((r: any) => !r.errors || r.errors.length === 0).length;
-        errorRows = response.errorRows || dataArray.filter((r: any) => r.errors && r.errors.length > 0).length;
+        if (Array.isArray(response.data)) {
+          dataArray = response.data;
+          console.log('Using response.data as array, length:', dataArray.length);
+        } else {
+          // Maybe the response itself has the rows as properties
+          console.log('Response keys:', Object.keys(response));
+          dataArray = [];
+        }
       }
 
-      if (!Array.isArray(dataArray)) {
-        throw new Error('Invalid response format from server');
+      console.log('Final dataArray length:', dataArray.length);
+
+      if (!Array.isArray(dataArray) || dataArray.length === 0) {
+        console.error('No data found in response');
+        throw new Error('No data found in response. Please check your CSV file format.');
       }
 
       // Ensure each row has an errors array
