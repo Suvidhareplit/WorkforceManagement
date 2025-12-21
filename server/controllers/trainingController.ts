@@ -149,7 +149,9 @@ const updateInduction = async (req: Request, res: Response) => {
     );
     
     // If induction_status is being updated to 'completed', create classroom training
-    if (updateData.induction_status === 'completed') {
+    // BUT only if joining_status is NOT 'not_joined'
+    const joiningStatus = updateData.joining_status || currentRecord.joining_status;
+    if (updateData.induction_status === 'completed' && joiningStatus !== 'not_joined') {
       // Check if classroom training already exists
       const existingCRT = await query(
         'SELECT id FROM classroom_training WHERE induction_id = ?',
@@ -169,6 +171,8 @@ const updateInduction = async (req: Request, res: Response) => {
       } else {
         console.log('ℹ️  Classroom training already exists for induction ID:', id);
       }
+    } else if (joiningStatus === 'not_joined') {
+      console.log('⚠️  Skipping classroom training creation - candidate marked as not_joined');
     }
     
     res.json({ message: "Induction updated successfully" });
@@ -191,9 +195,10 @@ const getClassroomTrainings = async (req: Request, res: Response) => {
     
     const result = await query(
       `SELECT ct.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
-              it.date_of_joining, it.gross_salary, it.manager_name
+              it.date_of_joining, it.gross_salary, it.manager_name, it.joining_status
        FROM classroom_training ct
        JOIN induction_training it ON ct.induction_id = it.id
+       WHERE it.joining_status != 'not_joined' OR it.joining_status IS NULL
        ORDER BY ct.created_at DESC`
     );
     const rows = result.rows || [];
