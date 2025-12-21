@@ -1328,6 +1328,12 @@ export class SqlStorage implements IStorage {
       }
     }
 
+    // Convert empty strings to null for optional numeric fields
+    const experienceYearsValue = experienceYears && experienceYears !== '' ? parseFloat(experienceYears) : null;
+    const currentCtcValue = currentCtc && currentCtc !== '' ? parseFloat(currentCtc) : null;
+    const expectedCtcValue = expectedCtc && expectedCtc !== '' ? parseFloat(expectedCtc) : null;
+    const currentCompanyValue = currentCompany && currentCompany !== '' ? currentCompany : null;
+
     const insertResult = await query(`
       INSERT INTO candidates (
         application_id, name, phone, aadhar_number, email, designation_id, designation_name, city_id, city_name, cluster_id, cluster_name,
@@ -1337,7 +1343,7 @@ export class SqlStorage implements IStorage {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'applied', NOW())
     `, [
       applicationId, name, phone, aadharNumber, email, designationId, designation, cityId, city, clusterId, cluster,
-      qualification, currentCompany, experienceYears, currentCtc, expectedCtc,
+      qualification, currentCompanyValue, experienceYearsValue, currentCtcValue, expectedCtcValue,
       resumeSource, vendorId, vendorName, recruiterId, recruiterName, referralName
     ]);
     
