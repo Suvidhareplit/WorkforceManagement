@@ -22,6 +22,7 @@ export default function Prescreening() {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [currentPage, setCurrentPage] = useState(1);
+  const [openDialogId, setOpenDialogId] = useState<number | null>(null);
   const itemsPerPage = 15;
   const { toast } = useToast();
 
@@ -100,6 +101,7 @@ export default function Prescreening() {
       });
       setNotes("");
       setMarks("");
+      setOpenDialogId(null); // Close the dialog
     },
     onError: (error: any) => {
       toast({
@@ -332,15 +334,19 @@ export default function Prescreening() {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
-                        <Dialog>
+                        <Dialog open={openDialogId === candidate.id} onOpenChange={(open) => {
+                          if (open) {
+                            setOpenDialogId(candidate.id);
+                            setNotes(candidate.prescreeningNotes || "");
+                            setMarks(candidate.prescreeningScore ? candidate.prescreeningScore.toString() : "");
+                          } else {
+                            setOpenDialogId(null);
+                          }
+                        }}>
                           <DialogTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
-                                setNotes(candidate.prescreeningNotes || "");
-                                setMarks(candidate.prescreeningScore ? candidate.prescreeningScore.toString() : "");
-                              }}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
