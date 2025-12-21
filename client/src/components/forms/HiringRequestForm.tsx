@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
 
 const formSchema = z.object({
   cityId: z.string().min(1, "City is required"),
@@ -16,6 +17,7 @@ const formSchema = z.object({
   numberOfPositions: z.string().min(1, "Number of positions is required"),
   priority: z.enum(["P0", "P1", "P2", "P3"]),
   requestType: z.enum(["backfill", "fresh", "training_attrition"]),
+  requestDate: z.string().min(1, "Request date is required"),
   notes: z.string().optional(),
 });
 
@@ -27,6 +29,7 @@ interface HiringRequestFormProps {
 
 export default function HiringRequestForm({ onSubmit, isLoading = false, onCancel }: HiringRequestFormProps) {
   const [selectedCityId, setSelectedCityId] = useState<string>("");
+  const { user } = useAuth();
 
   const { data: cities } = useQuery({
     queryKey: ["/api/master-data/city"],
@@ -55,6 +58,7 @@ export default function HiringRequestForm({ onSubmit, isLoading = false, onCance
       numberOfPositions: "",
       priority: "P1",
       requestType: "fresh",
+      requestDate: new Date().toISOString().split('T')[0],
       notes: "",
     },
   });
@@ -182,7 +186,7 @@ export default function HiringRequestForm({ onSubmit, isLoading = false, onCance
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FormField
             control={form.control}
             name="priority"
@@ -225,6 +229,24 @@ export default function HiringRequestForm({ onSubmit, isLoading = false, onCance
                     <SelectItem value="training_attrition">Training Attrition</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="requestDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Request Date</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    min={user?.role === 'admin' ? undefined : new Date().toISOString().split('T')[0]}
+                    {...field}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

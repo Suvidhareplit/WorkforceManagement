@@ -299,7 +299,7 @@ export default function CreateHiringRequest() {
                       <FormControl>
                         <Input
                           type="date"
-                          min={new Date().toISOString().split('T')[0]}
+                          min={user?.role === 'admin' ? undefined : new Date().toISOString().split('T')[0]}
                           {...field}
                         />
                       </FormControl>
