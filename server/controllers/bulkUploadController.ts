@@ -8,7 +8,7 @@ interface BulkCandidateRow {
   phone: string;
   aadharNumber: string;
   email: string;
-  role: string;
+  designation: string;
   city: string;
   cluster: string;
   qualification: string;
@@ -25,7 +25,7 @@ interface ValidationError {
 
 interface ValidatedRow extends BulkCandidateRow {
   row: number;
-  roleId?: number;
+  designationId?: number;
   cityId?: number;
   clusterId?: number;
   vendorId?: number;
@@ -57,8 +57,8 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
     }
 
     // Get master data for validation
-    const [roles, cities, clusters, vendors, recruiters, hiringRequests] = await Promise.all([
-      storage.getRoles(),
+    const [designations, cities, clusters, vendors, recruiters, hiringRequests] = await Promise.all([
+      storage.getDesignations(),
       storage.getCities(),
       storage.getClusters(),
       storage.getVendors(),
@@ -67,7 +67,7 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
     ]);
 
     // Create lookup maps
-    const roleMap = new Map(roles.map(r => [r.name.toLowerCase(), r]));
+    const designationMap = new Map(designations.map(d => [d.name.toLowerCase(), d]));
     const cityMap = new Map(cities.map(c => [c.name.toLowerCase(), c]));
     const vendorMap = new Map(vendors.map(v => [v.name.toLowerCase(), v]));
     const recruiterMap = new Map(recruiters.map(r => [r.name.toLowerCase(), r]));
@@ -81,11 +81,15 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
       clustersByCity.get(cluster.cityId)!.set(cluster.name.toLowerCase(), cluster);
     });
 
-    // Create a map of open positions: key = "cityId-clusterId-roleId", value = hiring request
+    // Create a map of open positions: key = "cityId-clusterId-designationId", value = hiring request
     const openPositionsMap = new Map<string, any>();
     hiringRequests.forEach(request => {
-      const key = `${request.cityId || request.city_id}-${request.clusterId || request.cluster_id}-${request.roleId || request.role_id}`;
-      openPositionsMap.set(key, request);
+      // Get designation ID from role ID in hiring request
+      const designation = designations.find(d => d.roleId === (request.roleId || request.role_id));
+      if (designation) {
+        const key = `${request.cityId || request.city_id}-${request.clusterId || request.cluster_id}-${designation.id}`;
+        openPositionsMap.set(key, request);
+      }
     });
 
     // Valid values
@@ -103,7 +107,7 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
         phone: record.phone || '',
         aadharNumber: record.aadharNumber || record.aadhar_number || '',
         email: record.email || '',
-        role: record.role || '',
+        designation: record.designation || '',
         city: record.city || '',
         cluster: record.cluster || '',
         qualification: record.qualification || '',
@@ -144,12 +148,12 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
         row.errors.push({ row: row.row, field: 'email', value: row.email, message: 'Valid email is required' });
       }
 
-      // Validate role
-      const role = roleMap.get(row.role.toLowerCase());
-      if (!role) {
-        row.errors.push({ row: row.row, field: 'role', value: row.role, message: 'Invalid role. Must match existing roles.' });
+      // Validate designation
+      const designation = designationMap.get(row.designation.toLowerCase());
+      if (!designation) {
+        row.errors.push({ row: row.row, field: 'designation', value: row.designation, message: 'Invalid designation. Must match existing designations.' });
       } else {
-        row.roleId = role.id;
+        row.designationId = designation.id;
       }
 
       // Validate city
@@ -171,17 +175,17 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
         }
       }
 
-      // Validate open position (only if city, cluster, and role are all valid)
-      if (row.cityId && row.clusterId && row.roleId) {
-        const positionKey = `${row.cityId}-${row.clusterId}-${row.roleId}`;
+      // Validate open position (only if city, cluster, and designation are all valid)
+      if (row.cityId && row.clusterId && row.designationId) {
+        const positionKey = `${row.cityId}-${row.clusterId}-${row.designationId}`;
         const openPosition = openPositionsMap.get(positionKey);
         
         if (!openPosition) {
           row.errors.push({ 
             row: row.row, 
             field: 'position', 
-            value: `${row.city} - ${row.cluster} - ${row.role}`, 
-            message: `No open position found for this combination of City, Cluster, and Role. Please create a hiring request first.` 
+            value: `${row.city} - ${row.cluster} - ${row.designation}`, 
+            message: `No open position found for this combination of City, Cluster, and Designation. Please create a hiring request first.` 
           });
         }
       }
@@ -282,7 +286,7 @@ export const processBulkUpload = async (req: Request, res: Response) => {
           phone: candidate.phone,
           aadharNumber: candidate.aadharNumber || candidate.aadhar_number,
           email: candidate.email,
-          role: candidate.role,
+          designation: candidate.designation,
           city: candidate.city,
           cluster: candidate.cluster,
           qualification: candidate.qualification,
