@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Edit, Save, X } from "lucide-react";
+import { Edit, Check, X } from "lucide-react";
 import { format } from "date-fns";
 
 export default function InductionTraining() {
@@ -110,7 +110,7 @@ export default function InductionTraining() {
                   <TableHead className="font-semibold text-slate-700">Mobile</TableHead>
                   <TableHead className="font-semibold text-slate-700">City</TableHead>
                   <TableHead className="font-semibold text-slate-700">Cluster</TableHead>
-                  <TableHead className="font-semibold text-slate-700">Role</TableHead>
+                  <TableHead className="font-semibold text-slate-700">Designation</TableHead>
                   <TableHead className="font-semibold text-slate-700">DOJ</TableHead>
                   <TableHead className="font-semibold text-slate-700">Gross</TableHead>
                   <TableHead className="font-semibold text-slate-700">Joining Status</TableHead>
@@ -142,7 +142,7 @@ export default function InductionTraining() {
                       <TableCell>{induction.mobileNumber || induction.mobile_number || '-'}</TableCell>
                       <TableCell>{induction.city}</TableCell>
                       <TableCell>{induction.cluster}</TableCell>
-                      <TableCell>{induction.role}</TableCell>
+                      <TableCell>{induction.designation || induction.designationName || induction.designation_name || induction.role || '-'}</TableCell>
                       <TableCell>
                         {induction.dateOfJoining || induction.date_of_joining
                           ? format(new Date(induction.dateOfJoining || induction.date_of_joining), "dd-MMM-yyyy")
@@ -288,8 +288,9 @@ export default function InductionTraining() {
                               size="sm"
                               onClick={() => handleSave(induction.id)}
                               disabled={updateInductionMutation.isPending}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
                             >
-                              <Save className="h-4 w-4" />
+                              <Check className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
