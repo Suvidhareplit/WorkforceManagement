@@ -165,10 +165,29 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
 
       console.log('Validation response:', response);
 
-      // Handle different response structures - data might be nested or at root level
-      const responseData = response?.data || response;
-      const dataArray = responseData?.data || [];
-      
+      // apiRequest returns response.data.data || response.data
+      // Backend returns { totalRows, validRows, errorRows, data: [...] }
+      // So apiRequest extracts the data array directly
+      // We need to handle both cases: array directly or object with data property
+      let dataArray: any[] = [];
+      let totalRows = 0;
+      let validRows = 0;
+      let errorRows = 0;
+
+      if (Array.isArray(response)) {
+        // Response is the data array directly
+        dataArray = response;
+        totalRows = dataArray.length;
+        validRows = dataArray.filter((r: any) => !r.errors || r.errors.length === 0).length;
+        errorRows = dataArray.filter((r: any) => r.errors && r.errors.length > 0).length;
+      } else if (response && typeof response === 'object') {
+        // Response is an object with data property
+        dataArray = response.data || [];
+        totalRows = response.totalRows || dataArray.length;
+        validRows = response.validRows || dataArray.filter((r: any) => !r.errors || r.errors.length === 0).length;
+        errorRows = response.errorRows || dataArray.filter((r: any) => r.errors && r.errors.length > 0).length;
+      }
+
       if (!Array.isArray(dataArray)) {
         throw new Error('Invalid response format from server');
       }
@@ -179,14 +198,18 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
         errors: row.errors || []
       }));
 
+      // Recalculate counts from processed data
+      const calculatedValidRows = processedData.filter((r: any) => !r.errors || r.errors.length === 0).length;
+      const calculatedErrorRows = processedData.filter((r: any) => r.errors && r.errors.length > 0).length;
+
       setValidatedData(processedData);
       setSummary({
-        totalRows: responseData.totalRows || processedData.length,
-        validRows: responseData.validRows || processedData.filter((r: any) => !r.errors || r.errors.length === 0).length,
-        errorRows: responseData.errorRows || processedData.filter((r: any) => r.errors && r.errors.length > 0).length,
+        totalRows: processedData.length,
+        validRows: calculatedValidRows,
+        errorRows: calculatedErrorRows,
       });
 
-      const errorCount = responseData.errorRows || processedData.filter((r: any) => r.errors && r.errors.length > 0).length;
+      const errorCount = calculatedErrorRows;
       
       if (errorCount > 0) {
         toast({
