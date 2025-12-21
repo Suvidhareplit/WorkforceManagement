@@ -32,12 +32,12 @@ export default function InductionTraining() {
     rawData: JSON.stringify(inductionsResponse)
   });
 
-  // Fetch trainers for dropdown
-  const { data: trainersResponse } = useQuery({
-    queryKey: ["/api/master-data/trainer"],
+  // Fetch recruiters for dropdown (Induction Done By)
+  const { data: recruitersResponse } = useQuery({
+    queryKey: ["/api/master-data/recruiter"],
   });
 
-  const trainers = (trainersResponse as any) || [];
+  const recruiters = (recruitersResponse as any) || [];
 
   // Update induction mutation
   const updateInductionMutation = useMutation({
@@ -194,18 +194,18 @@ export default function InductionTraining() {
                             onValueChange={(value) => setEditData({...editData, induction_done_by: parseInt(value)})}
                           >
                             <SelectTrigger className="w-[150px]">
-                              <SelectValue placeholder="Select Trainer" />
+                              <SelectValue placeholder="Select Recruiter" />
                             </SelectTrigger>
                             <SelectContent>
-                              {trainers.map((trainer: any) => (
-                                <SelectItem key={trainer.id} value={trainer.id.toString()}>
-                                  {trainer.name}
+                              {recruiters.map((recruiter: any) => (
+                                <SelectItem key={recruiter.id} value={recruiter.id.toString()}>
+                                  {recruiter.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         ) : (
-                          trainers.find((t: any) => t.id === (induction.inductionDoneBy || induction.induction_done_by))?.name || '-'
+                          recruiters.find((r: any) => r.id === (induction.inductionDoneBy || induction.induction_done_by))?.name || '-'
                         )}
                       </TableCell>
 
