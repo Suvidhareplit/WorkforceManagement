@@ -444,8 +444,6 @@ export default function MasterData() {
       return;
     }
 
-    console.log('Creating role with form data:', formData);
-
     const roleData = new FormData();
     roleData.append('name', formData.name);
     if (formData.businessUnit) roleData.append('businessUnitId', formData.businessUnit);
@@ -455,15 +453,8 @@ export default function MasterData() {
       roleData.append('jobDescriptionFile', formData.jobDescriptionFile);
     }
     
-    console.log('FormData contents:');
-    for (let [key, value] of roleData.entries()) {
-      console.log(key, value);
-    }
-    
     try {
-      console.log('Sending API request...');
-      const result = await createRoleMutation.mutateAsync(roleData);
-      console.log('API response:', result);
+      await createRoleMutation.mutateAsync(roleData);
       setFormData({ ...formData, name: "", businessUnit: "", department: "", subDepartment: "", jobDescriptionFile: null });
       // Reset file input
       const fileInput = document.getElementById('roleJD') as HTMLInputElement;
@@ -474,7 +465,6 @@ export default function MasterData() {
   };
 
   const handleCreateVendor = () => {
-    console.log('Creating vendor with ALL formData:', formData);
     
     if (!formData.name || !formData.deliveryLeadName || !formData.deliveryLeadEmail) {
       toast({
@@ -520,7 +510,6 @@ export default function MasterData() {
       citySpocs,
     };
     
-    console.log('Sending vendor payload:', vendorPayload);
     createVendorMutation.mutate(vendorPayload);
   };
 
@@ -688,28 +677,20 @@ export default function MasterData() {
           })
         };
 
-        console.log('Sending PATCH request to:', endpoint);
-        console.log('Update data:', updateData);
-        
-        const response = await apiRequest(endpoint, {
+        await apiRequest(endpoint, {
           method: "PATCH",
           body: updateData,
         });
-        
-        console.log('API response:', response);
       }
       
       // Force immediate cache refresh
       const queryKey = editType === 'designation' ? ["/api/designations"] : [`/api/master-data/${editType}`];
-      console.log('Force refreshing cache for query:', queryKey);
       
       // Invalidate and immediately refetch active queries
       await queryClient.invalidateQueries({ 
         queryKey,
         refetchType: 'active'
       });
-      
-      console.log('Cache force refresh completed');
       toast({
         title: "Success",
         description: `${editType.charAt(0).toUpperCase() + editType.slice(1)} updated successfully`,
@@ -790,9 +771,6 @@ export default function MasterData() {
   };
 
   const handleViewVendorDetails = (vendor: Vendor) => {
-    console.log('📋 Viewing vendor details:', vendor);
-    console.log('📋 City SPOCs:', vendor.citySpocs);
-    console.log('📋 City SPOC Data:', vendor.citySpocData);
     setSelectedVendor(vendor);
     setVendorDetailsOpen(true);
   };
