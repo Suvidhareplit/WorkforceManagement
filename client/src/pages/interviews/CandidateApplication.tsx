@@ -165,23 +165,33 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
 
       console.log('Validation response:', response);
 
+      // Handle different response structures - data might be nested or at root level
+      const responseData = response?.data || response;
+      const dataArray = responseData?.data || [];
+      
+      if (!Array.isArray(dataArray)) {
+        throw new Error('Invalid response format from server');
+      }
+
       // Ensure each row has an errors array
-      const processedData = response.data.map((row: any) => ({
+      const processedData = dataArray.map((row: any) => ({
         ...row,
         errors: row.errors || []
       }));
 
       setValidatedData(processedData);
       setSummary({
-        totalRows: response.totalRows || 0,
-        validRows: response.validRows || 0,
-        errorRows: response.errorRows || 0,
+        totalRows: responseData.totalRows || processedData.length,
+        validRows: responseData.validRows || processedData.filter((r: any) => !r.errors || r.errors.length === 0).length,
+        errorRows: responseData.errorRows || processedData.filter((r: any) => r.errors && r.errors.length > 0).length,
       });
 
-      if (response.errorRows > 0) {
+      const errorCount = responseData.errorRows || processedData.filter((r: any) => r.errors && r.errors.length > 0).length;
+      
+      if (errorCount > 0) {
         toast({
           title: "Validation completed",
-          description: `Found ${response.errorRows} row(s) with errors. Please fix them before submitting.`,
+          description: `Found ${errorCount} row(s) with errors. Please fix them before submitting.`,
           variant: "destructive",
         });
         // Log which rows have errors for debugging
@@ -193,7 +203,7 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
       } else {
         toast({
           title: "Validation successful",
-          description: `All ${response.totalRows} rows are valid and ready to submit.`,
+          description: `All ${processedData.length} rows are valid and ready to submit.`,
         });
       }
     } catch (error: any) {
