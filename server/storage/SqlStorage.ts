@@ -1004,10 +1004,13 @@ export class SqlStorage implements IStorage {
   async createTrainer(trainerData: any, options?: CreateOptions): Promise<any> {
     const { name, cityId, email, phone, isActive = true } = trainerData;
     
+    // Ensure cityId is a valid number or null
+    const cityIdValue = cityId ? parseInt(cityId as string) : null;
+    
     const insertResult = await query(`
       INSERT INTO trainers (name, city_id, email, phone, is_active, created_at)
       VALUES (?, ?, ?, ?, ?, NOW())
-    `, [name, cityId, email, phone, isActive]);
+    `, [name, cityIdValue, email, phone, isActive]);
     
     const trainerId = (insertResult.rows as any).insertId;
     return await this.getTrainer(trainerId) as any;
@@ -1017,11 +1020,18 @@ export class SqlStorage implements IStorage {
     const fields: string[] = [];
     const values: any[] = [];
     
+    // Field mapping for camelCase to snake_case
+    const fieldMapping: Record<string, string> = {
+      cityId: 'city_id',
+      isActive: 'is_active',
+    };
+    
     Object.entries(trainerData).forEach(([key, value]) => {
       if (key !== 'id' && value !== undefined) {
-        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
-        fields.push(`${dbKey} = ?`);
-        values.push(value);
+        const dbField = fieldMapping[key] || key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        fields.push(`${dbField} = ?`);
+        // Convert cityId to integer if present
+        values.push(key === 'cityId' ? parseInt(value as string) : value);
       }
     });
     
