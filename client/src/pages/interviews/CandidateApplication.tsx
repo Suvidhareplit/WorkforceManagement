@@ -161,11 +161,6 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
 
       console.log('Validation response:', response);
 
-      // Check if response has the expected structure
-      if (!response || !response.data) {
-        throw new Error('Invalid response from server');
-      }
-
       // Ensure each row has an errors array
       const processedData = response.data.map((row: any) => ({
         ...row,
