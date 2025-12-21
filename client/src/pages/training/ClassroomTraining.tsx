@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Edit, Save, X, CalendarIcon, Lock } from "lucide-react";
+import { Edit, Check, X, CalendarIcon, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -264,13 +263,13 @@ export default function ClassroomTraining() {
                           </Select>
                         ) : (
                           (classroom.crtFeedback || classroom.crt_feedback) ? (
-                            <Badge variant={
+                            <span className={
                               (classroom.crtFeedback || classroom.crt_feedback) === 'fit' || 
-                              (classroom.crtFeedback || classroom.crt_feedback) === 'fit_need_observation' ? 'default' : 
-                              (classroom.crtFeedback || classroom.crt_feedback) === 'under_classroom_training' ? 'outline' : 'destructive'
+                              (classroom.crtFeedback || classroom.crt_feedback) === 'fit_need_observation' ? 'text-green-600 font-medium' : 
+                              (classroom.crtFeedback || classroom.crt_feedback) === 'under_classroom_training' ? 'text-slate-600' : 'text-red-600 font-medium'
                             }>
-                              {(classroom.crtFeedback || classroom.crt_feedback).replace(/_/g, ' ')}
-                            </Badge>
+                              {(classroom.crtFeedback || classroom.crt_feedback).replace(/_/g, ' ').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                            </span>
                           ) : '-'
                         )}
                       </TableCell>
@@ -354,8 +353,9 @@ export default function ClassroomTraining() {
                               size="sm"
                               onClick={() => handleSave(classroom.id)}
                               disabled={updateClassroomMutation.isPending}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
                             >
-                              <Save className="h-4 w-4" />
+                              <Check className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"

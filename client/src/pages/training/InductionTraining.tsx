@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -167,9 +166,12 @@ export default function InductionTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant={(induction.joiningStatus || induction.joining_status) === 'joined' ? 'default' : 'outline'}>
+                          <span className={
+                            (induction.joiningStatus || induction.joining_status) === 'joined' ? 'text-green-600 font-medium' : 
+                            (induction.joiningStatus || induction.joining_status) === 'not_joined' ? 'text-red-600 font-medium' : 'text-slate-600'
+                          }>
                             {(induction.joiningStatus || induction.joining_status) ? (induction.joiningStatus || induction.joining_status).charAt(0).toUpperCase() + (induction.joiningStatus || induction.joining_status).slice(1).replace('_', ' ') : 'Pending'}
-                          </Badge>
+                          </span>
                         )}
                       </TableCell>
 
@@ -232,7 +234,9 @@ export default function InductionTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant="outline">{induction.onboardingFormFilled || induction.onboarding_form_filled || 'ytb'}</Badge>
+                          <span className={(induction.onboardingFormFilled || induction.onboarding_form_filled) === 'yes' ? 'text-green-600 font-medium' : 'text-slate-600'}>
+                            {(induction.onboardingFormFilled || induction.onboarding_form_filled || 'YTB').toUpperCase()}
+                          </span>
                         )}
                       </TableCell>
 
@@ -255,7 +259,9 @@ export default function InductionTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant="outline">{induction.uanNumberGenerated || induction.uan_number_generated || 'ytb'}</Badge>
+                          <span className={(induction.uanNumberGenerated || induction.uan_number_generated) === 'yes' ? 'text-green-600 font-medium' : 'text-slate-600'}>
+                            {(induction.uanNumberGenerated || induction.uan_number_generated || 'YTB').toUpperCase()}
+                          </span>
                         )}
                       </TableCell>
 
@@ -264,7 +270,7 @@ export default function InductionTraining() {
                         {(editData.joining_status === 'not_joined' || (!editingId && (induction.joiningStatus || induction.joining_status) === 'not_joined')) ? (
                           <span className="text-slate-500">N/A</span>
                         ) : (induction.joiningStatus || induction.joining_status) === 'pending' ? (
-                          <Badge variant="outline" className="bg-gray-100 text-gray-500">N/A</Badge>
+                          <span className="text-slate-500">N/A</span>
                         ) : editingId === induction.id ? (
                           <Select
                             value={editData.induction_status || (induction.inductionStatus || induction.induction_status)}
@@ -280,12 +286,11 @@ export default function InductionTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge 
-                            variant={(induction.inductionStatus || induction.induction_status) === 'completed' ? 'default' : 'outline'}
-                            className={(induction.inductionStatus || induction.induction_status) === 'completed' ? 'bg-green-600' : ''}
-                          >
-                            {(induction.inductionStatus || induction.induction_status) ? (induction.inductionStatus || induction.induction_status).replace('_', ' ').charAt(0).toUpperCase() + (induction.inductionStatus || induction.induction_status).replace('_', ' ').slice(1) : 'In progress'}
-                          </Badge>
+                          <span className={
+                            (induction.inductionStatus || induction.induction_status) === 'completed' ? 'text-green-600 font-medium' : 'text-slate-600'
+                          }>
+                            {(induction.inductionStatus || induction.induction_status) ? (induction.inductionStatus || induction.induction_status).replace('_', ' ').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'In Progress'}
+                          </span>
                         )}
                       </TableCell>
 

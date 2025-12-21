@@ -2,14 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Edit, Save, X, Download, Lock } from "lucide-react";
+import { Edit, Check, X, Download, Lock } from "lucide-react";
 import { format } from "date-fns";
 
 export default function FieldTraining() {
@@ -242,9 +241,9 @@ export default function FieldTraining() {
                             </SelectContent>
                           </Select>
                         ) : (
-                          <Badge variant={(field.buddyAligned || field.buddy_aligned) === 'yes' ? 'default' : 'outline'}>
-                            {field.buddyAligned || field.buddy_aligned || 'no'}
-                          </Badge>
+                          <span className={(field.buddyAligned || field.buddy_aligned) === 'yes' ? 'text-green-600 font-medium' : 'text-slate-600'}>
+                            {(field.buddyAligned || field.buddy_aligned || 'no').charAt(0).toUpperCase() + (field.buddyAligned || field.buddy_aligned || 'no').slice(1)}
+                          </span>
                         )}
                       </TableCell>
 
@@ -294,13 +293,13 @@ export default function FieldTraining() {
                           </Select>
                         ) : (
                           (field.ftFeedback || field.ft_feedback) ? (
-                            <Badge variant={
+                            <span className={
                               (field.ftFeedback || field.ft_feedback) === 'fit' || 
-                              (field.ftFeedback || field.ft_feedback) === 'fit_need_refresher_training' ? 'default' : 
-                              (field.ftFeedback || field.ft_feedback) === 'under_field_training' ? 'outline' : 'destructive'
+                              (field.ftFeedback || field.ft_feedback) === 'fit_need_refresher_training' ? 'text-green-600 font-medium' : 
+                              (field.ftFeedback || field.ft_feedback) === 'under_field_training' ? 'text-slate-600' : 'text-red-600 font-medium'
                             }>
-                              {(field.ftFeedback || field.ft_feedback).replace(/_/g, ' ')}
-                            </Badge>
+                              {(field.ftFeedback || field.ft_feedback).replace(/_/g, ' ').split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                            </span>
                           ) : '-'
                         )}
                       </TableCell>
@@ -388,8 +387,9 @@ export default function FieldTraining() {
                               size="sm"
                               onClick={() => handleSave(field.id)}
                               disabled={updateFieldMutation.isPending}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
                             >
-                              <Save className="h-4 w-4" />
+                              <Check className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
