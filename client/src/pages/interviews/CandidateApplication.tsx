@@ -52,6 +52,10 @@ interface ValidatedRow {
   city: string;
   cluster: string;
   qualification: string;
+  currentCompany?: string;
+  experienceYears?: string;
+  currentCtc?: string;
+  expectedCtc?: string;
   resumeSource: string;
   sourceName?: string;
   vendor?: string;
@@ -357,10 +361,10 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
   };
 
   const downloadTemplate = () => {
-    const csvContent = "name,phone,email,designation,city,cluster,qualification,resumeSource,sourceName\n" +
-      "John Doe,9876543210,john@example.com,Sales Executive,Bangalore,Electronic City,Graduation,vendor,ManpowerCorp\n" +
-      "Jane Smith,9876543211,jane@example.com,Quality Control Associate,Mumbai,Andheri,Diploma,field_recruiter,Joydeep\n" +
-      "Bob Wilson,9876543212,bob@example.com,Cleaning Associate,Delhi,South Delhi,11th-12th,referral,Employee Name";
+    const csvContent = "name,phone,aadharNumber,email,designation,city,cluster,qualification,currentCompany,experienceYears,currentCtc,expectedCtc,resumeSource,sourceName\n" +
+      "John Doe,9876543210,123456789012,john@example.com,Workshop Technician,Bangalore,Electronic City,Graduation,ABC Corp,2,25000,30000,vendor,Xpheno\n" +
+      "Jane Smith,9876543211,234567890123,jane@example.com,Bike Captain,Mumbai,Andheri,Diploma,XYZ Ltd,1,20000,25000,field_recruiter,Joydeep\n" +
+      "Bob Wilson,9876543212,345678901234,bob@example.com,Associate Workshop Technician,Delhi,South Delhi,ITI,,,,,referral,Employee Name";
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -388,7 +392,9 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
             <AlertDescription className="text-sm space-y-2">
               <p className="font-semibold text-blue-800">Important Instructions:</p>
               <ul className="list-disc list-inside space-y-1 text-blue-700">
-                <li>CSV file must contain all required columns: name, phone, email, designation, city, cluster, qualification, resumeSource, sourceName</li>
+                <li>CSV file must contain all required columns: name, phone, aadharNumber, email, designation, city, cluster, qualification, resumeSource, sourceName</li>
+                <li>Optional columns: currentCompany, experienceYears, currentCtc, expectedCtc</li>
+                <li>Aadhar number must be exactly 12 digits</li>
                 <li>Qualification must be one of: 8th-10th, 11th-12th, Graduation, B.Tech, Diploma, ITI</li>
                 <li>Resume source must be: vendor, field_recruiter, or referral</li>
                 <li>For vendor/recruiter sources, the source name must match existing vendor/recruiter names exactly</li>

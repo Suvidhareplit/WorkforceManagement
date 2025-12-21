@@ -12,6 +12,10 @@ interface BulkCandidateRow {
   city: string;
   cluster: string;
   qualification: string;
+  currentCompany?: string;
+  experienceYears?: string;
+  currentCtc?: string;
+  expectedCtc?: string;
   resumeSource: string;
   sourceName?: string;
 }
@@ -111,6 +115,10 @@ export const validateBulkUpload = async (req: Request, res: Response) => {
         city: record.city || '',
         cluster: record.cluster || '',
         qualification: record.qualification || '',
+        currentCompany: record.currentCompany || record.current_company || '',
+        experienceYears: record.experienceYears || record.experience_years || '',
+        currentCtc: record.currentCtc || record.current_ctc || '',
+        expectedCtc: record.expectedCtc || record.expected_ctc || '',
         resumeSource: record.resumeSource || record.resume_source || '',
         sourceName: record.sourceName || record.source_name || '',
         errors: [],
@@ -290,6 +298,10 @@ export const processBulkUpload = async (req: Request, res: Response) => {
           city: candidate.city,
           cluster: candidate.cluster,
           qualification: candidate.qualification,
+          currentCompany: candidate.currentCompany || candidate.current_company,
+          experienceYears: candidate.experienceYears || candidate.experience_years,
+          currentCtc: candidate.currentCtc || candidate.current_ctc,
+          expectedCtc: candidate.expectedCtc || candidate.expected_ctc,
           resumeSource: candidate.resume_source || candidate.resumeSource,
           vendor: candidate.vendor,
           recruiter: candidate.recruiter,
