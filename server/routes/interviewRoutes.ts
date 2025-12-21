@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middlewares/auth';
 import { interviewController } from '../controllers/interviewController';
+import { validateBulkUpload, processBulkUpload } from '../controllers/bulkUploadController';
 import multer from 'multer';
 
 const router = Router();
@@ -11,6 +12,10 @@ router.post('/candidates', interviewController.createCandidate);
 
 // All other routes require authentication
 router.use(authenticate);
+
+// Bulk upload routes
+router.post('/bulk-upload/validate', upload.single('file'), validateBulkUpload);
+router.post('/bulk-upload/process', processBulkUpload);
 
 // Get all candidates
 router.get('/candidates', interviewController.getCandidates);
