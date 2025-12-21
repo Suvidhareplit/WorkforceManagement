@@ -54,16 +54,17 @@ const createInduction = async (req: Request, res: Response) => {
     // Create induction record
     const result = await query(
       `INSERT INTO induction_training (
-        candidate_id, name, mobile_number, city, cluster, role,
+        candidate_id, name, mobile_number, city, cluster, role, designation,
         date_of_joining, gross_salary
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         candidate.id,
         candidate.name,
         candidate.phone,
         candidate.city_name,
         candidate.cluster_name,
-        candidate.role_name,
+        candidate.designation_name || candidate.role_name, // For backward compatibility
+        candidate.designation_name, // New designation field
         candidate.joining_date,
         candidate.offered_salary
       ]
@@ -195,7 +196,7 @@ const getClassroomTrainings = async (req: Request, res: Response) => {
     
     const result = await query(
       `SELECT ct.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
-              it.date_of_joining, it.gross_salary, it.manager_name, it.joining_status
+              it.designation, it.date_of_joining, it.gross_salary, it.manager_name, it.joining_status
        FROM classroom_training ct
        JOIN induction_training it ON ct.induction_id = it.id
        WHERE it.joining_status != 'not_joined' OR it.joining_status IS NULL
@@ -303,7 +304,7 @@ const getFieldTrainings = async (req: Request, res: Response) => {
     
     const result = await query(
       `SELECT ft.*, it.name, it.mobile_number, it.city, it.cluster, it.role,
-              it.date_of_joining, it.gross_salary, it.manager_name,
+              it.designation, it.date_of_joining, it.gross_salary, it.manager_name,
               ct.training_start_date, ct.training_completion_date
        FROM field_training ft
        JOIN classroom_training ct ON ft.classroom_training_id = ct.id

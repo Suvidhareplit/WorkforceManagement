@@ -142,7 +142,7 @@ export default function ClassroomTraining() {
                   <TableHead className="font-semibold">Name</TableHead>
                   <TableHead className="font-semibold">Mobile</TableHead>
                   <TableHead className="font-semibold">City</TableHead>
-                  <TableHead className="font-semibold">Role</TableHead>
+                  <TableHead className="font-semibold">Designation</TableHead>
                   <TableHead className="font-semibold">Manager</TableHead>
                   <TableHead className="font-semibold" colSpan={2}>CRT Training Period</TableHead>
                   <TableHead className="font-semibold">Trainer</TableHead>
@@ -172,7 +172,7 @@ export default function ClassroomTraining() {
                       <TableCell className="font-medium">{classroom.name}</TableCell>
                       <TableCell>{classroom.mobileNumber || classroom.mobile_number || '-'}</TableCell>
                       <TableCell>{classroom.city}</TableCell>
-                      <TableCell>{classroom.role}</TableCell>
+                      <TableCell>{classroom.designation || classroom.role || '-'}</TableCell>
                       <TableCell>{classroom.managerName || classroom.manager_name || '-'}</TableCell>
                       
                       {/* Training Start Date */}

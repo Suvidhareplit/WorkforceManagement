@@ -35,7 +35,7 @@ export default function FieldTraining() {
 
     // CSV Headers
     const headers = [
-      "Name", "Mobile", "City", "Cluster", "Role", "Manager", 
+      "Name", "Mobile", "City", "Cluster", "Designation", "Manager", 
       "Training Start Date", "Training End Date", 
       "Buddy Aligned", "Buddy Name", "Buddy Phone",
       "FTE Status", "Manager Feedback"
@@ -47,7 +47,7 @@ export default function FieldTraining() {
       field.mobileNumber || field.mobile_number || '',
       field.city || '',
       field.cluster || '',
-      field.role || '',
+      field.designation || field.role || '',
       field.managerName || field.manager_name || '',
       field.trainingStartDate || field.training_start_date ? format(new Date(field.trainingStartDate || field.training_start_date), "dd-MMM-yyyy") : '',
       field.trainingCompletionDate || field.training_completion_date ? format(new Date(field.trainingCompletionDate || field.training_completion_date), "dd-MMM-yyyy") : '',
@@ -185,7 +185,7 @@ export default function FieldTraining() {
                   <TableHead className="font-semibold">Name</TableHead>
                   <TableHead className="font-semibold">Mobile</TableHead>
                   <TableHead className="font-semibold">City</TableHead>
-                  <TableHead className="font-semibold">Role</TableHead>
+                  <TableHead className="font-semibold">Designation</TableHead>
                   <TableHead className="font-semibold">Manager</TableHead>
                   <TableHead className="font-semibold">Training Dates</TableHead>
                   <TableHead className="font-semibold">Buddy Aligned</TableHead>
@@ -217,7 +217,7 @@ export default function FieldTraining() {
                       <TableCell className="font-medium">{field.name}</TableCell>
                       <TableCell>{field.mobileNumber || field.mobile_number || '-'}</TableCell>
                       <TableCell>{field.city}</TableCell>
-                      <TableCell>{field.role}</TableCell>
+                      <TableCell>{field.designation || field.role || '-'}</TableCell>
                       <TableCell>{field.managerName || field.manager_name || '-'}</TableCell>
                       <TableCell>
                         <div className="text-sm">

@@ -1676,7 +1676,7 @@ export default function Onboarding() {
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[130px] whitespace-nowrap px-3 py-2">Employment Type</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">City</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[100px] whitespace-nowrap px-3 py-2">Cluster</TableHead>
-                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Role</TableHead>
+                  <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[180px] whitespace-nowrap px-3 py-2">Designation</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[150px] whitespace-nowrap px-3 py-2">Manager</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[110px] whitespace-nowrap px-3 py-2">DOJ</TableHead>
                   <TableHead className="font-semibold border border-gray-300 bg-green-100 text-left align-top min-w-[120px] whitespace-nowrap px-3 py-2">Gross Salary</TableHead>
@@ -1844,7 +1844,7 @@ export default function Onboarding() {
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.city || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2 whitespace-nowrap">{record.cluster || 'N/A'}</TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
-                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.role || 'N/A'}</div>
+                        <div className="max-w-[180px] text-sm leading-tight break-words">{record.designation || record.role || 'N/A'}</div>
                       </TableCell>
                       <TableCell className="border border-gray-300 text-left align-top px-3 py-2">
                         <div className="max-w-[150px] text-sm leading-tight break-words">{record.managerName || record.manager_name || 'N/A'}</div>
