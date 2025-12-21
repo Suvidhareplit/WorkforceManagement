@@ -129,7 +129,7 @@ export default function Dashboard() {
     clustersWithPositions.has(cluster.id)
   );
 
-  // Build final designation-wise open positions data
+  // Build final designation-wise open positions data with additional metrics
   const designationWiseOpenPositions = (designationsData as any[])?.map((designation: any) => {
     const clusterMap = designationPositionsMap.get(designation.id);
     if (!clusterMap) return null;
@@ -142,11 +142,45 @@ export default function Dashboard() {
       totalPositions += positions;
     });
     
+    // Calculate Total Raised for this designation (all hiring requests, not just open)
+    const designationRequests = hiringRequestsData.filter((req: any) => 
+      req.designation_id === designation.id || req.designationId === designation.id
+    );
+    const totalRaised = designationRequests.reduce((sum: number, req: any) => 
+      sum + (parseInt(req.no_of_openings) || 0), 0
+    );
+    
+    // Calculate Closed (joined candidates) for this designation
+    const closedCount = inductionData.filter((record: any) => 
+      (record.joiningStatus || record.joining_status) === 'joined' &&
+      (record.designation === designation.name || record.role === designation.name)
+    ).length;
+    
+    // YTB Hired = Raised - Closed
+    const ytbHired = totalRaised - closedCount;
+    
+    // Under CRT count for this designation
+    const underCRT = classroomData.filter((record: any) => 
+      ((record.crtFeedback || record.crt_feedback) === 'under_classroom_training') &&
+      (record.designation === designation.name || record.role === designation.name)
+    ).length;
+    
+    // Under FT count for this designation
+    const underFT = fieldData.filter((record: any) => 
+      ((record.ftFeedback || record.ft_feedback) === 'under_field_training') &&
+      (record.designation === designation.name || record.role === designation.name)
+    ).length;
+    
     return {
       designationId: designation.id,
       designationName: designation.name,
       clusterPositions,
-      totalPositions
+      totalPositions,
+      totalRaised,
+      closedCount,
+      ytbHired,
+      underCRT,
+      underFT
     };
   }).filter(d => d !== null) || [];
 
@@ -373,12 +407,17 @@ export default function Dashboard() {
                 <TableHeader>
                   <TableRow className="bg-slate-50">
                     <TableHead className="sticky left-0 bg-slate-50 z-10 font-semibold">Designation</TableHead>
+                    <TableHead className="text-center font-semibold bg-green-50 px-3">Total Raised</TableHead>
+                    <TableHead className="text-center font-semibold bg-green-50 px-3">Closed</TableHead>
+                    <TableHead className="text-center font-semibold bg-green-50 px-3">YTB Hired</TableHead>
                     {clustersWithOpenPositions.map((cluster: any) => (
                       <TableHead key={cluster.id} className="text-center px-4">
                         {cluster.name}
                       </TableHead>
                     ))}
                     <TableHead className="text-center font-semibold bg-slate-50 px-4">Total</TableHead>
+                    <TableHead className="text-center font-semibold bg-amber-50 px-3">Under CRT</TableHead>
+                    <TableHead className="text-center font-semibold bg-amber-50 px-3">Under FT</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -388,6 +427,15 @@ export default function Dashboard() {
                         <TableRow key={designation.designationId}>
                           <TableCell className="font-medium sticky left-0 bg-white z-10 pr-6">
                             {designation.designationName}
+                          </TableCell>
+                          <TableCell className="text-center bg-green-50 px-3">
+                            <span className="font-semibold text-slate-700">{designation.totalRaised}</span>
+                          </TableCell>
+                          <TableCell className="text-center bg-green-50 px-3">
+                            <span className="font-semibold text-green-600">{designation.closedCount}</span>
+                          </TableCell>
+                          <TableCell className="text-center bg-green-50 px-3">
+                            <span className="font-semibold text-orange-600">{designation.ytbHired}</span>
                           </TableCell>
                           {clustersWithOpenPositions.map((cluster: any) => (
                             <TableCell key={cluster.id} className="text-center px-4">
@@ -401,12 +449,33 @@ export default function Dashboard() {
                               {designation.totalPositions}
                             </span>
                           </TableCell>
+                          <TableCell className="text-center bg-amber-50 px-3">
+                            <span className="font-semibold text-amber-600">{designation.underCRT}</span>
+                          </TableCell>
+                          <TableCell className="text-center bg-amber-50 px-3">
+                            <span className="font-semibold text-amber-600">{designation.underFT}</span>
+                          </TableCell>
                         </TableRow>
                       ))}
                       {/* Grand Total Row */}
                       <TableRow className="border-t-2 border-slate-300 bg-slate-100">
                         <TableCell className="font-bold sticky left-0 bg-slate-100 z-10 pr-6">
                           Grand Total
+                        </TableCell>
+                        <TableCell className="text-center bg-green-100 px-3">
+                          <span className="font-bold text-slate-700">
+                            {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.totalRaised, 0)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center bg-green-100 px-3">
+                          <span className="font-bold text-green-600">
+                            {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.closedCount, 0)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center bg-green-100 px-3">
+                          <span className="font-bold text-orange-600">
+                            {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.ytbHired, 0)}
+                          </span>
                         </TableCell>
                         {clustersWithOpenPositions.map((cluster: any) => {
                           const clusterTotal = designationWiseOpenPositions.reduce((sum: number, d: any) => 
@@ -425,11 +494,21 @@ export default function Dashboard() {
                             )}
                           </span>
                         </TableCell>
+                        <TableCell className="text-center bg-amber-100 px-3">
+                          <span className="font-bold text-amber-600">
+                            {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.underCRT, 0)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center bg-amber-100 px-3">
+                          <span className="font-bold text-amber-600">
+                            {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.underFT, 0)}
+                          </span>
+                        </TableCell>
                       </TableRow>
                     </>
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={clustersWithOpenPositions.length + 2} className="text-center text-slate-500 py-8">
+                      <TableCell colSpan={clustersWithOpenPositions.length + 7} className="text-center text-slate-500 py-8">
                         No open positions found
                       </TableCell>
                     </TableRow>
