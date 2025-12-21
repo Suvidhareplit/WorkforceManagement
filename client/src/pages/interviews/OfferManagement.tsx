@@ -608,11 +608,6 @@ export default function OfferManagement() {
                                   mode="single"
                                   selected={tempDOJ}
                                   onSelect={setTempDOJ}
-                                  disabled={(date) => {
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0);
-                                    return date < today;
-                                  }}
                                   initialFocus
                                 />
                               </PopoverContent>
