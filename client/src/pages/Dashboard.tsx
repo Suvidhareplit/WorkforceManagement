@@ -57,13 +57,21 @@ export default function Dashboard() {
     staleTime: 0,
   });
 
+  // Fetch induction training data for joined candidates count
+  const { data: inductionResponse } = useQuery({
+    queryKey: ['/api/training/induction'],
+    refetchOnWindowFocus: true,
+    staleTime: 0,
+  });
+
   // Extract data from API responses
   const citiesData = (citiesResponse as any)?.data || [];
   const designationsData = Array.isArray(designationsResponse) ? designationsResponse : (designationsResponse as any)?.data || [];
   const clustersData = (clustersResponse as any)?.data || [];
   const hiringRequestsData = (hiringResponse as any)?.data || [];
-  const classroomData = Array.isArray(classroomResponse) ? classroomResponse : [];
-  const fieldData = Array.isArray(fieldResponse) ? fieldResponse : [];
+  const classroomData = Array.isArray(classroomResponse) ? classroomResponse : (classroomResponse as any)?.data || [];
+  const fieldData = Array.isArray(fieldResponse) ? fieldResponse : (fieldResponse as any)?.data || [];
+  const inductionData = Array.isArray(inductionResponse) ? inductionResponse : (inductionResponse as any)?.data || [];
 
   console.log('📊 Dashboard Data:', {
     citiesCount: citiesData.length,
@@ -142,28 +150,24 @@ export default function Dashboard() {
     };
   }).filter(d => d !== null) || [];
 
-  // Calculate metrics from hiring requests data (using correct field names)
-  const openPositions = hiringRequestsData && Array.isArray(hiringRequestsData) 
-    ? hiringRequestsData.filter((req: any) => req.status === 'open')
-        .reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
-    : 0;
-  
   // Total positions raised (all time - sum of all no_of_openings)
   const totalPositionsRaised = hiringRequestsData && Array.isArray(hiringRequestsData)
     ? hiringRequestsData.reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
     : 0;
 
-  // Closed positions (sum of no_of_openings where status is 'closed')
-  const closedPositions = hiringRequestsData && Array.isArray(hiringRequestsData)
-    ? hiringRequestsData.filter((req: any) => req.status === 'closed')
-        .reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
-    : 0;
+  // Closed positions = count of joined candidates from induction_training
+  const closedPositions = inductionData.filter((record: any) => 
+    (record.joiningStatus || record.joining_status) === 'joined'
+  ).length;
 
   // Called off positions (sum of no_of_openings where status is 'called_off')
   const calledOffPositions = hiringRequestsData && Array.isArray(hiringRequestsData)
     ? hiringRequestsData.filter((req: any) => req.status === 'called_off')
         .reduce((sum: number, req: any) => sum + (parseInt(req.no_of_openings) || 0), 0)
     : 0;
+
+  // Pan India Open Positions = Total Positions Raised - Joined Count
+  const panIndiaOpenPositions = totalPositionsRaised - closedPositions;
 
   // YTD Hired = Closed positions (same as closed, represents hired/filled positions)
   const ytdHired = closedPositions;
@@ -259,7 +263,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-slate-600 text-sm font-medium">Pan India Open Positions</p>
                 <p className="text-2xl font-bold text-slate-800 mt-1">
-                  {loadingHiring ? "..." : openPositions}
+                  {loadingHiring ? "..." : panIndiaOpenPositions}
                 </p>
                 <p className="text-slate-400 text-sm mt-1">Current active</p>
               </div>
