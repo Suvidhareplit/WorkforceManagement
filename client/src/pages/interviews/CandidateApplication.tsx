@@ -248,68 +248,75 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
 
 
   const validateField = (row: ValidatedRow, field: string) => {
-    const errors = row.errors || [];
+    // Note: errors are already filtered before calling this function
+    // We just need to add new errors if validation fails
     
     switch (field) {
       case 'name':
         if (!row.name || row.name.trim() === '') {
-          errors.push({ row: row.row, field: 'name', value: row.name, message: 'Name is required' });
+          row.errors.push({ row: row.row, field: 'name', value: row.name, message: 'Name is required' });
         }
         break;
         
       case 'phone':
         if (!row.phone || !/^\d{10}$/.test(row.phone)) {
-          errors.push({ row: row.row, field: 'phone', value: row.phone, message: 'Valid 10-digit phone number is required' });
+          row.errors.push({ row: row.row, field: 'phone', value: row.phone, message: 'Valid 10-digit phone number is required' });
         }
         break;
         
       case 'aadharNumber':
         if (!row.aadharNumber) {
-          errors.push({ row: row.row, field: 'aadharNumber', value: row.aadharNumber, message: 'Aadhar number is required' });
+          row.errors.push({ row: row.row, field: 'aadharNumber', value: row.aadharNumber, message: 'Aadhar number is required' });
         } else if (!/^\d{12}$/.test(row.aadharNumber)) {
-          errors.push({ row: row.row, field: 'aadharNumber', value: row.aadharNumber, message: 'Aadhar number must be exactly 12 digits' });
+          row.errors.push({ row: row.row, field: 'aadharNumber', value: row.aadharNumber, message: 'Aadhar number must be exactly 12 digits' });
         }
         break;
         
       case 'email':
         if (!row.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
-          errors.push({ row: row.row, field: 'email', value: row.email, message: 'Valid email is required' });
+          row.errors.push({ row: row.row, field: 'email', value: row.email, message: 'Valid email is required' });
         }
         break;
         
       case 'designation':
-        const designation = designations?.find((d: any) => d.name.toLowerCase() === row.designation.toLowerCase());
+        const designation = designations?.find((d: any) => d.name.toLowerCase() === row.designation?.toLowerCase());
         if (!designation) {
-          errors.push({ row: row.row, field: 'designation', value: row.designation, message: 'Invalid designation. Must match existing designations.' });
+          row.errors.push({ row: row.row, field: 'designation', value: row.designation, message: 'Invalid designation. Must match existing designations.' });
+        } else {
+          row.designationId = designation.id;
         }
         break;
         
       case 'city':
-        const city = cities?.find((c: any) => c.name.toLowerCase() === row.city.toLowerCase());
+        const city = cities?.find((c: any) => c.name.toLowerCase() === row.city?.toLowerCase());
         if (!city) {
-          errors.push({ row: row.row, field: 'city', value: row.city, message: 'Invalid city. Must match existing cities.' });
+          row.errors.push({ row: row.row, field: 'city', value: row.city, message: 'Invalid city. Must match existing cities.' });
+        } else {
+          row.cityId = city.id;
         }
         break;
         
       case 'cluster':
-        const cityId = cities?.find((c: any) => c.name.toLowerCase() === row.city.toLowerCase())?.id;
+        const cityForCluster = cities?.find((c: any) => c.name.toLowerCase() === row.city?.toLowerCase());
         const cityCluster = clusters?.find((cl: any) => 
-          cl.cityId === cityId && cl.name.toLowerCase() === row.cluster.toLowerCase()
+          cl.cityId === cityForCluster?.id && cl.name.toLowerCase() === row.cluster?.toLowerCase()
         );
         if (!cityCluster) {
-          errors.push({ row: row.row, field: 'cluster', value: row.cluster, message: 'Invalid cluster for selected city' });
+          row.errors.push({ row: row.row, field: 'cluster', value: row.cluster, message: 'Invalid cluster for selected city' });
+        } else {
+          row.clusterId = cityCluster.id;
         }
         break;
         
       case 'qualification':
         if (!row.qualification || !qualifications.includes(row.qualification)) {
-          errors.push({ row: row.row, field: 'qualification', value: row.qualification, message: 'Invalid qualification. Must be one of: ' + qualifications.join(', ') });
+          row.errors.push({ row: row.row, field: 'qualification', value: row.qualification, message: 'Invalid qualification. Must be one of: ' + qualifications.join(', ') });
         }
         break;
         
       case 'resumeSource':
         if (!row.resumeSource || !resumeSources.includes(row.resumeSource)) {
-          errors.push({ row: row.row, field: 'resumeSource', value: row.resumeSource, message: 'Invalid resume source. Must be: vendor, field_recruiter, or referral' });
+          row.errors.push({ row: row.row, field: 'resumeSource', value: row.resumeSource, message: 'Invalid resume source. Must be: vendor, field_recruiter, or referral' });
         }
         break;
         
@@ -317,28 +324,28 @@ function BulkUploadContent({ designations, cities, clusters, vendors, recruiters
         if (row.resumeSource === 'vendor') {
           const vendor = vendors?.find((v: any) => v.name === row.sourceName);
           if (!row.sourceName || !vendor) {
-            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Vendor name is required when source is vendor' });
+            row.errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Vendor name is required when source is vendor' });
           } else {
             row.vendor = row.sourceName;
+            row.vendorId = vendor.id;
           }
         } else if (row.resumeSource === 'field_recruiter') {
           const recruiter = recruiters?.find((r: any) => r.name === row.sourceName);
           if (!row.sourceName || !recruiter) {
-            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Recruiter name is required when source is field_recruiter' });
+            row.errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Recruiter name is required when source is field_recruiter' });
           } else {
             row.recruiter = row.sourceName;
+            row.recruiterId = recruiter.id;
           }
         } else if (row.resumeSource === 'referral') {
           if (!row.sourceName) {
-            errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Referral name is required when source is referral' });
+            row.errors.push({ row: row.row, field: 'sourceName', value: row.sourceName || '', message: 'Referral name is required when source is referral' });
           } else {
             (row as any).referralName = row.sourceName;
           }
         }
         break;
     }
-    
-    row.errors = errors;
   };
 
   const handleSubmit = async () => {
