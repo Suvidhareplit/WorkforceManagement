@@ -603,7 +603,7 @@ export default function AttendanceManagement() {
                             <th className="px-2 py-2 text-left font-semibold whitespace-nowrap border-r border-b border-slate-200">Cluster</th>
                             {uniqueDates.map((date: string, index: number) => (
                               <th key={date} className={`px-2 py-2 text-center font-semibold whitespace-nowrap border-b border-slate-200 ${index < uniqueDates.length - 1 ? 'border-r' : ''}`}>
-                                {format(new Date(date), 'dd-MMM-yy')}
+                                {format(new Date(date), 'dd-MM-yyyy')}
                               </th>
                             ))}
                           </tr>
