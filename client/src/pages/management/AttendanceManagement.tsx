@@ -117,12 +117,22 @@ export default function AttendanceManagement() {
       });
     },
     onSuccess: (data: any) => {
+      const hasErrors = data.errorCount > 0;
+      const errorDetails = data.errors && data.errors.length > 0 
+        ? `\n\nErrors:\n${data.errors.join('\n')}` 
+        : '';
+      
       toast({
         title: "Upload Complete",
-        description: data.message || "Attendance records uploaded successfully",
+        description: `${data.message || "Attendance records uploaded"}${errorDetails}`,
+        variant: hasErrors ? "destructive" : "default",
+        duration: hasErrors ? 10000 : 5000,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/attendance'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/attendance/absconding'] });
+      
+      if (!hasErrors) {
+        queryClient.invalidateQueries({ queryKey: ['/api/attendance'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/attendance/absconding'] });
+      }
     },
     onError: (error: any) => {
       toast({
