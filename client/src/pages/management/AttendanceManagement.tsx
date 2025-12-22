@@ -40,16 +40,17 @@ export default function AttendanceManagement() {
   const [selectedLetterType, setSelectedLetterType] = useState("");
 
   // Fetch cities
-  const { data: citiesResponse } = useQuery({
+  const { data: citiesData } = useQuery({
     queryKey: ['/api/master-data/city'],
   });
-  const cities = (citiesResponse as any)?.data || [];
+  // Default queryFn extracts response.data.data, so citiesData is already the array
+  const cities = Array.isArray(citiesData) ? citiesData : [];
 
   // Fetch clusters
-  const { data: clustersResponse } = useQuery({
+  const { data: clustersData } = useQuery({
     queryKey: ['/api/master-data/cluster'],
   });
-  const clusters = (clustersResponse as any)?.data || [];
+  const clusters = Array.isArray(clustersData) ? clustersData : [];
 
   // Fetch attendance records
   const { data: attendanceResponse, isLoading: loadingAttendance } = useQuery({
