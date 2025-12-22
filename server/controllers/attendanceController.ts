@@ -200,19 +200,36 @@ const checkAbscondingCases = async () => {
       
       const records = attendanceResult.rows as any[];
       
-      // Check for 3 consecutive absconding records (Absent/UL/LOP)
-      // Records are ordered by date ASC, so we check consecutive records
+      // Check for 3 consecutive CALENDAR days with absconding statuses (Absent/UL/LOP)
       let consecutiveCount = 0;
-      let startDate: string | null = null;
+      let startDate: Date | null = null;
+      let lastDate: Date | null = null;
       
       for (const record of records) {
+        const currentDate = new Date(record.attendance_date);
+        currentDate.setHours(0, 0, 0, 0); // Normalize to midnight
         const isAbscondingStatus = abscondingStatuses.includes(record.status?.toLowerCase());
         
         if (isAbscondingStatus) {
-          consecutiveCount++;
-          if (consecutiveCount === 1) {
-            startDate = record.attendance_date;
+          if (lastDate) {
+            // Calculate difference in days
+            const timeDiff = currentDate.getTime() - lastDate.getTime();
+            const dayDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+            
+            if (dayDiff === 1) {
+              // Consecutive calendar day
+              consecutiveCount++;
+            } else {
+              // Gap in calendar days, reset count
+              consecutiveCount = 1;
+              startDate = currentDate;
+            }
+          } else {
+            // First absconding record
+            consecutiveCount = 1;
+            startDate = currentDate;
           }
+          lastDate = currentDate;
           
           if (consecutiveCount >= 3) {
             // Check if already in absconding table
@@ -241,7 +258,7 @@ const checkAbscondingCases = async () => {
                    employee.city, employee.cluster, employee.manager_name,
                    startDate, consecutiveCount]
                 );
-                console.log(`Absconding case created for user ${userId} - ${consecutiveCount} consecutive absconding records starting ${startDate}`);
+                console.log(`Absconding case created for user ${userId} - ${consecutiveCount} consecutive calendar days starting ${startDate}`);
               }
             }
             break;
@@ -250,6 +267,7 @@ const checkAbscondingCases = async () => {
           // Reset on non-absconding status (Present, SL, EL, CL)
           consecutiveCount = 0;
           startDate = null;
+          lastDate = null;
         }
       }
     }
