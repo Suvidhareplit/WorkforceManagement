@@ -1193,6 +1193,99 @@ const getFilterOptions = async (req: Request, res: Response) => {
   }
 };
 
+// Bulk update employees
+const bulkUpdateEmployees = async (req: Request, res: Response) => {
+  try {
+    const { updates } = req.body;
+    
+    if (!updates || !Array.isArray(updates) || updates.length === 0) {
+      return res.status(400).json({ message: "No updates provided" });
+    }
+    
+    let success = 0;
+    let failed = 0;
+    const errors: any[] = [];
+    
+    // Allowed fields for bulk update (excluding system fields)
+    const allowedFields = [
+      'employee_id', 'name', 'mobile_number', 'email', 'city', 'cluster', 'role',
+      'designation', 'designation_id', 'legal_entity', 'business_unit_name', 'department_name',
+      'sub_department_name', 'employment_type', 'manager_name', 'date_of_joining',
+      'gross_salary', 'resume_source', 'cost_centre', 'vendor_id', 'vendor_name',
+      'recruiter_id', 'recruiter_name', 'referral_name', 'referral_contact', 'referral_relation',
+      'direct_source', 'gender', 'date_of_birth', 'blood_group', 'marital_status',
+      'physically_handicapped', 'nationality', 'international_worker', 'pan_number',
+      'name_as_per_pan', 'aadhar_number', 'name_as_per_aadhar', 'account_number',
+      'ifsc_code', 'bank_name', 'present_address', 'permanent_address',
+      'emergency_contact_number', 'emergency_contact_name', 'emergency_contact_relation',
+      'father_name', 'uan_number', 'esic_ip_number', 'group_doj', 'paygrade', 'payband',
+      'working_status'
+    ];
+    
+    for (const update of updates) {
+      try {
+        const { user_id, ...fields } = update;
+        
+        if (!user_id) {
+          failed++;
+          errors.push({ user_id: 'unknown', error: 'user_id is required' });
+          continue;
+        }
+        
+        // Check if employee exists
+        const existingResult = await query(
+          'SELECT id FROM employees WHERE user_id = ?',
+          [user_id]
+        );
+        
+        if (!existingResult.rows || existingResult.rows.length === 0) {
+          failed++;
+          errors.push({ user_id, error: 'Employee not found' });
+          continue;
+        }
+        
+        // Filter to only allowed fields
+        const validFields: Record<string, any> = {};
+        for (const [key, value] of Object.entries(fields)) {
+          if (allowedFields.includes(key) && value !== undefined && value !== '') {
+            validFields[key] = value;
+          }
+        }
+        
+        if (Object.keys(validFields).length === 0) {
+          failed++;
+          errors.push({ user_id, error: 'No valid fields to update' });
+          continue;
+        }
+        
+        // Build update query
+        const setClauses = Object.keys(validFields).map(key => `${key} = ?`).join(', ');
+        const values = [...Object.values(validFields), user_id];
+        
+        await query(
+          `UPDATE employees SET ${setClauses} WHERE user_id = ?`,
+          values
+        );
+        
+        success++;
+      } catch (err: any) {
+        failed++;
+        errors.push({ user_id: update.user_id || 'unknown', error: err.message });
+      }
+    }
+    
+    res.json({
+      message: `Bulk update complete: ${success} successful, ${failed} failed`,
+      success,
+      failed,
+      errors: errors.slice(0, 50) // Limit errors returned
+    });
+  } catch (error) {
+    console.error('Bulk update error:', error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export const employeeController = {
   createEmployeeProfile,
   getEmployees,
@@ -1206,5 +1299,6 @@ export const employeeController = {
   reviewExit,
   completeExit,
   getOrgHierarchy,
-  getFilterOptions
+  getFilterOptions,
+  bulkUpdateEmployees
 };

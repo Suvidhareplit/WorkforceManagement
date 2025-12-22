@@ -30,6 +30,7 @@ import HiringAnalytics from "./pages/analytics/HiringAnalytics";
 import OrgDashboard from "./pages/dashboard/OrgDashboard";
 import ManpowerAnalysis from "./pages/dashboard/ManpowerAnalysis";
 import ManpowerPlanning from "./pages/management/ManpowerPlanning";
+import BulkUpdates from "./pages/BulkUpdates";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -61,6 +62,7 @@ function Router() {
         <Route path="/analytics" component={Analytics} />
         <Route path="/analytics/hiring" component={HiringAnalytics} />
         <Route path="/manpower-planning" component={ManpowerPlanning} />
+        <Route path="/bulk-updates" component={BulkUpdates} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

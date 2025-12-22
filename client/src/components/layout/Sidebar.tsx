@@ -25,6 +25,7 @@ import {
   Building2,
   Users,
   CalendarCheck,
+  Upload,
 } from "lucide-react";
 
 const menuItems = [
@@ -161,6 +162,16 @@ const menuItems = [
     ],
   },
   {
+    title: "BULK UPDATES",
+    items: [
+      {
+        icon: Upload,
+        label: "Bulk Updates",
+        href: "/bulk-updates",
+      },
+    ],
+  },
+  {
     title: "SECURITY MANAGEMENT",
     items: [
       {
@@ -197,6 +208,7 @@ export default function Sidebar() {
     "EXIT MANAGEMENT": false,
     "ATTRITION ANALYSIS": false,
     "REPORTS": false,
+    "BULK UPDATES": false,
     "SECURITY MANAGEMENT": false,
   });
 

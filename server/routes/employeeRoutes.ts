@@ -13,6 +13,9 @@ router.post('/profile', employeeController.createEmployeeProfile);
 // Get all employees
 router.get('/', employeeController.getEmployees);
 
+// Bulk update employees
+router.post('/bulk-update', employeeController.bulkUpdateEmployees);
+
 // Get exit summary for chart (must be before /:id to avoid conflict)
 router.get('/exit-summary', employeeController.getExitSummary);
 
