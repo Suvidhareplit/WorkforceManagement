@@ -467,8 +467,23 @@ const sendLetter = async (req: Request, res: Response) => {
       );
     }
     
+    // Send notification to manager
+    const letterName = letterType === 'show_cause' ? 'Show Cause Notice' : 'Termination Letter';
+    await query(
+      `INSERT INTO notifications (user_id, recipient_type, recipient_name, title, message, type, related_case_id)
+       VALUES (?, 'manager', ?, ?, ?, ?, ?)`,
+      [
+        abscondingCase.user_id,
+        abscondingCase.manager_name,
+        `${letterName} Sent`,
+        `${letterName} has been sent to ${abscondingCase.name} (${abscondingCase.user_id}) for absconding.`,
+        letterType === 'show_cause' ? 'showcause' : 'termination',
+        id
+      ]
+    );
+    
     res.json({ 
-      message: `${letterType === 'show_cause' ? 'Show Cause Notice' : 'Termination Letter'} sent to ${employeeEmail}`,
+      message: `${letterName} sent to ${employeeEmail}`,
       letterType,
       status: newStatus
     });
@@ -521,6 +536,20 @@ const recordEmployeeResponse = async (req: Request, res: Response) => {
          WHERE id = ?`,
         [response, id]
       );
+      
+      // Notify manager that employee reported back
+      await query(
+        `INSERT INTO notifications (user_id, recipient_type, recipient_name, title, message, type, related_case_id)
+         VALUES (?, 'manager', ?, ?, ?, 'response', ?)`,
+        [
+          abscondingCase.user_id,
+          abscondingCase.manager_name,
+          'Employee Reported Back',
+          `${abscondingCase.name} (${abscondingCase.user_id}) has reported back after show cause notice. Case resolved.`,
+          id
+        ]
+      );
+      
       res.json({ message: `Employee ${abscondingCase.name} has reported back. Case resolved.` });
     } else {
       // Employee not reported - update status to allow termination letter
@@ -530,6 +559,20 @@ const recordEmployeeResponse = async (req: Request, res: Response) => {
          WHERE id = ?`,
         [response, id]
       );
+      
+      // Notify manager that employee has not reported
+      await query(
+        `INSERT INTO notifications (user_id, recipient_type, recipient_name, title, message, type, related_case_id)
+         VALUES (?, 'manager', ?, ?, ?, 'response', ?)`,
+        [
+          abscondingCase.user_id,
+          abscondingCase.manager_name,
+          'Employee Not Reported',
+          `${abscondingCase.name} (${abscondingCase.user_id}) has not reported after show cause notice. Termination letter can be sent.`,
+          id
+        ]
+      );
+      
       res.json({ message: `Employee ${abscondingCase.name} has not reported. Termination letter can now be sent.` });
     }
   } catch (error) {
