@@ -71,9 +71,12 @@ export default function AttendanceManagement() {
   const abscondingCases = (abscondingResponse as any)?.data || [];
 
   // Fetch working employees for download
-  const { data: workingEmployeesData } = useQuery({
-    queryKey: ['/api/attendance/working-employees'],
+  const { data: workingEmployeesData, isLoading: loadingEmployees, error: employeesError } = useQuery({
+    queryKey: ['/api/attendance', 'working-employees'],
   });
+  
+  console.log('Working employees query:', { data: workingEmployeesData, loading: loadingEmployees, error: employeesError });
+  
   // The default queryFn extracts response.data.data, so workingEmployeesData IS the array directly
   const workingEmployees = (workingEmployeesData as any[]) || [];
 
@@ -183,7 +186,7 @@ export default function AttendanceManagement() {
     
     const headers = ['User ID', 'Name', 'City', 'Cluster'];
     const rows = workingEmployees.map((emp: any) => [
-      emp.user_id || '', 
+      emp.userId || emp.user_id || '', 
       emp.name || '', 
       emp.city || '', 
       emp.cluster || ''
