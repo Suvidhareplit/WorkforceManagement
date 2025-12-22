@@ -23,6 +23,16 @@ export default function AttendanceManagement() {
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedCluster, setSelectedCluster] = useState("all");
   
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
+  
+  // Reset page when filters change
+  const handleFilterChange = (setter: (value: string) => void, value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+  
   // Dialog states
   const [notifyDialogOpen, setNotifyDialogOpen] = useState(false);
   const [letterDialogOpen, setLetterDialogOpen] = useState(false);
@@ -51,10 +61,18 @@ export default function AttendanceManagement() {
       if (selectedDay && selectedDay !== 'all') params.append('day', selectedDay);
       if (selectedCity && selectedCity !== 'all') params.append('city', selectedCity);
       if (selectedCluster && selectedCluster !== 'all') params.append('cluster', selectedCluster);
-      return apiRequest(`/api/attendance?${params.toString()}`);
+      const response = await fetch(`http://localhost:5000/api/attendance?${params.toString()}`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('hrms_auth_token') || ''}`
+        }
+      });
+      const json = await response.json();
+      return json.data;
     },
   });
-  const attendanceRecords = (attendanceResponse as any)?.data || [];
+  const attendanceRecords = attendanceResponse || [];
 
   // Fetch absconding cases
   const { data: abscondingResponse, isLoading: loadingAbsconding } = useQuery({
@@ -436,36 +454,67 @@ export default function AttendanceManagement() {
               ) : attendanceRecords.length === 0 ? (
                 <div className="text-center py-8 text-slate-500">No attendance records found for the selected filters</div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User ID</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>City</TableHead>
-                        <TableHead>Cluster</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {attendanceRecords.map((record: any) => (
-                        <TableRow key={record.id}>
-                          <TableCell className="font-medium">{record.userId}</TableCell>
-                          <TableCell>{record.name}</TableCell>
-                          <TableCell>{record.city}</TableCell>
-                          <TableCell>{record.cluster}</TableCell>
-                          <TableCell>{record.attendanceDate ? format(new Date(record.attendanceDate), 'dd MMM yyyy') : '-'}</TableCell>
-                          <TableCell>
-                            <span className={`px-2 py-1 rounded text-sm font-medium ${getStatusColor(record.status)}`}>
-                              {record.status?.toUpperCase()}
-                            </span>
-                          </TableCell>
+                <>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User ID</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>City</TableHead>
+                          <TableHead>Cluster</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Status</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {attendanceRecords
+                          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                          .map((record: any) => (
+                          <TableRow key={record.id}>
+                            <TableCell className="font-medium">{record.userId}</TableCell>
+                            <TableCell>{record.name}</TableCell>
+                            <TableCell>{record.city}</TableCell>
+                            <TableCell>{record.cluster}</TableCell>
+                            <TableCell>{record.attendanceDate ? format(new Date(record.attendanceDate), 'dd MMM yyyy') : '-'}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded text-sm font-medium ${getStatusColor(record.status)}`}>
+                                {record.status?.toUpperCase()}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between mt-4 px-2">
+                    <div className="text-sm text-slate-500">
+                      Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, attendanceRecords.length)} of {attendanceRecords.length} records
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </Button>
+                      <span className="flex items-center px-3 text-sm">
+                        Page {currentPage} of {Math.ceil(attendanceRecords.length / itemsPerPage)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(Math.ceil(attendanceRecords.length / itemsPerPage), p + 1))}
+                        disabled={currentPage >= Math.ceil(attendanceRecords.length / itemsPerPage)}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
