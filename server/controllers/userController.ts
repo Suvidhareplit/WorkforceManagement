@@ -87,6 +87,7 @@ export class UserController extends BaseController {
   // Create user
   async createUser(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      console.log('Create user request body:', req.body);
       const { password, ...userData } = req.body;
       
       if (!password) {
@@ -103,12 +104,15 @@ export class UserController extends BaseController {
         passwordHash
       };
       
+      console.log('User to create:', userToCreate);
+      
       const userId = this.getUserId(req);
       const user = await this.storage.createUser(userToCreate, { changedBy: userId });
       
       const safeUser = this.sanitizeUser(user);
       this.sendSuccess(res, safeUser, 'User created successfully');
     } catch (error) {
+      console.error('Create user error:', error);
       this.handleError(res, error, 'Failed to create user');
     }
   }
