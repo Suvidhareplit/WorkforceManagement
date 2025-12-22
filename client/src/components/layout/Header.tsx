@@ -3,9 +3,28 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Fetch pending absconding cases for notification count
+  const { data: abscondingData } = useQuery({
+    queryKey: ['/api/attendance/absconding-count'],
+    queryFn: async () => {
+      const year = new Date().getFullYear();
+      const month = new Date().getMonth() + 1;
+      return apiRequest(`/api/attendance/absconding?year=${year}&month=${month}`);
+    },
+    refetchInterval: 60000, // Refresh every minute
+  });
+  
+  const pendingAbscondingCount = Array.isArray(abscondingData) 
+    ? abscondingData.filter((c: any) => c.status === 'pending').length 
+    : 0;
 
   const handleLogout = () => {
     logout();
@@ -33,11 +52,19 @@ export default function Header() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative cursor-pointer"
+              onClick={() => navigate('/attendance-management')}
+              title="Absconding Cases - Click to view"
+            >
               <Bell className="h-5 w-5 text-slate-600" />
-              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                3
-              </span>
+              {pendingAbscondingCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {pendingAbscondingCount}
+                </span>
+              )}
             </Button>
             
             <DropdownMenu>
