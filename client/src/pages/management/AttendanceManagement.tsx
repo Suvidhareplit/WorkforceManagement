@@ -915,33 +915,49 @@ export default function AttendanceManagement() {
 
       {/* Employee Response Dialog */}
       <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Employee Response</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-center">Employee Response</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <p>Did the employee report back or respond to the show cause notice?</p>
-            <p className="font-semibold mt-2">{selectedCase?.name} ({selectedCase?.userId})</p>
-            <p className="text-sm text-slate-500 mt-1">
-              Show cause sent on {selectedCase?.showcauseSentAt ? format(new Date(selectedCase.showcauseSentAt), 'dd MMM yyyy') : '-'}
+          
+          <div className="py-6 space-y-4">
+            <div className="bg-slate-50 rounded-lg p-4 text-center">
+              <p className="text-lg font-semibold text-slate-800">{selectedCase?.name}</p>
+              <p className="text-sm text-slate-500">ID: {selectedCase?.userId}</p>
+              <p className="text-xs text-slate-400 mt-2">
+                Show cause sent on {selectedCase?.showcauseSentAt ? format(new Date(selectedCase.showcauseSentAt), 'dd MMM yyyy') : '-'}
+              </p>
+            </div>
+            
+            <p className="text-center text-slate-600">
+              Did the employee report back or respond to the show cause notice?
             </p>
+            
+            <div className="grid grid-cols-1 gap-3 pt-2">
+              <Button 
+                size="lg"
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-6"
+                onClick={() => selectedCase && employeeResponseMutation.mutate({ caseId: selectedCase.id, response: 'reported' })}
+              >
+                <CheckCircle className="h-5 w-5 mr-3" />
+                <span className="text-base">Reported / Responded</span>
+              </Button>
+              
+              <Button 
+                size="lg"
+                variant="destructive"
+                className="w-full py-6"
+                onClick={() => selectedCase && employeeResponseMutation.mutate({ caseId: selectedCase.id, response: 'not_reported' })}
+              >
+                <AlertTriangle className="h-5 w-5 mr-3" />
+                <span className="text-base">Not Reported / Not Responded</span>
+              </Button>
+            </div>
           </div>
-          <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>Cancel</Button>
-            <Button 
-              variant="default"
-              className="bg-green-600 hover:bg-green-700"
-              onClick={() => selectedCase && employeeResponseMutation.mutate({ caseId: selectedCase.id, response: 'reported' })}
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Reported / Responded
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={() => selectedCase && employeeResponseMutation.mutate({ caseId: selectedCase.id, response: 'not_reported' })}
-            >
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Not Reported / Not Responded
+          
+          <DialogFooter className="sm:justify-center">
+            <Button variant="ghost" onClick={() => setResponseDialogOpen(false)}>
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
