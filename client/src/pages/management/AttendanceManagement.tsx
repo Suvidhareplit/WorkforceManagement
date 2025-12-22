@@ -74,15 +74,22 @@ export default function AttendanceManagement() {
   const { data: workingEmployeesData, isLoading: loadingEmployees, error: employeesError } = useQuery({
     queryKey: ['/api/attendance/working-employees'],
     queryFn: async () => {
-      const response = await apiRequest('/api/attendance/working-employees', { method: 'GET' });
-      console.log('API Response:', response);
-      return response;
+      const response = await fetch('http://localhost:5000/api/attendance/working-employees', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('hrms_auth_token') || ''}`
+        }
+      });
+      const data = await response.json();
+      console.log('Raw API Response:', data);
+      return data.data || data;
     },
   });
   
   console.log('Working employees query:', { data: workingEmployeesData, loading: loadingEmployees, error: employeesError });
   
-  // The response is already extracted by apiRequest, so it should be the array directly
+  // The response should now be the array directly
   const workingEmployees = Array.isArray(workingEmployeesData) ? workingEmployeesData : [];
 
   // Bulk upload mutation
