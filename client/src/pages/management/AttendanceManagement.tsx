@@ -801,12 +801,12 @@ export default function AttendanceManagement() {
                                   </Button>
                                 )}
                                 
-                                {/* Showcause Sent - Check Employee Response */}
-                                {caseItem.status === 'showcause_sent' && !caseItem.employeeResponse && isOverdue && (
+                                {/* Showcause Sent - Check Employee Response (available immediately) */}
+                                {caseItem.status === 'showcause_sent' && !caseItem.employeeResponse && (
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className={isOverdue ? 'border-red-500 text-red-600' : ''}
+                                    className={isOverdue ? 'border-red-500 text-red-600' : 'border-orange-500 text-orange-600'}
                                     onClick={() => {
                                       setSelectedCase(caseItem);
                                       setResponseDialogOpen(true);
@@ -815,11 +815,6 @@ export default function AttendanceManagement() {
                                     <CheckCircle className="h-4 w-4 mr-1" />
                                     Employee Response?
                                   </Button>
-                                )}
-                                
-                                {/* Showcause Sent but not overdue - Show waiting message */}
-                                {caseItem.status === 'showcause_sent' && !caseItem.employeeResponse && !isOverdue && (
-                                  <span className="text-xs text-orange-600">Awaiting response...</span>
                                 )}
                                 
                                 {/* Not Reported - Send Termination Letter */}
