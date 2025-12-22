@@ -488,15 +488,15 @@ export default function AttendanceManagement() {
                 return (
                   <>
                     <div className="overflow-x-auto">
-                      <table className="w-auto border-collapse text-sm">
+                      <table className="w-auto text-sm border border-slate-200">
                         <thead>
-                          <tr className="border-b">
-                            <th className="sticky left-0 bg-white z-10 px-2 py-2 text-left font-semibold whitespace-nowrap">User ID</th>
-                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Name</th>
-                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">City</th>
-                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Cluster</th>
-                            {uniqueDates.map((date: string) => (
-                              <th key={date} className="px-2 py-2 text-center font-semibold whitespace-nowrap">
+                          <tr className="bg-slate-50">
+                            <th className="sticky left-0 bg-slate-50 z-10 px-2 py-2 text-left font-semibold whitespace-nowrap border-r border-b border-slate-200">User ID</th>
+                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap border-r border-b border-slate-200">Name</th>
+                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap border-r border-b border-slate-200">City</th>
+                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap border-r border-b border-slate-200">Cluster</th>
+                            {uniqueDates.map((date: string, index: number) => (
+                              <th key={date} className={`px-2 py-2 text-center font-semibold whitespace-nowrap border-b border-slate-200 ${index < uniqueDates.length - 1 ? 'border-r' : ''}`}>
                                 {format(new Date(date), 'dd-MMM-yy')}
                               </th>
                             ))}
@@ -504,13 +504,13 @@ export default function AttendanceManagement() {
                         </thead>
                         <tbody>
                           {paginatedEmployees.map((emp: any) => (
-                            <tr key={emp.userId} className="border-b hover:bg-slate-50">
-                              <td className="sticky left-0 bg-white px-2 py-1.5 font-medium whitespace-nowrap">{emp.userId}</td>
-                              <td className="px-2 py-1.5 whitespace-nowrap">{emp.name}</td>
-                              <td className="px-2 py-1.5 whitespace-nowrap">{emp.city}</td>
-                              <td className="px-2 py-1.5 whitespace-nowrap">{emp.cluster}</td>
-                              {uniqueDates.map((date: string) => (
-                                <td key={date} className="px-2 py-1.5 text-center whitespace-nowrap">
+                            <tr key={emp.userId} className="hover:bg-slate-50">
+                              <td className="sticky left-0 bg-white hover:bg-slate-50 px-2 py-1.5 font-medium whitespace-nowrap border-r border-b border-slate-200">{emp.userId}</td>
+                              <td className="px-2 py-1.5 whitespace-nowrap border-r border-b border-slate-200">{emp.name}</td>
+                              <td className="px-2 py-1.5 whitespace-nowrap border-r border-b border-slate-200">{emp.city}</td>
+                              <td className="px-2 py-1.5 whitespace-nowrap border-r border-b border-slate-200">{emp.cluster}</td>
+                              {uniqueDates.map((date: string, index: number) => (
+                                <td key={date} className={`px-2 py-1.5 text-center whitespace-nowrap border-b border-slate-200 ${index < uniqueDates.length - 1 ? 'border-r' : ''}`}>
                                   <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(emp.attendance[date])}`}>
                                     {emp.attendance[date]?.toUpperCase() || '-'}
                                   </span>
