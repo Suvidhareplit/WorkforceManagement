@@ -405,7 +405,11 @@ export default function AttendanceManagement() {
               </SelectContent>
             </Select>
 
-            <Select value={selectedCity} onValueChange={setSelectedCity}>
+            <Select value={selectedCity} onValueChange={(value) => {
+              setSelectedCity(value);
+              setSelectedCluster("all"); // Reset cluster when city changes
+              setCurrentPage(1);
+            }}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="City" />
               </SelectTrigger>
@@ -417,13 +421,18 @@ export default function AttendanceManagement() {
               </SelectContent>
             </Select>
 
-            <Select value={selectedCluster} onValueChange={setSelectedCluster}>
+            <Select value={selectedCluster} onValueChange={(value) => {
+              setSelectedCluster(value);
+              setCurrentPage(1);
+            }}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Cluster" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Clusters</SelectItem>
-                {clusters.map((cluster: any) => (
+                {clusters
+                  .filter((cluster: any) => selectedCity === "all" || cluster.cityName === selectedCity)
+                  .map((cluster: any) => (
                   <SelectItem key={cluster.id} value={cluster.name}>{cluster.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -457,15 +466,15 @@ export default function AttendanceManagement() {
               ) : (
                 <>
                   <div className="overflow-x-auto">
-                    <Table>
+                    <Table className="table-fixed w-full">
                       <TableHeader>
                         <TableRow>
-                          <TableHead>User ID</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>City</TableHead>
-                          <TableHead>Cluster</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead className="w-24">User ID</TableHead>
+                          <TableHead className="w-48">Name</TableHead>
+                          <TableHead className="w-28">City</TableHead>
+                          <TableHead className="w-40">Cluster</TableHead>
+                          <TableHead className="w-28">Date</TableHead>
+                          <TableHead className="w-24">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
