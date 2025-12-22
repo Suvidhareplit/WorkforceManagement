@@ -297,8 +297,11 @@ const getAbscondingCases = async (req: Request, res: Response) => {
         ac.manager_notified as managerNotified,
         ac.manager_aware as managerAware,
         ac.showcause_sent as showcauseSent,
+        ac.showcause_sent_at as showcauseSentAt,
         ac.letter_type as letterType,
         ac.letter_sent_at as letterSentAt,
+        ac.employee_response as employeeResponse,
+        ac.employee_response_at as employeeResponseAt,
         ac.created_at as createdAt
       FROM absconding_cases ac
       WHERE 1=1
@@ -451,7 +454,7 @@ const sendLetter = async (req: Request, res: Response) => {
     
     await query(
       `UPDATE absconding_cases 
-       SET letter_type = ?, letter_sent_at = NOW(), showcause_sent = 1, status = ?
+       SET letter_type = ?, letter_sent_at = NOW(), showcause_sent = 1, showcause_sent_at = NOW(), status = ?
        WHERE id = ?`,
       [letterType, newStatus, id]
     );
@@ -493,6 +496,48 @@ const resolveCase = async (req: Request, res: Response) => {
   }
 };
 
+// Record employee response (reported/not_reported)
+const recordEmployeeResponse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { response } = req.body;
+    
+    if (!response || !['reported', 'not_reported'].includes(response)) {
+      return res.status(400).json({ message: "Invalid response. Must be 'reported' or 'not_reported'" });
+    }
+    
+    // Get case details for notification
+    const caseResult = await query('SELECT * FROM absconding_cases WHERE id = ?', [id]);
+    if (!caseResult.rows || caseResult.rows.length === 0) {
+      return res.status(404).json({ message: "Absconding case not found" });
+    }
+    const abscondingCase = caseResult.rows[0] as any;
+    
+    if (response === 'reported') {
+      // Employee reported back - resolve the case
+      await query(
+        `UPDATE absconding_cases 
+         SET employee_response = ?, employee_response_at = NOW(), status = 'resolved', resolution = 'Employee reported back', resolved_at = NOW()
+         WHERE id = ?`,
+        [response, id]
+      );
+      res.json({ message: `Employee ${abscondingCase.name} has reported back. Case resolved.` });
+    } else {
+      // Employee not reported - update status to allow termination letter
+      await query(
+        `UPDATE absconding_cases 
+         SET employee_response = ?, employee_response_at = NOW(), status = 'showcause_sent'
+         WHERE id = ?`,
+        [response, id]
+      );
+      res.json({ message: `Employee ${abscondingCase.name} has not reported. Termination letter can now be sent.` });
+    }
+  } catch (error) {
+    console.error('Error recording employee response:', error);
+    res.status(500).json({ message: "Failed to record employee response" });
+  }
+};
+
 export {
   getWorkingEmployees,
   bulkUploadAttendance,
@@ -501,5 +546,6 @@ export {
   notifyManager,
   managerResponse,
   sendLetter,
-  resolveCase
+  resolveCase,
+  recordEmployeeResponse
 };

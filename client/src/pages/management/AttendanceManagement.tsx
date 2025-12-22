@@ -33,6 +33,7 @@ export default function AttendanceManagement() {
   // Dialog states
   const [notifyDialogOpen, setNotifyDialogOpen] = useState(false);
   const [letterDialogOpen, setLetterDialogOpen] = useState(false);
+  const [responseDialogOpen, setResponseDialogOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState<any>(null);
   const [selectedLetterType, setSelectedLetterType] = useState("");
 
@@ -217,17 +218,45 @@ export default function AttendanceManagement() {
       });
     },
     onSuccess: (data: any) => {
+      const letterName = data?.letterType === 'show_cause' ? 'Show Cause Notice' : 'Termination Letter';
       toast({
         title: "Letter Sent",
-        description: data.message || "Letter has been sent to the employee",
+        description: `${letterName} has been sent successfully`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/attendance/absconding'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/attendance/absconding-count'] });
       setLetterDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
         title: "Failed to Send Letter",
         description: error.message || "Failed to send letter",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Employee response mutation
+  const employeeResponseMutation = useMutation({
+    mutationFn: async ({ caseId, response }: { caseId: number; response: 'reported' | 'not_reported' }) => {
+      return apiRequest(`/api/attendance/absconding/${caseId}/employee-response`, {
+        method: 'POST',
+        body: JSON.stringify({ response }),
+      });
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Response Recorded",
+        description: data?.message || "Employee response has been recorded",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/attendance/absconding'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/attendance/absconding-count'] });
+      setResponseDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Record Response",
+        description: error.message || "Failed to record employee response",
         variant: "destructive",
       });
     },
@@ -682,83 +711,148 @@ export default function AttendanceManagement() {
                         <TableHead>Start Date</TableHead>
                         <TableHead>Days</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Days Since Showcause</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {abscondingCases.map((caseItem: any) => (
-                        <TableRow key={caseItem.id}>
-                          <TableCell className="font-medium">{caseItem.userId}</TableCell>
-                          <TableCell>{caseItem.name}</TableCell>
-                          <TableCell>{caseItem.city}</TableCell>
-                          <TableCell>{caseItem.cluster}</TableCell>
-                          <TableCell>{caseItem.managerName || '-'}</TableCell>
-                          <TableCell>{caseItem.startDate ? format(new Date(caseItem.startDate), 'dd MMM yyyy') : '-'}</TableCell>
-                          <TableCell>{caseItem.consecutiveDays}</TableCell>
-                          <TableCell>
-                            <span className={`font-medium ${getCaseStatusColor(caseItem.status)}`}>
-                              {caseItem.status?.replace(/_/g, ' ').toUpperCase()}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              {caseItem.status === 'pending' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedCase(caseItem);
-                                    setNotifyDialogOpen(true);
-                                  }}
-                                >
-                                  <Bell className="h-4 w-4 mr-1" />
-                                  Notify
-                                </Button>
-                              )}
-                              {caseItem.status === 'manager_notified' && (
-                                <div className="flex gap-1">
+                      {abscondingCases.map((caseItem: any) => {
+                        // Calculate days since showcause sent
+                        const daysSinceShowcause = caseItem.showcauseSentAt 
+                          ? Math.floor((new Date().getTime() - new Date(caseItem.showcauseSentAt).getTime()) / (1000 * 60 * 60 * 24))
+                          : null;
+                        const isOverdue = daysSinceShowcause !== null && daysSinceShowcause >= 2;
+                        
+                        return (
+                          <TableRow key={caseItem.id}>
+                            <TableCell className="font-medium">{caseItem.userId}</TableCell>
+                            <TableCell>{caseItem.name}</TableCell>
+                            <TableCell>{caseItem.city}</TableCell>
+                            <TableCell>{caseItem.cluster}</TableCell>
+                            <TableCell>{caseItem.managerName || '-'}</TableCell>
+                            <TableCell>{caseItem.startDate ? format(new Date(caseItem.startDate), 'dd MMM yyyy') : '-'}</TableCell>
+                            <TableCell>{caseItem.consecutiveDays}</TableCell>
+                            <TableCell>
+                              <span className={`font-medium ${getCaseStatusColor(caseItem.status)}`}>
+                                {caseItem.status?.replace(/_/g, ' ').toUpperCase()}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {daysSinceShowcause !== null ? (
+                                <span className={`font-bold ${isOverdue ? 'text-red-600' : 'text-slate-600'}`}>
+                                  {daysSinceShowcause} day{daysSinceShowcause !== 1 ? 's' : ''}
+                                </span>
+                              ) : '-'}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col gap-2">
+                                {/* Pending - Notify Manager */}
+                                {caseItem.status === 'pending' && (
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="text-green-600"
-                                    onClick={() => managerResponseMutation.mutate({ caseId: caseItem.id, aware: true, sendShowcause: false })}
+                                    onClick={() => {
+                                      setSelectedCase(caseItem);
+                                      setNotifyDialogOpen(true);
+                                    }}
+                                  >
+                                    <Bell className="h-4 w-4 mr-1" />
+                                    Notify Manager
+                                  </Button>
+                                )}
+                                
+                                {/* Manager Notified - Awaiting Response */}
+                                {caseItem.status === 'manager_notified' && (
+                                  <div className="flex gap-1">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-green-600"
+                                      onClick={() => managerResponseMutation.mutate({ caseId: caseItem.id, aware: true, sendShowcause: false })}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Aware
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-orange-600"
+                                      onClick={() => managerResponseMutation.mutate({ caseId: caseItem.id, aware: true, sendShowcause: true })}
+                                    >
+                                      <AlertTriangle className="h-4 w-4 mr-1" />
+                                      Showcause
+                                    </Button>
+                                  </div>
+                                )}
+                                
+                                {/* Showcause Pending or Manager Aware - Send Showcause */}
+                                {(caseItem.status === 'showcause_pending' || caseItem.status === 'manager_aware') && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedCase(caseItem);
+                                      setSelectedLetterType('show_cause');
+                                      setLetterDialogOpen(true);
+                                    }}
+                                  >
+                                    <Mail className="h-4 w-4 mr-1" />
+                                    Send Showcause
+                                  </Button>
+                                )}
+                                
+                                {/* Showcause Sent - Check Employee Response */}
+                                {caseItem.status === 'showcause_sent' && !caseItem.employeeResponse && isOverdue && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className={isOverdue ? 'border-red-500 text-red-600' : ''}
+                                    onClick={() => {
+                                      setSelectedCase(caseItem);
+                                      setResponseDialogOpen(true);
+                                    }}
                                   >
                                     <CheckCircle className="h-4 w-4 mr-1" />
-                                    Aware
+                                    Employee Response?
                                   </Button>
+                                )}
+                                
+                                {/* Showcause Sent but not overdue - Show waiting message */}
+                                {caseItem.status === 'showcause_sent' && !caseItem.employeeResponse && !isOverdue && (
+                                  <span className="text-xs text-orange-600">Awaiting response...</span>
+                                )}
+                                
+                                {/* Not Reported - Send Termination Letter */}
+                                {caseItem.status === 'showcause_sent' && caseItem.employeeResponse === 'not_reported' && (
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="text-orange-600"
-                                    onClick={() => managerResponseMutation.mutate({ caseId: caseItem.id, aware: true, sendShowcause: true })}
+                                    className="border-red-500 text-red-600"
+                                    onClick={() => {
+                                      setSelectedCase(caseItem);
+                                      setSelectedLetterType('absconding_terminated');
+                                      setLetterDialogOpen(true);
+                                    }}
                                   >
-                                    <AlertTriangle className="h-4 w-4 mr-1" />
-                                    Showcause
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    Send Termination
                                   </Button>
-                                </div>
-                              )}
-                              {(caseItem.status === 'showcause_pending' || caseItem.status === 'manager_aware') && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedCase(caseItem);
-                                    setLetterDialogOpen(true);
-                                  }}
-                                >
-                                  <Mail className="h-4 w-4 mr-1" />
-                                  Send Letter
-                                </Button>
-                              )}
-                              {caseItem.letterType && (
-                                <span className="text-xs text-slate-500">
-                                  {caseItem.letterType === 'show_cause' ? 'Show Cause Sent' : 'Terminated'}
-                                </span>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                                )}
+                                
+                                {/* Terminated */}
+                                {caseItem.status === 'terminated' && (
+                                  <span className="text-xs font-medium text-red-600">TERMINATED</span>
+                                )}
+                                
+                                {/* Resolved */}
+                                {caseItem.status === 'resolved' && (
+                                  <span className="text-xs font-medium text-green-600">RESOLVED</span>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
@@ -819,6 +913,40 @@ export default function AttendanceManagement() {
             >
               <FileText className="h-4 w-4 mr-2" />
               Send Letter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Employee Response Dialog */}
+      <Dialog open={responseDialogOpen} onOpenChange={setResponseDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Employee Response</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Did the employee report back or respond to the show cause notice?</p>
+            <p className="font-semibold mt-2">{selectedCase?.name} ({selectedCase?.userId})</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Show cause sent on {selectedCase?.showcauseSentAt ? format(new Date(selectedCase.showcauseSentAt), 'dd MMM yyyy') : '-'}
+            </p>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setResponseDialogOpen(false)}>Cancel</Button>
+            <Button 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => selectedCase && employeeResponseMutation.mutate({ caseId: selectedCase.id, response: 'reported' })}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Reported / Responded
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => selectedCase && employeeResponseMutation.mutate({ caseId: selectedCase.id, response: 'not_reported' })}
+            >
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Not Reported / Not Responded
             </Button>
           </DialogFooter>
         </DialogContent>

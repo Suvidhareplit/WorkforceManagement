@@ -54,7 +54,7 @@ export default function Header() {
               variant="ghost" 
               size="icon" 
               className="relative cursor-pointer"
-              onClick={() => window.location.href = '/attendance-management'}
+              onClick={() => window.location.href = '/management/attendance'}
               title="Absconding Cases - Click to view"
             >
               <Bell className="h-5 w-5 text-slate-600" />

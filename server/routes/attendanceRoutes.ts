@@ -7,7 +7,8 @@ import {
   notifyManager,
   managerResponse,
   sendLetter,
-  resolveCase
+  resolveCase,
+  recordEmployeeResponse
 } from '../controllers/attendanceController';
 
 const router = express.Router();
@@ -25,5 +26,6 @@ router.post('/absconding/:id/notify', notifyManager);
 router.post('/absconding/:id/manager-response', managerResponse);
 router.post('/absconding/:id/send-letter', sendLetter);
 router.post('/absconding/:id/resolve', resolveCase);
+router.post('/absconding/:id/employee-response', recordEmployeeResponse);
 
 export default router;
