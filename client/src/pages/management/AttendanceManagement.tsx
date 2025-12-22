@@ -119,12 +119,21 @@ export default function AttendanceManagement() {
     onSuccess: (data: any) => {
       const hasErrors = data.errorCount > 0;
       
-      if (hasErrors && data.errors && data.errors.length > 0) {
-        // Download errors as CSV
+      if (hasErrors && data.errorRecords && data.errorRecords.length > 0) {
+        // Download errors as CSV with full employee details
+        const headers = ['User ID', 'Name', 'City', 'Cluster', 'Date', 'Status', 'Error'];
         const errorCsv = [
-          ['Error'],
-          ...data.errors.map((err: string) => [err])
-        ].map(row => row.join(',')).join('\n');
+          headers.join(','),
+          ...data.errorRecords.map((rec: any) => [
+            rec.userId || '',
+            rec.name || '',
+            rec.city || '',
+            rec.cluster || '',
+            rec.date || '',
+            rec.status || '',
+            `"${(rec.error || '').replace(/"/g, '""')}"`
+          ].join(','))
+        ].join('\n');
         
         const blob = new Blob([errorCsv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -142,10 +151,9 @@ export default function AttendanceManagement() {
         duration: hasErrors ? 10000 : 5000,
       });
       
-      if (!hasErrors) {
-        queryClient.invalidateQueries({ queryKey: ['/api/attendance'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/attendance/absconding'] });
-      }
+      // Always refresh data after upload (even with some errors, successful records should show)
+      queryClient.invalidateQueries({ queryKey: ['/api/attendance'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/attendance/absconding'] });
     },
     onError: (error: any) => {
       toast({

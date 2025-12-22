@@ -37,13 +37,16 @@ const bulkUploadAttendance = async (req: Request, res: Response) => {
     let successCount = 0;
     let errorCount = 0;
     const errors: string[] = [];
+    const errorRecords: any[] = [];
     
     for (const record of records) {
-      const { userId, name, date, status } = record;
+      const { userId, name, city, cluster, date, status } = record;
       
       if (!userId || !date || !status) {
         errorCount++;
-        errors.push(`Missing required fields for user ${userId || 'unknown'}`);
+        const errorMsg = `Missing required fields`;
+        errors.push(`${errorMsg} for user ${userId || 'unknown'}`);
+        errorRecords.push({ userId, name, city, cluster, date, status, error: errorMsg });
         continue;
       }
       
@@ -51,7 +54,9 @@ const bulkUploadAttendance = async (req: Request, res: Response) => {
       const validStatuses = ['present', 'absent', 'lop', 'sl', 'el', 'cl', 'ul'];
       if (!validStatuses.includes(status.toLowerCase())) {
         errorCount++;
-        errors.push(`Invalid status '${status}' for user ${userId}`);
+        const errorMsg = `Invalid status '${status}'`;
+        errors.push(`${errorMsg} for user ${userId}`);
+        errorRecords.push({ userId, name, city, cluster, date, status, error: errorMsg });
         continue;
       }
       
@@ -63,7 +68,9 @@ const bulkUploadAttendance = async (req: Request, res: Response) => {
       
       if (!employeeResult.rows || employeeResult.rows.length === 0) {
         errorCount++;
-        errors.push(`Employee with User ID ${userId} not found`);
+        const errorMsg = `Employee not found`;
+        errors.push(`${errorMsg} - User ID ${userId}`);
+        errorRecords.push({ userId, name, city, cluster, date, status, error: errorMsg });
         continue;
       }
       
@@ -100,7 +107,8 @@ const bulkUploadAttendance = async (req: Request, res: Response) => {
       message: `Uploaded ${successCount} records successfully. ${errorCount} errors.`,
       successCount,
       errorCount,
-      errors: errors.slice(0, 10) // Return first 10 errors
+      errors: errors.slice(0, 10), // Return first 10 errors for display
+      errorRecords // Return all error records with full details for CSV download
     });
   } catch (error) {
     console.error('Error uploading attendance:', error);
