@@ -222,24 +222,47 @@ export default function AttendanceManagement() {
     reader.onload = (e) => {
       const text = e.target?.result as string;
       const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
       
+      // CSV columns: User ID, Name, City, Cluster, Date, Status (indices 0-5)
       const records = lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
         return {
           userId: values[0],
           name: values[1],
-          date: values[2],
-          status: values[3],
+          city: values[2],
+          cluster: values[3],
+          date: values[4],
+          status: values[5],
         };
       }).filter(r => r.userId && r.date && r.status);
+
+      // Limit to 3000 records per upload
+      if (records.length > 3000) {
+        toast({
+          title: "Too Many Records",
+          description: "Maximum 3000 records allowed per upload. Please split your file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate all records have the same date (one day at a time)
+      const dates = [...new Set(records.map(r => r.date))];
+      if (dates.length > 1) {
+        toast({
+          title: "Multiple Dates Found",
+          description: "Only one day's attendance can be uploaded at a time. Please ensure all records have the same date.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       if (records.length > 0) {
         uploadMutation.mutate(records);
       } else {
         toast({
           title: "Invalid File",
-          description: "No valid attendance records found in the file",
+          description: "No valid attendance records found. Ensure Date and Status columns are filled.",
           variant: "destructive",
         });
       }
