@@ -22,6 +22,7 @@ import MasterData from "./pages/master/MasterData";
 import LeaveManagement from "./pages/leave/LeaveManagement";
 import UserManagement from "./pages/management/UserManagement";
 import ExitManagement from "./pages/management/ExitManagement";
+import AttendanceManagement from "./pages/management/AttendanceManagement";
 import AttritionAnalysis from "./pages/management/AttritionAnalysis";
 import Reports from "./pages/management/Reports";
 import Analytics from "./pages/analytics/Analytics";
@@ -53,6 +54,7 @@ function Router() {
         <Route path="/master-data" component={MasterData} />
         <Route path="/leave-management" component={LeaveManagement} />
         <Route path="/management/exit" component={ExitManagement} />
+        <Route path="/management/attendance" component={AttendanceManagement} />
         <Route path="/management/attrition" component={AttritionAnalysis} />
         <Route path="/management/users" component={UserManagement} />
         <Route path="/management/reports" component={Reports} />

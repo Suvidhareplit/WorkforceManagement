@@ -7,6 +7,7 @@ import { employeeRoutes } from "./employeeRoutes";
 import { masterDataRoutes } from "./masterDataRoutes";
 import analyticsRoutes from './analyticsRoutes';
 import leaveManagementRoutes from './leaveManagementRoutes';
+import attendanceRoutes from './attendanceRoutes';
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use('/employees', employeeRoutes);
 router.use('/master-data', masterDataRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/leave', leaveManagementRoutes);
+router.use('/attendance', attendanceRoutes);
 
 export { router as apiRoutes };

@@ -24,6 +24,7 @@ import {
   FileText,
   Building2,
   Users,
+  CalendarCheck,
 } from "lucide-react";
 
 const menuItems = [
@@ -131,6 +132,11 @@ const menuItems = [
         icon: LogOut,
         label: "Exit Management",
         href: "/management/exit",
+      },
+      {
+        icon: CalendarCheck,
+        label: "Attendance & Absconding",
+        href: "/management/attendance",
       },
     ],
   },
