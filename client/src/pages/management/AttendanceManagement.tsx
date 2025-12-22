@@ -488,38 +488,38 @@ export default function AttendanceManagement() {
                 return (
                   <>
                     <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="sticky left-0 bg-white z-10 min-w-[80px]">User ID</TableHead>
-                            <TableHead className="sticky left-[80px] bg-white z-10 min-w-[150px]">Name</TableHead>
-                            <TableHead className="min-w-[100px]">City</TableHead>
-                            <TableHead className="min-w-[120px]">Cluster</TableHead>
+                      <table className="w-auto border-collapse text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="sticky left-0 bg-white z-10 px-2 py-2 text-left font-semibold whitespace-nowrap">User ID</th>
+                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Name</th>
+                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">City</th>
+                            <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Cluster</th>
                             {uniqueDates.map((date: string) => (
-                              <TableHead key={date} className="text-center min-w-[90px]">
+                              <th key={date} className="px-2 py-2 text-center font-semibold whitespace-nowrap">
                                 {format(new Date(date), 'dd-MMM-yy')}
-                              </TableHead>
+                              </th>
                             ))}
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                          </tr>
+                        </thead>
+                        <tbody>
                           {paginatedEmployees.map((emp: any) => (
-                            <TableRow key={emp.userId}>
-                              <TableCell className="sticky left-0 bg-white font-medium">{emp.userId}</TableCell>
-                              <TableCell className="sticky left-[80px] bg-white">{emp.name}</TableCell>
-                              <TableCell>{emp.city}</TableCell>
-                              <TableCell>{emp.cluster}</TableCell>
+                            <tr key={emp.userId} className="border-b hover:bg-slate-50">
+                              <td className="sticky left-0 bg-white px-2 py-1.5 font-medium whitespace-nowrap">{emp.userId}</td>
+                              <td className="px-2 py-1.5 whitespace-nowrap">{emp.name}</td>
+                              <td className="px-2 py-1.5 whitespace-nowrap">{emp.city}</td>
+                              <td className="px-2 py-1.5 whitespace-nowrap">{emp.cluster}</td>
                               {uniqueDates.map((date: string) => (
-                                <TableCell key={date} className="text-center">
-                                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(emp.attendance[date])}`}>
+                                <td key={date} className="px-2 py-1.5 text-center whitespace-nowrap">
+                                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(emp.attendance[date])}`}>
                                     {emp.attendance[date]?.toUpperCase() || '-'}
                                   </span>
-                                </TableCell>
+                                </td>
                               ))}
-                            </TableRow>
+                            </tr>
                           ))}
-                        </TableBody>
-                      </Table>
+                        </tbody>
+                      </table>
                     </div>
                     {/* Pagination */}
                     <div className="flex items-center justify-between mt-4 px-2">
