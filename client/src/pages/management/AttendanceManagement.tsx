@@ -118,13 +118,26 @@ export default function AttendanceManagement() {
     },
     onSuccess: (data: any) => {
       const hasErrors = data.errorCount > 0;
-      const errorDetails = data.errors && data.errors.length > 0 
-        ? `\n\nErrors:\n${data.errors.join('\n')}` 
-        : '';
+      
+      if (hasErrors && data.errors && data.errors.length > 0) {
+        // Download errors as CSV
+        const errorCsv = [
+          ['Error'],
+          ...data.errors.map((err: string) => [err])
+        ].map(row => row.join(',')).join('\n');
+        
+        const blob = new Blob([errorCsv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `attendance_upload_errors_${format(new Date(), 'yyyy-MM-dd_HHmmss')}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
       
       toast({
         title: "Upload Complete",
-        description: `${data.message || "Attendance records uploaded"}${errorDetails}`,
+        description: data.message || "Attendance records uploaded",
         variant: hasErrors ? "destructive" : "default",
         duration: hasErrors ? 10000 : 5000,
       });
