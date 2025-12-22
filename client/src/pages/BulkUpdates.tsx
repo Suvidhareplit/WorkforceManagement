@@ -122,8 +122,8 @@ export default function BulkUpdates() {
 
   // Download template with working employees
   const downloadTemplate = () => {
-    const employeesData = workingEmployees?.data || workingEmployees || [];
-    const employees = Array.isArray(employeesData) ? employeesData : [];
+    // apiRequest already extracts data.data, so workingEmployees should be the array
+    const employees = Array.isArray(workingEmployees) ? workingEmployees : [];
     
     if (employees.length === 0) {
       toast({
@@ -136,8 +136,8 @@ export default function BulkUpdates() {
 
     const headers = ['user_id', 'employee_id', 'name'];
     const rows = employees.map((emp: any) => [
-      emp.user_id || '',
-      emp.employee_id || '',
+      emp.userId || emp.user_id || '',
+      emp.employeeId || emp.employee_id || '',
       emp.name || '',
     ]);
 
@@ -380,7 +380,7 @@ export default function BulkUpdates() {
               className="w-full"
             >
               <FileSpreadsheet className="h-4 w-4 mr-2" />
-              {isLoading ? 'Loading...' : `Download Template (${(workingEmployees?.data || workingEmployees || []).length} employees)`}
+              {isLoading ? 'Loading...' : `Download Template (${Array.isArray(workingEmployees) ? workingEmployees.length : 0} employees)`}
             </Button>
           </CardContent>
         </Card>
