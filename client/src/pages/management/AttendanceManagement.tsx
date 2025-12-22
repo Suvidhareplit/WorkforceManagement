@@ -72,13 +72,18 @@ export default function AttendanceManagement() {
 
   // Fetch working employees for download
   const { data: workingEmployeesData, isLoading: loadingEmployees, error: employeesError } = useQuery({
-    queryKey: ['/api/attendance', 'working-employees'],
+    queryKey: ['/api/attendance/working-employees'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/attendance/working-employees', { method: 'GET' });
+      console.log('API Response:', response);
+      return response;
+    },
   });
   
   console.log('Working employees query:', { data: workingEmployeesData, loading: loadingEmployees, error: employeesError });
   
-  // The default queryFn extracts response.data.data, so workingEmployeesData IS the array directly
-  const workingEmployees = (workingEmployeesData as any[]) || [];
+  // The response is already extracted by apiRequest, so it should be the array directly
+  const workingEmployees = Array.isArray(workingEmployeesData) ? workingEmployeesData : [];
 
   // Bulk upload mutation
   const uploadMutation = useMutation({
