@@ -189,28 +189,31 @@ const checkAbscondingCases = async () => {
     for (const emp of employeesResult.rows as any[]) {
       const userId = emp.user_id;
       
-      // Get last 7 days of attendance for this employee
+      // Get attendance records ordered by date ASC for proper consecutive check
       const attendanceResult = await query(
         `SELECT attendance_date, status 
          FROM attendance 
          WHERE user_id = ? 
-         ORDER BY attendance_date DESC 
-         LIMIT 7`,
+         ORDER BY attendance_date ASC`,
         [userId]
       );
       
       const records = attendanceResult.rows as any[];
       
-      // Check for 3 consecutive absconding statuses
+      // Check for 3 consecutive absconding records (Absent/UL/LOP)
+      // Records are ordered by date ASC, so we check consecutive records
       let consecutiveCount = 0;
-      let startDate = null;
+      let startDate: string | null = null;
       
       for (const record of records) {
-        if (abscondingStatuses.includes(record.status)) {
+        const isAbscondingStatus = abscondingStatuses.includes(record.status?.toLowerCase());
+        
+        if (isAbscondingStatus) {
           consecutiveCount++;
           if (consecutiveCount === 1) {
             startDate = record.attendance_date;
           }
+          
           if (consecutiveCount >= 3) {
             // Check if already in absconding table
             const existingResult = await query(
@@ -234,15 +237,17 @@ const checkAbscondingCases = async () => {
                    (user_id, employee_id, name, email, city, cluster, manager_name, 
                     start_date, consecutive_days, status, created_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())`,
-                  [userId, employee.id, employee.name, employee.email, 
+                  [userId, employee.employee_id, employee.name, employee.email, 
                    employee.city, employee.cluster, employee.manager_name,
                    startDate, consecutiveCount]
                 );
+                console.log(`Absconding case created for user ${userId} - ${consecutiveCount} consecutive absconding records starting ${startDate}`);
               }
             }
             break;
           }
         } else {
+          // Reset on non-absconding status (Present, SL, EL, CL)
           consecutiveCount = 0;
           startDate = null;
         }
