@@ -71,7 +71,7 @@ export default function AttendanceManagement() {
   const abscondingCases = (abscondingResponse as any)?.data || [];
 
   // Fetch working employees for download
-  const { data: workingEmployeesData, isLoading: loadingEmployees, error: employeesError } = useQuery({
+  const { data: workingEmployeesData } = useQuery({
     queryKey: ['/api/attendance/working-employees'],
     queryFn: async () => {
       const response = await fetch('http://localhost:5000/api/attendance/working-employees', {
@@ -81,16 +81,13 @@ export default function AttendanceManagement() {
           'Authorization': `Bearer ${localStorage.getItem('hrms_auth_token') || ''}`
         }
       });
-      const data = await response.json();
-      console.log('Raw API Response:', data);
-      return data.data || data;
+      const json = await response.json();
+      return json.data; // Return the array directly
     },
   });
   
-  console.log('Working employees query:', { data: workingEmployeesData, loading: loadingEmployees, error: employeesError });
-  
-  // The response should now be the array directly
-  const workingEmployees = Array.isArray(workingEmployeesData) ? workingEmployeesData : [];
+  // workingEmployeesData is the array of employees
+  const workingEmployees = workingEmployeesData || [];
 
   // Bulk upload mutation
   const uploadMutation = useMutation({
