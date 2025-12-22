@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// Input component not used - using native input for search
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,16 +22,13 @@ export default function AttendanceManagement() {
   const [selectedDay, setSelectedDay] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedCluster, setSelectedCluster] = useState("all");
+  const [selectedManager, setSelectedManager] = useState("all");
+  const [searchEmployee, setSearchEmployee] = useState("");
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
   
-  // Reset page when filters change
-  const handleFilterChange = (setter: (value: string) => void, value: string) => {
-    setter(value);
-    setCurrentPage(1);
-  };
   
   // Dialog states
   const [notifyDialogOpen, setNotifyDialogOpen] = useState(false);
@@ -51,6 +48,12 @@ export default function AttendanceManagement() {
     queryKey: ['/api/master-data/cluster'],
   });
   const clusters = Array.isArray(clustersData) ? clustersData : [];
+
+  // Fetch managers
+  const { data: managersData } = useQuery({
+    queryKey: ['/api/master-data/manager'],
+  });
+  const managers = Array.isArray(managersData) ? managersData : [];
 
   // Fetch attendance records
   const { data: attendanceResponse, isLoading: loadingAttendance } = useQuery({
@@ -498,6 +501,32 @@ export default function AttendanceManagement() {
                 ))}
               </SelectContent>
             </Select>
+
+            <Select value={selectedManager} onValueChange={(value) => {
+              setSelectedManager(value);
+              setCurrentPage(1);
+            }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Manager" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Managers</SelectItem>
+                {managers.map((manager: any) => (
+                  <SelectItem key={manager.id || manager.name} value={manager.name}>{manager.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <input
+              type="text"
+              placeholder="Search Employee (Name/ID)"
+              value={searchEmployee}
+              onChange={(e) => {
+                setSearchEmployee(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 border border-slate-200 rounded-md text-sm w-[200px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         </CardContent>
       </Card>
@@ -525,17 +554,33 @@ export default function AttendanceManagement() {
               ) : attendanceRecords.length === 0 ? (
                 <div className="text-center py-8 text-slate-500">No attendance records found for the selected filters</div>
               ) : (() => {
+                // Filter by manager and search
+                let filteredRecords = attendanceRecords;
+                
+                if (selectedManager !== "all") {
+                  filteredRecords = filteredRecords.filter((r: any) => r.managerName === selectedManager);
+                }
+                
+                if (searchEmployee.trim()) {
+                  const search = searchEmployee.toLowerCase().trim();
+                  filteredRecords = filteredRecords.filter((r: any) => 
+                    r.userId?.toLowerCase().includes(search) || 
+                    r.name?.toLowerCase().includes(search)
+                  );
+                }
+                
                 // Pivot the data: group by employee, dates as columns
-                const uniqueDates = [...new Set(attendanceRecords.map((r: any) => r.attendanceDate))].sort();
+                const uniqueDates: string[] = [...new Set(filteredRecords.map((r: any) => r.attendanceDate as string))].sort();
                 const employeeMap = new Map<string, any>();
                 
-                attendanceRecords.forEach((record: any) => {
+                filteredRecords.forEach((record: any) => {
                   if (!employeeMap.has(record.userId)) {
                     employeeMap.set(record.userId, {
                       userId: record.userId,
                       name: record.name,
                       city: record.city,
                       cluster: record.cluster,
+                      managerName: record.managerName,
                       attendance: {}
                     });
                   }

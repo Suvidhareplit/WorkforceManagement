@@ -132,8 +132,10 @@ const getAttendance = async (req: Request, res: Response) => {
         a.cluster,
         a.attendance_date as attendanceDate,
         a.status,
-        a.created_at as createdAt
+        a.created_at as createdAt,
+        e.manager_name as managerName
       FROM attendance a
+      LEFT JOIN employees e ON a.user_id = e.user_id
       WHERE 1=1
     `;
     const params: any[] = [];
