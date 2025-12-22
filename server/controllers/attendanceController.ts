@@ -62,7 +62,7 @@ const bulkUploadAttendance = async (req: Request, res: Response) => {
       
       // Check if employee exists
       const employeeResult = await query(
-        'SELECT id, name, email, city, cluster, manager_name FROM employees WHERE user_id = ?',
+        'SELECT id, employee_id, name, email, city, cluster, manager_name FROM employees WHERE user_id = ?',
         [userId]
       );
       
@@ -89,11 +89,11 @@ const bulkUploadAttendance = async (req: Request, res: Response) => {
           [status.toLowerCase(), userId, date]
         );
       } else {
-        // Insert new record
+        // Insert new record - use employee_id (YG0955 format) not id
         await query(
           `INSERT INTO attendance (user_id, employee_id, name, email, city, cluster, attendance_date, status, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-          [userId, employee.id, employee.name, employee.email, employee.city, employee.cluster, date, status.toLowerCase()]
+          [userId, employee.employee_id, employee.name, employee.email, employee.city, employee.cluster, date, status.toLowerCase()]
         );
       }
       

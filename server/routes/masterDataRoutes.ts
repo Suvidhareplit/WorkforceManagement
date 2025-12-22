@@ -42,6 +42,7 @@ router.get('/role', masterDataController.getRoles.bind(masterDataController));
 router.get('/vendor', masterDataController.getVendors.bind(masterDataController));
 router.get('/recruiter', masterDataController.getRecruiters.bind(masterDataController));
 router.get('/trainer', masterDataController.getTrainers.bind(masterDataController));
+router.get('/manager', masterDataController.getManagers.bind(masterDataController));
 
 // File serving route
 router.get('/files/:filename', (req, res) => {

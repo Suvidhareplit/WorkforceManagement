@@ -119,6 +119,9 @@ export interface IStorage {
   // Trainers - using any types for raw SQL approach
   getTrainers(filters?: FilterOptions): Promise<any[]>;
   getTrainer(id: number): Promise<any>;
+  
+  // Managers - unique managers from employees
+  getManagers(): Promise<any[]>;
   createTrainer(trainerData: any, options?: CreateOptions): Promise<any>;
   updateTrainer(id: number, trainerData: any, options?: UpdateOptions): Promise<any>;
   deleteTrainer(id: number, options?: UpdateOptions): Promise<boolean>;

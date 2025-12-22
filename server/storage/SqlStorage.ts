@@ -923,6 +923,17 @@ export class SqlStorage implements IStorage {
     return this.updateVendor(id, { isActive }, options);
   }
 
+  // Managers - get unique managers from employees table
+  async getManagers(): Promise<any[]> {
+    const result = await query(`
+      SELECT DISTINCT manager_name as name 
+      FROM employees 
+      WHERE manager_name IS NOT NULL AND manager_name != ''
+      ORDER BY manager_name ASC
+    `);
+    return result.rows as any[];
+  }
+
   // Recruiters - production-ready CRUD
   async getRecruiters(filters?: FilterOptions): Promise<any[]> {
     const { orderClause, limitClause } = this.buildFilterClause(filters);

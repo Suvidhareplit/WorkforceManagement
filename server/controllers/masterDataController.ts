@@ -65,6 +65,15 @@ export class MasterDataController extends BaseController {
     }
   }
 
+  async getManagers(req: Request, res: Response): Promise<void> {
+    try {
+      const managers = await this.storage.getManagers();
+      this.sendSuccess(res, managers, 'Managers retrieved successfully');
+    } catch (error) {
+      this.handleError(res, error, 'Failed to retrieve managers');
+    }
+  }
+
   async getTrainers(req: Request, res: Response): Promise<void> {
     try {
       const filters = this.buildFilterOptions(req);
