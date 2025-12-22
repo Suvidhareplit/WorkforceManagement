@@ -71,11 +71,11 @@ export default function AttendanceManagement() {
   const abscondingCases = (abscondingResponse as any)?.data || [];
 
   // Fetch working employees for download
-  const { data: workingEmployeesResponse } = useQuery({
+  const { data: workingEmployeesData } = useQuery({
     queryKey: ['/api/attendance/working-employees'],
-    queryFn: () => apiRequest('/api/attendance/working-employees'),
   });
-  const workingEmployees = (workingEmployeesResponse as any)?.data || [];
+  // The default queryFn extracts response.data.data, so workingEmployeesData IS the array directly
+  const workingEmployees = (workingEmployeesData as any[]) || [];
 
   // Bulk upload mutation
   const uploadMutation = useMutation({
@@ -168,14 +168,14 @@ export default function AttendanceManagement() {
     },
   });
 
-  // Download active employees list
+  // Download working employees list
   const downloadTemplate = () => {
     console.log('Working employees data:', workingEmployees);
     
-    if (!workingEmployees || workingEmployees.length === 0) {
+    if (!Array.isArray(workingEmployees) || workingEmployees.length === 0) {
       toast({
         title: "No Data",
-        description: "No active employees found to download",
+        description: "No working employees found to download",
         variant: "destructive",
       });
       return;
@@ -292,7 +292,7 @@ export default function AttendanceManagement() {
             <div className="flex gap-2">
               <Button variant="outline" onClick={downloadTemplate}>
                 <Download className="h-4 w-4 mr-2" />
-                Download Active Employees
+                Download Working Employees
               </Button>
               <Button onClick={() => fileInputRef.current?.click()}>
                 <Upload className="h-4 w-4 mr-2" />
