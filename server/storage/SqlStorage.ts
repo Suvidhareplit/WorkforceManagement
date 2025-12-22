@@ -107,27 +107,36 @@ export class SqlStorage implements IStorage {
   }
 
   async createUser(userData: any, options?: CreateOptions): Promise<any> {
+    // Handle both camelCase and snake_case field names
     const {
       email,
       name,
       phone,
-      userId,
-      passwordHash,
+      userId, user_id,
+      passwordHash, password_hash,
       role,
-      managerId,
-      cityId,
-      clusterId,
-      isActive = true
+      managerId, manager_id,
+      cityId, city_id,
+      clusterId, cluster_id,
+      isActive, is_active
     } = userData;
+    
+    // Use whichever field name is provided
+    const finalUserId = userId || user_id;
+    const finalPasswordHash = passwordHash || password_hash;
+    const finalManagerId = managerId || manager_id;
+    const finalCityId = cityId || city_id;
+    const finalClusterId = clusterId || cluster_id;
+    const finalIsActive = isActive !== undefined ? isActive : (is_active !== undefined ? is_active : true);
 
-    console.log('Creating user with data:', { email, name, phone, userId, role, managerId, cityId, clusterId, isActive });
+    console.log('Creating user with data:', { email, name, phone, userId: finalUserId, role, managerId: finalManagerId, cityId: finalCityId, clusterId: finalClusterId, isActive: finalIsActive });
 
     const insertResult = await query(`
       INSERT INTO users (
         email, name, phone, user_id, password, role, 
         manager_id, city_id, cluster_id, is_active, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-    `, [email, name, phone, userId || null, passwordHash, role, managerId || null, cityId || null, clusterId || null, isActive ? 1 : 0]);
+    `, [email, name, phone, finalUserId || null, finalPasswordHash, role, finalManagerId || null, finalCityId || null, finalClusterId || null, finalIsActive ? 1 : 0]);
 
     console.log('Insert result:', insertResult);
     
