@@ -47,9 +47,9 @@ apiClient.interceptors.response.use(
 export async function apiRequest(
   url: string,
   options: {
-    method: string;
+    method?: string;
     body?: unknown;
-  },
+  } = { method: 'GET' },
 ): Promise<any> {
   const isFormData = options.body instanceof FormData;
   // Convert camelCase to snake_case for request body (except FormData)
