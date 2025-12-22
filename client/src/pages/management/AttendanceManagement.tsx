@@ -266,8 +266,30 @@ export default function AttendanceManagement() {
       const lines = text.split('\n').filter(line => line.trim());
       
       // CSV columns: User ID, Name, City, Cluster, Date, Status (indices 0-5)
-      const records = lines.slice(1).map(line => {
-        const values = line.split(',').map(v => v.trim());
+      const records = lines.slice(1).map((line, idx) => {
+        // Handle CSV with proper parsing (including quoted values)
+        const values: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim());
+        
+        // Ensure we have at least 6 columns
+        while (values.length < 6) {
+          values.push('');
+        }
+        
         return {
           userId: values[0],
           name: values[1],
@@ -275,8 +297,16 @@ export default function AttendanceManagement() {
           cluster: values[3],
           date: values[4],
           status: values[5],
+          lineNumber: idx + 2 // +2 because we skip header and arrays are 0-indexed
         };
-      }).filter(r => r.userId && r.date && r.status);
+      }).filter(r => {
+        // Only include rows with all required fields
+        if (!r.userId || !r.date || !r.status) {
+          console.log(`Skipping row ${r.lineNumber}: userId=${r.userId}, date=${r.date}, status=${r.status}`);
+          return false;
+        }
+        return true;
+      });
 
       // Limit to 3000 records per upload
       if (records.length > 3000) {
