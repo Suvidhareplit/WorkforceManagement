@@ -4,12 +4,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function Header() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   // Fetch pending absconding cases for notification count
   const { data: abscondingData } = useQuery({
@@ -56,7 +54,7 @@ export default function Header() {
               variant="ghost" 
               size="icon" 
               className="relative cursor-pointer"
-              onClick={() => navigate('/attendance-management')}
+              onClick={() => window.location.href = '/attendance-management'}
               title="Absconding Cases - Click to view"
             >
               <Bell className="h-5 w-5 text-slate-600" />
