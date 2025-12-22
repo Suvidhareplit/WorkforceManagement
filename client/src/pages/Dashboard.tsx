@@ -11,6 +11,7 @@ import { api } from "@/lib/api";
 export default function Dashboard() {
   const [selectedCity, setSelectedCity] = useState<string>("5"); // Default to Bangalore (ID: 5)
   const [selectedPriority, setSelectedPriority] = useState<string>("all");
+  const [selectedCluster, setSelectedCluster] = useState<string>("all");
 
   console.log('🏠 Dashboard component rendering...');
 
@@ -124,10 +125,12 @@ export default function Dashboard() {
     }
   });
 
-  // Get only clusters that have open positions
-  const clustersWithOpenPositions = allClusters.filter((cluster: any) => 
-    clustersWithPositions.has(cluster.id)
-  );
+  // Get only clusters that have open positions, filtered by selected cluster
+  const clustersWithOpenPositions = allClusters.filter((cluster: any) => {
+    const hasOpenPositions = clustersWithPositions.has(cluster.id);
+    const matchesFilter = selectedCluster === 'all' || cluster.id === parseInt(selectedCluster);
+    return hasOpenPositions && matchesFilter;
+  });
 
   // Build final designation-wise open positions data with additional metrics
   const designationWiseOpenPositions = (designationsData as any[])?.map((designation: any) => {
@@ -385,6 +388,20 @@ export default function Dashboard() {
                 </SelectContent>
               </Select>
               
+              <Select value={selectedCluster} onValueChange={setSelectedCluster}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Cluster" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Clusters</SelectItem>
+                  {allClusters.map((cluster: any) => (
+                    <SelectItem key={cluster.id} value={cluster.id.toString()}>
+                      {cluster.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <Select value={selectedPriority} onValueChange={setSelectedPriority}>
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Priority" />
@@ -409,15 +426,14 @@ export default function Dashboard() {
                     <TableHead className="sticky left-0 bg-slate-50 z-10 font-semibold">Designation</TableHead>
                     <TableHead className="text-center font-semibold bg-green-50 px-3">Total Raised</TableHead>
                     <TableHead className="text-center font-semibold bg-green-50 px-3">Closed</TableHead>
-                    <TableHead className="text-center font-semibold bg-green-50 px-3">YTB Hired</TableHead>
                     {clustersWithOpenPositions.map((cluster: any) => (
                       <TableHead key={cluster.id} className="text-center px-4">
                         {cluster.name}
                       </TableHead>
                     ))}
-                    <TableHead className="text-center font-semibold bg-slate-50 px-4">Total</TableHead>
                     <TableHead className="text-center font-semibold bg-amber-50 px-3">Under CRT</TableHead>
                     <TableHead className="text-center font-semibold bg-amber-50 px-3">Under FT</TableHead>
+                    <TableHead className="text-center font-semibold bg-orange-50 px-3">YTB Hired</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -434,9 +450,6 @@ export default function Dashboard() {
                           <TableCell className="text-center bg-green-50 px-3">
                             <span className="font-semibold text-green-600">{designation.closedCount}</span>
                           </TableCell>
-                          <TableCell className="text-center bg-green-50 px-3">
-                            <span className="font-semibold text-orange-600">{designation.ytbHired}</span>
-                          </TableCell>
                           {clustersWithOpenPositions.map((cluster: any) => (
                             <TableCell key={cluster.id} className="text-center px-4">
                               <span className="font-semibold text-blue-600">
@@ -444,16 +457,14 @@ export default function Dashboard() {
                               </span>
                             </TableCell>
                           ))}
-                          <TableCell className="text-center bg-slate-50 px-4">
-                            <span className="font-bold text-slate-800">
-                              {designation.totalPositions}
-                            </span>
-                          </TableCell>
                           <TableCell className="text-center bg-amber-50 px-3">
                             <span className="font-semibold text-amber-600">{designation.underCRT}</span>
                           </TableCell>
                           <TableCell className="text-center bg-amber-50 px-3">
                             <span className="font-semibold text-amber-600">{designation.underFT}</span>
+                          </TableCell>
+                          <TableCell className="text-center bg-orange-50 px-3">
+                            <span className="font-semibold text-orange-600">{designation.ytbHired}</span>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -472,11 +483,6 @@ export default function Dashboard() {
                             {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.closedCount, 0)}
                           </span>
                         </TableCell>
-                        <TableCell className="text-center bg-green-100 px-3">
-                          <span className="font-bold text-orange-600">
-                            {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.ytbHired, 0)}
-                          </span>
-                        </TableCell>
                         {clustersWithOpenPositions.map((cluster: any) => {
                           const clusterTotal = designationWiseOpenPositions.reduce((sum: number, d: any) => 
                             sum + (d.clusterPositions[cluster.id] || 0), 0
@@ -487,13 +493,6 @@ export default function Dashboard() {
                             </TableCell>
                           );
                         })}
-                        <TableCell className="text-center bg-slate-200 px-4">
-                          <span className="font-bold text-lg text-blue-700">
-                            {designationWiseOpenPositions.reduce((sum: number, d: any) => 
-                              sum + d.totalPositions, 0
-                            )}
-                          </span>
-                        </TableCell>
                         <TableCell className="text-center bg-amber-100 px-3">
                           <span className="font-bold text-amber-600">
                             {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.underCRT, 0)}
@@ -504,11 +503,16 @@ export default function Dashboard() {
                             {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.underFT, 0)}
                           </span>
                         </TableCell>
+                        <TableCell className="text-center bg-orange-100 px-3">
+                          <span className="font-bold text-orange-600">
+                            {designationWiseOpenPositions.reduce((sum: number, d: any) => sum + d.ytbHired, 0)}
+                          </span>
+                        </TableCell>
                       </TableRow>
                     </>
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={clustersWithOpenPositions.length + 7} className="text-center text-slate-500 py-8">
+                      <TableCell colSpan={clustersWithOpenPositions.length + 6} className="text-center text-slate-500 py-8">
                         No open positions found
                       </TableCell>
                     </TableRow>
