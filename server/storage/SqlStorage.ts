@@ -120,14 +120,18 @@ export class SqlStorage implements IStorage {
       isActive = true
     } = userData;
 
+    console.log('Creating user with data:', { email, name, phone, userId, role, managerId, cityId, clusterId, isActive });
+
     const insertResult = await query(`
       INSERT INTO users (
         email, name, phone, user_id, password, role, 
         manager_id, city_id, cluster_id, is_active, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-    `, [email, name, phone, userId, passwordHash, role, managerId, cityId, clusterId, isActive]);
+    `, [email, name, phone, userId || null, passwordHash, role, managerId || null, cityId || null, clusterId || null, isActive ? 1 : 0]);
 
-    const newUserId = (insertResult.rows as any).insertId;
+    console.log('Insert result:', insertResult);
+    
+    const newUserId = insertResult.insertId;
     const user = await this.getUser(newUserId);
     
     if (user && options?.changedBy) {
