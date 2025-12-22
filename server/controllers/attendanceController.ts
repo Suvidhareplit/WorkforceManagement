@@ -459,14 +459,6 @@ const sendLetter = async (req: Request, res: Response) => {
       [letterType, newStatus, id]
     );
     
-    // If terminated, update employee working status
-    if (letterType === 'absconding_terminated') {
-      await query(
-        'UPDATE employees SET working_status = ? WHERE user_id = ?',
-        ['absconding_terminated', abscondingCase.user_id]
-      );
-    }
-    
     // Send notification to manager
     const letterName = letterType === 'show_cause' ? 'Show Cause Notice' : 'Termination Letter';
     await query(

@@ -834,9 +834,19 @@ export default function AttendanceManagement() {
                                   </Button>
                                 )}
                                 
-                                {/* Terminated */}
+                                {/* Terminated - Show Initiate Exit button */}
                                 {caseItem.status === 'terminated' && (
-                                  <span className="text-xs font-medium text-red-600">TERMINATED</span>
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-medium text-red-600">Termination Letter Sent</span>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-blue-500 text-blue-600"
+                                      onClick={() => window.location.href = `/exit-management?employee=${caseItem.userId}`}
+                                    >
+                                      Initiate Exit
+                                    </Button>
+                                  </div>
                                 )}
                                 
                                 {/* Resolved */}
