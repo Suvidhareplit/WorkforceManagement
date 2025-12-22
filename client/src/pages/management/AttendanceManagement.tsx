@@ -90,7 +90,7 @@ export default function AttendanceManagement() {
       return apiRequest(`/api/attendance/absconding?${params.toString()}`);
     },
   });
-  const abscondingCases = (abscondingResponse as any)?.data || [];
+  const abscondingCases = Array.isArray(abscondingResponse) ? abscondingResponse : (abscondingResponse as any)?.data || [];
 
   // Fetch working employees for download
   const { data: workingEmployeesData } = useQuery({
