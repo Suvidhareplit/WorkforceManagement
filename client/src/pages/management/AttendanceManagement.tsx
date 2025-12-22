@@ -193,12 +193,14 @@ export default function AttendanceManagement() {
       return;
     }
     
-    const headers = ['User ID', 'Name', 'City', 'Cluster'];
+    const headers = ['User ID', 'Name', 'City', 'Cluster', 'Date (YYYY-MM-DD)', 'Status (Present/Absent/LOP/SL/EL/CL/UL)'];
     const rows = workingEmployees.map((emp: any) => [
       emp.userId || emp.user_id || '', 
       emp.name || '', 
       emp.city || '', 
-      emp.cluster || ''
+      emp.cluster || '',
+      '',  // Date column - to be filled by user
+      ''   // Status column - to be filled by user
     ]);
     
     const csvContent = [headers.join(','), ...rows.map((row: string[]) => row.join(','))].join('\n');

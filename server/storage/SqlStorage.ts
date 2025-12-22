@@ -122,7 +122,7 @@ export class SqlStorage implements IStorage {
 
     const insertResult = await query(`
       INSERT INTO users (
-        email, name, phone, user_id, password_hash, role, 
+        email, name, phone, user_id, password, role, 
         manager_id, city_id, cluster_id, is_active, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     `, [email, name, phone, userId, passwordHash, role, managerId, cityId, clusterId, isActive]);
