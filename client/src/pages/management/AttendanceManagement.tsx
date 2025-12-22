@@ -19,7 +19,7 @@ export default function AttendanceManagement() {
   // Filters
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
-  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedDay, setSelectedDay] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedCluster, setSelectedCluster] = useState("all");
   
@@ -48,7 +48,7 @@ export default function AttendanceManagement() {
       const params = new URLSearchParams();
       if (selectedYear) params.append('year', selectedYear);
       if (selectedMonth) params.append('month', selectedMonth);
-      if (selectedDay) params.append('day', selectedDay);
+      if (selectedDay && selectedDay !== 'all') params.append('day', selectedDay);
       if (selectedCity && selectedCity !== 'all') params.append('city', selectedCity);
       if (selectedCluster && selectedCluster !== 'all') params.append('cluster', selectedCluster);
       return apiRequest(`/api/attendance?${params.toString()}`);
@@ -287,6 +287,7 @@ export default function AttendanceManagement() {
                 accept=".csv"
                 onChange={handleFileUpload}
                 className="hidden"
+                aria-label="Upload attendance CSV file"
               />
             </div>
           </div>
@@ -324,7 +325,7 @@ export default function AttendanceManagement() {
                 <SelectValue placeholder="Day" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Days</SelectItem>
+                <SelectItem value="all">All Days</SelectItem>
                 {days.map(day => (
                   <SelectItem key={day} value={day}>{day}</SelectItem>
                 ))}
