@@ -463,69 +463,94 @@ export default function AttendanceManagement() {
                 <div className="text-center py-8 text-slate-500">Loading attendance records...</div>
               ) : attendanceRecords.length === 0 ? (
                 <div className="text-center py-8 text-slate-500">No attendance records found for the selected filters</div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto">
-                    <Table className="table-fixed w-full">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-24">User ID</TableHead>
-                          <TableHead className="w-48">Name</TableHead>
-                          <TableHead className="w-28">City</TableHead>
-                          <TableHead className="w-40">Cluster</TableHead>
-                          <TableHead className="w-28">Date</TableHead>
-                          <TableHead className="w-24">Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {attendanceRecords
-                          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                          .map((record: any) => (
-                          <TableRow key={record.id}>
-                            <TableCell className="font-medium">{record.userId}</TableCell>
-                            <TableCell>{record.name}</TableCell>
-                            <TableCell>{record.city}</TableCell>
-                            <TableCell>{record.cluster}</TableCell>
-                            <TableCell>{record.attendanceDate ? format(new Date(record.attendanceDate), 'dd MMM yyyy') : '-'}</TableCell>
-                            <TableCell>
-                              <span className={`px-2 py-1 rounded text-sm font-medium ${getStatusColor(record.status)}`}>
-                                {record.status?.toUpperCase()}
-                              </span>
-                            </TableCell>
+              ) : (() => {
+                // Pivot the data: group by employee, dates as columns
+                const uniqueDates = [...new Set(attendanceRecords.map((r: any) => r.attendanceDate))].sort();
+                const employeeMap = new Map<string, any>();
+                
+                attendanceRecords.forEach((record: any) => {
+                  if (!employeeMap.has(record.userId)) {
+                    employeeMap.set(record.userId, {
+                      userId: record.userId,
+                      name: record.name,
+                      city: record.city,
+                      cluster: record.cluster,
+                      attendance: {}
+                    });
+                  }
+                  employeeMap.get(record.userId).attendance[record.attendanceDate] = record.status;
+                });
+                
+                const employees = Array.from(employeeMap.values());
+                const paginatedEmployees = employees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+                const totalPages = Math.ceil(employees.length / itemsPerPage);
+                
+                return (
+                  <>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="sticky left-0 bg-white z-10 min-w-[80px]">User ID</TableHead>
+                            <TableHead className="sticky left-[80px] bg-white z-10 min-w-[150px]">Name</TableHead>
+                            <TableHead className="min-w-[100px]">City</TableHead>
+                            <TableHead className="min-w-[120px]">Cluster</TableHead>
+                            {uniqueDates.map((date: string) => (
+                              <TableHead key={date} className="text-center min-w-[90px]">
+                                {format(new Date(date), 'dd-MMM-yy')}
+                              </TableHead>
+                            ))}
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  {/* Pagination */}
-                  <div className="flex items-center justify-between mt-4 px-2">
-                    <div className="text-sm text-slate-500">
-                      Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, attendanceRecords.length)} of {attendanceRecords.length} records
+                        </TableHeader>
+                        <TableBody>
+                          {paginatedEmployees.map((emp: any) => (
+                            <TableRow key={emp.userId}>
+                              <TableCell className="sticky left-0 bg-white font-medium">{emp.userId}</TableCell>
+                              <TableCell className="sticky left-[80px] bg-white">{emp.name}</TableCell>
+                              <TableCell>{emp.city}</TableCell>
+                              <TableCell>{emp.cluster}</TableCell>
+                              {uniqueDates.map((date: string) => (
+                                <TableCell key={date} className="text-center">
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(emp.attendance[date])}`}>
+                                    {emp.attendance[date]?.toUpperCase() || '-'}
+                                  </span>
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </Button>
-                      <span className="flex items-center px-3 text-sm">
-                        Page {currentPage} of {Math.ceil(attendanceRecords.length / itemsPerPage)}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(p => Math.min(Math.ceil(attendanceRecords.length / itemsPerPage), p + 1))}
-                        disabled={currentPage >= Math.ceil(attendanceRecords.length / itemsPerPage)}
-                      >
-                        Next
-                      </Button>
+                    {/* Pagination */}
+                    <div className="flex items-center justify-between mt-4 px-2">
+                      <div className="text-sm text-slate-500">
+                        Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, employees.length)} of {employees.length} employees
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                          disabled={currentPage === 1}
+                        >
+                          Previous
+                        </Button>
+                        <span className="flex items-center px-3 text-sm">
+                          Page {currentPage} of {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                          disabled={currentPage >= totalPages}
+                        >
+                          Next
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         </TabsContent>
