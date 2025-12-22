@@ -2,26 +2,23 @@ import { Request, Response } from "express";
 import { query } from '../config/db';
 import nodemailer from 'nodemailer';
 
-// Get working employees list (for download template)
+// Get active/working employees list for download
 const getWorkingEmployees = async (req: Request, res: Response) => {
   try {
     const result = await query(
       `SELECT 
-        user_id as userId,
-        employee_id as employeeId,
+        user_id,
         name,
-        email,
         city,
-        cluster,
-        designation,
-        manager_name as managerName
+        cluster
       FROM employees 
       WHERE working_status = 'working'
       ORDER BY name`,
       []
     );
     
-    res.json({ data: result.rows });
+    console.log('Working employees count:', result.rows?.length || 0);
+    res.json({ data: result.rows || [] });
   } catch (error) {
     console.error('Error fetching working employees:', error);
     res.status(500).json({ message: "Failed to fetch working employees" });

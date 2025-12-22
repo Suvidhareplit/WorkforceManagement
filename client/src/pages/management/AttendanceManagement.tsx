@@ -168,25 +168,25 @@ export default function AttendanceManagement() {
     },
   });
 
-  // Download working employees list
+  // Download active employees list
   const downloadTemplate = () => {
+    console.log('Working employees data:', workingEmployees);
+    
     if (!workingEmployees || workingEmployees.length === 0) {
       toast({
         title: "No Data",
-        description: "No working employees found to download",
+        description: "No active employees found to download",
         variant: "destructive",
       });
       return;
     }
     
-    const headers = ['User ID', 'Name', 'City', 'Cluster', 'Date (YYYY-MM-DD)', 'Status (Present/Absent/LOP/SL/EL/CL/UL)'];
+    const headers = ['User ID', 'Name', 'City', 'Cluster'];
     const rows = workingEmployees.map((emp: any) => [
-      emp.userId || emp.user_id || '', 
+      emp.user_id || '', 
       emp.name || '', 
       emp.city || '', 
-      emp.cluster || '',
-      '', 
-      ''
+      emp.cluster || ''
     ]);
     
     const csvContent = [headers.join(','), ...rows.map((row: string[]) => row.join(','))].join('\n');
@@ -194,7 +194,7 @@ export default function AttendanceManagement() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `working_employees_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `active_employees_${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -292,7 +292,7 @@ export default function AttendanceManagement() {
             <div className="flex gap-2">
               <Button variant="outline" onClick={downloadTemplate}>
                 <Download className="h-4 w-4 mr-2" />
-                Download Template
+                Download Active Employees
               </Button>
               <Button onClick={() => fileInputRef.current?.click()}>
                 <Upload className="h-4 w-4 mr-2" />
