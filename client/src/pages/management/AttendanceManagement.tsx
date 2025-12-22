@@ -73,6 +73,7 @@ export default function AttendanceManagement() {
   // Fetch working employees for download
   const { data: workingEmployeesResponse } = useQuery({
     queryKey: ['/api/attendance/working-employees'],
+    queryFn: () => apiRequest('/api/attendance/working-employees'),
   });
   const workingEmployees = (workingEmployeesResponse as any)?.data || [];
 
@@ -167,17 +168,33 @@ export default function AttendanceManagement() {
     },
   });
 
-  // Download working employees template
+  // Download working employees list
   const downloadTemplate = () => {
-    const headers = ['User ID', 'Name', 'Date (YYYY-MM-DD)', 'Status (Present/Absent/LOP/SL/EL/CL/UL)'];
-    const rows = workingEmployees.map((emp: any) => [emp.userId, emp.name, '', '']);
+    if (!workingEmployees || workingEmployees.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No working employees found to download",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const headers = ['User ID', 'Name', 'City', 'Cluster', 'Date (YYYY-MM-DD)', 'Status (Present/Absent/LOP/SL/EL/CL/UL)'];
+    const rows = workingEmployees.map((emp: any) => [
+      emp.userId || emp.user_id || '', 
+      emp.name || '', 
+      emp.city || '', 
+      emp.cluster || '',
+      '', 
+      ''
+    ]);
     
     const csvContent = [headers.join(','), ...rows.map((row: string[]) => row.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `attendance_template_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.download = `working_employees_${format(new Date(), 'yyyy-MM-dd')}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
