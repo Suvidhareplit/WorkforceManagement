@@ -184,13 +184,23 @@ const createEmployeeProfile = async (req: Request, res: Response) => {
 // Get all employees
 const getEmployees = async (req: Request, res: Response) => {
   try {
-    // Join with employee_exits to get exit_status
-    const result = await query(
-      `SELECT e.*, ee.exit_status, ee.exit_type
+    const { working_status } = req.query;
+    
+    // Build query with optional working_status filter
+    let sql = `SELECT e.*, ee.exit_status, ee.exit_type
        FROM employees e
-       LEFT JOIN employee_exits ee ON e.employee_id = ee.employee_id AND ee.exit_status != 'cancelled'
-       ORDER BY e.created_at DESC`
-    );
+       LEFT JOIN employee_exits ee ON e.employee_id = ee.employee_id AND ee.exit_status != 'cancelled'`;
+    
+    const params: any[] = [];
+    
+    if (working_status) {
+      sql += ` WHERE e.working_status = ?`;
+      params.push(working_status);
+    }
+    
+    sql += ` ORDER BY e.created_at DESC`;
+    
+    const result = await query(sql, params);
     
     res.json({ data: result.rows || [] });
   } catch (error) {

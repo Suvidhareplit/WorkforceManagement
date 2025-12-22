@@ -122,7 +122,8 @@ export default function BulkUpdates() {
 
   // Download template with working employees
   const downloadTemplate = () => {
-    const employees = Array.isArray(workingEmployees) ? workingEmployees : [];
+    const employeesData = workingEmployees?.data || workingEmployees || [];
+    const employees = Array.isArray(employeesData) ? employeesData : [];
     
     if (employees.length === 0) {
       toast({
@@ -379,7 +380,7 @@ export default function BulkUpdates() {
               className="w-full"
             >
               <FileSpreadsheet className="h-4 w-4 mr-2" />
-              {isLoading ? 'Loading...' : `Download Template (${Array.isArray(workingEmployees) ? workingEmployees.length : 0} employees)`}
+              {isLoading ? 'Loading...' : `Download Template (${(workingEmployees?.data || workingEmployees || []).length} employees)`}
             </Button>
           </CardContent>
         </Card>
